@@ -5,7 +5,12 @@ target_compile_definitions(trinity-compile-option-interface
   INTERFACE
     -D_BUILD_DIRECTIVE="$<CONFIG>")
 
-set(CLANG_EXPECTED_VERSION 7.0.0)
+set(CLANG_EXPECTED_VERSION 11.0.0)
+if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+  # apple doesnt like to do the sane thing which would be to use the same version numbering as regular clang
+  # version number pulled from https://en.wikipedia.org/wiki/Xcode#Toolchain_versions for row matching LLVM 11
+  set(CLANG_EXPECTED_VERSION 12.0.5)
+endif()
 
 if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS CLANG_EXPECTED_VERSION)
   message(FATAL_ERROR "Clang: TrinityCore requires version ${CLANG_EXPECTED_VERSION} to build but found ${CMAKE_CXX_COMPILER_VERSION}")
@@ -159,12 +164,3 @@ if(BUILD_SHARED_LIBS)
   message(STATUS "Clang: Disallow undefined symbols")
 endif()
 
-# speedup PCH builds by forcing template instantiations during PCH generation
-set(CMAKE_REQUIRED_FLAGS "-fpch-instantiate-templates")
-check_cxx_source_compiles("int main() { return 0; }" CLANG_HAS_PCH_INSTANTIATE_TEMPLATES)
-unset(CMAKE_REQUIRED_FLAGS)
-if(CLANG_HAS_PCH_INSTANTIATE_TEMPLATES)
-  target_compile_options(trinity-compile-option-interface
-    INTERFACE
-      -fpch-instantiate-templates)
-endif()
