@@ -26,17 +26,16 @@ struct LogMessage;
 
 class TC_COMMON_API LogOperation
 {
-public:
-    LogOperation(Logger const* _logger, std::unique_ptr<LogMessage>&& _msg);
+    public:
+        LogOperation(Logger const* _logger, std::unique_ptr<LogMessage>&& _msg);
 
-    ~LogOperation();
+        ~LogOperation();
 
-    int call();
+        int call();
 
-protected:
-    Logger const* logger;
-    std::unique_ptr<LogMessage> msg;
+    protected:
+        Logger const* logger;
+        std::unique_ptr<LogMessage> msg;
 };
 
 #endif
-

@@ -20,6 +20,7 @@
 
 #include "Define.h"
 #include "DetourNavMesh.h"
+#include <stdio.h>
 
 const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
 #define MMAP_VERSION 15
@@ -45,7 +46,6 @@ static_assert(sizeof(MmapTileHeader) == (sizeof(MmapTileHeader::mmapMagic) +
                                          sizeof(MmapTileHeader::size) +
                                          sizeof(MmapTileHeader::usesLiquids) +
                                          sizeof(MmapTileHeader::padding)), "MmapTileHeader has uninitialized padding fields");
-
 enum NavArea
 {
     NAV_AREA_EMPTY          = 0,

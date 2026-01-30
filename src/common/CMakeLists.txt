@@ -64,7 +64,6 @@ target_link_libraries(common
   PUBLIC
     argon2
     boost
-    cds
     fmt
     g3dlib
     Detour
@@ -74,7 +73,14 @@ target_link_libraries(common
     valgrind
     threads
     jemalloc
-    openssl_ed25519)
+    openssl_ed25519
+    short_alloc)
+
+if (ELUNA)
+	target_link_libraries(common
+	 PUBLIC
+	   lualib)
+endif()
 
 add_dependencies(common revision_data.h)
 

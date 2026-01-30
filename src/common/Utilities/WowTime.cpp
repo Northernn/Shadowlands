@@ -124,7 +124,7 @@ void WowTime::AddDays(int32 count, bool keepHoursAndMinutes)
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
         localtime_s(&timeInfo, &posixTime);
 #else
-        localtime_r(&posixTime, &timeInfo); // POSIX  
+        localtime_r(&posixTime, &timeInfo); // POSIX
 #endif
 
         Year = timeInfo.tm_year - 100;
@@ -162,7 +162,7 @@ void WowTime::AddMinutes(int32 count)
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
             localtime_s(&timeInfo, &wTime);
 #else
-            localtime_r(&wTime, &timeInfo); // POSIX  
+            localtime_r(&wTime, &timeInfo); // POSIX
 #endif
 
             Year = timeInfo.tm_year - 100;
@@ -187,7 +187,7 @@ void WowTime::AddMinutes(int32 count)
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
             localtime_s(&timeInfo, &wTime);
 #else
-            localtime_r(&wTime, &timeInfo); // POSIX  
+            localtime_r(&wTime, &timeInfo); // POSIX
 #endif
 
             Year = timeInfo.tm_year - 100;
@@ -215,7 +215,7 @@ void WowTime::AddHolidayDuration(int32 duration)
         oldTotalMinutes = (Globals::InMinutes::Hour * Hour) + Minute;
 
     duration %= Globals::InMinutes::Day + Minute + Globals::InMinutes::Hour * Hour;
-    int64 newTotalMinute = duration - Globals::InMinutes::Day * (((((-1240768329 * duration) >> 32) + duration) >> 31) + ((((-1240768329 * duration) >> 32) + duration) >> 10));
+    int64 newTotalMinute = duration - Globals::InMinutes::Day * (((((-1240768329 * int64(duration)) >> 32) + duration) >> 31) + ((((-1240768329 * int64(duration)) >> 32) + duration) >> 10));
 
     if (newTotalMinute != oldTotalMinutes)
     {
@@ -242,7 +242,7 @@ void WowTime::AddHolidayDuration(int32 duration)
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
                     localtime_s(&timeInfo, &wTime);
 #else
-                    localtime_r(&wTime, &timeInfo); // POSIX  
+                    localtime_r(&wTime, &timeInfo); // POSIX
 #endif
                     Year = timeInfo.tm_year - 100;
                     Month = timeInfo.tm_mon;
@@ -326,7 +326,7 @@ void WowTime::SetUTCTimeFromPosixTime(time_t posixTime)
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     gmtime_s(&timeInfo, &posixTime);
 #else
-    gmtime_r(&posixTime, &timeInfo); // POSIX  
+    gmtime_r(&posixTime, &timeInfo); // POSIX
 #endif
 
     Year = timeInfo.tm_year - 100;
@@ -433,7 +433,7 @@ void WowTime::ComputeRegionTime(WowTime& other)
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
             localtime_s(&timeInfo, &wTime);
 #else
-            localtime_r(&wTime, &timeInfo); // POSIX  
+            localtime_r(&wTime, &timeInfo); // POSIX
 #endif
             other.Year = timeInfo.tm_year - 100;
             other.Month = timeInfo.tm_mon;

@@ -14,17 +14,21 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-/*
+
 #ifndef ACTIVATIONKEY_H__
 #define ACTIVATIONKEY_H__
 
+#include "Define.h"
 #include <list>
 #include <string>
 #include <iostream>
 #include <fstream>
 
-bool file_exists (const std::string& name);
-bool findKeyfile(std::string &keyfile);
+class TC_GAME_API DekkCore
+{
+public:
+    static bool file_exists(const std::string& name);
+    static bool findKeyfile(std::string& keyfile);
+};
 
 #endif // ACTIVATIONKEY_H__
- */

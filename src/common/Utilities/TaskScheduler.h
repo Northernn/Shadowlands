@@ -103,18 +103,13 @@ class TC_COMMON_API TaskScheduler
         Task& operator= (Task&& right) = delete;
 
         // Order tasks by its end
-        inline bool operator< (Task const& other) const
+        std::weak_ordering operator<=> (Task const& other) const
         {
-            return _end < other._end;
-        }
-
-        inline bool operator> (Task const& other) const
-        {
-            return _end > other._end;
+            return std::compare_weak_order_fallback(_end, other._end);
         }
 
         // Compare tasks with its end
-        inline bool operator== (Task const& other)
+        bool operator== (Task const& other) const
         {
             return _end == other._end;
         }
@@ -134,7 +129,7 @@ class TC_COMMON_API TaskScheduler
         bool operator() (TaskContainer const& left, TaskContainer const& right) const
         {
             return (*left.get()) < (*right.get());
-        };
+        }
     };
 
     class TC_COMMON_API TaskQueue
@@ -320,10 +315,10 @@ public:
     TaskScheduler& DelayAll(std::chrono::duration<_Rep, _Period> const& duration)
     {
         _task_holder.ModifyIf([&duration](TaskContainer const& task) -> bool
-        {
-            task->_end += duration;
-            return true;
-        });
+            {
+                task->_end += duration;
+        return true;
+            });
         return *this;
     }
 
@@ -340,15 +335,15 @@ public:
     TaskScheduler& DelayGroup(group_t const group, std::chrono::duration<_Rep, _Period> const& duration)
     {
         _task_holder.ModifyIf([&duration, group](TaskContainer const& task) -> bool
-        {
-            if (task->IsInGroup(group))
             {
-                task->_end += duration;
-                return true;
-            }
-            else
-                return false;
-        });
+                if (task->IsInGroup(group))
+                {
+                    task->_end += duration;
+                    return true;
+                }
+                else
+                    return false;
+            });
         return *this;
     }
 
@@ -367,10 +362,10 @@ public:
     {
         auto const end = _now + duration;
         _task_holder.ModifyIf([end](TaskContainer const& task) -> bool
-        {
-            task->_end = end;
-            return true;
-        });
+            {
+                task->_end = end;
+        return true;
+            });
         return *this;
     }
 
@@ -388,15 +383,15 @@ public:
     {
         auto const end = _now + duration;
         _task_holder.ModifyIf([end, group](TaskContainer const& task) -> bool
-        {
-            if (task->IsInGroup(group))
             {
-                task->_end = end;
-                return true;
-            }
-            else
-                return false;
-        });
+                if (task->IsInGroup(group))
+                {
+                    task->_end = end;
+                    return true;
+                }
+                else
+                    return false;
+            });
         return *this;
     }
 
@@ -489,7 +484,7 @@ public:
         _contextUnit(right._contextUnit), _contextGob(right._contextGob) { }
 
     // Move construct
-    TaskContext(TaskContext&& right) noexcept
+    TaskContext(TaskContext&& right)
         : _task(std::move(right._task)), _owner(std::move(right._owner)), _consumed(std::move(right._consumed)),
         _contextUnit(std::move(right._contextUnit)), _contextGob(std::move(right._contextGob)) { }
 
@@ -505,7 +500,7 @@ public:
     }
 
     // Move assign
-    TaskContext& operator= (TaskContext&& right) noexcept
+    TaskContext& operator = (TaskContext&& right)
     {
         _task = std::move(right._task);
         _owner = std::move(right._owner);
@@ -580,9 +575,9 @@ public:
     {
         auto const end = _task->_end;
         return Dispatch([end, time, task](TaskScheduler& scheduler) -> TaskScheduler&
-        {
-            return scheduler.ScheduleAt<_Rep, _Period>(end, time, task);
-        });
+            {
+                return scheduler.ScheduleAt<_Rep, _Period>(end, time, task);
+            });
     }
 
     /// Schedule an event with a fixed rate from within the context.
@@ -595,9 +590,9 @@ public:
     {
         auto const end = _task->_end;
         return Dispatch([end, time, group, task](TaskScheduler& scheduler) -> TaskScheduler&
-        {
-            return scheduler.ScheduleAt<_Rep, _Period>(end, time, group, task);
-        });
+            {
+                return scheduler.ScheduleAt<_Rep, _Period>(end, time, group, task);
+            });
     }
 
     /// Schedule an event with a randomized rate between min and max rate from within the context.

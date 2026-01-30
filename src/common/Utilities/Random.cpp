@@ -1,18 +1,6 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * This file is part of DekkCore Team
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "Random.h"
@@ -72,15 +60,15 @@ uint32 rand32()
     return GetRng()->RandomUInt32();
 }
 
-double rand_norm()
+float rand_norm()
 {
-    std::uniform_real_distribution<double> urd;
+    std::uniform_real_distribution<float> urd;
     return urd(engine);
 }
 
-double rand_chance()
+float rand_chance()
 {
-    std::uniform_real_distribution<double> urd(0.0, 100.0);
+    std::uniform_real_distribution<float> urd(0.0f, 100.0f);
     return urd(engine);
 }
 

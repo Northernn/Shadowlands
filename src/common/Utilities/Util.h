@@ -23,7 +23,6 @@
 #include "Optional.h"
 
 #include <array>
-#include <atomic>
 #include <string>
 #include <string_view>
 #include <typeinfo>
@@ -53,7 +52,9 @@ namespace Trinity
 
 TC_COMMON_API Optional<int64> MoneyStringToMoney(std::string const& moneyString);
 
-TC_COMMON_API struct tm* localtime_r(time_t const* time, struct tm *result);
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
+TC_COMMON_API struct tm* localtime_r(time_t const* time, struct tm* result);
+#endif
 TC_COMMON_API time_t LocalTimeToUTCTime(time_t time);
 TC_COMMON_API time_t GetLocalHourTimestamp(time_t time, uint8 hour, bool onlyAfterTime = true);
 TC_COMMON_API tm TimeBreakdown(time_t t);
@@ -78,13 +79,13 @@ inline float GetPctOf(T value, T max)
 }
 
 template <class T, class U>
-inline T AddPct(T &base, U pct)
+inline T AddPct(T& base, U pct)
 {
     return base += CalculatePct(base, pct);
 }
 
 template <class T, class U>
-inline T ApplyPct(T &base, U pct)
+inline T ApplyPct(T& base, U pct)
 {
     return base = CalculatePct(base, pct);
 }
@@ -96,7 +97,7 @@ inline T RoundToInterval(T& num, T floor, T ceil)
 }
 
 template <class T>
-inline T square(T x) { return x*x; }
+inline T square(T x) { return x * x; }
 
 // UTF8 handling
 TC_COMMON_API bool Utf8toWStr(std::string_view utf8str, std::wstring& wstr);
@@ -156,19 +157,11 @@ inline bool isCyrillicCharacter(wchar_t wchar)
     return false;
 }
 
-inline bool isEastAsianCharacter(wchar_t wchar)
+inline bool isKoreanCharacter(wchar_t wchar)
 {
     if (wchar >= 0x1100 && wchar <= 0x11F9)                  // Hangul Jamo
         return true;
-    if (wchar >= 0x3041 && wchar <= 0x30FF)                  // Hiragana + Katakana
-        return true;
     if (wchar >= 0x3131 && wchar <= 0x318E)                  // Hangul Compatibility Jamo
-        return true;
-    if (wchar >= 0x31F0 && wchar <= 0x31FF)                  // Katakana Phonetic Ext.
-        return true;
-    if (wchar >= 0x3400 && wchar <= 0x4DB5)                  // CJK Ideographs Ext. A
-        return true;
-    if (wchar >= 0x4E00 && wchar <= 0x9FC3)                  // Unified CJK Ideographs
         return true;
     if (wchar >= 0xAC00 && wchar <= 0xD7A3)                  // Hangul Syllables
         return true;
@@ -177,14 +170,27 @@ inline bool isEastAsianCharacter(wchar_t wchar)
     return false;
 }
 
+inline bool isChineseCharacter(wchar_t wchar)
+{
+    if (wchar >= 0x4E00 && wchar <= 0x9FFF)                  // Unified CJK Ideographs
+        return true;
+    if (wchar >= 0x3400 && wchar <= 0x4DBF)                  // CJK Ideographs Ext. A
+        return true;
+    if (wchar >= 0x3100 && wchar <= 0x312C)                  // Bopomofo
+        return true;
+    if (wchar >= 0xF900 && wchar <= 0xFAFF)                  // CJK Compatibility Ideographs
+        return true;
+    return false;
+}
+
 inline bool isNumeric(wchar_t wchar)
 {
-    return (wchar >= L'0' && wchar <=L'9');
+    return (wchar >= L'0' && wchar <= L'9');
 }
 
 inline bool isNumeric(char c)
 {
-    return (c >= '0' && c <='9');
+    return (c >= '0' && c <= '9');
 }
 
 inline bool isNumeric(char const* str)
@@ -225,10 +231,18 @@ inline bool isCyrillicString(std::wstring_view wstr, bool numericOrSpace)
     return true;
 }
 
-inline bool isEastAsianString(std::wstring_view wstr, bool numericOrSpace)
+inline bool isKoreanString(std::wstring_view wstr, bool numericOrSpace)
 {
     for (wchar_t c : wstr)
-        if (!isEastAsianCharacter(c) && (!numericOrSpace || !isNumericOrSpace(c)))
+        if (!isKoreanCharacter(c) && (!numericOrSpace || !isNumericOrSpace(c)))
+            return false;
+    return true;
+}
+
+inline bool isChineseString(std::wstring_view wstr, bool numericOrSpace)
+{
+    for (wchar_t c : wstr)
+        if (!isChineseCharacter(c) && (!numericOrSpace || !isNumericOrSpace(c)))
             return false;
     return true;
 }
@@ -236,20 +250,20 @@ inline bool isEastAsianString(std::wstring_view wstr, bool numericOrSpace)
 inline wchar_t wcharToUpper(wchar_t wchar)
 {
     if (wchar >= L'a' && wchar <= L'z')                      // LATIN SMALL LETTER A - LATIN SMALL LETTER Z
-        return wchar_t(uint16(wchar)-0x0020);
+        return wchar_t(uint16(wchar) - 0x0020);
     if (wchar == 0x00DF)                                     // LATIN SMALL LETTER SHARP S
         return wchar_t(0x1E9E);
     if (wchar >= 0x00E0 && wchar <= 0x00F6)                  // LATIN SMALL LETTER A WITH GRAVE - LATIN SMALL LETTER O WITH DIAERESIS
-        return wchar_t(uint16(wchar)-0x0020);
+        return wchar_t(uint16(wchar) - 0x0020);
     if (wchar >= 0x00F8 && wchar <= 0x00FE)                  // LATIN SMALL LETTER O WITH STROKE - LATIN SMALL LETTER THORN
-        return wchar_t(uint16(wchar)-0x0020);
+        return wchar_t(uint16(wchar) - 0x0020);
     if (wchar >= 0x0101 && wchar <= 0x012F)                  // LATIN SMALL LETTER A WITH MACRON - LATIN SMALL LETTER I WITH OGONEK (only %2=1)
     {
         if (wchar % 2 == 1)
-            return wchar_t(uint16(wchar)-0x0001);
+            return wchar_t(uint16(wchar) - 0x0001);
     }
     if (wchar >= 0x0430 && wchar <= 0x044F)                  // CYRILLIC SMALL LETTER A - CYRILLIC SMALL LETTER YA
-        return wchar_t(uint16(wchar)-0x0020);
+        return wchar_t(uint16(wchar) - 0x0020);
     if (wchar == 0x0451)                                     // CYRILLIC SMALL LETTER IO
         return wchar_t(0x0401);
     if (wchar == 0x0153)                                     // LATIN SMALL LIGATURE OE
@@ -268,15 +282,15 @@ inline wchar_t wcharToUpperOnlyLatin(wchar_t wchar)
 inline wchar_t wcharToLower(wchar_t wchar)
 {
     if (wchar >= L'A' && wchar <= L'Z')                      // LATIN CAPITAL LETTER A - LATIN CAPITAL LETTER Z
-        return wchar_t(uint16(wchar)+0x0020);
+        return wchar_t(uint16(wchar) + 0x0020);
     if (wchar >= 0x00C0 && wchar <= 0x00D6)                  // LATIN CAPITAL LETTER A WITH GRAVE - LATIN CAPITAL LETTER O WITH DIAERESIS
-        return wchar_t(uint16(wchar)+0x0020);
+        return wchar_t(uint16(wchar) + 0x0020);
     if (wchar >= 0x00D8 && wchar <= 0x00DE)                  // LATIN CAPITAL LETTER O WITH STROKE - LATIN CAPITAL LETTER THORN
-        return wchar_t(uint16(wchar)+0x0020);
+        return wchar_t(uint16(wchar) + 0x0020);
     if (wchar >= 0x0100 && wchar <= 0x012E)                  // LATIN CAPITAL LETTER A WITH MACRON - LATIN CAPITAL LETTER I WITH OGONEK (only %2=0)
     {
         if (wchar % 2 == 0)
-            return wchar_t(uint16(wchar)+0x0001);
+            return wchar_t(uint16(wchar) + 0x0001);
     }
     if (wchar == 0x1E9E)                                     // LATIN CAPITAL LETTER SHARP S
         return wchar_t(0x00DF);
@@ -287,7 +301,7 @@ inline wchar_t wcharToLower(wchar_t wchar)
     if (wchar == 0x0178)                                     // LATIN CAPITAL LETTER Y WITH DIAERESIS
         return wchar_t(0x00FF);
     if (wchar >= 0x0410 && wchar <= 0x042F)                  // CYRILLIC CAPITAL LETTER A - CYRILLIC CAPITAL LETTER YA
-        return wchar_t(uint16(wchar)+0x0020);
+        return wchar_t(uint16(wchar) + 0x0020);
 
     return wchar;
 }
@@ -325,8 +339,8 @@ TC_COMMON_API std::wstring GetMainPartOfName(std::wstring const& wname, uint32 d
 TC_COMMON_API bool utf8ToConsole(std::string_view utf8str, std::string& conStr);
 TC_COMMON_API bool consoleToUtf8(std::string_view conStr, std::string& utf8str);
 TC_COMMON_API bool Utf8FitTo(std::string_view str, std::wstring_view search);
-TC_COMMON_API void utf8printf(FILE* out, const char *str, ...);
-TC_COMMON_API void vutf8printf(FILE* out, const char *str, va_list* ap);
+TC_COMMON_API void utf8printf(FILE* out, const char* str, ...);
+TC_COMMON_API void vutf8printf(FILE* out, const char* str, va_list* ap);
 TC_COMMON_API bool Utf8ToUpperOnlyLatin(std::string& utf8String);
 
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
@@ -397,45 +411,45 @@ struct StringCompareLessI_T
 template <typename T>
 class HookList final
 {
-    private:
-        typedef std::vector<T> ContainerType;
+private:
+    typedef std::vector<T> ContainerType;
 
-        ContainerType _container;
+    ContainerType _container;
 
-    public:
-        typedef typename ContainerType::const_iterator const_iterator;
-        typedef typename ContainerType::iterator iterator;
+public:
+    typedef typename ContainerType::const_iterator const_iterator;
+    typedef typename ContainerType::iterator iterator;
 
-        HookList<T>& operator+=(T&& t)
-        {
-            _container.push_back(std::move(t));
-            return *this;
-        }
+    HookList<T>& operator+=(T&& t)
+    {
+        _container.push_back(std::move(t));
+        return *this;
+    }
 
-        size_t size() const
-        {
-            return _container.size();
-        }
+    size_t size() const
+    {
+        return _container.size();
+    }
 
-        iterator begin()
-        {
-            return _container.begin();
-        }
+    iterator begin()
+    {
+        return _container.begin();
+    }
 
-        iterator end()
-        {
-            return _container.end();
-        }
+    iterator end()
+    {
+        return _container.end();
+    }
 
-        const_iterator begin() const
-        {
-            return _container.begin();
-        }
+    const_iterator begin() const
+    {
+        return _container.begin();
+    }
 
-        const_iterator end() const
-        {
-            return _container.end();
-        }
+    const_iterator end() const
+    {
+        return _container.end();
+    }
 };
 
 enum ComparisionType
@@ -453,20 +467,20 @@ bool CompareValues(ComparisionType type, T val1, T val2)
 {
     switch (type)
     {
-        case COMP_TYPE_EQ:
-            return val1 == val2;
-        case COMP_TYPE_HIGH:
-            return val1 > val2;
-        case COMP_TYPE_LOW:
-            return val1 < val2;
-        case COMP_TYPE_HIGH_EQ:
-            return val1 >= val2;
-        case COMP_TYPE_LOW_EQ:
-            return val1 <= val2;
-        default:
-            // incorrect parameter
-            ABORT();
-            return false;
+    case COMP_TYPE_EQ:
+        return val1 == val2;
+    case COMP_TYPE_HIGH:
+        return val1 > val2;
+    case COMP_TYPE_LOW:
+        return val1 < val2;
+    case COMP_TYPE_HIGH_EQ:
+        return val1 >= val2;
+    case COMP_TYPE_LOW_EQ:
+        return val1 <= val2;
+    default:
+        // incorrect parameter
+        ABORT();
+        return false;
     }
 }
 
@@ -486,142 +500,24 @@ Ret* Coalesce(T1* first, T*... rest)
         return static_cast<Ret*>(first);
 }
 
-template <class X>
-class cyber_ptr
+namespace Trinity
 {
-
-public:
-    struct coun
+    namespace Impl
     {
-        coun() : counter(0) {}
-        std::atomic<int> counter;
-        bool ready = false;
-    };
-
-    //! Init from main class
-    cyber_ptr(X* p)
-    {
-        ASSERT(p && "Trying create class with null object. Bad initialization.");
-        InitParent(p);
+        TC_COMMON_API std::string GetTypeName(std::type_info const&);
     }
 
-    //! Child creation
-    cyber_ptr(coun* c, X* p) : numerator(c), ptr(p)
+    template <typename T>
+    std::string GetTypeName() { return Impl::GetTypeName(typeid(T)); }
+    template <typename T>
+    std::string GetTypeName(T&& v)
     {
+        if constexpr (std::is_same_v<std::remove_cv_t<T>, std::type_info>)
+            return Impl::GetTypeName(v);
+        else
+            return Impl::GetTypeName(typeid(v));
     }
-
-    //! Copy
-    cyber_ptr(const cyber_ptr<X>& right)
-    {
-        numerator = right.numerator;
-        ptr = right.ptr;
-        incrase();
-    }
-
-    //! null init
-    cyber_ptr()
-    {}
-
-    virtual ~cyber_ptr()
-    {
-        // only for initiated objects
-        if (numerator)
-        {
-            // unlink ptr object from childs.
-            if (parent)
-                numerator->ready = false;
-
-            --numerator->counter;
-            // if all links already deleted - clean numerator from memory.
-            if (!numerator->counter.load())
-                delete numerator;
-        }
-    }
-
-    //! Get ptr object
-    X* get()
-    {
-        if (!numerator || !numerator->ready)
-            return NULL;
-        return ptr;
-    }
-
-    //! Init new parent ptr
-    void InitParent(X* object)
-    {
-        //This shouldn't happend.
-        if (ptr)
-        {
-            //bool(numerator) @ToDo find proper TC_STRING
-            if (numerator)
-            {
-                //numerator >> numerator->counter %u numerator->ready %u parent %u, numerator->counter.load(), numerator->ready, parent; @ToDo find Proper TC_STRING
-                if (numerator->ready)
-                    return;
-            }
-
-        }
-
-        ptr = object;
-
-        numerator = new coun();
-        numerator->counter = 1;
-        numerator->ready = true;
-
-        parent = true;
-    }
-
-    //! create child and link with main class
-    cyber_ptr<X> shared_from_this()
-    {
-        incrase();
-        return cyber_ptr<X>(numerator, ptr);
-    }
-
-    //! increase number copy  of our ptr
-    void incrase()
-    {
-        if (numerator)
-            ++numerator->counter;
-    }
-    bool isParent() const { return parent; }
-
-    //- operators
-    cyber_ptr<X>& operator=(const cyber_ptr<X>& right) // copy assignment
-    {
-        //if (this != &right)
-        {
-            numerator = right.numerator;
-            ptr = right.ptr;
-            incrase();
-        }
-        return *this;
-    }
-
-    cyber_ptr<X>& operator=(cyber_ptr<X>&& right) noexcept
-        // move assignment
-    {
-        //if (this != &right)
-        {
-            numerator = right.numerator;
-            ptr = right.ptr;
-            incrase();
-        }
-        return *this;
-    }
-
-
-    coun* numerator = NULL;
-    X* ptr = NULL;
-private:
-    bool parent = false;
-};
-
-TC_COMMON_API std::string GetTypeName(std::type_info const&);
-template <typename T>
-std::string GetTypeName() { return GetTypeName(typeid(T)); }
-template <typename T>
-std::enable_if_t<!std::is_same_v<std::decay_t<T>, std::type_info>, std::string> GetTypeName(T&& v) { return GetTypeName(typeid(v)); }
+}
 
 template<typename T>
 struct NonDefaultConstructible

@@ -53,9 +53,9 @@ TaskScheduler& TaskScheduler::CancelAll()
 TaskScheduler& TaskScheduler::CancelGroup(group_t const group)
 {
     _task_holder.RemoveIf([group](TaskContainer const& task) -> bool
-    {
-        return task->IsInGroup(group);
-    });
+        {
+            return task->IsInGroup(group);
+        });
     return *this;
 }
 

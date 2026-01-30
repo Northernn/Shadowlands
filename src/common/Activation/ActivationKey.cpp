@@ -15,7 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*#ifdef _WIN32
+#ifdef _WIN32
 
 #include "ActivationKey.h"
 #include <list>
@@ -27,13 +27,13 @@
 #include <stdio.h>
 #include <windows.h>
 
-bool file_exists (const std::string& name)
+bool DekkCore::file_exists (const std::string& name)
 {
   std::ifstream f(name.c_str());
   return f.good();
 }
 
-bool findKeyfile(std::string &keyfile)
+bool DekkCore::findKeyfile(std::string &keyfile)
 {
 	std::list<std::string> paths = { "C:/ProgramData/key.txt" };
 	for (auto p : paths)
@@ -59,4 +59,3 @@ bool findKeyfile(std::string &keyfile)
 }
 
 #endif
- */

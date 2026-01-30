@@ -69,18 +69,18 @@ class TC_COMMON_API Log
         bool SetLogLevel(std::string const& name, int32 level, bool isLogger = true);
 
         template<typename... Args>
-        void OutMessage(std::string_view filter, LogLevel const level, std::string_view fmt, Args&&... args)
+        void OutMessage(std::string_view filter, LogLevel const level, Trinity::FormatString<Args...> fmt, Args&&... args)
         {
-            OutMessageImpl(filter, level, Trinity::StringFormat(fmt, std::forward<Args>(args)...));
+            OutMessageImpl(filter, level, fmt, Trinity::MakeFormatArgs(args...));
         }
 
         template<typename... Args>
-        void OutCommand(uint32 account, std::string_view fmt, Args&&... args)
+        void OutCommand(uint32 account, Trinity::FormatString<Args...> fmt, Args&&... args)
         {
             if (!ShouldLog("commands.gm", LOG_LEVEL_INFO))
                 return;
 
-            OutCommandImpl(Trinity::StringFormat(fmt, std::forward<Args>(args)...), std::to_string(account));
+            OutCommandImpl(account, fmt, Trinity::MakeFormatArgs(args...));
         }
 
         void OutCharDump(char const* str, uint32 account_id, uint64 guid, char const* name);
@@ -101,7 +101,7 @@ class TC_COMMON_API Log
 
     private:
         static std::string GetTimestampStr();
-        void write(std::unique_ptr<LogMessage>&& msg) const;
+        void write(std::unique_ptr<LogMessage> msg) const;
 
         Logger const* GetLoggerByType(std::string_view type) const;
         Appender* GetAppenderByName(std::string_view name);
@@ -111,8 +111,8 @@ class TC_COMMON_API Log
         void ReadAppendersFromConfig();
         void ReadLoggersFromConfig();
         void RegisterAppender(uint8 index, AppenderCreatorFn appenderCreateFn);
-        void OutMessageImpl(std::string_view filter, LogLevel level, std::string&& message);
-        void OutCommandImpl(std::string&& message, std::string&& param1);
+        void OutMessageImpl(std::string_view filter, LogLevel level, Trinity::FormatStringView messageFormat, Trinity::FormatArgs messageFormatArgs);
+        void OutCommandImpl(uint32 account, Trinity::FormatStringView messageFormat, Trinity::FormatArgs messageFormatArgs);
 
         std::unordered_map<uint8, AppenderCreatorFn> appenderFactory;
         std::unordered_map<uint8, std::unique_ptr<Appender>> appenders;
@@ -132,19 +132,12 @@ class TC_COMMON_API Log
 #ifdef PERFORMANCE_PROFILING
 #define TC_LOG_MESSAGE_BODY(filterType__, level__, ...) ((void)0)
 #elif TRINITY_PLATFORM != TRINITY_PLATFORM_WINDOWS
-void check_args(char const*, ...) ATTR_PRINTF(1, 2);
-void check_args(std::string const&, ...);
 
 // This will catch format errors on build time
 #define TC_LOG_MESSAGE_BODY(filterType__, level__, ...)                 \
         do {                                                            \
             if (sLog->ShouldLog(filterType__, level__))                 \
-            {                                                           \
-                if (false)                                              \
-                    check_args(__VA_ARGS__);                            \
-                                                                        \
                 sLog->OutMessage(filterType__, level__, __VA_ARGS__);   \
-            }                                                           \
         } while (0)
 #else
 #define TC_LOG_MESSAGE_BODY(filterType__, level__, ...)                 \

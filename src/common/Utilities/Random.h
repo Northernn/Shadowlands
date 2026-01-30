@@ -1,18 +1,6 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * This file is part of DekkCore Team
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef Random_h__
@@ -40,11 +28,11 @@ TC_COMMON_API Milliseconds randtime(Milliseconds min, Milliseconds max);
 /* Return a random number in the range min..max */
 TC_COMMON_API float frand(float min, float max);
 
-/* Return a random double from 0.0 to 1.0 (exclusive). */
-TC_COMMON_API double rand_norm();
+/* Return a random float from 0.0 to 1.0 (exclusive). */
+TC_COMMON_API float rand_norm();
 
-/* Return a random double from 0.0 to 100.0 (exclusive). */
-TC_COMMON_API double rand_chance();
+/* Return a random float from 0.0 to 100.0 (exclusive). */
+TC_COMMON_API float rand_chance();
 
 /* Return a random number in the range 0..count (exclusive) with each value having a different chance of happening */
 TC_COMMON_API uint32 urandweighted(size_t count, double const* chances);
