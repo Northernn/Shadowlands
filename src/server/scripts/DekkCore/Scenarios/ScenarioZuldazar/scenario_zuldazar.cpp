@@ -34,7 +34,7 @@ struct npc_old_kzlotec_134460 : public ScriptedAI
     {
         if (Player* player = clicker->ToPlayer())
         {
-            //player->CompletedCriteriaTreeId(CRITERIA_TREE_GATHER_YOUR_FORCES_AND_MOUNT_OLD_K_ZLOTEC);
+            player->AchieveCriteriaCredit(CRITERIA_TREE_GATHER_YOUR_FORCES_AND_MOUNT_OLD_K_ZLOTEC);
             me->SetFaction(player->GetFaction());
             me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
         }
@@ -56,25 +56,7 @@ struct npc_old_kzlotec_134460 : public ScriptedAI
 private:
     InstanceScript* instance;
 };
-//
-struct npc_blood_scenario : public ScriptedAI
-{
-    npc_blood_scenario(Creature* creature) : ScriptedAI(creature) {  }
 
-    /*void OnSpellHit(Unit* caster, SpellInfo const* spell) override
-    {
-        switch (spell->Id)
-        {
-        case 254981:
-        case 254970:
-        case 254971:
-            me->KillSelf();
-            break;
-        default:
-            break;
-        }*/
-   // }
-};
 //134493
 struct npc_pa_ku_134493 : public ScriptedAI
 {
@@ -128,7 +110,7 @@ struct npc_pa_ku_134493 : public ScriptedAI
         if (type == EFFECT_MOTION_TYPE && id == 1)
         {
             if(Player* player= ObjectAccessor::GetPlayer(*me, _guid))
-              //  player->CompletedCriteriaTreeId(CRITERIA_TREE_RIDE_PA_KU_TO_THE_ZOCALO);
+                player->AchieveCriteriaCredit(CRITERIA_TREE_RIDE_PA_KU_TO_THE_ZOCALO);
             me->DespawnOrUnsummon(1s);
         }
     }
@@ -182,12 +164,12 @@ struct npc_gonk_134492 : public ScriptedAI
             {
               //  IsLock = true;
                
-               // player->CompletedCriteriaTreeId(CRITERIA_TREE_JOIN_GONK_AND_HIS_PACK_AT_THE_BRIDGE_TO_DAZAR_ALOR);
+                player->AchieveCriteriaCredit(CRITERIA_TREE_JOIN_GONK_AND_HIS_PACK_AT_THE_BRIDGE_TO_DAZAR_ALOR);
 //
                 if (instance)
                 {
                     instance->DoPlayScenePackageIdOnPlayers(SCENE_3);
-                //    instance->DoSendScenarioEventByType(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1);
+                    instance->DoSendScenarioEvent(me->GetEntry());
                 }
             }
         }
@@ -244,7 +226,7 @@ struct npc_king_rastakhan_136324 : public ScriptedAI
                 {
                     //instance->DoPlayConversation(7434);
                     instance->DoSendScenarioEvent(SCENARIO_EVENT_FIND_KING_RASTAKHAN_AT_THE_ENTRANCE_TO_DAZAR_ALOR);
-                   // player->CompletedCriteriaTreeId(CRITERIA_TREE_FIND_KING_RASTAKHAN_AT_THE_ENTRANCE_TO_DAZAR_ALOR);
+                    player->AchieveCriteriaCredit(CRITERIA_TREE_FIND_KING_RASTAKHAN_AT_THE_ENTRANCE_TO_DAZAR_ALOR);
                 }
                 me->GetScheduler().Schedule(10s, [=](TaskContext /*context*/)
                 {
@@ -375,7 +357,7 @@ struct npc_mada_renkala_142765 : public ScriptedAI
     {
         instance->DoOnPlayers([](Player* player)
         {
-            //player->CompletedCriteriaTreeId(CRITERIA_TREE_ASSAULT_DAZAR_ALOR_TO_REACH_ZUL_BEFORE_HE_CAN_DESTROY_THE_PYRAMID);
+            player->AchieveCriteriaCredit(CRITERIA_TREE_ASSAULT_DAZAR_ALOR_TO_REACH_ZUL_BEFORE_HE_CAN_DESTROY_THE_PYRAMID);
         });
     }
 
@@ -409,7 +391,6 @@ void AddSC_scenario_zuldazar()
 {
     RegisterCreatureAI(npc_king_rastakhan_135890);
     RegisterCreatureAI(npc_old_kzlotec_134460);
-    RegisterCreatureAI(npc_blood_scenario);
     RegisterCreatureAI(npc_pa_ku_134493);
     RegisterCreatureAI(npc_scenario_civilians_resued);
     RegisterCreatureAI(npc_gonk_134492);

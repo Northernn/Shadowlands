@@ -1,18 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of the DekkCore Team
  */
 
 #include "ScriptMgr.h"
@@ -185,8 +172,6 @@ struct npc_stalvan : public ScriptedAI
                     tobias->SetReactState(REACT_AGGRESSIVE);
 
                     me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_UNINTERACTIBLE | UNIT_FLAG_IMMUNE_TO_PC));
-                 //   me->AddThreat(tobias, 10.f);
-                 //   tobias->AddThreat(me, 10.f);
                     tobias->SetInCombatWith(me);
 
                     if (me->Attack(tobias, true))
@@ -285,8 +270,6 @@ enum MorbentFel
 
 class spell_sacred_cleansing : public SpellScript
 {
-    PrepareSpellScript(spell_sacred_cleansing);
-
     void SelectTarget(WorldObject*& target)
     {
         target = GetCaster()->FindNearestCreature(NPC_MORBENT_FEL, 15.0f, true);
@@ -326,8 +309,6 @@ class spell_sacred_cleansing : public SpellScript
 
 class spell_summon_stalvan : public SpellScript
 {
-    PrepareSpellScript(spell_summon_stalvan);
-
     bool IsEventRunning()
     {
         return GetCaster()->FindNearestCreature(NPC_STALVAN, 20, true) != nullptr;
@@ -406,55 +387,6 @@ struct npc_ebenlocke : public ScriptedAI
     }
 };
 
-//43730
-struct npc_oliver_harris : public ScriptedAI
-{
-    npc_oliver_harris(Creature* c) : ScriptedAI(c) { }
-
-    void OnQuestAccept(Player* player, Quest const* quest) override
-    {
-        if (quest->GetQuestId() == QUEST_CRY_FOR_THE_MOON)
-            me->SummonCreature(me->GetEntry(), TEMPSUMMON_MANUAL_DESPAWN);
-    }
-
-    void IsSummonedBy(WorldObject* summoner) override
-    {
-        if (!summoner->IsCreature())
-            return;
-
-        ObjectGuid ownerGuid = summoner->GetGUID();
-        me->GetOwnerGUID();
-        me->SetWalk(true);
-        me->GetMotionMaster()->MovePoint(1, -10745.0f, 330.0f, 37.87f, true);
-    }
-
-    void MovementInform(uint32 type, uint32 point) override
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
-
-        if (point == 1)
-        {
-            me->SetFacingTo(2.949f, true);
-            me->Say("Here we go...", LANG_UNIVERSAL);
-            AddTimedDelayedOperation(3000, [this]() -> void
-            {
-                me->Say("It's working. Hold him still, Jitters.", LANG_UNIVERSAL);
-            });
-            AddTimedDelayedOperation(10000, [this]() -> void
-            {
-                me->GetMotionMaster()->MovePoint(2, -10746.0f, 331.0f, 37.88f, true);
-            });
-        }
-        if (point == 2)
-        {
-            if (Unit* owner = me->GetOwner())
-                owner->ToPlayer()->KilledMonsterCredit(43969);
-            me->DespawnOrUnsummon();
-        }
-    }
-};
-
 void AddSC_DekkCore_duskwood()
 {
     RegisterSpellScript(spell_summon_stalvan);
@@ -462,5 +394,4 @@ void AddSC_DekkCore_duskwood()
     RegisterCreatureAI(npc_soothing_incense_cloud);
     RegisterSpellScript(spell_sacred_cleansing);
     RegisterCreatureAI(npc_ebenlocke);
-    RegisterCreatureAI(npc_oliver_harris);
 }

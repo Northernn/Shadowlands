@@ -15,12 +15,12 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
- /* ScriptData
- Name: cast_commandscript
- %Complete: 100
- Comment: All cast related commands
- Category: commandscripts
- EndScriptData */
+/* ScriptData
+Name: cast_commandscript
+%Complete: 100
+Comment: All cast related commands
+Category: commandscripts
+EndScriptData */
 
 #include "ScriptMgr.h"
 #include "Chat.h"

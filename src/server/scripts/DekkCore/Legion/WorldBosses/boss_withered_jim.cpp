@@ -156,8 +156,6 @@ public:
 
     class spell_resonance_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_resonance_AuraScript);
-
         void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
         {
             PreventDefaultAction();

@@ -224,8 +224,6 @@ public:
 
     class spell_coen_scornful_gaze_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_coen_scornful_gaze_AuraScript);
-
         void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
@@ -291,8 +289,6 @@ public:
 
     class spell_coen_beguiling_bio_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_coen_beguiling_bio_AuraScript);
-
         void OnPereodic(AuraEffect const* /*aurEff*/)
         {
             if (Unit* target = GetTarget())

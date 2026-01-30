@@ -24,12 +24,13 @@ enum PetEntry
 {
     // Warlock pets
     PET_IMP             = 416,
-    PET_FEL_HUNTER      = 691,
+    PET_FEL_HUNTER      = 417, // < Fluxurion  - this is the correct
     PET_VOID_WALKER     = 1860,
     PET_SUCCUBUS        = 1863,
     PET_DOOMGUARD       = 18540,
-    PET_FELGUARD        = 30146,
-
+    PET_FELGUARD        = 17252, // < Fluxurion  - this is the correct
+    PET_INCUBUS         = 184600,
+     
     // Death Knight pets
     PET_GHOUL           = 26125,
     PET_ABOMINATION     = 106848,
@@ -44,10 +45,10 @@ class TC_GAME_API TempSummon : public Creature
 {
     public:
         explicit TempSummon(SummonPropertiesEntry const* properties, WorldObject* owner, bool isWorldObject);
-        virtual ~TempSummon() { }
+        virtual ~TempSummon();
         void Update(uint32 time) override;
-        virtual void InitStats(uint32 lifetime);
-        virtual void InitSummon();
+        virtual void InitStats(WorldObject* summoner, uint32 lifetime);
+        virtual void InitSummon(WorldObject* summoner);
         void UpdateObjectVisibilityOnCreate() override;
         void UpdateObjectVisibilityOnDestroy() override;
         virtual void UnSummon(uint32 msTime = 0);
@@ -69,7 +70,12 @@ class TC_GAME_API TempSummon : public Creature
         SummonPropertiesEntry const* const m_Properties;
 
         std::string GetDebugInfo() const override;
+
+protected:
+    std::ptrdiff_t FindUsableTotemSlot(Unit const* summoner) const;
+
     private:
+        bool IsSharingTotemSlotWith(ObjectGuid objectGuid) const;
         TempSummonType m_type;
         uint32 m_timer;
         uint32 m_lifetime;
@@ -89,20 +95,23 @@ class TC_GAME_API Minion : public TempSummon
 {
     public:
         Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
-        void InitStats(uint32 duration) override;
+        void InitStats(WorldObject* summoner, uint32 duration) override;
         void RemoveFromWorld() override;
         void setDeathState(DeathState s) override;
         Unit* GetOwner() const { return m_owner; }
+        /* Fluxurion > - No need leave it commented
         float GetFollowAngle() const override { return m_followAngle; }
         void SetFollowAngle(float angle) { m_followAngle = angle; }
+        */
 
         // Warlock pets
         bool IsPetImp() const { return GetEntry() == PET_IMP; }
         bool IsPetFelhunter() const { return GetEntry() == PET_FEL_HUNTER; }
         bool IsPetVoidwalker() const { return GetEntry() == PET_VOID_WALKER; }
-        bool IsPetSuccubus() const { return GetEntry() == PET_SUCCUBUS; }
+        bool IsPetSayaad() const { return GetEntry() == PET_SUCCUBUS || GetEntry() == PET_INCUBUS; }
         bool IsPetDoomguard() const { return GetEntry() == PET_DOOMGUARD; }
         bool IsPetFelguard() const { return GetEntry() == PET_FELGUARD; }
+        bool IsWarlockPet() const { return IsPetImp() || IsPetFelhunter() || IsPetVoidwalker() || IsPetSayaad() || IsPetDoomguard() || IsPetFelguard(); }
 
         // Death Knight pets
         bool IsPetGhoul() const { return GetEntry() == PET_GHOUL; } // Ghoul may be guardian or pet
@@ -116,16 +125,16 @@ class TC_GAME_API Minion : public TempSummon
         std::string GetDebugInfo() const override;
     protected:
         Unit* const m_owner;
-        float m_followAngle;
+        // float m_followAngle; // Fluxurion > - No need leave it commentedy
 };
 
 class TC_GAME_API Guardian : public Minion
 {
     public:
         Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
-        void InitStats(uint32 duration) override;
+        void InitStats(WorldObject* summoner, uint32 duration) override;
         bool InitStatsForLevel(uint8 level);
-        void InitSummon() override;
+        void InitSummon(WorldObject* summoner) override;
 
         bool UpdateStats(Stats stat) override;
         bool UpdateAllStats() override;
@@ -149,8 +158,8 @@ class TC_GAME_API Puppet : public Minion
 {
     public:
         Puppet(SummonPropertiesEntry const* properties, Unit* owner);
-        void InitStats(uint32 duration) override;
-        void InitSummon() override;
+        void InitStats(WorldObject* summoner, uint32 duration) override;
+        void InitSummon(WorldObject* summoner) override;
         void Update(uint32 time) override;
 };
 

@@ -106,11 +106,11 @@ public:
             {
                 if (spawn.myEntry == entry)
                 {
-                    ASSERT_NODEBUGINFO(sObjectMgr->GetCreatureTemplate(spawn.otherEntry), "Invalid creature entry %u in 'npc_air_force_bots' script", spawn.otherEntry);
+                    ASSERT_NODEBUGINFO(sObjectMgr->GetCreatureTemplate(spawn.otherEntry), "Invalid creature entry {} in 'npc_air_force_bots' script", spawn.otherEntry);
                     return spawn;
                 }
             }
-            ASSERT_NODEBUGINFO(false, "Unhandled creature with entry %u is assigned 'npc_air_force_bots' script", entry);
+            ASSERT_NODEBUGINFO(false, "Unhandled creature with entry {} is assigned 'npc_air_force_bots' script", entry);
         }
 
         npc_air_force_botsAI(Creature* creature) : NullCreatureAI(creature), _spawn(FindSpawnFor(creature->GetEntry())) {}
@@ -1065,7 +1065,7 @@ public:
                                 break;
                         }
 
-                        Start(false, true);
+                        Start(false);
                     }
                     else
                         EnterEvadeMode();                       //something went wrong
@@ -1986,7 +1986,7 @@ class npc_train_wrecker : public CreatureScript
                             {
                                 me->SetFacingTo(target->GetOrientation());
                                 me->HandleEmoteCommand(EMOTE_ONESHOT_ATTACK1H);
-                                _timer = 1.5 * IN_MILLISECONDS;
+                                _timer = 1.5 * AsUnderlyingType(IN_MILLISECONDS);
                                 _nextAction = EVENT_DO_WRECK;
                             }
                             else

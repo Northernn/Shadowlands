@@ -172,8 +172,6 @@ class spell_resin_weaving: public SpellScriptLoader
 
         class spell_resin_weaving_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_resin_weaving_AuraScript);
-
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())

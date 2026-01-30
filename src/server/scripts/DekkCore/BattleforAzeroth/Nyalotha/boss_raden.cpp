@@ -25,7 +25,7 @@ enum Texts
 
 enum Spells
 {
-	SPELL_NULLYFYING_STRIKE = 306819,	
+	SPELL_NULLYFYING_STRIKE = 306819,
 	SPELL_DRAW_VITA = 306090,
 	SPELL_INEVITABLE_PULL = 306106,
 	SPELL_UNCLAIMED_VITA = 313395,
@@ -40,7 +40,7 @@ enum Spells
 	SPELL_UNSTABLE_VITA_AURA = 306273,
 	SPELL_UNSTABLE_VITA_AREA_KNOCKBACK = 316005,
 	SPELL_UNSTABLE_VOID_MISSILE = 306603,
-	SPELL_UNLEASHED_VITA_DAMAGE = 306115,	
+	SPELL_UNLEASHED_VITA_DAMAGE = 306115,
 	//Summon Spells
 	SPELL_SUMMON_CRACKLING_STALKER = 306865,
 	SPELL_SUMMON_NIGHT_TERROR = 314484,
@@ -118,24 +118,24 @@ private:
 		events.ScheduleEvent(EVENT_RADEN_ENERGY, 100ms);
 		events.ScheduleEvent(EVENT_DRAW_VITA_VOID, 5s);
 		events.ScheduleEvent(EVENT_NULLYFYING_STRIKE, 21s);
-		this->phase = 1;
-		this->unstableVoidBounce = 0;
+		phase = 1;
+		unstableVoidBounce = 0;
 	}
 
-	void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+	void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 	{
-		if (this->phase = 1 && me->HealthBelowPct(40))
+		if (phase == 1 && me->HealthBelowPct(40))
 		{
 			Talk(SAY_PHASE_2);
 			events.Reset();
-			this->phase = 2;
+			phase = 2;
 			me->SetPower(POWER_ENERGY, 0);
 			events.ScheduleEvent(EVENT_RADEN_ENERGY, 100ms);
 			events.ScheduleEvent(EVENT_GORGE_ENERGY, 1s);
 			events.ScheduleEvent(EVENT_VOID_ERUPTION, 20s);
 			events.ScheduleEvent(EVENT_DECAYING_STRIKE, 21s);
 			events.ScheduleEvent(EVENT_CHARGED_BONDS, 10s);
-			events.ScheduleEvent(EVENT_RUIN, 25s);			
+			events.ScheduleEvent(EVENT_RUIN, 25s);
 		}
 	}
 
@@ -144,7 +144,7 @@ private:
 		if (Aura* unclaimedVita = me->GetAura(SPELL_UNCLAIMED_VITA))
 		{
 			if (unclaimedVita->GetStackAmount() == 2)
-			{				
+			{
 				if (!me->HasAura(SPELL_OVERWHELMING_RAGE))
 					me->CastSpell(nullptr, SPELL_OVERWHELMING_RAGE, true);
 				unclaimedVita->SetStackAmount(0);
@@ -174,7 +174,7 @@ private:
 			me->ModifyPower(POWER_ENERGY, +5);
 			events.Repeat(1s);
 			break;
-		
+
 		case EVENT_NULLYFYING_STRIKE:
             if (Unit* target = SelectTarget(SelectTargetMethod::MaxDistance, 0, 100.0f, false))
 				me->CastSpell(target, SPELL_NULLYFYING_STRIKE, false);
@@ -216,7 +216,7 @@ private:
 				UnitList tarlist;
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 60.0F, true))
 				for (Unit* targets : tarlist)
-				{					
+				{
 					me->CastSpell(targets->GetPosition(), SPELL_VOID_ERUPTION_MISSILE, true);
 				}
 			}
@@ -225,10 +225,10 @@ private:
 				UnitList tarlist;
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 				for (Unit* targets : tarlist)
-				{					
+				{
 					me->CastSpell(targets->GetPosition(), SPELL_VOID_ERUPTION_MISSILE, true);
 				}
-			}	
+			}
 			events.Repeat(20s);
 			break;
 
@@ -239,7 +239,7 @@ private:
 				UnitList tarlist;
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 				for (Unit* targets : tarlist)
-				{					
+				{
 					me->CastSpell(targets->GetPosition(), SPELL_CHARGED_BONDS, true);
 				}
 			}
@@ -270,7 +270,7 @@ private:
 	{
 	}*/
 
-	void SpellHitTarget(WorldObject* target, const SpellInfo* spellInfo) override
+	void SpellHitTarget(WorldObject* /*target*/, const SpellInfo* spellInfo) override
 	{
 		switch (spellInfo->Id)
 		{
@@ -279,8 +279,9 @@ private:
 			{
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 					me->CastSpell(target, SPELL_UNSTABLE_VOID_MISSILE, true);
-			}		
-			if (unstableVoidBounce == 5)
+			}
+
+            if (unstableVoidBounce == 5)
 				unstableVoidBounce = 0;
 
 			unstableVoidBounce++;
@@ -288,16 +289,16 @@ private:
 		}
 	}
 
-	void SpellHitDest(SpellDestination const* dest, SpellInfo const* spellInfo)
-	{		
-		switch (spellInfo->Id)
-		{
-		case SPELL_UNSTABLE_VOID_MISSILE:			
-			break;
-		}
+	void SpellHitDest(SpellDestination const* /*dest*/, SpellInfo const* /*spellInfo*/) override
+	{
+//		switch (spellInfo->Id)
+//		{
+//		case SPELL_UNSTABLE_VOID_MISSILE:
+//			break;
+//		}
 	}
 
-	void CleanupEncounter(InstanceScript* instance, Creature* me)
+	void CleanupEncounter(InstanceScript* /*instance*/, Creature* me)
 	{
 		_JustReachedHome();
 		me->DespawnCreaturesInArea(NPC_ESSENCE_OF_VITA, 125.0f);
@@ -317,7 +318,7 @@ private:
 	}
 
 	void JustDied(Unit* /*attacker*/) override
-	{		
+	{
 		Talk(SAY_DEATH);
 		_JustDied();
 		CleanupEncounter(instance, me);
@@ -329,7 +330,7 @@ private:
 struct npc_essence_raden : public ScriptedAI
 {
 	npc_essence_raden(Creature* c) : ScriptedAI(c)
-	{ 
+	{
 		me->SetHover(true);
 	}
 
@@ -381,7 +382,7 @@ struct npc_essence_raden : public ScriptedAI
 		}
 	}
 
-	void JustDied(Unit* unit) override
+	void JustDied(Unit*) override
 	{
 		switch (me->GetEntry())
 		{
@@ -405,19 +406,19 @@ struct npc_essence_raden : public ScriptedAI
 		}
 	}
 
-	void UpdateAI(uint32 diff) override
+	void UpdateAI(uint32 /*diff*/) override
 	{
 		switch (me->GetEntry())
 		{
-		case NPC_ESSENCE_OF_VITA:			
+		case NPC_ESSENCE_OF_VITA:
 			if (Creature* raden = me->FindNearestCreature(NPC_RADEN, 10.0f, true))
 			{
 				if (me->GetDistance2d(raden) <= 10.0f)
 				{
-					//Vita Empowered				
+					//Vita Empowered
 					me->AddAura(SPELL_VITA_EMPOWERED, raden);
 					raden->CastSpell(nullptr, SPELL_UNLEASHED_VITA_DAMAGE, true);
-					raden->GetScheduler().Schedule(5s, [this, raden](TaskContext context)
+					raden->GetScheduler().Schedule(5s, [this, raden](TaskContext /*context*/)
 					{
                             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 						{
@@ -497,13 +498,13 @@ struct npc_void_hunter_crackling_stalker : public ScriptedAI
 		}
 	}
 
-	void IsSummonedBy(WorldObject* summoner)
+	void IsSummonedBy(WorldObject* summoner) override
 	{
 		if (summoner->ToUnit()->IsInCombat())
 			me->AI()->DoZoneInCombat(nullptr);
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit* /*who*/) override
 	{
 		switch (me->GetEntry())
 		{
@@ -517,7 +518,7 @@ struct npc_void_hunter_crackling_stalker : public ScriptedAI
 		}
 	}
 
-	void ExecuteEvent(uint32 eventId) //override
+	void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{
@@ -534,7 +535,7 @@ struct npc_void_hunter_crackling_stalker : public ScriptedAI
 		}
 	}
 
-	void JustDied(Unit* unit) override
+	void JustDied(Unit* /*unit*/) override
 	{
 		switch (me->GetEntry())
 		{
@@ -554,12 +555,10 @@ private:
     EventMap events;
 };
 
-//306273 
+//306273
 class aura_unstable_vita : public AuraScript
 {
-	PrepareAuraScript(aura_unstable_vita);
-
-	void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
@@ -578,7 +577,7 @@ class aura_unstable_vita : public AuraScript
 		}
 	}
 
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
@@ -602,11 +601,9 @@ class aura_unstable_vita : public AuraScript
 	}
 };
 
-//310019 
+//310019
 class aura_charged_bonds : public AuraScript
 {
-	PrepareAuraScript(aura_charged_bonds);
-
 	void OnTick(AuraEffect const* /*aurEff*/)
 	{
 		if (Unit* target = GetTarget())

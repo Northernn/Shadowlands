@@ -179,16 +179,20 @@ WorldPacket const* WorldPackets::Instance::EncounterStart::Write()
     _worldPacket << uint32(EncounterID);
     _worldPacket << uint32(DifficultyID);
     _worldPacket << uint32(GroupSize);
-    _worldPacket << uint32(0);
+    _worldPacket << uint32(PlayerDatas.size());
+
+    for (auto const& PlayerData : PlayerDatas)
+        _worldPacket << PlayerData;
 
     return &_worldPacket;
 }
 
 WorldPacket const* WorldPackets::Instance::EncounterEnd::Write()
 {
-    _worldPacket << EncounterID;
-    _worldPacket << DifficultyID;
-    _worldPacket << GroupSize;
+    _worldPacket << uint32(EncounterID);
+    _worldPacket << uint32(DifficultyID);
+    _worldPacket << uint32(GroupSize);
+    _worldPacket << uint32(Unk);
     _worldPacket.WriteBit(Success);
     _worldPacket.FlushBits();
 
@@ -219,4 +223,128 @@ WorldPacket const* WorldPackets::Instance::InstanceEncounterUpdateSuppressingRel
 
     return &_worldPacket;
 }
+
+WorldPacket const* WorldPackets::Instance::InstanceEncounterUpdateAllowingRelease::Write()
+{
+    _worldPacket.WriteBit(ReleaseAllowed);
+    _worldPacket.FlushBits();
+
+    return &_worldPacket;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::AuraInfo const& auraInfo)
+{
+    data << auraInfo.CasterGuid;
+    data << uint32(auraInfo.SpellID);
+
+    return data;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::EncounterItemInfo const& encounterItemInfo)
+{
+    data << uint32(encounterItemInfo.ItemID);
+    data << uint32(encounterItemInfo.ItemLevel);
+    data << uint32(encounterItemInfo.EnchantmentIDs.size());
+    data << uint32(encounterItemInfo.ItemBonusListIDs.size());
+    data << uint32(encounterItemInfo.Encounters.size());
+
+    for (uint32 i = 0; i < encounterItemInfo.EnchantmentIDs.size(); ++i)
+        data << uint32(encounterItemInfo.EnchantmentIDs[i]);
+
+    for (uint32 i = 0; i < encounterItemInfo.ItemBonusListIDs.size(); ++i)
+        data << uint32(encounterItemInfo.ItemBonusListIDs[i]);
+
+    for (auto const& encounter : encounterItemInfo.Encounters)
+        data << encounter;
+
+    return data;
+}
+
+// used in challenge start, encounter start, pvp match start, multifloor new floor
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerData const& instancePlayerData)
+{
+    data << instancePlayerData.PlayerGuid;
+    data.WriteBit(0); // Unk
+    data.FlushBits();
+    data << uint32(instancePlayerData.Stats.size());
+    data << uint32(instancePlayerData.CombatRatings.size());
+    data << uint32(instancePlayerData.AuraInfos.size());
+    data << uint32(instancePlayerData.SpecID);
+    data << uint32(0); // Unk
+    data << uint32(0); // Unk
+    data << uint32(0); // Unk
+    data << uint32(0); // Unk
+    data << uint32(instancePlayerData.Talents.size());
+    data << uint32(instancePlayerData.PvpTalents.size());
+
+    for (uint32 i = 0; i < instancePlayerData.Talents.size(); ++i)
+        data << uint32(instancePlayerData.Talents[i]);
+
+    for (uint32 i = 0; i < instancePlayerData.PvpTalents.size(); ++i)
+        data << uint32(instancePlayerData.PvpTalents[i]);
+
+    data << uint32(instancePlayerData.EncounterItemInfos.size());
+
+    for (uint32 i = 0; i < instancePlayerData.Stats.size(); ++i)
+        data << uint32(instancePlayerData.Stats[i]);
+
+    for (uint32 i = 0; i < instancePlayerData.CombatRatings.size(); ++i)
+        data << uint32(instancePlayerData.CombatRatings[i]);
+
+    for (auto const& auraInfo : instancePlayerData.AuraInfos)
+        data << auraInfo;
+
+    for (auto const& encounterItemInfos : instancePlayerData.EncounterItemInfos)
+        data << encounterItemInfos;
+
+    bool bit1 = data.WriteBit(0);
+    bool bit2 = data.WriteBit(0);
+    data.FlushBits();
+
+    if (bit1)
+    {
+        uint32 count1 = 0;
+        uint32 count2 = 0;
+        data << int32(count1);
+        data << int32(count2);
+
+        for (uint32 i = 0; i < count1; ++i)
+        {
+            data << int32(0);
+            data << int16(0);
+            data.WriteBit(0);
+            data.FlushBits();
+        }
+
+        for (uint32 i = 0; i < count2; ++i)
+        {
+            data << int32(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.FlushBits();
+        }
+    }
+
+    if (bit2)
+    {
+        data << int32(0);
+        data << int32(0);
+        data << int32(0); // iterate int32
+        data << int32(0); // iterate int32 int32
+        data << int32(0); // iterate int32 int32 int32
+    }
+
+    //data << uint32(instancePlayerData.ArtifactPowerInfos.size());
+    //
+    //
+    //for (auto const& artifactPowerInfo : instancePlayerData.ArtifactPowerInfos)
+    //    data << artifactPowerInfo;
+    //
+    //
+    //
+
+    return data;
+}
+
+
 //DekkCore

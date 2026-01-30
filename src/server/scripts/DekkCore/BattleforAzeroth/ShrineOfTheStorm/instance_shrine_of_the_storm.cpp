@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2023 DekkCore
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,18 +19,22 @@
 #include "Player.h"
 #include "InstanceScript.h"
 #include "shrine_of_the_storm.h"
+#include "ChallengeMode.h"
+#include "CustomInstanceScript.h"
 
-class instance_shrine_of_the_storm : public InstanceMapScript
+class instance_shrine_of_the_storm : public CustomInstanceScript
 {
 public:
-    instance_shrine_of_the_storm() : InstanceMapScript("instance_shrine_of_the_storm", 1864) { }
-
-    struct instance_shrine_of_the_storm_InstanceMapScript : public InstanceScript
-    {
-        instance_shrine_of_the_storm_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+    instance_shrine_of_the_storm(InstanceMap* map) : CustomInstanceScript(map)
         {
             SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
+        }
+
+        bool HandleGetStartPosition(Position& entrancePosition) const override
+        {
+            entrancePosition.Relocate(4168.347656f, -1239.824341f, 186.635757f, 4.699543f);
+            return true;
         }
 
         void OnPlayerEnter(Player* player) override
@@ -62,18 +66,23 @@ public:
             }
         }
 
+        void SummonChallengeGameObject(bool door) override
+        {
+            if (door)
+            {
+                if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { 4168.347656f, -1239.824341f, 186.635757f, 4.699543f }, {}, 0))
+                {
+                    go->SetGoState(GOState::GO_STATE_READY);
+                    go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                }
+            }
+        }
+
     protected:
         uint32 TeamInInstance;
     };
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const override
-    {
-        return new instance_shrine_of_the_storm_InstanceMapScript(map);
-    }
-
-};
-
 void AddSC_instance_shrine_of_the_storm()
 {
-    new instance_shrine_of_the_storm();
+    RegisterInstanceScript(instance_shrine_of_the_storm, 1864);
 }

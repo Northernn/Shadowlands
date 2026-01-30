@@ -52,8 +52,6 @@ public:
 
     class spell_darkmoon_carousel_whee_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_darkmoon_carousel_whee_AuraScript);
-
         uint32 update;
 
         bool Validate(SpellInfo const* /*spell*/) override
@@ -111,8 +109,6 @@ public:
 
     class spell_darkmoon_staging_area_teleport_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_darkmoon_staging_area_teleport_SpellScript);
-
         bool Load() override
         {
             return GetCaster() != nullptr;
@@ -195,23 +191,10 @@ public:
             if (me->IsQuestGiver())
                 player->PrepareQuestMenu(me->GetGUID());
 
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
-            {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
-                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
-                break;
-            };
-
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            AddGossipItemFor(player, GossipOptionNpc::None, "How do I play the Ring Toss?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             if (!player->HasAura(101612) && !player->HasAura(110230) && !player->HasAura(102121) && !player->HasAura(102178) && !player->HasAura(102058) && !player->HasAura(101871))
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Ready to play! |cFF0000FF(Darkmoon Game Token)|r", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
             SendGossipMenuFor(player, 54485, me->GetGUID());
             return true;
@@ -219,26 +202,11 @@ public:
 
         bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
         {
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-            char const* GOSSIP_BUTTON_3;
-
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
-            {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
-                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
-                GOSSIP_BUTTON_3 = "Alright.";
-                break;
-            };
-
             player->PlayerTalkClass->ClearMenus();
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Alright.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
                 SendGossipMenuFor(player, 54486, me->GetGUID());
             }
 
@@ -250,7 +218,6 @@ public:
 
                     player->DestroyItemCount(71083, 1, true);
                     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
-
                     player->AddAura(102058, player);
                     player->SetPower(POWER_ALTERNATE_POWER, 10);
 
@@ -265,10 +232,10 @@ public:
                 if (me->IsQuestGiver())
                     player->PrepareQuestMenu(me->GetGUID());
 
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, "How do I play the Ring Toss?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
                 if (!player->HasAura(101612) && !player->HasAura(110230) && !player->HasAura(102121) && !player->HasAura(102178) && !player->HasAura(102058) && !player->HasAura(101871))
-                    AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "Ready to play! |cFF0000FF(Darkmoon Game Token)|r", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
                 SendGossipMenuFor(player, 54485, me->GetGUID());
             }
@@ -287,8 +254,6 @@ public:
 
     class spell_ring_toss_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_ring_toss_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -648,8 +613,6 @@ public:
 
     class spell_gen_repair_damaged_tonk_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_gen_repair_damaged_tonk_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -693,8 +656,6 @@ public:
 
     class spell_gen_shoe_baby_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_gen_shoe_baby_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -729,8 +690,6 @@ public:
 
     class spell_cook_crunchy_frog_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_cook_crunchy_frog_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -774,8 +733,6 @@ public:
 
     class spell_heal_injuried_carnie_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_heal_injuried_carnie_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -849,8 +806,6 @@ public:
 
     class spell_put_up_darkmoon_banner_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_put_up_darkmoon_banner_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -891,8 +846,6 @@ public:
 
     class spell_darkmoon_deathmatch_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_darkmoon_deathmatch_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -931,8 +884,6 @@ public:
 
     class spell_shoot_gallery_shoot_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shoot_gallery_shoot_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (GetCaster()->GetTypeId() != TYPEID_PLAYER)

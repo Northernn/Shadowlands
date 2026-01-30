@@ -196,7 +196,7 @@ void CasterAI::UpdateAI(uint32 diff)
 ArcherAI::ArcherAI(Creature* creature, uint32 scriptId) : CreatureAI(creature, scriptId)
 {
     if (!creature->m_spells[0])
-        TC_LOG_ERROR("scripts.ai", "ArcherAI set for creature with spell1 = 0. AI will do nothing (%s)", creature->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("scripts.ai", "ArcherAI set for creature with spell1 = 0. AI will do nothing ({})", creature->GetGUID().ToString());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(creature->m_spells[0], creature->GetMap()->GetDifficultyID());
     _minimumRange = spellInfo ? spellInfo->GetMinRange(false) : 0;
@@ -245,7 +245,7 @@ void ArcherAI::UpdateAI(uint32 /*diff*/)
 TurretAI::TurretAI(Creature* creature, uint32 scriptId) : CreatureAI(creature, scriptId)
 {
     if (!creature->m_spells[0])
-        TC_LOG_ERROR("scripts.ai", "TurretAI set for creature with spell1 = 0. AI will do nothing (%s)", creature->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("scripts.ai", "TurretAI set for creature with spell1 = 0. AI will do nothing ({})", creature->GetGUID().ToString());
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(creature->m_spells[0], creature->GetMap()->GetDifficultyID());
     _minimumRange = spellInfo ? spellInfo->GetMinRange(false) : 0;
@@ -361,7 +361,7 @@ int32 VehicleAI::Permissible(Creature const* creature)
 }
 
 //DekkCore
-int BattlePetAI::Permissible(const Creature* creature)
+int BattlePetAI::Permissible(const Creature* /*creature*/)
 {
     return PERMIT_BASE_NO;
 }
@@ -370,7 +370,7 @@ void BattlePetAI::InitializeAI()
 {
 }
 
-void BattlePetAI::UpdateAI(uint32 diff)
+void BattlePetAI::UpdateAI(uint32 /*diff*/)
 {
     if (!me->IsInWorld() || !me->IsAlive())
         return;
@@ -380,7 +380,7 @@ void BattlePetAI::UpdateAI(uint32 diff)
         me->GetMotionMaster()->MoveFollow(owner, me->GetFollowDistance(), me->GetFollowAngle());
 }
 
-void BattlePetAI::MovementInform(uint32 moveType, uint32 data)
+void BattlePetAI::MovementInform(uint32 moveType, uint32 /*data*/)
 {
     switch (moveType)
     {

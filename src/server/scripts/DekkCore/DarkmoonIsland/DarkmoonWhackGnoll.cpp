@@ -307,8 +307,6 @@ class spell_whack_gnoll_whack : public SpellScriptLoader
 
         class spell_whack_gnoll_whack_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_whack_gnoll_whack_SpellScript);
-
             SpellCastResult CheckCast()
             {
                 Unit* caster = GetCaster();
@@ -375,8 +373,6 @@ public:
 
     class spell_whack_gnoll_override_action_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_whack_gnoll_override_action_AuraScript);
-
         bool Validate(SpellInfo const* /*entry*/) override
         {
             return true;

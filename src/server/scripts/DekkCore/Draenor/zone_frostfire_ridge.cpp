@@ -182,8 +182,6 @@ public:
 
     class spell_frostridge_claiming_spellscript : public SpellScript
     {
-        PrepareSpellScript(spell_frostridge_claiming_spellscript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (!GetCaster())
@@ -294,8 +292,6 @@ class spell_groog_rampage : public SpellScriptLoader
 
         class spell_groog_rampage_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_groog_rampage_AuraScript);
-
             void OnTick(AuraEffect const* /*aurEff*/)
             {
                 Unit* caster = GetCaster();

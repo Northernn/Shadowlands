@@ -31,8 +31,6 @@ enum AltarNaias
 
 class spell_summon_naias : public SpellScript
 {
-    PrepareSpellScript(spell_summon_naias);
-
     void HandleSendEvent(SpellEffIndex /*effIndex*/)
     {
         if (GetCaster()->IsPlayer())

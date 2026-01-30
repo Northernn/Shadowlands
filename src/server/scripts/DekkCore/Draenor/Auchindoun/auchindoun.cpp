@@ -67,7 +67,7 @@ struct auchindoun_mob_tuulani : public ScriptedAI
         AddTimedDelayedOperation(400, [this]() -> void
         {  //??????
         me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani01, g_PositionTuulaniMovements[0]);
-        });  
+        });
     }
 
     void UpdateAI(uint32 p_Diff) override
@@ -101,7 +101,7 @@ struct auchindoun_mob_tuulani : public ScriptedAI
                 if (GameObject* door = me->FindNearestGameObject(GameobjectDoorBarrier, 100.0f))
                     door->Delete();
                 me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani03, g_PositionTuulaniMovements[2]);
-            });           
+            });
             break;
         case eventTuulaniIntro::EVENT_TUULANI_INTRO_3:
             if (Creature* l_Guard = me->FindNearestCreature(CreatureAucheniDefender, 50.0f, true))
@@ -131,7 +131,7 @@ struct auchindoun_mob_tuulani : public ScriptedAI
             break;
         case eventTuulaniIntro::EVENT_TUULANI_INTRO_8:
             Talk(eAuchindounTalks::TUULANITALK5);
-            me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani06, g_PositionTuulaniMovements[6]);               
+            me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani06, g_PositionTuulaniMovements[6]);
             break;
         case eventTuulaniIntro::EVENT_TUULANI_INTRO_9:
             me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani07, g_PositionTuulaniMovements[7]);
@@ -142,7 +142,7 @@ struct auchindoun_mob_tuulani : public ScriptedAI
         case eventTuulaniIntro::EVENT_TUULANI_INTRO_11:
             if (instance)
             {
-                //instance->DoNearTeleportPlayers(me->GetPosition());
+                instance->DoNearTeleportPlayers(me->GetPosition(), false);
                 instance->DoPlayScenePackageIdOnPlayers(SpellAuchindounSceneTulaaniReachNyami);
             }
             me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani09, g_PositionTuulaniMovements[9]);
@@ -176,7 +176,7 @@ struct auchindoun_mob_tuulani : public ScriptedAI
                     l_Nyami->CastSpell(l_Trigger, eAuchindounSpells::SpellVoidBeam);
                 }
                 l_Nyami->AI()->Talk(eAuchindounTalks::NYAMITALK2);
-            }               
+            }
             events.ScheduleEvent(eventTuulaniIntro::EVENT_TUULANI_INTRO_16, 9s);
             break;
         case eventTuulaniIntro::EVENT_TUULANI_INTRO_16:
@@ -277,7 +277,7 @@ struct auchindoun_mob_sargerei_soulbinder : public ScriptedAI
             me->CastSpell(target, SpellVoidBeam, true);
     }
 
-    void EnterCombat(Unit* p_Attacker)
+    void JustEngagedWith(Unit* p_Attacker) override
     {
         events.ScheduleEvent(eSargereiSoulbinderEvents::EventMindShear, 8s);
         events.ScheduleEvent(eSargereiSoulbinderEvents::EventBendWill, 18s);
@@ -353,7 +353,7 @@ struct auchindoun_mob_sargerei_cleric : public ScriptedAI
             me->CastSpell(target, SpellVoidBeam, true);
     }
 
-    void EnterCombat(Unit* p_Attacker)
+    void JustEngaggedWith(Unit* p_Attacker)
     {
         events.ScheduleEvent(eSargereiClericEvents::EventVoidShell, 15s);
     }
@@ -384,718 +384,7 @@ struct auchindoun_mob_sargerei_cleric : public ScriptedAI
         {
         case eSargereiClericEvents::EventVoidShell:
             me->CastSpell(me, eSargereiCleircSpells::SpellVoidShell);
-            events.ScheduleEvent(eSargereiClericEvents::EventVoidShell, (12s, 16s));
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Ritualist - 77130
-struct auchindoun_mob_sargerei_ritualist : public ScriptedAI
-{
-    auchindoun_mob_sargerei_ritualist(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eSargereiRitualistEvents
-    {
-        EventMindSpike = 1
-    };
-
-    enum eSargereiRitualistSpells
-    {
-        SpellShadowBeam = 156862,
-        SpellDarkFire = 156955,
-        SpellMindSpike = 157043
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-
-    void Reset()
-    {
-        events.Reset();
-
-        if (Creature* l_Trigger = me->SummonCreature(eAuchindounCreatures::CreatureShadowBeam, g_PositionKaatharCrystalPosition, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN))
-            me->CastSpell(l_Trigger, eSargereiRitualistSpells::SpellShadowBeam);
-
-        me->AddAura(eSargereiRitualistSpells::SpellDarkFire, me);
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        me->CastStop();
-        me->RemoveAllAuras();
-        events.ScheduleEvent(eSargereiRitualistEvents::EventMindSpike, (6s, 8s));
-    }
-
-    void JustDied(Unit* /*p_Killer*/)
-    {
-        if (m_Instance != nullptr)
-        {
-            if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eAuchindounDatas::DataBossKathaar)))
-            {
-                if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled())
-                    l_Kaathar->AI()->DoAction(eAuchindounActions::ActionCountPre1StBossKill);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eSargereiRitualistEvents::EventMindSpike:
-            if (Unit* l_Target = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
-                me->CastSpell(l_Target, eSargereiRitualistSpells::SpellMindSpike);
-            events.ScheduleEvent(eSargereiRitualistEvents::EventMindSpike, 6s);
-            break;
-        default:
-            break;
-        }
-    }
-};
-
-/// Sargerei Zealot - 77132
-struct auchindoun_mob_sargerei_zealot : public ScriptedAI
-{
-    auchindoun_mob_sargerei_zealot(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eSargereiZealotSpells
-    {
-        SpellSeverTendonAura = 157165
-    };
-
-    enum eSargereiZealotEvents
-    {
-        EventSeverTendom = 1
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-
-    void Reset()
-    {
-        events.Reset();
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eAuchindounEvents::EventSeverTendom, 5s);
-    }
-
-    void JustDied(Unit* /*p_Killer*/)
-    {
-        if (m_Instance != nullptr)
-        {
-            if (Creature* Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eAuchindounDatas::DataBossKathaar)))
-            {
-                if (Kaathar->IsAlive() && Kaathar->IsAIEnabled())
-                    Kaathar->AI()->DoAction(eAuchindounActions::ActionCountPre1StBossKill);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eAuchindounEvents::EventSeverTendom:
-            if (Unit* l_Target = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
-                me->CastSpell(l_Target, eAuchindounSpells::SpellSeverTendonAura);
-            events.ScheduleEvent(eAuchindounEvents::EventSeverTendom, (9s, 14s));
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Spirit Tender - 77131
-struct auchindoun_mob_sargerei_spirit_tender : public ScriptedAI
-{
-    auchindoun_mob_sargerei_spirit_tender(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eSpiritTenderSpells
-    {
-        SpellVoidMendingDummy = 154623,
-        SpellVoidShiftDummy = 155524
-    };
-
-    enum eSpiritTenderEvents
-    {
-        EventVoidMending = 1,
-        EventVoidShift
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-
-    void Reset()
-    {
-        events.Reset();
-        if (Creature* target = me->FindNearestCreature(CreatureSoulAegis, 50.0f))
-            me->CastSpell(target, SpellVoidBeam, true);
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eSpiritTenderEvents::EventVoidMending, 10s);
-        events.ScheduleEvent(eSpiritTenderEvents::EventVoidShift, 16s);
-    }
-
-    void JustDied(Unit* /*p_Killer*/)
-    {
-        if (m_Instance != nullptr)
-        {
-            if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eAuchindounDatas::DataBossKathaar)))
-            {
-                if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled())
-                    l_Kaathar->AI()->DoAction(eAuchindounActions::ActionCountPre1StBossKill);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eSpiritTenderEvents::EventVoidMending:
-            if (Unit* l_FriendUnit = DoSelectLowestHpFriendly(85))
-                me->CastSpell(l_FriendUnit, eSpiritTenderSpells::SpellVoidMendingDummy);
-            events.ScheduleEvent(eSpiritTenderEvents::EventVoidMending, 10s);
-            break;
-        case eSpiritTenderEvents::EventVoidShift:
-            me->CastSpell(me, eSpiritTenderSpells::SpellVoidShiftDummy);
-            events.ScheduleEvent(eSpiritTenderEvents::EventVoidShift, 16s);
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Hopilite - 77133
-struct auchindoun_mob_sargerei_hopilite : public ScriptedAI
-{
-    auchindoun_mob_sargerei_hopilite(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eSargereiHopiliteSpells
-    {
-        SpellShieldBash = 157159,
-        SpellVoidStrikes = 166749
-    };
-
-    enum eSargereiHopiliteEvents
-    {
-        EventShieldBash = 1,
-        EventVoidStrikes
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-
-    void Reset()
-    {
-        events.Reset();
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eSargereiHopiliteEvents::EventShieldBash, (8s, 12s));
-        events.ScheduleEvent(eSargereiHopiliteEvents::EventVoidStrikes, 18s);
-    }
-
-    void JustDied(Unit* /*p_Killer*/)
-    {
-        if (m_Instance != nullptr)
-        {
-            if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eAuchindounDatas::DataBossKathaar)))
-            {
-                if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled())
-                    l_Kaathar->AI()->DoAction(eAuchindounActions::ActionCountPre1StBossKill);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eSargereiHopiliteEvents::EventShieldBash:
-            if (Unit* l_Target = me->GetVictim())
-                me->CastSpell(l_Target, eSargereiHopiliteSpells::SpellShieldBash);
-            events.ScheduleEvent(eSargereiHopiliteEvents::EventShieldBash, (8s, 12s));
-            break;
-        case eSargereiHopiliteEvents::EventVoidStrikes:
-            if (Unit* l_Target = me->GetVictim())
-                me->CastSpell(l_Target, eSargereiHopiliteSpells::SpellVoidStrikes);
-            events.ScheduleEvent(eSargereiHopiliteEvents::EventVoidStrikes, 18s);
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Defender - 77042
-struct auchindoun_mob_sargerei_defender : public ScriptedAI
-{
-    auchindoun_mob_sargerei_defender(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-        m_False = true;
-    }
-
-    enum eSargereiDefenderSpells
-    {
-        SpellAvengersShield = 165715,
-        SpellCrusaderStirke = 176931
-    };
-
-    enum eSargereiDefenderEvents
-    {
-        EventAvengersShield = 1,
-        EventCrusaderStirke
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-    bool m_False;
-
-    void Reset()
-    {
-        events.Reset();
-
-        if (m_False)
-            m_False = false;
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eSargereiDefenderEvents::EventAvengersShield, (10s, 16s));
-        events.ScheduleEvent(eSargereiDefenderEvents::EventCrusaderStirke, (5s, 9s));
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eSargereiDefenderEvents::EventAvengersShield:
-            if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
-                me->CastSpell(l_Random, eSargereiDefenderSpells::SpellAvengersShield);
-            events.ScheduleEvent(eSargereiDefenderEvents::EventAvengersShield, (10s, 16s));
-            break;
-        case eSargereiDefenderEvents::EventCrusaderStirke:
-            if (Unit* l_Target = me->GetVictim())
-                me->CastSpell(l_Target, eSargereiDefenderSpells::SpellCrusaderStirke);
-            events.ScheduleEvent(eSargereiDefenderEvents::EventCrusaderStirke, (5s, 9s));
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Magus - 76263
-struct auchindoun_mob_sargerei_magus : public ScriptedAI
-{
-    auchindoun_mob_sargerei_magus(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_False = true;
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eSargereiMagusSpells
-    {
-        SpellArcaneChanneling = 161383,
-        SpellArcaneBombDummy = 157652,
-        SpellArcaneBoltPeriod = 157505,
-        SpellArcaneBoltProje = 157931
-    };
-
-    enum eSargereiMagusEvents
-    {
-        EventArcaneBomb = 1,
-        EventArcaneBolt
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-    bool m_False;
-    std::list<ObjectGuid> l_Prisoners;
-
-    void Reset()
-    {
-        if (m_False)
-            m_False = false;
-
-        events.Reset();
-        me->CastSpell(me, eSargereiMagusSpells::SpellArcaneChanneling);
-    }
-
-    void MovementInform(uint32 /*p_Type*/, uint32 p_Id)
-    {
-        switch (p_Id)
-        {
-        case eAuchindounMovementInforms::MovementInformFallMagusPrisoners:
-            if (!l_Prisoners.empty())
-            {
-                for (ObjectGuid l_Itr : l_Prisoners)
-                {
-                    if (!l_Itr)
-                        continue;
-
-                    if (Creature* l_Mob = ObjectAccessor::GetCreature(*me, l_Itr))
-                    {
-                        l_Mob->AddUnitMovementFlag(MovementFlags::MOVEMENTFLAG_ROOT);
-                        l_Mob->SetUnitFlag(UnitFlags(UNIT_FLAG2_FEIGN_DEATH));
-                        l_Mob->SetUnitFlag3(UNIT_FLAG3_FAKE_DEAD);
-                    }
-                }
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        me->RemoveAura(eSargereiMagusSpells::SpellArcaneChanneling);
-        events.ScheduleEvent(eSargereiMagusEvents::EventArcaneBomb, 13s);
-        events.ScheduleEvent(eSargereiMagusEvents::EventArcaneBolt, 20s);
-
-        std::list<Creature*> l_mobsPrisoners;
-        me->GetCreatureListWithEntryInGrid(l_mobsPrisoners, eAuchindounCreatures::CreatureAucheniSoulPriest, 20.0f);
-        if (!l_mobsPrisoners.empty())
-        {
-            for (Creature* l_Itr : l_mobsPrisoners)
-            {
-                l_Itr->KillSelf();
-                l_Itr->RemoveAllAuras();
-                l_Itr->GetMotionMaster()->MoveFall(eAuchindounMovementInforms::MovementInformFallMagusPrisoners);
-                l_Itr->DespawnOrUnsummon(1s);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eSargereiMagusEvents::EventArcaneBomb:
-            me->CastSpell(me, eSargereiMagusSpells::SpellArcaneBombDummy);
-            events.ScheduleEvent(eSargereiMagusEvents::EventArcaneBomb, 13s);
-            break;
-        case eSargereiMagusEvents::EventArcaneBolt:
-            me->CastSpell(me, eSargereiMagusSpells::SpellArcaneBoltPeriod);
-            events.ScheduleEvent(eSargereiMagusEvents::EventArcaneBolt, 20s);
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Soul Priest - 76595
-struct auchindoun_mob_soul_priest : public ScriptedAI
-{
-    auchindoun_mob_soul_priest(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-        m_False = true;
-    }
-
-    enum eSoulPriestSpells
-    {
-        SpellShadowWordPainPriest = 176518,
-        SpellPsychicTerrorDummy = 154356
-    };
-
-    enum eSoulPriestEvents
-    {
-        EventShadowWordPainSoulPriest = 1,
-        EventPsychicTerrors
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-
-    bool m_False;
-
-    void Reset()
-    {
-        events.Reset();
-
-        if (m_False)
-        {
-            m_False = false;
-        }
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eSoulPriestEvents::EventPsychicTerrors, 15s);
-        events.ScheduleEvent(eSoulPriestEvents::EventShadowWordPainSoulPriest, (8s, 10s));
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eSoulPriestEvents::EventShadowWordPainSoulPriest:
-            if (Unit* l_Target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true, -eAuchindounSpells::SpellShadowWordPainPriest))
-                me->CastSpell(me, eSoulPriestSpells::SpellShadowWordPainPriest);
-            events.ScheduleEvent(eSoulPriestEvents::EventShadowWordPainSoulPriest, (8s, 12s));
-            break;
-        case eSoulPriestEvents::EventPsychicTerrors:
-            if (Unit* l_Target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-                me->CastSpell(l_Target, eSoulPriestSpells::SpellPsychicTerrorDummy);
-            events.ScheduleEvent(eSoulPriestEvents::EventPsychicTerrors, 15s);
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Sargerei Warden - 77935
-struct auchindoun_mob_sargeri_warden : public ScriptedAI
-{
-    auchindoun_mob_sargeri_warden(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-        m_False = true;
-    }
-
-    enum eWardenSpells
-    {
-        SpellWardenThrowHammer = 154730,
-        SpellWardenChainDot = 154831
-    };
-
-    enum eWardenEvents
-    {
-        EventWardenHammer = 1,
-        EventWardenChain
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-    bool m_False;
-
-    void Reset()
-    {
-        events.Reset();
-
-        if (m_False)
-            m_False = false;
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eWardenEvents::EventWardenChain, 5s);
-        events.ScheduleEvent(eWardenEvents::EventWardenHammer, (12s, 16s));
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eWardenEvents::EventWardenHammer:
-            if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
-                me->CastSpell(l_Random, eWardenSpells::SpellWardenThrowHammer);
-            events.ScheduleEvent(eWardenEvents::EventWardenHammer, (12s, 16s));
-            break;
-        case eWardenEvents::EventWardenChain:
-            if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
-                me->CastSpell(l_Random, eWardenSpells::SpellWardenChainDot);
-            events.ScheduleEvent(eWardenEvents::EventWardenChain, 20s);
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Felborne Abyssal - 77905
-struct auchindoun_mob_felborne_abyssal : public ScriptedAI
-{
-    auchindoun_mob_felborne_abyssal(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eFelborneAbyssalSpells
-    {
-        SpellFixate = 157168
-    };
-
-    enum eFelborneAbyssalEvents
-    {
-        EventFixate = 1
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-    bool m_Fixated;
-    ObjectGuid m_FixatedTargetGUID;
-
-    void Reset()
-    {
-        events.Reset();
-        m_Fixated = false;
-        m_FixatedTargetGUID = ObjectGuid::Empty;
-        me->SetReactState(ReactStates::REACT_AGGRESSIVE);
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eFelborneAbyssalEvents::EventFixate, (16s, 20s));
-    }
-
-    void DoAction(int32 p_Action)
-    {
-        switch (p_Action)
-        {
-        case eAuchindounActions::ActionDeactivateFixation:
-            m_Fixated = false;
-            break;
-        default:
-            break;
-        }
-    }
-
-    void OnAddThreat(Unit* p_Victim, float& p_fThreat, SpellSchoolMask /*p_SchoolMask*/, SpellInfo const /*p_ThreatSpell*/)
-    {
-        if (m_Fixated)
-            p_fThreat = 0;
-        return;
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        if (m_Fixated)
-        {
-           /* if (!m_FixatedTargetGUID)//???
-            {
-               // if (Unit* l_Target = ObjectAccessor::GetUnit(*me, m_FixatedTargetGUID))
-                    me->AddThreat(l_Target, 500.0f);
-            }*/
-        }
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eAuchindounEvents::EventFixate:
-            if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-            {
-                m_Fixated = true;
-                m_FixatedTargetGUID = l_Random->GetGUID();
-                me->CastSpell(l_Random, eFelborneAbyssalSpells::SpellFixate);
-            }
-
-            events.ScheduleEvent(eFelborneAbyssalEvents::EventFixate, (16s, 20s));
+            events.ScheduleEvent(eSargereiClericEvents::EventVoidShell, 14s);
             break;
         default:
             break;
@@ -1133,7 +422,7 @@ struct auchindoun_mob_cackling_pyromaniac : public ScriptedAI
         me->CastSpell(me, eCacklingPyromaniacSpells::SpellAbyssalVisual);
     }
 
-    void EnterCombat(Unit* p_Attacker)
+    void JustEngagedWith(Unit* p_Attacker) override
     {
         events.ScheduleEvent(eCacklingPyromaniacEvents::EventFelBlast, 6s);
     }
@@ -1203,7 +492,7 @@ struct auchindoun_mob_blazing_trickster : public ScriptedAI
         events.Reset();
         me->SetReactState(ReactStates::REACT_AGGRESSIVE);
         me->SetDefaultMovementType(MovementGeneratorType::RANDOM_MOTION_TYPE);
-        events.ScheduleEvent(eBlazingTricksterEvents::EventConfligrate, (8s, 15s));
+        events.ScheduleEvent(eBlazingTricksterEvents::EventConfligrate, 12s);
     }
 
     void JustDied(Unit* /*p_Killer*/)
@@ -1233,77 +522,7 @@ struct auchindoun_mob_blazing_trickster : public ScriptedAI
         {
         case eBlazingTricksterEvents::EventConfligrate:
             me->CastSpell(me, eBlazingTricksterSpells::SpellConfligirate);
-            events.ScheduleEvent(eBlazingTricksterEvents::EventConfligrate, (8s, 16s));
-            break;
-        default:
-            break;
-        }
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-/// Felguard - 76259
-struct auchindoun_mob_felguard : public ScriptedAI
-{
-    auchindoun_mob_felguard(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_Instance = me->GetInstanceScript();
-    }
-
-    enum eFelguardSpells
-    {
-        SpellFelStomp = 157173
-    };
-
-    enum eFelguardEvents
-    {
-        EventFelStomp = 1
-    };
-
-    InstanceScript* m_Instance;
-    EventMap events;
-
-    void Reset()
-    {
-        events.Reset();
-        me->SetReactState(ReactStates::REACT_AGGRESSIVE);
-    }
-
-    void EnterCombat(Unit* p_Attacker)
-    {
-        events.ScheduleEvent(eFelguardEvents::EventFelStomp, 10s);
-    }
-
-    void JustDied(Unit* /*p_Killer*/)
-    {
-        if (m_Instance != nullptr)
-        {
-            if (Creature* l_Azzakel = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eAuchindounDatas::DataBossAzzakael)))
-                if (l_Azzakel->IsInCombat() && l_Azzakel->IsAlive() && l_Azzakel->IsAIEnabled())
-                    l_Azzakel->GetAI()->DoAction(eAuchindounActions::ActionDemonSoulsAchievement);
-
-            if (Creature* l_Trigger = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eAuchindounDatas::DataTriggerAzzakelController)))
-                if (l_Trigger->IsWithinDistInMap(me, 30.0f) && l_Trigger->IsAIEnabled())
-                    l_Trigger->AI()->DoAction(eAuchindounActions::ActionCountPre3StBossKill);
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(p_Diff);
-
-        if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
-            return;
-
-        switch (events.ExecuteEvent())
-        {
-        case eFelguardEvents::EventFelStomp:
-            me->CastSpell(me, eFelguardSpells::SpellFelStomp);
-            events.ScheduleEvent(eFelguardEvents::EventFelStomp, (12s, 16s));
+            events.ScheduleEvent(eBlazingTricksterEvents::EventConfligrate, 12s);
             break;
         default:
             break;
@@ -1365,11 +584,9 @@ struct auchindoun_mob_warden_hammer : public ScriptedAI
     }
 };
 
-/// Void Mending - 154623 
+/// Void Mending - 154623
 class auchindoun_spell_void_mending : public SpellScript
 {
-    PrepareSpellScript(auchindoun_spell_void_mending);
-
     void HandleDummy(SpellEffIndex /*p_EffIndex*/)
     {
         if (Unit* l_Caster = GetCaster())
@@ -1385,11 +602,9 @@ class auchindoun_spell_void_mending : public SpellScript
     }
 };
 
-/// Psychic Terrors - 154356  
+/// Psychic Terrors - 154356
 class auchindoun_spell_psychic_terror : public SpellScript
 {
-    PrepareSpellScript(auchindoun_spell_psychic_terror);
-
     void HandleDummy(SpellEffIndex /*p_EffIndex*/)
     {
         if (Unit* l_Caster = GetCaster())
@@ -1415,11 +630,9 @@ class auchindoun_spell_psychic_terror : public SpellScript
     }
 };
 
-/// Warden's Chain - 154683 
+/// Warden's Chain - 154683
 class auchindoun_spell_warden_chain : public SpellScript
 {
-    PrepareSpellScript(auchindoun_spell_warden_chain);
-
     enum eWardenChainSpells
     {
         SpellWardenChainJump = 154639,
@@ -1444,11 +657,9 @@ class auchindoun_spell_warden_chain : public SpellScript
     }
 };
 
-/// Warden Chain Aura - 154831 
+/// Warden Chain Aura - 154831
 class auchindoun_warden_chain_aura : public AuraScript
 {
-    PrepareAuraScript(auchindoun_warden_chain_aura);
-
     enum eWardenChainAuras
     {
         SpellWardenChainRoot = 154263
@@ -1469,8 +680,6 @@ class auchindoun_warden_chain_aura : public AuraScript
 /// Void Shift - 155524
 class auchindoun_spell_void_shift : public SpellScript
 {
-    PrepareSpellScript(auchindoun_spell_void_shift);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (!GetCaster())
@@ -1480,9 +689,6 @@ class auchindoun_spell_void_shift : public SpellScript
         int32 l_CalcDamage = 8000;
 
         std::list<Creature*> l_ListPlayers;
-     //   l_Caster->GetCreatureListInGrid(l_ListPlayers, 30.0f);
-        //l_Caster->GetPlayerListInGrid(l_ListPlayers, 30.0f);
-        //l_Caster->VisitNearbyObject(30.0f, searcher);
         if (!l_ListPlayers.empty())
         {
             for (std::list<Creature*>::const_iterator l_It = l_ListPlayers.begin(); l_It != l_ListPlayers.end(); ++l_It)
@@ -1491,9 +697,9 @@ class auchindoun_spell_void_shift : public SpellScript
                     continue;
 
                 if ((*l_It)->GetTypeId() == TypeID::TYPEID_PLAYER)
-                    GetCaster()->CastSpell((*l_It), eAuchindounSpells::SpellVoidShiftDamage, &l_CalcDamage);
+                    GetCaster()->CastSpell((*l_It), eAuchindounSpells::SpellVoidShiftDamage, l_CalcDamage);
                 else
-                    GetCaster()->CastSpell((*l_It), eAuchindounSpells::SpellVoidShiftHeal, &l_CalcDamage);
+                    GetCaster()->CastSpell((*l_It), eAuchindounSpells::SpellVoidShiftHeal, l_CalcDamage);
             }
         }
     }
@@ -1507,8 +713,6 @@ class auchindoun_spell_void_shift : public SpellScript
 /// Void Shell - 160312
 class auchindoun_spell_void_shell_filter : public SpellScript
 {
-    PrepareSpellScript(auchindoun_spell_void_shell_filter);
-
     void CorrectTargets(std::list<WorldObject*>& p_Targets)
     {
         p_Targets.clear();
@@ -1519,8 +723,6 @@ class auchindoun_spell_void_shell_filter : public SpellScript
         Unit* l_Caster = GetCaster();
 
         std::list<Creature*> l_TargetList;
-     //   l_Caster->GetCreatureListInGrid(l_TargetList, 10.0f);
-        // l_Caster->VisitNearbyObject(10.0f, searcher);
         if (!l_TargetList.empty())
         {
             for (Creature* l_Itr : l_TargetList)
@@ -1546,8 +748,6 @@ class auchindoun_spell_void_shell_filter : public SpellScript
 /// Tuulani Unlock Gate - 160415
 class auchindoun_spell_tuulani_unlock : public SpellScript
 {
-    PrepareSpellScript(auchindoun_spell_tuulani_unlock);
-
     void CorrectTargets(std::list<WorldObject*>& p_Targets)
     {
         /// Clears all targets at start, fetching new ones
@@ -1581,11 +781,9 @@ class auchindoun_spell_tuulani_unlock : public SpellScript
     }
 };
 
-/// Arcane Bolt - 157505 
+/// Arcane Bolt - 157505
 class auchindoun_spell_arcane_bolt : public AuraScript
 {
-    PrepareAuraScript(auchindoun_spell_arcane_bolt);
-
     enum eArcaneBoltSpells
     {
         SpellArcaneBoltPeriod = 157505,
@@ -1610,50 +808,6 @@ class auchindoun_spell_arcane_bolt : public AuraScript
     }
 };
 
-/// Arcane Bomb - 157793 
-class auchindoun_at_arcane_bomb : public AreaTriggerEntityScript
-{
-public:
-
-    auchindoun_at_arcane_bomb() : AreaTriggerEntityScript("auchindoun_at_arcane_bomb")
-    {
-    }
-
-    enum eArcaneBombSpells
-    {
-        SpellArcaneBombDamage = 157792
-    };
-
-    bool m_Used = false;
-    uint32 m_Diff = 1;
-    std::list<ObjectGuid> m_Targets;
-
-    void OnUpdate(Player* Player, uint32 p_Time)
-    {
-        if (m_Diff <= p_Time)
-        {
-            if (!m_Used)
-            {
-                // if (Player* l_Nearest = p_AreaTrigger->FindNearestPlayer(1.0f, true))
-                //  {
-                m_Used = true;
-                // Player->Remove();
-                Player->CastSpell(Player, eArcaneBombSpells::SpellArcaneBombDamage);
-                //}
-            }
-
-            m_Diff = 2;
-        }
-        else
-            m_Diff -= p_Time;
-    }
-    /*
-    auchindoun_at_arcane_bomb* GetAI()
-    {
-    return nullptr;
-    }*/
-};
-
 /// Talador Portal - 236689
 struct auchindoun_gob_talador_portal : public GameObjectAI
 {
@@ -1666,54 +820,11 @@ struct auchindoun_gob_talador_portal : public GameObjectAI
     }
 };
 
-/// 156920/void-beam
-class auchindoun_spell_void_beam : public SpellScript
-{
-    PrepareSpellScript(auchindoun_spell_void_beam);
-    /*
-    void CorrectTargets(std::list<WorldObject*>& p_Targets)
-    {
-        p_Targets.clear();
-        std::list<Creature*> l_ListTriggerWall;
-        GetCaster()->GetCreatureListWithEntryInGrid(l_ListTriggerWall, eAuchindounCreatures::CreatureSoulAegis, 50.0f);
-        if (!l_ListTriggerWall.empty())
-        {
-            for (Creature* l_Itr : l_ListTriggerWall)
-            {
-                if (l_Itr && l_Itr->IsInWorld())
-                    p_Targets.push_back(l_Itr->ToUnit());
-            }
-        }
-    }
-    */
-    void CheckTarget(WorldObject*& target)
-    {
-        if (target->GetEntry() != CreatureSoulAegis)
-            target = target->FindNearestCreature(CreatureSoulAegis, 50.0f);
-    }
-
-    void Register() override
-    {
-        //OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(auchindoun_spell_void_beam::CorrectTargets, SpellEffIndex::EFFECT_0, Targets::TARGET_UNIT_NEARBY_ENTRY);
-        OnObjectTargetSelect += SpellObjectTargetSelectFn(auchindoun_spell_void_beam::CheckTarget, EFFECT_0, TARGET_UNIT_TARGET_ANY);
-    }
-};
-
 void AddSC_auchindoun()
 {
     RegisterCreatureAI(auchindoun_mob_tuulani);                   ///< 79248
-    RegisterCreatureAI(auchindoun_mob_sargerei_soulbinder);       ///< 77812  
+    RegisterCreatureAI(auchindoun_mob_sargerei_soulbinder);       ///< 77812
     RegisterCreatureAI(auchindoun_mob_sargerei_cleric);           ///< 77134
-    RegisterCreatureAI(auchindoun_mob_sargerei_ritualist);        ///< 77130
-    RegisterCreatureAI(auchindoun_mob_sargerei_zealot);           ///< 77132
-    RegisterCreatureAI(auchindoun_mob_sargerei_spirit_tender);    ///< 77131
-    RegisterCreatureAI(auchindoun_mob_sargerei_hopilite);         ///< 77133
-    RegisterCreatureAI(auchindoun_mob_sargeri_warden);            ///< 77935
-    RegisterCreatureAI(auchindoun_mob_sargerei_magus);            ///< 76263
-    RegisterCreatureAI(auchindoun_mob_sargerei_defender);         ///< 77042
-    RegisterCreatureAI(auchindoun_mob_felborne_abyssal);          ///< 77905
-    RegisterCreatureAI(auchindoun_mob_soul_priest);               ///< 76595
-    RegisterCreatureAI(auchindoun_mob_felguard);                  ///< 76259
     RegisterCreatureAI(auchindoun_mob_cackling_pyromaniac);       ///< 76260
     RegisterCreatureAI(auchindoun_mob_blazing_trickster);         ///< 79511
     RegisterCreatureAI(auchindoun_mob_warden_hammer);             ///< 76655
@@ -1723,8 +834,6 @@ void AddSC_auchindoun()
     RegisterSpellScript(auchindoun_spell_psychic_terror);         ///< 154356
     RegisterSpellScript(auchindoun_spell_tuulani_unlock);         ///< 160415
     RegisterSpellScript(auchindoun_spell_arcane_bolt);            ///< 157505
-    new auchindoun_at_arcane_bomb();                              ///< 157793//???
     RegisterGameObjectAI(auchindoun_gob_talador_portal);          ///< 236689
     RegisterSpellScript(auchindoun_warden_chain_aura);
-    RegisterSpellScript(auchindoun_spell_void_beam);              ///156920
 }

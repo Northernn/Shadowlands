@@ -488,147 +488,6 @@ struct auchindoun_azzakel_mob_controller : public ScriptedAI
 
 };
 
-/// Fel Spark Trigger - 326527
-class auchindoun_azzakel_mob_fel_spark_trigger : public CreatureScript
-{
-public:
-
-    auchindoun_azzakel_mob_fel_spark_trigger() : CreatureScript("auchindoun_azzakel_mob_fel_spark_trigger") {}
-
-    struct auchindoun_azzakel_mob_fel_spark_triggerAI : public ScriptedAI
-    {
-        auchindoun_azzakel_mob_fel_spark_triggerAI(Creature* p_Creature) : ScriptedAI(p_Creature)
-        {
-            m_First = true;
-        }
-
-        enum eFelSparkSpells
-        {
-            SpellFelSparkAreaTrigger = 153725
-        };
-
-        enum eFelSparkCreatures
-        {
-            CreatureFelSparkNullAI = 326527,
-            CreatureFelSparkNullAITrigger = 326528
-        };
-
-        bool m_First;
-
-        void Reset()
-        {
-            m_First = false;
-            me->SetFaction(HostileFaction);
-            me->SetDisplayId(InvisibleDisplay);
-            me->SetReactState(ReactStates::REACT_PASSIVE);
-            me->SetUnitFlag(UnitFlags(UNIT_FLAG_REMOVE_CLIENT_CONTROL | UnitFlags::UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE | UnitFlags::UNIT_FLAG_IMMUNE_TO_PC));
-
-            for (uint8 l_I = 0; l_I < 20; ++l_I)
-            {
-                float l_X = me->m_positionX + (l_I + 1) /** cos(me->m_orientation)*/;
-                float l_Y = me->m_positionY + (l_I + 1)/* * sin(me->m_orientation)*/;
-
-                /// 326528
-                if (Creature* l_FelSparkNullAITrigger = me->SummonCreature(eFelSparkCreatures::CreatureFelSparkNullAITrigger, l_X, l_Y, me->GetPositionZ(), me->GetOrientation(), TempSummonType::TEMPSUMMON_TIMED_DESPAWN, 7s))
-                {
-                    l_FelSparkNullAITrigger->SetFaction(HostileFaction);
-                    l_FelSparkNullAITrigger->SetDisplayId(InvisibleDisplay);
-                    l_FelSparkNullAITrigger->SetReactState(ReactStates::REACT_PASSIVE);
-                    l_FelSparkNullAITrigger->SetUnitFlag(UnitFlags(UnitFlags::UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE | UnitFlags::UNIT_FLAG_REMOVE_CLIENT_CONTROL | UnitFlags::UNIT_FLAG_IMMUNE_TO_PC));
-
-                    l_FelSparkNullAITrigger->CastSpell(l_FelSparkNullAITrigger, eFelSparkSpells::SpellFelSparkAreaTrigger, true);
-                }
-            }
-
-            me->DespawnOrUnsummon(7s);
-        }
-    };
-
-    CreatureAI* GetAI(Creature* p_Creature) const
-    {
-        return new auchindoun_azzakel_mob_fel_spark_triggerAI(p_Creature);
-    }
-};
-
-/// Fel Pool - 326526
-class auchindoun_azzakel_mob_fel_pool : public CreatureScript
-{
-public:
-
-    auchindoun_azzakel_mob_fel_pool() : CreatureScript("auchindoun_azzakel_mob_fel_pool") {}
-
-    struct auchindoun_azzakel_mob_fel_poolAI : public ScriptedAI
-    {
-        auchindoun_azzakel_mob_fel_poolAI(Creature* p_Creature) : ScriptedAI(p_Creature)
-        {
-            m_First = true;
-            m_Instance = me->GetInstanceScript();
-        }
-
-        enum eFelPoolSpells
-        {
-            SpellFelPoolDebuffDmg = 153616
-        };
-
-        bool m_First;
-        InstanceScript* m_Instance;
-
-        void Reset()
-        {
-            if (m_First)
-            {
-                m_First = false;
-                me->SetFaction(HostileFaction);
-                me->SetDisplayId(InvisibleDisplay);
-                me->SetReactState(ReactStates::REACT_PASSIVE);
-                me->SetUnitFlag(UnitFlags(UnitFlags::UNIT_FLAG_IMMUNE_TO_NPC | UnitFlags::UNIT_FLAG_IMMUNE_TO_PC | UnitFlags::UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE));
-            }
-
-            if (m_Instance != nullptr)
-            {
-                if (m_Instance->instance->IsHeroic())
-                {
-                    me->SummonCreature(eAzzakelCreatures::TriggerFelSpark, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 4.756f, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
-                    me->SummonCreature(eAzzakelCreatures::TriggerFelSpark, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.028f, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
-                    me->SummonCreature(eAzzakelCreatures::TriggerFelSpark, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 1.583f, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
-                    me->SummonCreature(eAzzakelCreatures::TriggerFelSpark, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 3.111f, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
-                }
-            }
-        }
-
-        void UpdateAI(uint32 p_Diff) override
-        {
-            std::list<Player*> l_ListPlayers;
-            me->GetPlayerListInGrid(l_ListPlayers, 15.0f);
-            // me->VisitNearbyObject(15.0f, searcher);
-            if (!l_ListPlayers.empty())
-            {
-                for (std::list<Player*>::const_iterator l_Itr = l_ListPlayers.begin(); l_Itr != l_ListPlayers.end(); ++l_Itr)
-                {
-                    if (!(*l_Itr))
-                        continue;
-
-                    if ((*l_Itr)->IsWithinDistInMap(me, 5.0f))
-                    {
-                        if (!(*l_Itr)->HasAura(eFelPoolSpells::SpellFelPoolDebuffDmg))
-                            me->AddAura(eFelPoolSpells::SpellFelPoolDebuffDmg, (*l_Itr));
-                    }
-                    else
-                    {
-                        if ((*l_Itr)->HasAura(eFelPoolSpells::SpellFelPoolDebuffDmg, me->GetGUID()))
-                            (*l_Itr)->RemoveAura(eFelPoolSpells::SpellFelPoolDebuffDmg);
-                    }
-                }
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* p_Creature) const
-    {
-        return new auchindoun_azzakel_mob_fel_poolAI(p_Creature);
-    }
-};
-
 /// Curtain of Flames - 153392
 class auchindoun_azzakel_spell_curtain_flames : public SpellScriptLoader
 {
@@ -638,8 +497,6 @@ public:
 
     class auchindoun_azzakel_spell_curtain_flames_AuraScript : public AuraScript
     {
-        PrepareAuraScript(auchindoun_azzakel_spell_curtain_flames_AuraScript);
-
         enum eCurtainFlamesSpells
         {
             SpellCurtainOfFlameAura = 153392,
@@ -692,8 +549,6 @@ public:
 
     class auchindoun_azzakel_spell_claws_of_argus_AuraScript : public AuraScript
     {
-        PrepareAuraScript(auchindoun_azzakel_spell_claws_of_argus_AuraScript);
-
         enum eAzzakelEvents
         {
             EventMalevolentCrush01 = 78
@@ -774,53 +629,10 @@ public:
     }
 };
 
-/// Fel Spark - 153725
-class auchindoun_azzakel_at_fel_spark : public AreaTriggerEntityScript
-{
-public:
-
-    auchindoun_azzakel_at_fel_spark() : AreaTriggerEntityScript("auchindoun_azzakel_at_fel_spark") {}
-
-    enum eFelSparkSpells
-    {
-        SpellFelSparkDebuffDmg = 153726
-    };
-
-    uint32 m_Diff = 1;
-
-    void OnUpdate(AreaTrigger* p_AreaTrigger, uint32 p_Time)
-    {
-        if (m_Diff <= p_Time)
-        {
-            std::list<Player*> l_ListPlayers;
-            p_AreaTrigger->GetPlayerListInGrid(l_ListPlayers, 2.0f);
-           // p_AreaTrigger->VisitNearbyObject(2.0f, searcher);
-            if (!l_ListPlayers.empty())
-            {
-                for (std::list<Player*>::const_iterator l_Itr = l_ListPlayers.begin(); l_Itr != l_ListPlayers.end(); ++l_Itr)
-                {
-                    if (!(*l_Itr))
-                        continue;
-
-                    if (!(*l_Itr)->HasAura(eFelSparkSpells::SpellFelSparkDebuffDmg))
-                        (*l_Itr)->AddAura(eFelSparkSpells::SpellFelSparkDebuffDmg, (*l_Itr));
-                }
-            }
-
-            m_Diff = 1;
-        }
-        else
-            m_Diff -= p_Time;
-    }
-};
-
 void AddSC_boss_azaakel()
 {
     RegisterCreatureAI(boss_azaakel);
     RegisterCreatureAI(auchindoun_azzakel_mob_controller);   //76216
-    new auchindoun_azzakel_mob_fel_spark_trigger(); //326527
-    new auchindoun_azzakel_mob_fel_pool();          //326526
     new auchindoun_azzakel_spell_curtain_flames();  //153392
     new auchindoun_azzakel_spell_claws_of_argus();  //153764
-    new auchindoun_azzakel_at_fel_spark();          //153725
 }

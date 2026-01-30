@@ -1250,8 +1250,6 @@ struct npc_elisande_epocheric_orb : ScriptedAI
 //209168
 class spell_elisande_spanning_singularity_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_spanning_singularity_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster() || GetCaster()->GetEntry() != NPC_ELISANDE)
@@ -1274,8 +1272,6 @@ class spell_elisande_spanning_singularity_filter : public SpellScript
 //209174
 class spell_elisande_spanning_singularity : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_spanning_singularity);
-
     void HandleScript(SpellEffIndex /*effectIndex*/)
     {
         if (!GetCaster() || !GetHitDest())
@@ -1295,8 +1291,6 @@ class spell_elisande_spanning_singularity : public SpellScript
 //229739
 class spell_elisande_cascadent_star_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_cascadent_star_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (GetCaster())
@@ -1331,8 +1325,6 @@ class spell_elisande_cascadent_star_filter : public SpellScript
 //229740
 class spell_elisande_cascadent_star : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_cascadent_star);
-
     void HandleScript(SpellEffIndex /*effectIndex*/)
     {
         if (!GetCaster() || !GetHitUnit())
@@ -1352,8 +1344,6 @@ class spell_elisande_cascadent_star : public SpellScript
 //209242
 class spell_elisande_delphuric_beam_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_delphuric_beam_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (GetCaster() && !targets.empty())
@@ -1378,8 +1368,6 @@ class spell_elisande_delphuric_beam_filter : public SpellScript
 //209248
 class spell_elisande_delphuric_beam_dmg_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_delphuric_beam_dmg_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         std::list<WorldObject*> tempTargets;
@@ -1410,8 +1398,6 @@ class spell_elisande_delphuric_beam_dmg_filter : public SpellScript
 //210024, 210546
 class spell_elisande_epocheric_orb_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_epocheric_orb_dmg);
-
     void HandleDamage(SpellEffIndex effectIndex)
     {
         if (!GetCaster() || !GetHitUnit())
@@ -1445,8 +1431,6 @@ class spell_elisande_epocheric_orb_dmg : public SpellScript
 //211799
 class spell_elisande_ablating_explosion_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_ablating_explosion_dmg);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit())
@@ -1473,8 +1457,6 @@ class spell_elisande_ablating_explosion_dmg : public SpellScript
 //209599
 class spell_elisande_conflexive_burst_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_conflexive_burst_dmg);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit() || !GetHitUnit()->GetMap()->IsMythic())
@@ -1501,8 +1483,6 @@ class spell_elisande_conflexive_burst_dmg : public SpellScript
 //225653
 class spell_elisande_permeliative_torment_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_permeliative_torment_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (GetCaster() && !targets.empty())
@@ -1527,8 +1507,6 @@ class spell_elisande_permeliative_torment_filter : public SpellScript
 //209621
 class spell_elisande_recursion : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_recursion);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (auto target = GetHitUnit())
@@ -1566,8 +1544,6 @@ class spell_elisande_recursion : public SpellScript
 //209597
 class spell_elisande_conflexive_burst_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elisande_conflexive_burst_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -1590,8 +1566,6 @@ class spell_elisande_conflexive_burst_filter : public SpellScript
 //211261
 class spell_elisande_permeliative_torment : public AuraScript
 {
-    PrepareAuraScript(spell_elisande_permeliative_torment);
-
     void OnTick(AuraEffect const* aurEff)
     {
         if (auto aurEff = GetAura()->GetEffect(EFFECT_0))
@@ -1610,8 +1584,6 @@ class spell_elisande_permeliative_torment : public AuraScript
 //209165
 class spell_elisande_time_slow_regulator : public AuraScript
 {
-    PrepareAuraScript(spell_elisande_time_slow_regulator);
-
     void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool& /*canBeRecalculated*/)
     {
         if (GetUnitOwner() && GetUnitOwner()->IsCreature() && GetUnitOwner()->GetEntry() == NPC_ARCANETIC_RING)
@@ -1630,8 +1602,6 @@ class spell_elisande_time_slow_regulator : public AuraScript
 //214278, 214295
 class spell_elisande_delphuric_beam : public AuraScript
 {
-    PrepareAuraScript(spell_elisande_delphuric_beam);
-
 
     void OnTick(AuraEffect const* aurEff)
     {

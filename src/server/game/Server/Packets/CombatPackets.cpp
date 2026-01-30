@@ -164,3 +164,10 @@ WorldPacket const* WorldPackets::Combat::ResetRangedCombatTimer::Write()
     
     return &_worldPacket;
 }
+
+WorldPacket const* WorldPackets::Combat::InterruptPowerRegen::Write()
+{
+    _worldPacket << int32(PowerType);
+
+    return &_worldPacket;
+}

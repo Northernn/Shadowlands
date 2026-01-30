@@ -27,6 +27,12 @@
 #include "MapObject.h"
 #include <list>
 
+ // npcbot
+class bot_ai;
+class bot_pet_ai;
+class Group;
+//end npcbot
+
 class BattlePetInstance;
 class CreatureAI;
 class CreatureGroup;
@@ -34,6 +40,7 @@ class Quest;
 class Player;
 class SpellInfo;
 class WorldSession;
+class WildBattlePet;
 struct Loot;
 
 enum MovementGeneratorType : uint8;
@@ -78,7 +85,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         float GetNativeObjectScale() const override;
         void SetObjectScale(float scale) override;
-        void SetDisplayId(uint32 displayId, float displayScale = 1.f) override;
+        void SetDisplayId(uint32 displayId, bool setNative = false) override;
         void SetDisplayFromModel(uint32 modelIdx);
 
         void DisappearAndDie() { ForcedDespawn(0); }
@@ -89,12 +96,15 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         static Creature* CreateCreatureFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap = true, bool allowDuplicate = false);
 
         bool LoadCreaturesAddon();
+        void LoadCreaturesSparringHealth();
         void SelectLevel();
         void UpdateLevelDependantStats();
         void SelectWildBattlePetLevel();
         void LoadEquipment(int8 id = 1, bool force = false);
         void SetSpawnHealth();
         void LoadTemplateRoot();
+        bool IsTemplateRooted() const { return _staticFlags.HasFlag(CREATURE_STATIC_FLAG_SESSILE); }
+        void SetTemplateRooted(bool rooted);
 
         ObjectGuid::LowType GetSpawnId() const { return m_spawnId; }
 
@@ -147,6 +157,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         using Unit::SetImmuneToNPC;
         void SetImmuneToNPC(bool apply) override { Unit::SetImmuneToNPC(apply, HasReactState(REACT_PASSIVE)); }
 
+        void SetUnkillable(bool unkillable) { _staticFlags.ApplyFlag(CREATURE_STATIC_FLAG_UNKILLABLE, unkillable); }
+
         /// @todo Rename these properly
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
         bool CanResetTalents(Player* player) const;
@@ -181,11 +193,15 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         SpellSchoolMask GetMeleeDamageSchoolMask(WeaponAttackType /*attackType*/ = BASE_ATTACK) const override { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
+        bool CanMelee() const { return !_staticFlags.HasFlag(CREATURE_STATIC_FLAG_NO_MELEE); }
+        void SetCanMelee(bool canMelee) { _staticFlags.ApplyFlag(CREATURE_STATIC_FLAG_NO_MELEE, !canMelee); }
+        bool CanIgnoreLineOfSightWhenCastingOnMe() const { return _staticFlags.HasFlag(CREATURE_STATIC_FLAG_4_IGNORE_LOS_WHEN_CASTING_ON_ME); }
 
         bool HasSpell(uint32 spellID) const override;
 
         bool UpdateEntry(uint32 entry, CreatureData const* data = nullptr, bool updateLevel = true);
 
+        int32 GetCreatePowerValue(Powers power) const override;
         bool UpdateStats(Stats stat) override;
         bool UpdateAllStats() override;
         void UpdateArmor() override;
@@ -208,11 +224,15 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         CreatureTemplate const* GetCreatureTemplate() const { return m_creatureInfo; }
         CreatureData const* GetCreatureData() const { return m_creatureData; }
+        CreatureDifficulty const* GetCreatureDifficulty() const { return m_creatureDifficulty; }
         CreatureAddon const* GetCreatureAddon() const;
 
         std::string const& GetAIName() const;
         std::string GetScriptName() const;
         uint32 GetScriptId() const;
+        bool HasStringId(std::string_view id) const;
+        void SetScriptStringId(std::string id);
+        std::array<std::string_view, 3> const& GetStringIds() const { return m_stringIds; }
 
         // override WorldObject function for proper name localization
         std::string GetNameForLocaleIdx(LocaleConstant locale) const override;
@@ -225,6 +245,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         virtual void SaveToDB(uint32 mapid, std::vector<Difficulty> const& spawnDifficulties);
         static bool DeleteFromDB(ObjectGuid::LowType spawnId);
 
+        bool CanHaveLoot() const { return !_staticFlags.HasFlag(CREATURE_STATIC_FLAG_NO_LOOT); }
+        void SetCanHaveLoot(bool canHaveLoot) { _staticFlags.ApplyFlag(CREATURE_STATIC_FLAG_NO_LOOT, !canHaveLoot); }
+        uint32 GetLootId() const;
+        void SetLootId(Optional<uint32> lootId);
         std::unique_ptr<Loot> m_loot;
         std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> m_personalLoot;
         void StartPickPocketRefillTimer();
@@ -233,6 +257,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         GuidUnorderedSet const& GetTapList() const { return m_tapList; }
         void SetTapList(GuidUnorderedSet tapList) { m_tapList = std::move(tapList); }
         bool hasLootRecipient() const { return !m_tapList.empty(); }
+        bool IsTapListNotClearedOnEvade() const { return m_dontClearTapListOnEvade; }
+        void SetDontClearTapListOnEvade(bool dontClear);
         bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
         Loot* GetLootForPlayer(Player const* player) const override;
         bool IsFullyLooted() const;
@@ -286,6 +312,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         //DekkCore
         std::shared_ptr<BattlePetInstance> m_battlePetInstance;
         ObjectGuid replacementFromGUID;
+        WildBattlePet* GetWildBattlePet() { return m_wildBattlePet; }
         //DekkCore
         float GetWanderDistance() const { return m_wanderDistance; }
         void SetWanderDistance(float dist) { m_wanderDistance = dist; }
@@ -304,7 +331,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool hasQuest(uint32 quest_id) const override;
         bool hasInvolvedQuest(uint32 quest_id)  const override;
 
-        bool CanRegenerateHealth() const { return !_regenerateHealthLock && _regenerateHealth; }
+        bool CanRegenerateHealth() const { return !_staticFlags.HasFlag(CREATURE_STATIC_FLAG_5_NO_HEALTH_REGEN) && _regenerateHealth; }
         void SetRegenerateHealth(bool value) { _regenerateHealthLock = !value; }
         virtual uint8 GetPetAutoSpellSize() const { return MAX_SPELL_CHARM; }
         virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const;
@@ -381,10 +408,16 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsEscorted() const;
 
         bool CanGiveExperience() const;
+        void SetCanGiveExperience(bool xpEnabled) { _staticFlags.ApplyFlag(CREATURE_STATIC_FLAG_NO_XP, !xpEnabled); }
 
         bool IsEngaged() const override;
         void AtEngage(Unit* target) override;
         void AtDisengage() override;
+
+        void OverrideSparringHealthPct(std::vector<float> const& healthPct);
+        float GetSparringHealthPct() { return _sparringHealthPct; }
+        uint32 CalculateDamageForSparring(Unit* attacker, uint32 damage);
+        bool ShouldFakeDamageFrom(Unit* attacker);
 
         bool HasCanSwimFlagOutOfCombat() const
         {
@@ -396,6 +429,23 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void ExitVehicle(Position const* exitPosition = nullptr) override;
 
+        bool HasFlag(CreatureStaticFlags flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags2 flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags3 flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags4 flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags5 flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags6 flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags7 flag) const { return _staticFlags.HasFlag(flag); }
+        bool HasFlag(CreatureStaticFlags8 flag) const { return _staticFlags.HasFlag(flag); }
+
+        uint32 GetGossipMenuId() const;
+        void SetGossipMenuId(uint32 gossipMenuId);
+
+        uint32 GetTrainerId() const;
+        void SetTrainerId(Optional<uint32> trainerId);
+
+        void SummonGraveyardTeleporter();
+
         void ForcedDespawn(uint32 timeMSToDespawn = 0, Seconds forceRespawnTimer = 0s);
 
         //DekkCore
@@ -403,6 +453,76 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsAffixDisabled() const { return disableAffix; }
         uint32 GetVignetteId() const { return m_creatureInfo ? m_creatureInfo->VignetteID : 0; }
         uint32 GetTrackingQuestID() const { return m_creatureInfo ? m_creatureInfo->TrackingQuestID : 0; }
+        //NPCBots
+        bool LoadBotCreatureFromDB(ObjectGuid::LowType guid, Map* map, bool addToMap = true, bool generated = false, uint32 entry = 0, Position const* pos = nullptr);
+        Player* GetBotOwner() const;
+        Unit* GetBotsPet() const;
+        bool IsNPCBot() const;
+        bool IsNPCBotPet() const;
+        bool IsNPCBotOrPet() const;
+        bool IsFreeBot() const;
+        bool IsWandererBot() const;
+        void SetBotGroup(Group* group, int8 subgroup = -1);
+        uint8 GetBotClass() const;
+        uint32 GetBotRoles() const;
+        bot_ai* GetBotAI() const { return bot_AI; }
+        bot_pet_ai* GetBotPetAI() const { return bot_pet_AI; }
+        void SetBotAI(bot_ai* ai) { bot_AI = ai; }
+        void SetBotPetAI(bot_pet_ai* ai) { bot_pet_AI = ai; }
+        void ApplyBotDamageMultiplierMelee(uint32& damage, CalcDamageInfo& damageinfo) const;
+        void ApplyBotDamageMultiplierMelee(int32& damage, SpellNonMeleeDamage& damageinfo, SpellInfo const* spellInfo, WeaponAttackType attackType, bool crit) const;
+        void ApplyBotDamageMultiplierSpell(int32& damage, SpellNonMeleeDamage& damageinfo, SpellInfo const* spellInfo, WeaponAttackType attackType, bool crit) const;
+        void ApplyBotDamageMultiplierHeal(Unit const* victim, float& heal, SpellInfo const* spellInfo, DamageEffectType damagetype, uint32 stack) const;
+        void ApplyBotCritMultiplierAll(Unit const* victim, float& crit_chance, SpellInfo const* spellInfo, SpellSchoolMask schoolMask, WeaponAttackType attackType) const;
+        void ApplyCreatureSpellCostMods(SpellInfo const* spellInfo, int32& cost) const;
+        void ApplyCreatureSpellCastTimeMods(SpellInfo const* spellInfo, int32& casttime) const;
+        void ApplyCreatureSpellRadiusMods(SpellInfo const* spellInfo, float& radius) const;
+        void ApplyCreatureSpellRangeMods(SpellInfo const* spellInfo, float& maxrange) const;
+        void ApplyCreatureSpellMaxTargetsMods(SpellInfo const* spellInfo, uint32& targets) const;
+        void ApplyCreatureSpellChanceOfSuccessMods(SpellInfo const* spellInfo, float& chance) const;
+        void ApplyCreatureEffectMods(SpellInfo const* spellInfo, uint8 effIndex, float& value) const;
+        void OnBotSummon(Creature* summon);
+        void OnBotDespawn(Creature* summon);
+        void BotStopMovement();
+
+        bool CanParry() const;
+        bool CanDodge() const;
+        bool CanBlock() const;
+        bool CanCrit() const;
+        bool CanMiss() const;
+
+        float GetCreatureParryChance() const;
+        float GetCreatureDodgeChance() const;
+        float GetCreatureBlockChance() const;
+        float GetCreatureCritChance() const;
+        float GetCreatureMissChance() const;
+        float GetCreatureArmorPenetrationCoef() const;
+        uint32 GetCreatureExpertise() const;
+        uint32 GetCreatureSpellPenetration() const;
+        uint32 GetCreatureSpellPower() const;
+        uint32 GetCreatureDefense() const;
+        int32 GetCreatureResistanceBonus(SpellSchoolMask mask) const;
+        uint8 GetCreatureComboPoints() const;
+        float GetCreatureAmmoDPS() const;
+
+        bool IsTempBot() const;
+
+        MeleeHitOutcome BotRollMeleeOutcomeAgainst(Unit const* victim, WeaponAttackType attType) const;
+
+        void CastCreatureItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx);
+
+        bool HasSpellCooldown(uint32 spellId) const;
+        void AddBotSpellCooldown(uint32 spellId, uint32 cooldown);
+        void ReleaseBotSpellCooldown(uint32 spellId);
+
+        void SpendBotRunes(SpellInfo const* spellInfo, bool didHit);
+
+        Item* GetBotEquips(uint8 slot) const;
+        Item* GetBotEquipsByGuid(ObjectGuid itemGuid) const;
+        float GetBotAverageItemLevel() const;
+
+        static bool IsBotCustomSpell(uint32 spellId);
+        //End NPCBots
 
         //Dekkcore
     protected:
@@ -415,6 +535,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         static float _GetHealthMod(int32 Rank);
 
         GuidUnorderedSet m_tapList;
+        bool m_dontClearTapListOnEvade;
 
         /// Timers
         time_t _pickpocketLootRestore;
@@ -449,9 +570,13 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool DisableReputationGain;
 
-        CreatureTemplate const* m_creatureInfo;                 // Can differ from sObjectMgr->GetCreatureTemplate(GetEntry()) in difficulty mode > 0
+        CreatureTemplate const* m_creatureInfo;
         CreatureData const* m_creatureData;
+        CreatureDifficulty const* m_creatureDifficulty;
+        std::array<std::string_view, 3> m_stringIds;
+        Optional<std::string> m_scriptStringId;
 
+        Optional<uint32> m_lootId;
         uint16 m_LootMode;                                  // Bitmask (default: LOOT_MODE_DEFAULT) that determines what loot will be lootable
 
         bool IsInvisibleDueToDespawn(WorldObject const* seer) const override;
@@ -459,6 +584,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         //DekkCore
         float m_followDistance = 1.0f;
+        WildBattlePet* m_wildBattlePet;
         //DekkCore
     private:
         
@@ -486,18 +612,27 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         time_t _lastDamagedTime; // Part of Evade mechanics
         CreatureTextRepeatGroup m_textRepeat;
 
+        void ApplyAllStaticFlags(CreatureStaticFlagsHolder const& flags);
+
+        CreatureStaticFlagsHolder _staticFlags;
         // Regenerate health
         bool _regenerateHealth; // Set on creation
         bool _regenerateHealthLock; // Dynamically set
 
         bool _isMissingCanSwimFlagOutOfCombat;
 
-
-
+        uint32 _gossipMenuId;
+        Optional<uint32> _trainerId;
+        float _sparringHealthPct;
+        //bot system
+        bot_ai* bot_AI;
+        bot_pet_ai* bot_pet_AI;
+        //end bot system
         // DekkCore >
     public:
         void SetInCombatWithZone();
         void DespawnCreaturesInArea(uint32 entry, float range = 125.0f);
+        void SetGuid(ObjectGuid const& guid);
         // < DekkCore
 };
 

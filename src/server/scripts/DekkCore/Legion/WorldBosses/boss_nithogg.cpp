@@ -214,8 +214,6 @@ struct boss_nithogg : public WorldBossAI
 //212867
 class spell_nithogg_electrical_storm_target : public SpellScript
 {
-    PrepareSpellScript(spell_nithogg_electrical_storm_target);
-
     bool Validate(SpellInfo const* info) override
     {
         return ValidateSpellInfo({ (uint32)info->GetEffect(EFFECT_0).BasePoints });
@@ -301,7 +299,7 @@ struct at_nithogg_electrical_storm : AreaTriggerAI
         timeInterval -= 2000;
     }
 
-    void OnCreate() override
+    void OnCreate(Spell const* /*creatingSpell*/) override
     {
         Unit* caster = at->GetCaster(); //Caster should be the electrical storm NPC
 
@@ -337,8 +335,6 @@ struct at_nithogg_electrical_storm : AreaTriggerAI
 //212889 - Static Charge
 class spell_nithogg_static_charge_summon : public SpellScript
 {
-    PrepareSpellScript(spell_nithogg_static_charge_summon);
-
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -364,8 +360,6 @@ class spell_nithogg_static_charge_summon : public SpellScript
 //212837
 class spell_nithogg_crackling_jolt_target : public SpellScript
 {
-    PrepareSpellScript(spell_nithogg_crackling_jolt_target);
-
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         Unit* target = GetHitUnit();
@@ -385,8 +379,6 @@ class spell_nithogg_crackling_jolt_target : public SpellScript
 //212841
 class spell_nithogg_crackling_jolt_damage : public SpellScript
 {
-    PrepareSpellScript(spell_nithogg_crackling_jolt_damage);
-
     void HandleLaunch(SpellEffIndex effIndex)
     {
         Unit* caster = GetCaster();
@@ -463,8 +455,6 @@ struct npc_nithogg_static_orb : public ScriptedAI
 //212836
 class spell_nithogg_tail_lash : public SpellScript
 {
-    PrepareSpellScript(spell_nithogg_tail_lash);
-
     void FilterTargets(std::list<WorldObject*>& p_Targets)
     {
         if (Unit* caster = GetCaster())

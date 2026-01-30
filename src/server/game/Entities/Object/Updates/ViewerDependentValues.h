@@ -30,6 +30,7 @@
 #include "TemporarySummon.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "AnimaPower.h"
 
 namespace UF
 {
@@ -127,6 +128,10 @@ public:
                         dynFlags |= GO_DYNFLAG_LO_NO_INTERACT;
                     else
                         dynFlags &= ~GO_DYNFLAG_LO_NO_INTERACT;
+                    break;
+                case GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST:
+                    if (const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+                        dynFlags |= GO_DYNFLAG_LO_DEPLETED;
                     break;
                 case GAMEOBJECT_TYPE_GATHERING_NODE:
                     if (gameObject->ActivateToQuest(receiver))
@@ -314,8 +319,15 @@ public:
     {
         value_type flags = gameObjectData->Flags;
         if (gameObject->GetGoType() == GAMEOBJECT_TYPE_CHEST)
+        {
             if (gameObject->GetGOInfo()->chest.usegrouplootrules && !gameObject->IsLootAllowedFor(receiver))
                 flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
+        }
+        else if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+        {
+            if (const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+                flags |= GO_FLAG_NOT_SELECTABLE;
+        }
 
         return flags;
     }
@@ -330,6 +342,25 @@ public:
     static value_type GetValue(UF::GameObjectData const* /*gameObjectData*/, GameObject const* gameObject, Player const* receiver)
     {
         return gameObject->GetGoStateFor(receiver->GetGUID());
+    }
+};
+
+template<>
+class ViewerDependentValue<UF::GameObjectData::DisplayIDTag>
+{
+public:
+    using value_type = UF::GameObjectData::DisplayIDTag::value_type;
+
+    static value_type GetValue(UF::GameObjectData const* gameObjectData, GameObject const* gameObject, Player const* receiver)
+    {
+        value_type displayId = gameObjectData->DisplayID;
+        if (gameObject->GetGoType() == GAMEOBJECT_TYPE_PLAYER_CHOICE_CHEST)
+        {
+            if (!const_cast<Player*>(receiver)->ConsumedAnimaPowers.count(gameObject->GetGUID()))
+                displayId = 61847;
+        }
+
+        return displayId;
     }
 };
 

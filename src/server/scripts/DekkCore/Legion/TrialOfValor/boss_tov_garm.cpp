@@ -1,373 +1,217 @@
-#include "trial_of_valor.h"
-#include "AreaTriggerAI.h"
+/*
+ * This file is part of the DekkCore Team Devs
+ */
+
 #include "AreaTrigger.h"
-#include "AreaTriggerTemplate.h"
-#include "SpellAuraDefines.h"
-#include "SpellAuraEffects.h"
+#include "AreaTriggerAI.h"
+#include "Containers.h"
+#include "Conversation.h"
+#include "CreatureAI.h"
+#include "CreatureAIImpl.h"
+#include "InstanceScript.h"
+#include "Map.h"
+#include "MotionMaster.h"
+#include "ObjectAccessor.h"
+#include "Player.h"
+#include "ScriptedCreature.h"
+#include "ScriptMgr.h"
+#include "SharedDefines.h"
+#include "SpellAuras.h"
+#include "SpellHistory.h"
+#include "SpellScript.h"
 #include "TemporarySummon.h"
+#include "trial_of_valor.h"
 
-namespace
+enum GuarmSpells
 {
-    enum Says
-    {
-        SAY_RAID_CAST = 5,
-        SAY_BERSERK
-    };
+    SPELL_HELYATOSIS_AURA = 231561,
+    SPELL_HELYATOSIS_INITIAL_ENERGIZE = 235130,
+    SPELL_MULTI_HEADED_AURA = 227512,
+    SPELL_MULTI_HEADED_DAMAGE = 227642,
+    SPELL_FLASHING_FANGS = 227514,
+    SPELL_OFF_THE_LEASH = 228201,
 
-    enum Spells
-    {
-        SpellBerserkCharge = 232173,
-        SpellBrineyVolatileFoam = 228810,
-        SpellBrineyVolatileFoam2 = 228811,
-        SpellFlamingVolatileFoam = 228744,
-        SpellFlamingVolatileFoam2 = 228794,
-        SpellFlashingFangs = 227514,
-        SpellGuardiansBreath = 228187,
-        SpellHeadlongCharge = 227816,
-        SpellHeadlongChargeAT = 227833,
-        SpellHelyatosis = 231561,
-        SpellOffTheLeash = 228201,
-        SpellRoaringLeap = 227883,
-        SpellRoaringLeapJump = 229350,
-        SpellShadowyVolatileFoam = 228818,
-        SpellShadowyVolatileFoam2 = 228819,
-        SpellVolatileFoam = 228824,
-        SpellMultyHeaded = 227642,
-        SpellMultyHeadedTooltip = 227512,
-        SpellHelyatosis_AddPower = 235130,
-        SpellGuardiansBreath_1 = 227666,
-        SpellGuardiansBreath_2 = 227669,
-        SpellGuardiansBreath_3 = 227673,
-        SpellClearAllDebuffs = 34098,
-        SpellFlameLick = 228226,
-        SpellFrostLick = 228246,
-        SpellShadowLick = 228250,
-        SpellFieryPhlegm = 228758,
-        SpellDarkDischarge = 228769,
-        SpellSaltySpittle = 228768,
-        SpellBerserk = 64238,
-        SpellShadowLickAura = 228253,
-        SpellHeadlongChargeDmg = 229480,
-        SpellFrothingRage = 228174,
-        SpellFieryPhlegmAOE = 227539,
-        SpellDarkDischargeAOE = 227570,
-        SpellSaltySpittleAOE = 227566
-    };
+    SPELL_FLAME_LICK_SELECTOR = 228226, // triggers 228227 missile
+    SPELL_SHADOW_LICK_SELECTOR = 228250, // triggers 228251 missile
+    SPELL_FROST_LICK_SELECTOR = 228246, // triggers 228247 missile
 
-    enum Events
-    {
-        EVENT_OFF_THE_LEASH = 1,
-        EVENT_HEADLONG_CHARGE = 2,
-        EVENT_HEADLONG_CHARGE_WP = 3,
-        EVENT_ROARING_LEAP = 4,
-        EVENT_ROARING_LEAP_JUMP = 5,
+    SPELL_BERSERK = 26662,
+    SPELL_BERSERK_TRAMPLE_AOE = 232224,
+    SPELL_BERSERK_CHARGE_AT = 232173, // triggers 232197
 
-        EVENT_FLAME_LICK = 6,
-        EVENT_FROST_LICK = 7,
-        EVENT_SHADOW_LICK = 8,
+    SPELL_GUARDIANS_BREATH_COLOR_SELECTOR = 228187,
+    SPELL_GUARDIANS_BREATH_SUMMON_ATS_RGB = 232811, // Red Green Blue
+    SPELL_GUARDIANS_BREATH_SUMMON_ATS_RBG = 232810, // Red Blue Green
+    SPELL_GUARDIANS_BREATH_SUMMON_ATS_GRB = 232775, // Green Red Blue
+    SPELL_GUARDIANS_BREATH_SUMMON_ATS_GBR = 232808, // Green Blue Red
+    SPELL_GUARDIANS_BREATH_SUMMON_ATS_BRG = 232809, // Blue Red Green
+    SPELL_GUARDIANS_BREATH_SUMMON_ATS_BGR = 232807, // Blue Green Red
+    SPELL_GUARDIANS_BREATH_UNK = 227573,
+    SPELL_GUARDIANS_BREATH_CAST_RGB = 227673, // Red Green Blue
+    SPELL_GUARDIANS_BREATH_CAST_RBG = 227667, // Red Blue Green
+    SPELL_GUARDIANS_BREATH_CAST_GRB = 227669, // Green Red Blue
+    SPELL_GUARDIANS_BREATH_CAST_GBR = 227660, // Green Blue Red
+    SPELL_GUARDIANS_BREATH_CAST_BRG = 227666, // Blue Red Green
+    SPELL_GUARDIANS_BREATH_CAST_BGR = 227658, // Blue Green Red
+    SPELL_FIERY_PHLEGM = 232777, // Red
+    SPELL_FIERY_PHLEGM_AURA = 228758,
+    SPELL_SALTY_SPITTLE = 232798, // Green
+    SPELL_SALTY_SPITTLE_AURA = 228768,
+    SPELL_DARK_DISCHARGE = 232800, // Blue
+    SPELL_DARK_DISCHARGE_AURA = 228769,
+    SPELL_FROTHING_RAGE = 228174, // applied x times where x players not getting hit by breath
 
-        EVENT_POINT_2 = 9,
-        EVENT_POINT_3 = 10,
-        EVENT_POINT_COMPLETE = 11,
+    SPELL_ROARING_LEAP_SELECTOR = 227894, // @TODO: requires TARGET_DEST_CASTER_CLUMP_CENTROID
+    SPELL_ROARING_LEAP_INITIAL_KNOCKBACK = 227883,
+    SPELL_ROARING_LEAP_JUMP = 229350, // triggers 227902
+    SPELL_HEADLONG_CHARGE_INITIAL = 227816,
+    SPELL_HEADLONG_CHARGE_PERIODIC_DAMAGE = 229480,
+    SPELL_HEADLONG_CHARGE_DAMAGE = 228344,
+    SPELL_HEADLONG_CHARGE_AT = 227833, // triggers 227843
 
-        //MYTHIC
-        EVENT_FLAMING_VOLATILE_FOAM = 12,
-        EVENT_BRINEY_VOLATILE_FOAM = 13,
-        EVENT_SHADOWY_VOLATILE_FOAM = 14
-    };
-
-    enum Phase
-    {
-        PHASE_1 = 1,
-        PHASE_2
-    };
-}
-
-enum Misc
-{
-    ACTION_1 = 1,
-    ACTION_2,
-    ACTION_3,
+    // Mythic
+    SPELL_VOLATILE_FOAM_INITIAL = 228824,
+    SPELL_VOLATILE_FOAM_SELECTOR_RED = 228684,
+    SPELL_VOLATILE_FOAM_SELECTOR_GREEN = 228809,
+    SPELL_VOLATILE_FOAM_SELECTOR_BLUE = 228817,
 };
 
-uint32 RandSpellGuardiansBreath[3] =
+enum GuarmEvents
 {
-    SpellGuardiansBreath_1,
-    SpellGuardiansBreath_2,
-    SpellGuardiansBreath_3
+    EVENT_FLASHING_FANGS = 1,
+    EVENT_CHECK_ENERGY,
+    EVENT_LICK,
+    EVENT_ROARING_LEAP,
+    EVENT_HEADLONG_CHARGE,
+    EVENT_OFF_THE_LEASH,
+    EVENT_VOLATILE_FOAM,
+    EVENT_BERSERK,
 };
 
-Position const WPphaseTwo[3] =
+enum GuarmTalks
 {
-    { 451.0492f,    545.6583f, 3.07493f, 0.0f },
-    { 476.35119f,   551.8374f, 2.42583f, 0.0f },
-    { 482.3681f,    450.1896f, 5.06133f, 0.0f }
+    TALK_GUARDIANS_BREATH_ANNOUNCE = 0, // |TInterface\Icons\SPELL_FIRE_TWILIGHTFLAMEBREATH.BLP:20|t%s begins to cast |cFFFF0000|Hspell:227573|h[Guardian's Breath]|h|r!
+    TALK_BERSERK = 1, // %s goes into a berserker rage!
 };
 
-struct boss_garm : BossAI
+enum GuarmPoints
 {
-    explicit boss_garm(Creature* creature) : BossAI(creature, Data::BossIDs::GarmID) {}
+    POINT_BERSERK_JUMP = 0,
 
-    uint32 passengerData[3][2] =
+    POINT_HEADLONG_CHARGE = 50,
+    POINT_HEADLONG_CHARGE_MAX = 53,
+};
+
+enum GuarmPaths
+{
+    PATH_HEADLONG_CHARGE1 = (114323 * 100) + 0,
+    PATH_HEADLONG_CHARGE2 = (114323 * 100) + 1,
+    PATH_HEADLONG_CHARGE3 = (114323 * 100) + 2,
+    PATH_HEADLONG_CHARGE4 = (114323 * 100) + 3,
+    PATH_BERSERK = (114323 * 100) + 4,
+};
+
+enum GuarmSpellCategories
+{
+    SPELL_CATEGORY_GUARM = 1152,
+};
+
+enum GuarmConversations
+{
+    CONVERSATION_DEATH = 3917
+};
+
+enum GuarmActions
+{
+    ACTION_BREATH_HIT_TARGET = 0,
+    ACTION_HANDLE_FROTHING_RAGE,
+};
+
+struct JumpMovePathPair
+{
+    Position JumpPos;
+    uint32 PathID;
+};
+
+JumpMovePathPair const HeadlongChargePairs[] =
+{
+    { { 478.535f, 446.623f, 4.88632f }, PATH_HEADLONG_CHARGE1 },
+    { { 460.708f, 445.918f, 4.91909f }, PATH_HEADLONG_CHARGE2 },
+    { { 454.967f, 543.651f, 2.99177f }, PATH_HEADLONG_CHARGE3 },
+    { { 475.189f, 543.391f, 3.25487f }, PATH_HEADLONG_CHARGE4 },
+};
+
+struct GuardiansBreathSpellPair
+{
+    uint32 SummonATSpellID;
+    uint32 CastSpellID;
+};
+
+GuardiansBreathSpellPair const GuardiansBreathSpellPairs[] =
+{
+    { SPELL_GUARDIANS_BREATH_SUMMON_ATS_RGB, SPELL_GUARDIANS_BREATH_CAST_RGB },
+    { SPELL_GUARDIANS_BREATH_SUMMON_ATS_RBG, SPELL_GUARDIANS_BREATH_CAST_RBG },
+    { SPELL_GUARDIANS_BREATH_SUMMON_ATS_GRB, SPELL_GUARDIANS_BREATH_CAST_GRB },
+    { SPELL_GUARDIANS_BREATH_SUMMON_ATS_GBR, SPELL_GUARDIANS_BREATH_CAST_GBR },
+    { SPELL_GUARDIANS_BREATH_SUMMON_ATS_BRG, SPELL_GUARDIANS_BREATH_CAST_BRG },
+    { SPELL_GUARDIANS_BREATH_SUMMON_ATS_BGR, SPELL_GUARDIANS_BREATH_CAST_BGR }
+};
+
+JumpMovePathPair const BerserkerPair = { { 464.035f, 549.979f, 2.95187f }, PATH_BERSERK };
+
+// 114323 - Guarm
+struct boss_guarm : public BossAI
+{
+    boss_guarm(Creature* creature) : BossAI(creature, DATA_GUARM), _lickCount(0), _unitsHitByBreathCount(0) { }
+
+    void JustAppeared() override
     {
-        { Data::Creatures::GuarmPassenger1, 0 },
-        { Data::Creatures::GuarmPassenger2, 1 },
-        { Data::Creatures::GuarmPassenger3, 2 }
-    };
-
-    uint32 berserk;
-    uint8 eventPhase;
-    uint32 countTarget;
-    bool berserkcharge = {};
-    bool frothingRage = {};
-
-    void Reset() override
-    {
-        _Reset();
-        berserkcharge = false;
-        frothingRage = false;
-        berserk = 0;
-        eventPhase = 0;
-        countTarget = 0;
-        DespawnAllSummons();
-        RemoveDebaffsOnPlayer();
-
-        me->SetUnitFlag(UNIT_FLAG_UNK_6);
-        me->SetUnitFlag(UNIT_FLAG_CAN_SWIM);
-        //me->SetUnitFlag2(MAX_UNIT_FLAGS_2);
-        me->SetPower(POWER_ENERGY, 0);
-        me->SetMaxPower(POWER_ENERGY, 100);
-        me->SetReactState(REACT_AGGRESSIVE);
-        me->SetControlled(0, UNIT_STATE_ROOT);
-        me->RemoveAllAuras();
-        for (auto x = 0; x < std::extent<decltype(passengerData)>::value; x++)
-        {
-            if (auto passenger = me->SummonCreature(passengerData[x][0], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
-            {
-                passenger->EnterVehicle(me, passengerData[x][1]);
-                passenger->SetReactState(REACT_PASSIVE);
-            }
-            else
-                BossAI::EnterEvadeMode();
-        }
-
-        DoCast(SpellMultyHeadedTooltip);
-    }
-
-    void RemoveDebaffsOnPlayer()
-    {
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellFlameLick);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellFrostLick);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellShadowLick);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellFieryPhlegm);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellDarkDischarge);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellSaltySpittle);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellShadowLickAura);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellShadowyVolatileFoam);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellBrineyVolatileFoam);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellFlamingVolatileFoam);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellShadowyVolatileFoam2);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellBrineyVolatileFoam2);
-        instance->DoRemoveAurasDueToSpellOnPlayers(SpellFlamingVolatileFoam2);
-    }
-
-    void DespawnAllSummons()
-    {
-        std::list<Creature*> list;
-        list.clear();
-        me->GetCreatureListWithEntryInGrid(list, Data::Creatures::GuarmPassenger1, 50.0f);
-        me->GetCreatureListWithEntryInGrid(list, Data::Creatures::GuarmPassenger2, 50.0f);
-        me->GetCreatureListWithEntryInGrid(list, Data::Creatures::GuarmPassenger3, 50.0f);
-        if (!list.empty())
-            for (auto& sum : list)
-                sum->DespawnOrUnsummon();
-    }
-
-    void EnterEvadeMode(EvadeReason w) 
-    {
-    }
-
-    void JustEngagedWith(Unit* who) override
-    {
-        _JustEngagedWith(who);
-        StartEvents(PHASE_1);
-        DoCast(SpellHelyatosis_AddPower);
-
-        if (IsHeroicRaid() || IsNormalRaid())
-            berserk = 300000;
-        else if (IsMythicRaid())
-            berserk = 240000;
-        else if (IsLFR())
-            berserk = 420000;
-    }
-
-    void SetPower(Powers power, int32 value)
-    {
-        if (power != POWER_ENERGY || !me->IsInCombat())
-            return;
-
-        if (value == 0)
-        {
-            if (!me->HasAura(SpellHelyatosis))
-                DoCast(SpellHelyatosis);
-        }
-
-        if (value == 100)
-        {
-            frothingRage = false;
-            countTarget = 0;
-            ZoneTalk(SAY_RAID_CAST, nullptr);
-            me->RemoveAura(SpellHelyatosis);
-            me->SetPower(POWER_ENERGY, 0);
-            DoCast(RandSpellGuardiansBreath[urand(0, 2)]);
-            me->SetFacingToObject(me->GetVictim());
-        }
-
-        if (value == 53 || value == 70)
-            DoCast(SpellFlashingFangs);
+        DoCastAOE(SPELL_MULTI_HEADED_AURA);
+        me->SetMaxPower(POWER_ENERGY, 100); // power is set to 0 in Creature::UpdateMaxPower
     }
 
     void JustDied(Unit* /*killer*/) override
     {
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+
+        Conversation::CreateConversation(CONVERSATION_DEATH, me, me->GetPosition(), ObjectGuid::Empty);
+
         _JustDied();
-        instance->DoUpdateCriteria(CriteriaType::DefeatDungeonEncounter, 1962);
-        RemoveDebaffsOnPlayer();
     }
 
-    void DoAction(int32 const action) override
+    void EnterEvadeMode(EvadeReason /*why*/) override
     {
-        switch (action)
-        {
-        case ACTION_1:
-            DoCast(SpellMultyHeaded);
-            break;
-        case ACTION_2:
-        {
-            frothingRage = true;
-            countTarget++;
-            if (countTarget == 0)
-                return;
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 
-            uint32 targets = 0;
-            uint32 StackAuras = 0;
-            uint32 diffRaid = IsMythicRaid() ? 20 : 30;
-         //   auto threatlist = me->CanHaveThreatList().getThreatList();
-           // if (!threatlist.empty())
-            {
-             //   targets = threatlist.size();
-                StackAuras = (targets - countTarget);
-
-                if (StackAuras >= 1 && StackAuras <= diffRaid)
-                {
-                    if (StackAuras > targets)
-                        return;
-
-                    if (Aura* aura = me->AddAura(SpellFrothingRage, me))
-                        aura->SetStackAmount(StackAuras);
-                }
-                else if (targets == 1 && countTarget < 1)
-                    me->AddAura(SpellFrothingRage, me);
-                else if (StackAuras < 0)
-                    me->AddAura(SpellFrothingRage, me);
-            }
-            break;
-        }
-        case ACTION_3:
-        {
-            if (!frothingRage)
-            {
-                uint32 targets = 0;
-
-          //      auto threatlist = me->CanHaveThreatList().getThreatList();
-          //      if (!threatlist.empty())
-                {
-               //     targets = threatlist.size();
-                    me->AddAura(SpellFrothingRage, me);
-                }
-            }
-            break;
-        }
-        default:
-            break;
-        }
+        summons.DespawnAll();
+        _EnterEvadeMode();
+        _DespawnAtEvade();
     }
 
-    void SpellHit(WorldObject* /*owner*/, SpellInfo const* spell) override
+    void JustEngagedWith(Unit* who) override
     {
-        switch (spell->Id)
+        BossAI::JustEngagedWith(who);
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me, 1);
+
+        DoCastAOE(SPELL_HELYATOSIS_AURA);
+        DoCastAOE(SPELL_HELYATOSIS_INITIAL_ENERGIZE);
+
+        events.ScheduleEvent(EVENT_FLASHING_FANGS, 6s);
+        events.ScheduleEvent(EVENT_LICK, 12s);
+        events.ScheduleEvent(EVENT_CHECK_ENERGY, 500ms);
+        events.ScheduleEvent(EVENT_OFF_THE_LEASH, 45s);
+
+        if (GetDifficulty() == DIFFICULTY_MYTHIC_RAID)
         {
-        case SpellHeadlongCharge:
-            me->GetMotionMaster()->MoveCharge(456.3476f, 449.91302f, 4.778366f, 30.0f);
-            events.RescheduleEvent(EVENT_HEADLONG_CHARGE_WP, 2s);
-            break;
-        case SpellGuardiansBreath_1:
-        case SpellGuardiansBreath_2:
-        case SpellGuardiansBreath_3:
-            DoCast(me, SpellFieryPhlegmAOE, true);
-            DoCast(me, SpellDarkDischargeAOE, true);
-            DoCast(me, SpellSaltySpittleAOE, true);
-            break;
+            events.ScheduleEvent(EVENT_VOLATILE_FOAM, 11s);
+            events.ScheduleEvent(EVENT_BERSERK, 4min + 4s);
         }
-    }
-
-    void StartEvents(uint8 phase)
-    {
-        events.Reset();
-        eventPhase = phase;
-
-        switch (phase)
-        {
-        case PHASE_1:
-            DoCast(SpellHelyatosis);
-            events.RescheduleEvent(EVENT_OFF_THE_LEASH, 30s);
-            events.RescheduleEvent(EVENT_FLAME_LICK, 12s);
-            events.RescheduleEvent(EVENT_FROST_LICK, 24s);
-            events.RescheduleEvent(EVENT_SHADOW_LICK, 27s);
-
-            if (IsMythicRaid())
-            {
-                events.RescheduleEvent(EVENT_FLAMING_VOLATILE_FOAM, 10s);
-                events.RescheduleEvent(EVENT_BRINEY_VOLATILE_FOAM, 10s);
-                events.RescheduleEvent(EVENT_SHADOWY_VOLATILE_FOAM, 10s);
-            }
-            break;
-        case PHASE_2:
-            me->RemoveAura(SpellHelyatosis);
-            me->AttackStop();
-
-            DoCast(SpellClearAllDebuffs);
-            DoCast(SpellOffTheLeash);
-
-            events.RescheduleEvent(EVENT_ROARING_LEAP, 2s);
-            events.RescheduleEvent(EVENT_HEADLONG_CHARGE, 7s);
-            break;
-        }
-    }
-
-    void MovementInform(uint32 type, uint32 data) override
-    {
-        if (type == POINT_MOTION_TYPE)
-        {
-            switch (data)
-            {
-            case 1:
-                events.RescheduleEvent(EVENT_POINT_2, 1s);
-                break;
-            case 2:
-                events.RescheduleEvent(EVENT_POINT_3, 1s);
-                break;
-            case 3:
-                events.RescheduleEvent(EVENT_POINT_COMPLETE, 1s);
-                break;
-            }
-        }
-    }
-
-    uint32 GetData(uint32 type) const override
-    {
-        if (type == Data::BossIDs::GarmID)
-            return eventPhase;
-        return 0;
+        else if (GetDifficulty() == DIFFICULTY_HEROIC_RAID)
+            events.ScheduleEvent(EVENT_BERSERK, 5min);
+        else if (GetDifficulty() == DIFFICULTY_NORMAL_RAID)
+            events.ScheduleEvent(EVENT_BERSERK, 6min);
+        else // LFR
+            events.ScheduleEvent(EVENT_BERSERK, 7min);
     }
 
     void UpdateAI(uint32 diff) override
@@ -380,252 +224,360 @@ struct boss_garm : BossAI
         if (me->HasUnitState(UNIT_STATE_CASTING))
             return;
 
-        if (uint32 eventId = events.ExecuteEvent())
+        switch (events.ExecuteEvent())
         {
-            switch (eventId)
-            {
-            case EVENT_OFF_THE_LEASH:
-                StartEvents(PHASE_2);
+        case EVENT_FLASHING_FANGS:
+            DoCastVictim(SPELL_FLASHING_FANGS);
+            events.ScheduleEvent(EVENT_FLASHING_FANGS, 21s + 500ms);
+            break;
+        case EVENT_LICK:
+            _lickCount++;
+            DoCastAOE(RAND(SPELL_FLAME_LICK_SELECTOR, SPELL_SHADOW_LICK_SELECTOR, SPELL_FROST_LICK_SELECTOR));
+            events.ScheduleEvent(EVENT_LICK, (_lickCount % 2) ? 4s : 10s);
+            break;
+        case EVENT_CHECK_ENERGY:
+        {
+            events.ScheduleEvent(EVENT_CHECK_ENERGY, 500ms);
+            if (me->GetPower(POWER_ENERGY) < 100)
                 break;
-            case EVENT_HEADLONG_CHARGE:
-                me->SetControlled(1, UNIT_STATE_ROOT);
-                DoCast(SpellHeadlongCharge);
-                break;
-            case EVENT_HEADLONG_CHARGE_WP:
-                if (!berserkcharge)
-                    DoCast(SpellHeadlongChargeAT);
-                else
-                    DoCast(SpellBerserkCharge);
 
-                DoCast(SpellHeadlongChargeDmg);
+            _unitsHitByBreathCount = 0;
+            if (DoCastVictim(SPELL_GUARDIANS_BREATH_COLOR_SELECTOR) == SPELL_CAST_OK)
+                Talk(TALK_GUARDIANS_BREATH_ANNOUNCE);
 
-                me->SetControlled(0, UNIT_STATE_ROOT);
-                me->AttackStop();
-                me->GetMotionMaster()->MovePoint(1, WPphaseTwo[0]);
-                break;
-            case EVENT_ROARING_LEAP:
-                me->SetControlled(1, UNIT_STATE_ROOT);
-                DoCast(SpellRoaringLeap);
-                events.RescheduleEvent(EVENT_ROARING_LEAP_JUMP, 2s);
-                break;
-            case EVENT_ROARING_LEAP_JUMP:
-                me->SetControlled(0, UNIT_STATE_ROOT);
-
-                if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 15.0f, true))
-                    DoCast(target, SpellRoaringLeapJump);
-                break;
-            case EVENT_FLAME_LICK:
-                if (eventPhase != PHASE_2)
-                {
-                    DoCast(SpellFlameLick);
-                    events.RescheduleEvent(EVENT_FLAME_LICK, 13s);
-                }
-                break;
-            case EVENT_FROST_LICK:
-                if (eventPhase != PHASE_2)
-                {
-                    DoCast(SpellFrostLick);
-                    events.RescheduleEvent(EVENT_FROST_LICK, 24s);
-                }
-                break;
-            case EVENT_SHADOW_LICK:
-                if (eventPhase == PHASE_2)
-                    return;
-
-                DoCast(SpellShadowLick);
-                events.RescheduleEvent(EVENT_SHADOW_LICK, 27s);
-                break;
-            case EVENT_POINT_2:
-                me->AttackStop();
-                me->GetMotionMaster()->MovePoint(2, WPphaseTwo[1]);
-                break;
-            case EVENT_POINT_3:
-                me->AttackStop();
-                me->GetMotionMaster()->MovePoint(3, WPphaseTwo[2]);
-                break;
-            case EVENT_POINT_COMPLETE:
-                me->SetReactState(REACT_AGGRESSIVE);
-                me->SetControlled(0, UNIT_STATE_ROOT);
-                me->RemoveAura(SpellHeadlongChargeAT);
-                me->RemoveAura(SpellOffTheLeash);
-                StartEvents(PHASE_1);
-                break;
-            case EVENT_FLAMING_VOLATILE_FOAM:
-                if (eventPhase != PHASE_2)
-                {
-                    if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-                        if (!target->HasAura(SpellFlamingVolatileFoam) && !target->HasAura(SpellBrineyVolatileFoam) && !target->HasAura(SpellShadowyVolatileFoam))
-                            me->AddAura(SpellFlamingVolatileFoam, target);
-
-                    events.RescheduleEvent(EVENT_FLAMING_VOLATILE_FOAM, 30s);
-                }
-                break;
-            case EVENT_BRINEY_VOLATILE_FOAM:
-                if (eventPhase != PHASE_2)
-                {
-                    if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-                        if (!target->HasAura(SpellFlamingVolatileFoam) && !target->HasAura(SpellBrineyVolatileFoam) && !target->HasAura(SpellShadowyVolatileFoam))
-                            me->AddAura(SpellBrineyVolatileFoam, target);
-
-                    events.RescheduleEvent(EVENT_BRINEY_VOLATILE_FOAM, 30s);
-                }
-                break;
-            case EVENT_SHADOWY_VOLATILE_FOAM:
-                if (eventPhase != PHASE_2)
-                {
-                    if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-                        if (!target->HasAura(SpellFlamingVolatileFoam) && !target->HasAura(SpellBrineyVolatileFoam) && !target->HasAura(SpellShadowyVolatileFoam))
-                            me->AddAura(SpellShadowyVolatileFoam, target);
-
-                    events.RescheduleEvent(EVENT_SHADOWY_VOLATILE_FOAM, 30s);
-                }
-                break;
-            }
+            break;
+        }
+        case EVENT_ROARING_LEAP:
+            DoCastAOE(SPELL_ROARING_LEAP_SELECTOR);
+            break;
+        case EVENT_HEADLONG_CHARGE:
+            DoCastAOE(SPELL_HEADLONG_CHARGE_INITIAL);
+            break;
+        case EVENT_OFF_THE_LEASH:
+            DoCastAOE(SPELL_OFF_THE_LEASH);
+            events.ScheduleEvent(EVENT_OFF_THE_LEASH, 75s);
+            events.ScheduleEvent(EVENT_ROARING_LEAP, 3s);
+            events.ScheduleEvent(EVENT_HEADLONG_CHARGE, 13s);
+            events.CancelEvent(EVENT_FLASHING_FANGS);
+            events.CancelEvent(EVENT_LICK);
+            events.CancelEvent(EVENT_VOLATILE_FOAM);
+            break;
+        case EVENT_VOLATILE_FOAM:
+            DoCastAOE(SPELL_VOLATILE_FOAM_INITIAL);
+            events.ScheduleEvent(EVENT_VOLATILE_FOAM, 22s);
+            break;
+        case EVENT_BERSERK:
+            DoCastAOE(SPELL_BERSERK);
+            Talk(TALK_BERSERK, me);
+            events.CancelEvent(EVENT_FLASHING_FANGS);
+            events.CancelEvent(EVENT_LICK);
+            me->GetMotionMaster()->Clear(); // remove ChaseMovementGen
+            me->SetReactState(REACT_PASSIVE);
+            me->GetMotionMaster()->MoveJump(BerserkerPair.JumpPos, 42.0f, 21.5f, POINT_BERSERK_JUMP);
+            break;
+        default:
+            break;
         }
 
-        if (berserk)
-        {
-            if (berserk <= diff)
-            {
-                berserk = 0;
-                DoCast(me, SpellBerserk, true);
-                Talk(SAY_BERSERK);
-                berserkcharge = true;
-            }
-            else
-                berserk -= diff;
-        }
         DoMeleeAttackIfReady();
     }
-};
 
-//227512
-class spell_multi_headed_aura : public AuraScript
-{
-    PrepareAuraScript(spell_multi_headed_aura);
-
-    void OnProc(AuraEffect * aurEff, ProcEventInfo& eventInfo)
+    void WaypointPathEnded(uint32 /*nodeId*/, uint32 pathId) override
     {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
+        me->SetReactState(REACT_AGGRESSIVE);
+        events.ScheduleEvent(EVENT_FLASHING_FANGS, 16s);
+        events.ScheduleEvent(EVENT_LICK, 18s);
+        if (GetDifficulty() == DIFFICULTY_MYTHIC_RAID)
+            events.ScheduleEvent(EVENT_VOLATILE_FOAM, 20s);
 
-        InstanceScript* instance = caster->GetInstanceScript();
-        if (!instance)
-            return;
-
-        if (auto Guarm = instance->instance->GetCreature(instance->GetGuidData(Data::Creatures::Guarm)))
-            Guarm->GetAI()->DoAction(ACTION_1);
-    }
-
-    void Register() override
-    {
-        OnEffectProc += AuraEffectProcFn(spell_multi_headed_aura::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
-//227642
-class spell_multi_headed : public SpellScript
-{
-    PrepareSpellScript(spell_multi_headed);
-
-    uint8 targetsCount = 0;
-    ObjectGuid m_target;
-
-    bool Load() override
-    {
-        m_target.Clear();
-        return true;
-    }
-
-    void HandleBeforeCast()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        if (auto target = caster->GetVictim())
-            m_target = target->GetGUID();
-    }
-
-    void CorrectTargets(std::list<WorldObject*>& targets)
-    {
-        if (targets.empty())
-            return;
-
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        targets.remove_if([caster](WorldObject* object) -> bool
+        // Headlong Charge
+        if (pathId != BerserkerPair.PathID)
         {
-            Unit* unit = object->ToUnit();
-            if (!unit)
-                return true;
-
-            if (!unit->isInFront(caster, 3.14f / 2))
-                return true;
-
-            return false;
-        });
-
-        targetsCount = targets.size();
-
-        if (targets.size() > 1)
+            me->RemoveAurasDueToSpell(SPELL_HEADLONG_CHARGE_PERIODIC_DAMAGE);
+            me->RemoveAurasDueToSpell(SPELL_HEADLONG_CHARGE_AT);
+            events.ScheduleEvent(EVENT_ROARING_LEAP, 5s);
+        }
+        else // Berserk
         {
-            targets.remove_if([this](WorldObject* object) -> bool
-            {
-                return !object || object->GetGUID() == m_target;
-            });
+            me->RemoveAurasDueToSpell(SPELL_BERSERK_CHARGE_AT);
+        }
+    }
 
-            if (targets.size() > 1)
+    void MovementInform(uint32 type, uint32 pointId) override
+    {
+        if (type == EFFECT_MOTION_TYPE)
+        {
+            if (pointId >= POINT_HEADLONG_CHARGE && pointId <= POINT_HEADLONG_CHARGE_MAX)
             {
-                targets.sort(Trinity::ObjectDistanceOrderPred(caster));
-                WorldObject* object = targets.front();
-                targets.clear();
-                targets.push_back(object);
+                uint32 headlongChargeId = pointId - POINT_HEADLONG_CHARGE;
+                DoCastAOE(SPELL_HEADLONG_CHARGE_DAMAGE, true); // manually trigger first damage tick
+                DoCastAOE(SPELL_HEADLONG_CHARGE_PERIODIC_DAMAGE, true);
+                DoCastAOE(SPELL_HEADLONG_CHARGE_AT, true);
+
+                me->GetMotionMaster()->MovePath(HeadlongChargePairs[headlongChargeId].PathID, false, {}, 35.0f);
+            }
+            else if (pointId == POINT_BERSERK_JUMP)
+            {
+                DoCastAOE(SPELL_BERSERK_TRAMPLE_AOE);
+                DoCastAOE(SPELL_BERSERK_CHARGE_AT);
+                DoCastAOE(SPELL_ROARING_LEAP_INITIAL_KNOCKBACK, true);
+
+                me->GetMotionMaster()->MovePath(BerserkerPair.PathID, false, {}, 35.0f);
             }
         }
-        else
-        {
-            targets.clear();
+    }
 
-            if (Unit* target = ObjectAccessor::GetUnit(*caster, m_target))
-                targets.push_back(target);
+    void DoAction(int32 param) override
+    {
+        switch (param)
+        {
+        case ACTION_BREATH_HIT_TARGET:
+            _unitsHitByBreathCount++;
+            break;
+        case ACTION_HANDLE_FROTHING_RAGE:
+        {
+            uint32 engagedPlayers = 0;
+            for (auto const& itr : me->GetThreatManager().GetUnsortedThreatList())
+            {
+                if (itr->GetVictim()->IsPlayer())
+                    engagedPlayers++;
+            }
+
+            uint32 frothingRageStacks = engagedPlayers - _unitsHitByBreathCount;
+            if (frothingRageStacks > 0)
+            {
+                if (Aura* aura = me->GetAura(SPELL_FROTHING_RAGE))
+                    frothingRageStacks += aura->GetStackAmount();
+                me->SetAuraStack(SPELL_FROTHING_RAGE, me, frothingRageStacks);
+            }
+            break;
+        }
+        default:
+            break;
         }
     }
 
-    void HandleDamage(SpellEffIndex /*effectIndex*/)
+private:
+    uint8 _lickCount;
+    uint8 _unitsHitByBreathCount;
+};
+
+// 227512 - Multi-Headed
+class spell_multi_headed_proc_guarm : public AuraScript
+{
+    void HandleProc(ProcEventInfo& eventInfo)
     {
-        if (targetsCount < 2)
-            SetHitDamage(GetHitDamage() * 2);
+        GetTarget()->CastSpell(eventInfo.GetProcTarget(), SPELL_MULTI_HEADED_DAMAGE);
     }
 
     void Register() override
     {
-        BeforeCast += SpellCastFn(spell_multi_headed::HandleBeforeCast);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_multi_headed::CorrectTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
-        OnEffectHitTarget += SpellEffectFn(spell_multi_headed::HandleDamage, EFFECT_1, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE);
+        OnProc += AuraProcFn(spell_multi_headed_proc_guarm::HandleProc);
     }
 };
 
+// 227642 - Multi-Headed
+class spell_multi_headed_damage_guarm : public SpellScript
+{
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        if (targets.size() < 2)
+            return;
+
+        targets.sort(Trinity::ObjectDistanceOrderPred(GetExplTargetUnit()));
+        targets.pop_front(); // skip expl target if multiple players are in range
+        targets.resize(1);
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_multi_headed_damage_guarm::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
+// 228226 - Flame Lick
+// 228250 - Shadow Lick
+// 228246 - Frost Lick
+class spell_lick_selector_guarm : public SpellScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellInfo({ (uint32)spellInfo->GetEffect(EFFECT_0).BasePoints }) && ValidateSpellEffect({ { spellInfo->Id, EFFECT_0 } });
+    }
+
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
+    {
+        GetCaster()->CastSpell(GetHitUnit(), GetEffectValue(), true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_lick_selector_guarm::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 228187 - Guardian's Breath
+class spell_guardians_breath_color_selector : public SpellScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_GUARDIANS_BREATH_SUMMON_ATS_RGB,
+                SPELL_GUARDIANS_BREATH_SUMMON_ATS_RBG,
+                SPELL_GUARDIANS_BREATH_SUMMON_ATS_GRB,
+                SPELL_GUARDIANS_BREATH_SUMMON_ATS_GBR,
+                SPELL_GUARDIANS_BREATH_SUMMON_ATS_BRG,
+                SPELL_GUARDIANS_BREATH_SUMMON_ATS_BGR,
+                SPELL_GUARDIANS_BREATH_UNK,
+                SPELL_GUARDIANS_BREATH_CAST_RGB,
+                SPELL_GUARDIANS_BREATH_CAST_RBG,
+                SPELL_GUARDIANS_BREATH_CAST_GRB,
+                SPELL_GUARDIANS_BREATH_CAST_GBR,
+                SPELL_GUARDIANS_BREATH_CAST_BRG,
+                SPELL_GUARDIANS_BREATH_CAST_BGR
+            });
+    }
+
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        GuardiansBreathSpellPair const& pair = GuardiansBreathSpellPairs[urand(0, 6)];
+        caster->CastSpell(nullptr, pair.CastSpellID);
+        caster->CastSpell(nullptr, pair.SummonATSpellID);
+        caster->CastSpell(nullptr, SPELL_GUARDIANS_BREATH_UNK);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_guardians_breath_color_selector::HandleHit, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
+// 227673 - Guardian's Breath
+// 227667 - Guardian's Breath
+// 227669 - Guardian's Breath
+// 227660 - Guardian's Breath
+// 227666 - Guardian's Breath
+// 227658 - Guardian's Breath
+class spell_guardians_breath : public SpellScript
+{
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster->IsAIEnabled())
+            return;
+
+        caster->GetAI()->DoAction(ACTION_HANDLE_FROTHING_RAGE);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_guardians_breath::HandleHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+/*
+          Guarm
+            v
+    Color: R-- Spell: 232803 AreaTrigger: 13352
+    Color: -R- Spell: 232773 AreaTrigger: 13352
+    Color: --R Spell: 232804 AreaTrigger: 13352
+    Color: G-- Spell: 232774 AreaTrigger: 13353
+    Color: -G- Spell: 232805 AreaTrigger: 13353
+    Color: --G Spell: 232806 AreaTrigger: 13353
+    Color: B-- Spell: 232801 AreaTrigger: 13354
+    Color: -B- Spell: 232802 AreaTrigger: 13354
+    Color: --B Spell: 232776 AreaTrigger: 13354
+*/
+
+// 232803 - Guardian's Breath
+// 232773 - Guardian's Breath
+// 232804 - Guardian's Breath
+// 232774 - Guardian's Breath
+// 232805 - Guardian's Breath
+// 232806 - Guardian's Breath
+// 232801 - Guardian's Breath
+// 232802 - Guardian's Breath
+// 232776 - Guardian's Breath
+template<uint32 ColorSpellId>
+class at_guardians_breath : public AreaTriggerEntityScript
+{
+public:
+    at_guardians_breath(char const* script) : AreaTriggerEntityScript(script) { }
+
+    template<uint32 ColorSpell>
+    struct at_guardians_breathAI : AreaTriggerAI
+    {
+        at_guardians_breathAI(AreaTrigger* at) : AreaTriggerAI(at) { }
+
+        uint32 GetBreathDebuffByDamageSpell(uint32 breathDamageSpell) const
+        {
+            switch (breathDamageSpell)
+            {
+            case SPELL_FIERY_PHLEGM:
+                return SPELL_FIERY_PHLEGM_AURA;
+            case SPELL_SALTY_SPITTLE:
+                return SPELL_SALTY_SPITTLE_AURA;
+            case SPELL_DARK_DISCHARGE:
+                return SPELL_DARK_DISCHARGE_AURA;
+            }
+            return 0;
+        }
+
+        void OnRemove() override
+        {
+            InstanceScript* instance = at->GetInstanceScript();
+            if (!instance)
+                return;
+
+            Creature* guarm = instance->GetCreature(DATA_GUARM);
+            if (!guarm)
+                return;
+
+            if (!guarm->IsAIEnabled())
+                return;
+
+            for (ObjectGuid const& guid : at->GetInsideUnits())
+            {
+                Player* player = ObjectAccessor::GetPlayer(*at, guid);
+                if (!player)
+                    continue;
+
+                if (player->isDead())
+                    continue;
+
+                guarm->GetAI()->DoAction(ACTION_BREATH_HIT_TARGET);
+                guarm->CastSpell(player, ColorSpell, true);
+                player->CastSpell(nullptr, GetBreathDebuffByDamageSpell(ColorSpell));
+            }
+        }
+    };
+
+    AreaTriggerAI* GetAI(AreaTrigger* at) const override
+    {
+        return new at_guardians_breathAI<ColorSpellId>(at);
+    }
+};
+
+// 227720 - Mixed Elements
+// 227721 - Mixed Elements
+// 227735 - Mixed Elements
 class spell_mixed_elements : public SpellScript
 {
-    PrepareSpellScript(spell_mixed_elements);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.remove_if([](WorldObject* object)
-        {
-            Unit* unit = object->ToUnit();
-            if (!unit)
-                return true;
+            {
+                Unit* unit = object->ToUnit();
+                if (!unit)
+                    return true;
 
-            if ((unit->HasAura(SpellFieryPhlegm) && unit->HasAura(SpellDarkDischarge)) || (unit->HasAura(SpellFieryPhlegm) && unit->HasAura(SpellSaltySpittle)) || (unit->HasAura(SpellSaltySpittle) && unit->HasAura(SpellDarkDischarge)))
-                return false;
-            else
-                return true;
-        });
+                if ((unit->HasAura(SPELL_FIERY_PHLEGM_AURA) && unit->HasAura(SPELL_DARK_DISCHARGE)) || (unit->HasAura(SPELL_FIERY_PHLEGM) && unit->HasAura(SPELL_SALTY_SPITTLE)) || (unit->HasAura(SPELL_SALTY_SPITTLE) && unit->HasAura(SPELL_DARK_DISCHARGE)))
+                    return false;
+                else
+                    return true;
+            });
     }
 
     void Register() override
@@ -634,301 +586,213 @@ class spell_mixed_elements : public SpellScript
     }
 };
 
-//228794
-class spell_flaming_volatile_foam : public SpellScript
+// 227894 - Roaring Leap
+class spell_roaring_leap_selector : public SpellScript
 {
-    PrepareSpellScript(spell_flaming_volatile_foam);
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_ROARING_LEAP_INITIAL_KNOCKBACK, SPELL_ROARING_LEAP_JUMP });
+    }
 
-    void HandleDummy(SpellEffIndex effIndex)
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
+        // @TODO: cast 232036 + implement (achievement)
+        // @TODO: related to achievement aswell: 232393
+        caster->CastSpell(nullptr, SPELL_ROARING_LEAP_INITIAL_KNOCKBACK, true);
+        caster->CastSpell(*GetHitDest(), SPELL_ROARING_LEAP_JUMP);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_roaring_leap_selector::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 227816 - Headlong Charge
+class spell_headlong_charge_trigger : public SpellScript
+{
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        Creature* caster = GetCaster()->ToCreature();
         if (!caster)
             return;
 
-        caster->AddAura(SpellFlamingVolatileFoam2, GetHitUnit());
+        uint8 pairId = urand(0, 3);
+        caster->GetMotionMaster()->Clear(); // remove ChaseMovementGen
+        caster->SetReactState(REACT_PASSIVE);
+        caster->GetMotionMaster()->MoveJump(HeadlongChargePairs[pairId].JumpPos, 42.0f, 21.5f, POINT_HEADLONG_CHARGE + pairId);
     }
 
     void Register() override
     {
-        OnEffectHit += SpellEffectFn(spell_flaming_volatile_foam::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHit += SpellEffectFn(spell_headlong_charge_trigger::HandleHit, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 
-//228811
-class spell_briney_volatile_foam : public SpellScript
+// 228201 - Off the Leash
+class spell_off_the_leash : public AuraScript
 {
-    PrepareSpellScript(spell_briney_volatile_foam);
-
-    void HandleDummy(SpellEffIndex effIndex)
+    bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
+        return ValidateSpellInfo({ SPELL_HELYATOSIS_AURA });
+    }
 
-        caster->AddAura(SpellBrineyVolatileFoam2, GetHitUnit());
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetTarget()->RemoveAurasDueToSpell(SPELL_HELYATOSIS_AURA);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetTarget()->CastSpell(nullptr, SPELL_HELYATOSIS_AURA);
     }
 
     void Register() override
     {
-        OnEffectHit += SpellEffectFn(spell_briney_volatile_foam::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        AfterEffectApply += AuraEffectApplyFn(spell_off_the_leash::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectApplyFn(spell_off_the_leash::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
-//228819
-class spell_shadowy_volatile_foam : public SpellScript
+// 228824 - Volatile Foam
+class spell_volatile_foam_initial : public SpellScript
 {
-    PrepareSpellScript(spell_shadowy_volatile_foam);
-
-    void HandleDummy(SpellEffIndex effIndex)
+    bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
+        return ValidateSpellInfo(
+            {
+                SPELL_VOLATILE_FOAM_SELECTOR_RED,
+                SPELL_VOLATILE_FOAM_SELECTOR_GREEN,
+                SPELL_VOLATILE_FOAM_SELECTOR_BLUE
+            });
+    }
 
-        caster->AddAura(SpellShadowyVolatileFoam2, GetHitUnit());
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        GetCaster()->CastSpell(nullptr, RAND(SPELL_VOLATILE_FOAM_SELECTOR_RED, SPELL_VOLATILE_FOAM_SELECTOR_GREEN, SPELL_VOLATILE_FOAM_SELECTOR_BLUE));
     }
 
     void Register() override
     {
-        OnEffectHit += SpellEffectFn(spell_shadowy_volatile_foam::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHit += SpellEffectFn(spell_volatile_foam_initial::HandleHit, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
 
-//228744
-class spell_flaming_volatile_foam_dispell : public AuraScript
+// 228684 - Volatile Foam // Red
+// 228809 - Volatile Foam // Green
+// 228817 - Volatile Foam // Blue
+template<uint32 ExcludeSpellId>
+class spell_volatile_foam_selector : public SpellScript
 {
-    PrepareAuraScript(spell_flaming_volatile_foam_dispell);
-
-    void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    bool Validate(SpellInfo const* spellInfo) override
     {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
-            target->CastSpell(target, SpellFlamingVolatileFoam2, true);
-        else
-            target->AddAura(SpellFieryPhlegm, target);
+        return ValidateSpellInfo({ (uint32)spellInfo->GetEffect(EFFECT_0).BasePoints });
     }
-
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(spell_flaming_volatile_foam_dispell::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-//228810
-class spell_briney_volatile_foam_dispell : public AuraScript
-{
-    PrepareAuraScript(spell_briney_volatile_foam_dispell);
-
-    void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
-            target->CastSpell(target, SpellBrineyVolatileFoam2, true);
-        else
-            target->AddAura(SpellSaltySpittle, target);
-    }
-
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(spell_briney_volatile_foam_dispell::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-//228818
-class spell_shadowy_volatile_foam_dispell : public AuraScript
-{
-    PrepareAuraScript(spell_shadowy_volatile_foam_dispell);
-
-    void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
-            target->CastSpell(target, SpellShadowyVolatileFoam2, true);
-        else
-            target->AddAura(SpellDarkDischarge, target);
-    }
-
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(spell_shadowy_volatile_foam_dispell::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-//227566
-class spell_salty_spittle : public SpellScript
-{
-    PrepareSpellScript(spell_salty_spittle);
-
-    uint8 targetsCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
     {
-        targets.remove_if([](WorldObject* object)
-        {
-            Unit* unit = object->ToUnit();
-            if (!unit)
-                return true;
+        targets.remove_if([](WorldObject* target)
+            {
+                Unit* unit = target->ToUnit();
+                if (!unit)
+                    return true;
 
-            if (unit->HasAura(SpellSaltySpittle))
+                if (unit->HasAura(ExcludeSpellId))
+                    return true;
+
                 return false;
-            else
-                return true;
-        });
-
-        targetsCount = targets.size();
+            });
     }
 
-    void HandleDamage(SpellEffIndex /*effectIndex*/)
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
-        if (targetsCount)
-            SetHitDamage(GetHitDamage() / targetsCount);
+        GetCaster()->CastSpell(GetHitUnit(), GetEffectValue(), true);
     }
 
     void Register() override
     {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_salty_spittle::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_24);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_salty_spittle::FilterTargets, EFFECT_1, TARGET_UNIT_CONE_ENEMY_24);
-        OnEffectHitTarget += SpellEffectFn(spell_salty_spittle::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_volatile_foam_selector::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        OnEffectHitTarget += SpellEffectFn(spell_volatile_foam_selector::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 
-//227570
-class spell_dark_discharge : public SpellScript
+// 228794 - Flaming Volatile Foam   // after dispel
+// 228811 - Briney Volatile Foam    // after dispel
+// 228819 - Shadowy Volatile Foam   // after dispel
+class spell_volatile_foam : public SpellScript
 {
-    PrepareSpellScript(spell_dark_discharge);
-
-    uint8 targetsCount = 0;
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
-        targets.remove_if([](WorldObject* object)
-        {
-            Unit* unit = object->ToUnit();
-            if (!unit)
-                return true;
-
-            if (unit->HasAura(SpellDarkDischarge))
-                return false;
-            else
-                return true;
-        });
-
-        targetsCount = targets.size();
-    }
-
-    void HandleDamage(SpellEffIndex /*effectIndex*/)
-    {
-        if (targetsCount)
-            SetHitDamage(GetHitDamage() / targetsCount);
+        targets.sort(Trinity::ObjectDistanceOrderPred(GetExplTargetUnit()));
     }
 
     void Register() override
     {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dark_discharge::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_24);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dark_discharge::FilterTargets, EFFECT_1, TARGET_UNIT_CONE_ENEMY_24);
-        OnEffectHitTarget += SpellEffectFn(spell_dark_discharge::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_volatile_foam::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_volatile_foam::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ALLY);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_volatile_foam::FilterTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ALLY);
     }
 };
 
-//227539
-class spell_fiery_phlegm : public SpellScript
+// 228744 - Flaming Volatile Foam   // initial
+// 228794 - Flaming Volatile Foam   // after dispel
+// 228810 - Briney Volatile Foam    // initial
+// 228811 - Briney Volatile Foam    // after dispel
+// 228818 - Shadowy Volatile Foam   // initial
+// 228819 - Shadowy Volatile Foam   // after dispel
+template<uint32 SpellIdOnExpire>
+class spell_volatile_foam_aura : public AuraScript
 {
-    PrepareSpellScript(spell_fiery_phlegm);
-
-    uint8 targetsCount = 0;
-
-    void FilterTargets(std::list<WorldObject*>& targets)
+    bool Validate(SpellInfo const* spellInfo) override
     {
-        targets.remove_if([](WorldObject* object)
-        {
-            Unit* unit = object->ToUnit();
-            if (!unit)
-                return true;
-
-            if (unit->HasAura(SpellFieryPhlegm))
-                return false;
-            else
-                return true;
-        });
-
-        targetsCount = targets.size();
+        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_0 } }) && ValidateSpellInfo(
+            {
+                (uint32)spellInfo->GetEffect(EFFECT_0).CalcValue(), // SpellIdOnDispel
+                SpellIdOnExpire
+            });
     }
 
-    void HandleDamage(SpellEffIndex /*effectIndex*/)
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        if (targetsCount)
-            SetHitDamage(GetHitDamage() / targetsCount);
+        Unit* target = GetTarget();
+
+        AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+            target->CastSpell(target, SpellIdOnExpire);
+        else if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
+            target->CastSpell(nullptr, GetSpellInfo()->GetEffect(EFFECT_0).CalcValue());
     }
 
     void Register() override
     {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fiery_phlegm::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_24);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fiery_phlegm::FilterTargets, EFFECT_1, TARGET_UNIT_CONE_ENEMY_24);
-        OnEffectHitTarget += SpellEffectFn(spell_fiery_phlegm::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
-struct at_guardians_breath : AreaTriggerAI
-{
-    explicit at_guardians_breath(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-    uint32 targetCounts{};
-
-    void OnCreate() override
-    {
-        targetCounts = 0;
-    }
-
-    void OnRemove() override
-    {
-        auto caster = at->GetCaster()->ToCreature();
-        if (!caster)
-            return;
-
-        if (targetCounts == 0)
-            caster->GetAI()->DoAction(ACTION_3);
-    }
-
-    void BeforeRemove(Unit* target)
-    {
-        Unit* caster = at->GetCaster()->ToCreature();
-        if (!caster || !target)
-            return;
-
-        if (target->IsPlayer())
-        {
-            targetCounts++;
-
-            if (targetCounts >= 1)
-                for (uint8 i = 0; i < targetCounts; ++i)
-                    caster->GetAI()->DoAction(ACTION_2);
-        }
+        AfterEffectRemove += AuraEffectRemoveFn(spell_volatile_foam_aura::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
 void AddSC_boss_garm()
 {
-    RegisterCreatureAI(boss_garm);
-    RegisterSpellScript(spell_multi_headed_aura);
-    RegisterSpellScript(spell_multi_headed);
-    RegisterSpellScript(spell_flaming_volatile_foam);
-    RegisterSpellScript(spell_briney_volatile_foam);
-    RegisterSpellScript(spell_shadowy_volatile_foam);
+    RegisterTrialOfValorCreatureAI(boss_guarm);
+    RegisterSpellScript(spell_multi_headed_proc_guarm);
+    RegisterSpellScript(spell_multi_headed_damage_guarm);
+    RegisterSpellScript(spell_lick_selector_guarm);
+    RegisterSpellScript(spell_guardians_breath_color_selector);
+    RegisterSpellScript(spell_guardians_breath);
+    new at_guardians_breath<SPELL_FIERY_PHLEGM>("at_guardians_breath_red");
+    new at_guardians_breath<SPELL_SALTY_SPITTLE>("at_guardians_breath_green");
+    new at_guardians_breath<SPELL_DARK_DISCHARGE>("at_guardians_breath_blue");
     RegisterSpellScript(spell_mixed_elements);
-    RegisterSpellScript(spell_salty_spittle);
-    RegisterSpellScript(spell_dark_discharge);
-    RegisterSpellScript(spell_fiery_phlegm);
-    RegisterSpellScript(spell_flaming_volatile_foam_dispell);
-    RegisterSpellScript(spell_briney_volatile_foam_dispell);
-    RegisterSpellScript(spell_shadowy_volatile_foam_dispell);
-    RegisterAreaTriggerAI(at_guardians_breath);
+    RegisterSpellScript(spell_roaring_leap_selector);
+    RegisterSpellScript(spell_headlong_charge_trigger);
+    RegisterSpellScript(spell_off_the_leash);
+    RegisterSpellScript(spell_volatile_foam_initial);
+    RegisterSpellScriptWithArgs(spell_volatile_foam_selector<SPELL_FIERY_PHLEGM_AURA>, "spell_volatile_foam_selector_red");
+    RegisterSpellScriptWithArgs(spell_volatile_foam_selector<SPELL_SALTY_SPITTLE_AURA>, "spell_volatile_foam_selector_green");
+    RegisterSpellScriptWithArgs(spell_volatile_foam_selector<SPELL_DARK_DISCHARGE_AURA>, "spell_volatile_foam_selector_blue");
+    RegisterSpellScriptWithArgs(spell_volatile_foam_aura<SPELL_FIERY_PHLEGM_AURA>, "spell_volatile_foam_aura_initial_red");
+    RegisterSpellScriptWithArgs(spell_volatile_foam_aura<SPELL_SALTY_SPITTLE_AURA>, "spell_volatile_foam_aura_initial_green");
+    RegisterSpellScriptWithArgs(spell_volatile_foam_aura<SPELL_DARK_DISCHARGE_AURA>, "spell_volatile_foam_aura_initial_blue");
+    RegisterSpellAndAuraScriptPairWithArgs(spell_volatile_foam, spell_volatile_foam_aura<SPELL_FIERY_PHLEGM_AURA>, "spell_volatile_foam_aura_red");
+    RegisterSpellAndAuraScriptPairWithArgs(spell_volatile_foam, spell_volatile_foam_aura<SPELL_SALTY_SPITTLE_AURA>, "spell_volatile_foam_aura_green");
+    RegisterSpellAndAuraScriptPairWithArgs(spell_volatile_foam, spell_volatile_foam_aura<SPELL_DARK_DISCHARGE_AURA>, "spell_volatile_foam_aura_blue");
 }

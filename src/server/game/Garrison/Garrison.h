@@ -67,7 +67,6 @@ public:
         uint32 _EarnXP(uint32 xp);
         uint32 GetRequiredLevelUpXP() const;
         bool HasAbility(uint32 garrAbilityId) const;
-        void ModAssistant(SpellInfo const* spellInfo, Player* caster);
 
         WorldPackets::Garrison::GarrisonFollower PacketInfo;
     };
@@ -116,7 +115,6 @@ public:
     uint32 GetAverageFollowerILevel() const;
     uint32 GetMaxFollowerLevel() const;
     uint32 GetFollowerActivationLimit() const { return _followerActivationsRemainingToday; }
-    uint32 GetCountOFollowers() const;
 
     template<typename Predicate>
     uint32 CountFollowers(Predicate&& predicate) const
@@ -129,7 +127,6 @@ public:
         return count;
     }
 
-    void ChangeFollowerVitality(uint32 followerID);
     void ResetFollowerActivationLimit() { _followerActivationsRemainingToday = 1; }
     //DekkCore
      // Missions
@@ -145,21 +142,6 @@ public:
     void CompleteMission(uint32 garrMissionId);
     void CalculateMissonBonusRoll(uint32 garrMissionId);
     void RewardMission(Mission* mission, bool withOvermaxReward);
-    void IncrementStartedTodayMissions();
-    uint32 GetNumMissionsStartedToday();
-    bool hasTallent(uint32 talentID) const;
-    void StartClassHallUpgrade(uint32 tallentID);
-    bool canStartUpgrade();
-    void AddTalentToStore(uint32 talentID, uint32 _time, uint32 flags, ObjectDBState db_state);
-
-    //Shipments
-    void CreateShipment(ObjectGuid const& guid, uint32 count);
-    void SendShipmentInfo(ObjectGuid const& guid);
-    void SendShipYadShipmentInfo(ObjectGuid const& guid);
-
-    void OnGossipTradeSkill(WorldObject* source);
-
-    void OnGossipSelect(WorldObject* source); //test
 
     std::pair<std::vector<GarrMissionEntry const*>, std::vector<double>> GetAvailableMissions() const;
     void GenerateMissions();
@@ -180,10 +162,11 @@ public:
     CovenantCampaign* ToCovenantCampaign() { if (IsCovenantCampaign()) return reinterpret_cast<CovenantCampaign*>(this); else return nullptr; }
     CovenantCampaign const* ToCovenantCampaign() const { if (IsCovenantCampaign()) return reinterpret_cast<CovenantCampaign const*>(this); else return nullptr; }
 
-    void SendMissionListUpdate(bool openMissionNpc) const;
     GarrSiteLevelEntry const* _siteLevel;
     Player* _owner;
     Map* FindMap() const;
+
+    void AssignFollowerToBuilding(uint32 garrFollowerId, uint32 garrPlotInstanceId);
 
     //DekkCore
     protected:

@@ -624,8 +624,6 @@ public:
 
     class spell_vizaduum_acquiring_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vizaduum_acquiring_target_SpellScript);
-
         void HandleScript(SpellEffIndex /*effIndex*/)
         {
             if (GetHitUnit())
@@ -656,8 +654,6 @@ public:
 
     class spell_vizaduum_bombardment_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vizaduum_bombardment_SpellScript);
-
         void HandleTriggerEffect(SpellEffIndex effIndex)
         {
             Position pos;
@@ -693,8 +689,6 @@ public:
 
     class spell_vizaduum_demonic_portal_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_vizaduum_demonic_portal_AuraScript);
-
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (Player* player = GetTarget()->ToPlayer())
@@ -741,8 +735,6 @@ public:
 
     class spell_vizaduum_chaotic_shadows_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vizaduum_chaotic_shadows_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             switch (GetCaster()->GetMap()->GetDifficultyID())

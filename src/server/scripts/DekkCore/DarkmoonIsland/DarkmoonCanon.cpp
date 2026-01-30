@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2020 LatinCoreTeam
- * Copyright (C) 2022 DekkCore
+ * Copyright (C) 2023 DekkCore
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -38,36 +38,30 @@ enum eSpells
 
 class npc_canon_maxima : public CreatureScript
 {
-    public:
-        npc_canon_maxima() : CreatureScript("npc_canon_maxima") { }
+public:
+    npc_canon_maxima() : CreatureScript("npc_canon_maxima") { }
 
+    struct npc_canon_maximaAI : public ScriptedAI
+    {
+        npc_canon_maximaAI(Creature* creature) : ScriptedAI(creature) { }
 
-        CreatureAI* GetAI(Creature* creature) const override
+        bool OnGossipHello(Player* player) override
         {
-            return new npc_canon_maximaAI(creature);
-        }
-
-        struct npc_canon_maximaAI : public ScriptedAI
-        {
-            npc_canon_maximaAI(Creature* creature) : ScriptedAI(creature) { }
-
-            bool OnGossipHello(Player* player) override
-            {
                 if (me->IsQuestGiver())
                     player->PrepareQuestMenu(me->GetGUID());
 
                 if (player->GetQuestStatus(QUEST_HUMANOID_CANNONBALL) == QUEST_STATUS_INCOMPLETE)
-                    AddGossipItemFor(player, GossipOptionNpc::None, "Je souhaite devenir un homme canon !", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                    AddGossipItemFor(player, GossipOptionNpc::None, "Launch me!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
                 SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
                 return true;
             }
 
-            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
             {
                 if (!player->HasItemCount(ITEM_DARKMOON_TOKEN))
                 {
-                    me->Whisper("Vous devez posseder un Jeton de Sombrelune pour utiliser le canon !", LANG_UNIVERSAL, player);
+                    me->Whisper("You must have a Darkmoon Token to use the cannon !", LANG_UNIVERSAL, player);
                     CloseGossipMenuFor(player);
                     return true;
                 }
@@ -82,6 +76,11 @@ class npc_canon_maxima : public CreatureScript
                 return true;
             }
         };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_canon_maximaAI(creature);
+    }
 };
 
 class npc_darkmoon_canon_target : public CreatureScript
@@ -191,8 +190,6 @@ class spell_darkmoon_canon_preparation : public SpellScriptLoader
 
         class spell_darkmoon_canon_preparation_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_darkmoon_canon_preparation_AuraScript);
-
             void HandleTriggerSpell(AuraEffect const* /*aurEff*/)
             {
                 if (Player* target = GetTarget()->ToPlayer())

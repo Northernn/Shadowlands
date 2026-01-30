@@ -77,11 +77,7 @@ struct scenario_verdant_wilds : public InstanceScript
             player->NearTeleportTo(15007.695f, 14726.907f, 6.3429f, 1.6861409f);
         }
 
-        WorldPackets::Misc::StartTimer startTimer;
-        startTimer.Type = WorldPackets::Misc::StartTimer::Pvp;
-        startTimer.TotalTime = Seconds(45);
-        startTimer.TimeLeft = Seconds(45);
-        instance->SendToPlayers(startTimer.Write());
+        player->GetSession()->StartTimer(this->instance, WorldPackets::Misc::StartTimer::Pvp, Seconds(45), Seconds(45));
 
         events.ScheduleEvent(EVENT_START_TIMER, 45s);
     }
@@ -140,6 +136,6 @@ protected:
 
 void AddSC_scenario_verdant_wilds()
 {
-  //  RegisterInstanceScript(scenario_verdant_wilds, 1882);
+    RegisterInstanceScript(scenario_verdant_wilds, 1882);
 }
 

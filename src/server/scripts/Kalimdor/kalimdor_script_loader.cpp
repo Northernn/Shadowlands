@@ -56,6 +56,15 @@ void AddSC_instance_culling_of_stratholme();
 void AddSC_instance_dire_maul();
 // Ragefire Chasm
 void AddSC_instance_ragefire_chasm();
+void AddSC_boss_adarogg();
+void AddSC_boss_bazzalan();
+void AddSC_boss_gordoth();
+void AddSC_boss_jergosh_the_invoker();
+void AddSC_boss_koranthal();
+void AddSC_boss_oggleflint();
+void AddSC_boss_slagmaw();
+void AddSC_boss_taragaman_the_hungerer();
+
 // Maraudon
 void AddSC_boss_celebras_the_cursed();
 void AddSC_boss_landslide();
@@ -133,6 +142,18 @@ void AddSC_thunder_bluff();
 // void AddSC_ungoro_crater();
 void AddSC_winterspring();
 
+void AddSC_instance_end_time();                     //End of time
+void AddSC_boss_echo_of_sylvanas();
+void AddSC_boss_echo_of_tyrande();
+void AddSC_boss_murozond();
+void AddSC_boss_echo_of_baine();
+void AddSC_boss_echo_of_jaina();
+void AddSC_instance_lost_city_of_the_tolvir();      //Lost City of the Tol'Vir
+void AddSC_lost_city_of_the_tolvir();
+void AddSC_boss_general_husam();
+void AddSC_boss_lockmaw_augh();
+void AddSC_boss_high_prophet_barim();
+void AddSC_boss_siamat();
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
 void AddKalimdorScripts()
@@ -255,4 +276,18 @@ void AddKalimdorScripts()
     AddSC_firelands();
     AddSC_boss_alysrazor();
     AddSC_boss_baleroc();
+
+    AddSC_instance_end_time();                     //End of time
+    AddSC_boss_echo_of_sylvanas();
+    AddSC_boss_echo_of_tyrande();
+    AddSC_boss_murozond();
+    AddSC_boss_echo_of_baine();
+    AddSC_boss_echo_of_jaina();
+
+    AddSC_instance_lost_city_of_the_tolvir();      //Lost City of the Tol'Vir
+    AddSC_lost_city_of_the_tolvir();
+    AddSC_boss_general_husam();
+    AddSC_boss_lockmaw_augh();
+    AddSC_boss_high_prophet_barim();
+    AddSC_boss_siamat();
 }

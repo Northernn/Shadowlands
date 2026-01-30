@@ -406,7 +406,7 @@ Creature* PlayerAI::GetCharmer() const
     return nullptr;
 }
 
-uint16 PlayerAI::GetSpec(Player const* who /*= nullptr*/) const
+uint32 PlayerAI::GetSpec(Player const* who /*= nullptr*/) const
 {
     return (!who || who == me) ? _selfSpec : who->GetPrimarySpecialization();
 }
@@ -416,28 +416,8 @@ bool PlayerAI::IsPlayerHealer(Player const* who)
     if (!who)
         return false;
 
-    switch (who->GetClass())
-    {
-        case CLASS_WARRIOR:
-        case CLASS_HUNTER:
-        case CLASS_ROGUE:
-        case CLASS_DEATH_KNIGHT:
-        case CLASS_MAGE:
-        case CLASS_WARLOCK:
-        case CLASS_DEMON_HUNTER:
-        default:
-            return false;
-        case CLASS_PALADIN:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_PALADIN_HOLY;
-        case CLASS_PRIEST:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_PRIEST_DISCIPLINE || who->GetPrimarySpecialization() == TALENT_SPEC_PRIEST_HOLY;
-        case CLASS_SHAMAN:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_SHAMAN_RESTORATION;
-        case CLASS_MONK:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_MONK_MISTWEAVER;
-        case CLASS_DRUID:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_DRUID_RESTORATION;
-    }
+    return who->GetPrimarySpecialization()
+        && sChrSpecializationStore.AssertEntry(who->GetPrimarySpecialization())->GetRole() == ChrSpecializationRole::Healer;
 }
 
 bool PlayerAI::IsPlayerRangedAttacker(Player const* who)
@@ -445,33 +425,8 @@ bool PlayerAI::IsPlayerRangedAttacker(Player const* who)
     if (!who)
         return false;
 
-    switch (who->GetClass())
-    {
-        case CLASS_WARRIOR:
-        case CLASS_PALADIN:
-        case CLASS_ROGUE:
-        case CLASS_DEATH_KNIGHT:
-        default:
-            return false;
-        case CLASS_MAGE:
-        case CLASS_WARLOCK:
-            return true;
-        case CLASS_HUNTER:
-        {
-            // check if we have a ranged weapon equipped
-            Item const* rangedSlot = who->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-            if (ItemTemplate const* rangedTemplate = rangedSlot ? rangedSlot->GetTemplate() : nullptr)
-                if ((1 << rangedTemplate->GetSubClass()) & ITEM_SUBCLASS_MASK_WEAPON_RANGED)
-                    return true;
-            return false;
-        }
-        case CLASS_PRIEST:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_PRIEST_SHADOW;
-        case CLASS_SHAMAN:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_SHAMAN_ELEMENTAL;
-        case CLASS_DRUID:
-            return who->GetPrimarySpecialization() == TALENT_SPEC_DRUID_BALANCE;
-    }
+    return who->GetPrimarySpecialization()
+        && sChrSpecializationStore.AssertEntry(who->GetPrimarySpecialization())->GetFlags().HasFlag(ChrSpecializationFlag::Ranged);
 }
 
 PlayerAI::TargetedSpell PlayerAI::VerifySpellCast(uint32 spellId, Unit* target)
@@ -642,7 +597,7 @@ void PlayerAI::DoAutoAttackIfReady()
 
 void PlayerAI::CancelAllShapeshifts()
 {
-    std::list<AuraEffect*> const& shapeshiftAuras = me->GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
+    Unit::AuraEffectList const& shapeshiftAuras = me->GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
     std::set<Aura*> removableShapeshifts;
     for (AuraEffect* auraEff : shapeshiftAuras)
     {
@@ -702,8 +657,8 @@ Unit* SimpleCharmedPlayerAI::SelectAttackTarget() const
 PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
 {
     PossibleSpellVector spells;
-    /*
-    switch (me->getClass())
+    
+    switch (me->GetClass())
     {
         case CLASS_WARRIOR:
             if (!me->IsWithinMeleeRange(me->GetVictim()))
@@ -719,44 +674,44 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                 VerifyAndPushSpellCast(spells, SPELL_SHIELD_BASH, TARGET_VICTIM, 15);
             }
             VerifyAndPushSpellCast(spells, SPELL_BLOODRAGE, TARGET_NONE, 5);
-            switch (GetSpec())
-            {
-                case TALENT_SPEC_WARRIOR_PROTECTION:
-                    VerifyAndPushSpellCast(spells, SPELL_SHOCKWAVE, TARGET_VICTIM, 3);
-                    VerifyAndPushSpellCast(spells, SPELL_CONCUSSION_BLOW, TARGET_VICTIM, 5);
-                    VerifyAndPushSpellCast(spells, SPELL_DISARM, TARGET_VICTIM, 2);
-                    VerifyAndPushSpellCast(spells, SPELL_LAST_STAND, TARGET_NONE, 5);
-                    VerifyAndPushSpellCast(spells, SPELL_SHIELD_BLOCK, TARGET_NONE, 1);
-                    VerifyAndPushSpellCast(spells, SPELL_SHIELD_SLAM, TARGET_VICTIM, 4);
-                    VerifyAndPushSpellCast(spells, SPELL_SHIELD_WALL, TARGET_NONE, 5);
-                    VerifyAndPushSpellCast(spells, SPELL_SPELL_REFLECTION, TARGET_NONE, 3);
-                    VerifyAndPushSpellCast(spells, SPELL_DEVASTATE, TARGET_VICTIM, 2);
-                    VerifyAndPushSpellCast(spells, SPELL_REND, TARGET_VICTIM, 1);
-                    VerifyAndPushSpellCast(spells, SPELL_THUNDER_CLAP, TARGET_VICTIM, 2);
-                    VerifyAndPushSpellCast(spells, SPELL_DEMO_SHOUT, TARGET_VICTIM, 1);
+        ///*    switch (GetSpec())
+        //    {
+        //        case TALENT_SPEC_WARRIOR_PROTECTION:
+        //            VerifyAndPushSpellCast(spells, SPELL_SHOCKWAVE, TARGET_VICTIM, 3);
+        //            VerifyAndPushSpellCast(spells, SPELL_CONCUSSION_BLOW, TARGET_VICTIM, 5);
+        //            VerifyAndPushSpellCast(spells, SPELL_DISARM, TARGET_VICTIM, 2);
+        //            VerifyAndPushSpellCast(spells, SPELL_LAST_STAND, TARGET_NONE, 5);
+        //            VerifyAndPushSpellCast(spells, SPELL_SHIELD_BLOCK, TARGET_NONE, 1);
+        //            VerifyAndPushSpellCast(spells, SPELL_SHIELD_SLAM, TARGET_VICTIM, 4);
+        //            VerifyAndPushSpellCast(spells, SPELL_SHIELD_WALL, TARGET_NONE, 5);
+        //            VerifyAndPushSpellCast(spells, SPELL_SPELL_REFLECTION, TARGET_NONE, 3);
+        //            VerifyAndPushSpellCast(spells, SPELL_DEVASTATE, TARGET_VICTIM, 2);
+        //            VerifyAndPushSpellCast(spells, SPELL_REND, TARGET_VICTIM, 1);
+        //            VerifyAndPushSpellCast(spells, SPELL_THUNDER_CLAP, TARGET_VICTIM, 2);
+        //            VerifyAndPushSpellCast(spells, SPELL_DEMO_SHOUT, TARGET_VICTIM, 1);
+        //            break;
+        //        case TALENT_SPEC_WARRIOR_ARMS:
+        //            VerifyAndPushSpellCast(spells, SPELL_SWEEPING_STRIKES, TARGET_NONE, 2);
+        //            VerifyAndPushSpellCast(spells, SPELL_MORTAL_STRIKE, TARGET_VICTIM, 5);
+        //            VerifyAndPushSpellCast(spells, SPELL_BLADESTORM, TARGET_NONE, 10);
+        //            VerifyAndPushSpellCast(spells, SPELL_REND, TARGET_VICTIM, 1);
+        //            VerifyAndPushSpellCast(spells, SPELL_RETALIATION, TARGET_NONE, 3);
+        //            VerifyAndPushSpellCast(spells, SPELL_SHATTERING_THROW, TARGET_VICTIM, 3);
+        //            VerifyAndPushSpellCast(spells, SPELL_SWEEPING_STRIKES, TARGET_NONE, 5);
+        //            VerifyAndPushSpellCast(spells, SPELL_THUNDER_CLAP, TARGET_VICTIM, 1);
+        //            VerifyAndPushSpellCast(spells, SPELL_EXECUTE, TARGET_VICTIM, 15);
+        //            break;
+        //        case TALENT_SPEC_WARRIOR_FURY:
+        //            VerifyAndPushSpellCast(spells, SPELL_DEATH_WISH, TARGET_NONE, 10);
+        //            VerifyAndPushSpellCast(spells, SPELL_BLOODTHIRST, TARGET_VICTIM, 4);
+        //            VerifyAndPushSpellCast(spells, SPELL_DEMO_SHOUT, TARGET_VICTIM, 2);
+        //            VerifyAndPushSpellCast(spells, SPELL_EXECUTE, TARGET_VICTIM, 15);
+        //            VerifyAndPushSpellCast(spells, SPELL_HEROIC_FURY, TARGET_NONE, 5);
+        //            VerifyAndPushSpellCast(spells, SPELL_RECKLESSNESS, TARGET_NONE, 8);
+        //            VerifyAndPushSpellCast(spells, SPELL_PIERCING_HOWL, TARGET_VICTIM, 2);
                     break;
-                case TALENT_SPEC_WARRIOR_ARMS:
-                    VerifyAndPushSpellCast(spells, SPELL_SWEEPING_STRIKES, TARGET_NONE, 2);
-                    VerifyAndPushSpellCast(spells, SPELL_MORTAL_STRIKE, TARGET_VICTIM, 5);
-                    VerifyAndPushSpellCast(spells, SPELL_BLADESTORM, TARGET_NONE, 10);
-                    VerifyAndPushSpellCast(spells, SPELL_REND, TARGET_VICTIM, 1);
-                    VerifyAndPushSpellCast(spells, SPELL_RETALIATION, TARGET_NONE, 3);
-                    VerifyAndPushSpellCast(spells, SPELL_SHATTERING_THROW, TARGET_VICTIM, 3);
-                    VerifyAndPushSpellCast(spells, SPELL_SWEEPING_STRIKES, TARGET_NONE, 5);
-                    VerifyAndPushSpellCast(spells, SPELL_THUNDER_CLAP, TARGET_VICTIM, 1);
-                    VerifyAndPushSpellCast(spells, SPELL_EXECUTE, TARGET_VICTIM, 15);
-                    break;
-                case TALENT_SPEC_WARRIOR_FURY:
-                    VerifyAndPushSpellCast(spells, SPELL_DEATH_WISH, TARGET_NONE, 10);
-                    VerifyAndPushSpellCast(spells, SPELL_BLOODTHIRST, TARGET_VICTIM, 4);
-                    VerifyAndPushSpellCast(spells, SPELL_DEMO_SHOUT, TARGET_VICTIM, 2);
-                    VerifyAndPushSpellCast(spells, SPELL_EXECUTE, TARGET_VICTIM, 15);
-                    VerifyAndPushSpellCast(spells, SPELL_HEROIC_FURY, TARGET_NONE, 5);
-                    VerifyAndPushSpellCast(spells, SPELL_RECKLESSNESS, TARGET_NONE, 8);
-                    VerifyAndPushSpellCast(spells, SPELL_PIERCING_HOWL, TARGET_VICTIM, 2);
-                    break;
-            }
-            break;
+           // }
+           // break;
         case CLASS_PALADIN:
             VerifyAndPushSpellCast(spells, SPELL_AURA_MASTERY, TARGET_NONE, 3);
             VerifyAndPushSpellCast(spells, SPELL_LAY_ON_HANDS, TARGET_CHARMER, 8);
@@ -775,7 +730,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_HAND_OF_PROTECTION, creatureCharmer, 3);
             }
 
-            switch (GetSpec())
+            /*switch (GetSpec())
             {
                 case TALENT_SPEC_PALADIN_PROTECTION:
                     VerifyAndPushSpellCast(spells, SPELL_HAMMER_OF_RIGHTEOUS, TARGET_VICTIM, 3);
@@ -800,7 +755,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_HAMMER_OF_WRATH, TARGET_VICTIM, 5);
                     VerifyAndPushSpellCast(spells, SPELL_RIGHTEOUS_FURY, TARGET_NONE, 2);
                     break;
-            }
+            }*/
             break;
         case CLASS_HUNTER:
             VerifyAndPushSpellCast(spells, SPELL_DETERRENCE, TARGET_NONE, 3);
@@ -811,7 +766,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
             if (me->GetVictim() && me->GetVictim()->GetPowerType() == POWER_MANA && !me->GetVictim()->GetAuraApplicationOfRankedSpell(SPELL_VIPER_STING, me->GetGUID()))
                 VerifyAndPushSpellCast(spells, SPELL_VIPER_STING, TARGET_VICTIM, 5);
 
-            switch (GetSpec())
+           /* switch (GetSpec())
             {
                 case TALENT_SPEC_HUNTER_BEASTMASTER:
                     VerifyAndPushSpellCast(spells, SPELL_AIMED_SHOT, TARGET_VICTIM, 2);
@@ -833,7 +788,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_MULTI_SHOT, TARGET_VICTIM, 3);
                     VerifyAndPushSpellCast(spells, SPELL_STEADY_SHOT, TARGET_VICTIM, 1);
                     break;
-            }
+            }*/
             break;
         case CLASS_ROGUE:
         {
@@ -844,7 +799,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
             VerifyAndPushSpellCast(spells, SPELL_CLOAK_OF_SHADOWS, TARGET_NONE, 2);
 
             uint32 builder = 0, finisher = 0;
-            switch (GetSpec())
+           /* switch (GetSpec())
             {
                 case TALENT_SPEC_ROGUE_ASSASSINATION:
                     builder = SPELL_MUTILATE, finisher = SPELL_ENVENOM;
@@ -863,7 +818,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                         VerifyAndPushSpellCast(spells, SPELL_SHADOWSTEP, TARGET_VICTIM, 25);
                     VerifyAndPushSpellCast(spells, SPELL_SHADOW_DANCE, TARGET_NONE, 10);
                     break;
-            }
+            }*/
 
             if (Unit* victim = me->GetVictim())
             {
@@ -887,7 +842,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
             VerifyAndPushSpellCast(spells, SPELL_HYMN_OF_HOPE, TARGET_NONE, 5);
             VerifyAndPushSpellCast(spells, SPELL_SHADOW_WORD_DEATH, TARGET_VICTIM, 1);
             VerifyAndPushSpellCast(spells, SPELL_PSYCHIC_SCREAM, TARGET_VICTIM, 3);
-            switch (GetSpec())
+          /*  switch (GetSpec())
             {
                 case TALENT_SPEC_PRIEST_DISCIPLINE:
                     VerifyAndPushSpellCast(spells, SPELL_POWER_WORD_SHIELD, TARGET_CHARMER, 3);
@@ -922,7 +877,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_MIND_FLAY, TARGET_VICTIM, 2);
                     VerifyAndPushSpellCast(spells, SPELL_DISPERSION, TARGET_NONE, 10);
                     break;
-            }
+            }*/
             break;
         case CLASS_DEATH_KNIGHT:
         {
@@ -947,7 +902,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                 if (!hasBP)
                     VerifyAndPushSpellCast(spells, SPELL_PLAGUE_STRIKE, TARGET_VICTIM, 4);
             }
-            switch (GetSpec())
+          /*  switch (GetSpec())
             {
                 case TALENT_SPEC_DEATHKNIGHT_BLOOD:
                     VerifyAndPushSpellCast(spells, SPELL_RUNE_TAP, TARGET_NONE, 2);
@@ -980,14 +935,14 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_BLOOD_STRIKE, TARGET_VICTIM, 1);
                     VerifyAndPushSpellCast(spells, SPELL_DEATH_COIL_DK, TARGET_VICTIM, 3);
                     break;
-            }
+            }*/
             break;
         }
         case CLASS_SHAMAN:
             VerifyAndPushSpellCast(spells, SPELL_HEROISM, TARGET_NONE, 25);
             VerifyAndPushSpellCast(spells, SPELL_BLOODLUST, TARGET_NONE, 25);
             VerifyAndPushSpellCast(spells, SPELL_GROUNDING_TOTEM, TARGET_NONE, 2);
-            switch (GetSpec())
+         /*   switch (GetSpec())
             {
                 case TALENT_SPEC_SHAMAN_RESTORATION:
                     if (Unit* charmer = me->GetCharmer())
@@ -1023,7 +978,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_LAVA_LASH, TARGET_VICTIM, 1);
                     VerifyAndPushSpellCast(spells, SPELL_SHAMANISTIC_RAGE, TARGET_NONE, 10);
                     break;
-            }
+            }*/
             break;
         case CLASS_MAGE:
             if (me->GetVictim() && me->GetVictim()->HasUnitState(UNIT_STATE_CASTING))
@@ -1035,7 +990,7 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
             VerifyAndPushSpellCast(spells, SPELL_SPELLSTEAL, TARGET_VICTIM, 2);
             VerifyAndPushSpellCast(spells, SPELL_ICE_BLOCK, TARGET_NONE, 1);
             VerifyAndPushSpellCast(spells, SPELL_ICY_VEINS, TARGET_NONE, 3);
-            switch (GetSpec())
+           /* switch (GetSpec())
             {
                 case TALENT_SPEC_MAGE_ARCANE:
                     if (Aura* abAura = me->GetAura(AURA_ARCANE_BLAST))
@@ -1114,21 +1069,21 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                     VerifyAndPushSpellCast(spells, SPELL_SHADOWBURN, TARGET_VICTIM, 3);
                     VerifyAndPushSpellCast(spells, SPELL_INCINERATE, TARGET_VICTIM, 7);
                     break;
-            }
+            }*/
             break;
         case CLASS_MONK:
-            switch (GetSpec())
+           /* switch (GetSpec())
             {
                 case TALENT_SPEC_MONK_BREWMASTER:
                 case TALENT_SPEC_MONK_BATTLEDANCER:
                 case TALENT_SPEC_MONK_MISTWEAVER:
                     break;
-            }
+            }*/
             break;
         case CLASS_DRUID:
             VerifyAndPushSpellCast(spells, SPELL_INNERVATE, TARGET_CHARMER, 5);
             VerifyAndPushSpellCast(spells, SPELL_BARKSKIN, TARGET_NONE, 5);
-            switch (GetSpec())
+           /* switch (GetSpec())
             {
                 case TALENT_SPEC_DRUID_RESTORATION:
                     if (!me->HasAura(SPELL_TREE_OF_LIFE))
@@ -1157,8 +1112,8 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                             VerifyAndPushSpellCast(spells, SPELL_SWIFTMEND, creatureCharmer, 10);
                         if (me->HasAura(SPELL_NATURE_SWIFTNESS))
                             VerifyAndPushSpellCast(spells, SPELL_HEALING_TOUCH, creatureCharmer, 100);
-                    }
-                    break;
+                    }*/
+                 /*   break;
                 case TALENT_SPEC_DRUID_BALANCE:
                 {
                     if (!me->HasAura(SPELL_MOONKIN_FORM))
@@ -1210,18 +1165,18 @@ PlayerAI::TargetedSpell SimpleCharmedPlayerAI::SelectAppropriateCastForSpec()
                         }
                     }
                     break;
-            }
+            }*/
             break;
         case CLASS_DEMON_HUNTER:
-            switch (GetSpec())
+           /* switch (GetSpec())
             {
                 case TALENT_SPEC_DEMON_HUNTER_HAVOC:
                 case TALENT_SPEC_DEMON_HUNTER_VENGEANCE:
                     break;
-            }
+            }*/
             break;
     }
-    */
+    
     return SelectSpellCast(spells);
 }
 

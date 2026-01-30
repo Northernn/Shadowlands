@@ -33,9 +33,9 @@ namespace Trainer
         return sSpellMgr->AssertSpellInfo(SpellId, DIFFICULTY_NONE)->HasEffect(SPELL_EFFECT_LEARN_SPELL);
     }
 
-    Trainer::Trainer(uint32 id, Type type, std::string greeting, std::vector<Spell> spells) : _id(id), _type(type), _spells(std::move(spells))
+    Trainer::Trainer(uint32 id, Type type, std::string_view greeting, std::vector<Spell> spells) : _id(id), _type(type), _spells(std::move(spells))
     {
-        _greeting[DEFAULT_LOCALE] = std::move(greeting);
+        _greeting[DEFAULT_LOCALE] = greeting;
     }
 
     void Trainer::SendSpells(Creature const* npc, Player* player, LocaleConstant locale) const
@@ -55,7 +55,7 @@ namespace Trainer
 
             if (!sConditionMgr->IsObjectMeetingTrainerSpellConditions(_id, trainerSpell.SpellId, player))
             {
-                TC_LOG_DEBUG("condition", "SendSpells: conditions not met for trainer id %u spell %u player '%s' (%s)", _id, trainerSpell.SpellId, player->GetName().c_str(), player->GetGUID().ToString().c_str());
+                TC_LOG_DEBUG("condition", "SendSpells: conditions not met for trainer id {} spell {} player '{}' ({})", _id, trainerSpell.SpellId, player->GetName(), player->GetGUID().ToString());
                 continue;
             }
 
@@ -83,17 +83,6 @@ namespace Trainer
         }
 
         bool sendSpellVisual = true;
-        //BattlePetSpeciesEntry const* speciesEntry = GetBattlePetSpeciesBySpell(trainerSpell->SpellId);
-        //if (speciesEntry)
-        //{
-        //    //if (player->GetSession()->GetBattlePetMgr()->HasMaxPetCount(speciesEntry, player->GetGUID()))
-        //    //{
-        //    //    // Don't send any error to client (intended)
-        //    //    return;
-        //    //}TODO
-
-        //    sendSpellVisual = false;
-        //}
 
         float reputationDiscount = player->GetReputationPriceDiscount(npc);
         int64 moneyCost = int64(trainerSpell->MoneyCost * reputationDiscount);
@@ -119,15 +108,6 @@ namespace Trainer
         else
         {
             bool dependent = false;
-
-            //if (speciesEntry)
-            //{
-            //  //  player->GetSession()->GetBattlePetMgr()->AddPet(speciesEntry->ID, BattlePets::BattlePetMgr::SelectPetDisplay(speciesEntry),
-            //  //      BattlePets::BattlePetMgr::RollPetBreed(speciesEntry->ID), BattlePets::BattlePetMgr::GetDefaultPetQuality(speciesEntry->ID));
-            //    // If the spell summons a battle pet, we fake that it has been learned and the battle pet is added
-            //    // marking as dependent prevents saving the spell to database (intended)
-            //    dependent = true; TODO
-            //}
 
             player->LearnSpell(trainerSpell->SpellId, dependent);
         }
@@ -226,8 +206,8 @@ namespace Trainer
         return _greeting[locale];
     }
 
-    void Trainer::AddGreetingLocale(LocaleConstant locale, std::string greeting)
+    void Trainer::AddGreetingLocale(LocaleConstant locale, std::string_view greeting)
     {
-        _greeting[locale] = std::move(greeting);
+        _greeting[locale] = greeting;
     }
 }

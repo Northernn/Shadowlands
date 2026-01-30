@@ -23,7 +23,7 @@ enum Spells
 	SPELL_SLURRY_OUTBURST = 307240, //Living Miasma
 	SPELL_UMBRAL_MANTLE = 306448,
 	SPELL_UMBRAL_BREATH_CAST = 312528,
-	SPELL_UMBRAL_BREATH_STUN = 306928, 
+	SPELL_UMBRAL_BREATH_STUN = 306928,
 	SPELL_EAT_ENTROPIC_CARCASS = 316031,
 	SPELL_EAT_NOXIOUS_CARCASS = 316030,
 	SPELL_ENTROPIC_MANTLE = 306934,
@@ -42,7 +42,7 @@ enum Spells
 	SPELL_BUBBLING_BREATH_CAST = 312529,
 	SPELL_BUBBLING_BREATH_PERIODIC_DAMAGE = 306929,
 	SPELL_FRENZY = 306942,
-	//Heroic	
+	//Heroic
 	//Mythic
 	SPELL_HUNGRY_STACK = 312328,
 	SPELL_UNCONTROLLABLY_RAVENOUS = 312329,
@@ -106,13 +106,15 @@ private:
 		if (summon->GetEntry() == NPC_LIVING_MIASMA)
 		{
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
-            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true));
-			{				
-				summon->SetWalk(true);
-				summon->GetSpeed(MOVE_WALK);
-				summon->CastSpell(me, SPELL_FIXATE_TARGET, true);
-			//	summon->AddThreat(fixateTarget, 1000.0f, SpellSchoolMask::SPELL_SCHOOL_MASK_NORMAL);
-			}
+            summon->SetWalk(true);
+            summon->GetSpeed(MOVE_WALK);
+            summon->CastSpell(me, SPELL_FIXATE_TARGET, true);
+
+//            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true));
+//			{
+//
+//			//	summon->AddThreat(fixateTarget, 1000.0f, SpellSchoolMask::SPELL_SCHOOL_MASK_NORMAL);
+//			}
 		}
 	}
 
@@ -125,18 +127,18 @@ private:
 	void EnterEvadeMode(EvadeReason /*why*/) override
 	{
 		_JustReachedHome();
-		_DespawnAtEvade();		
-		CleanEncounter(instance, me);
+		_DespawnAtEvade();
+		CleanEncounter();
 	}
 
-	void CleanEncounter(InstanceScript* instance, Creature* me)
+	void CleanEncounter()
 	{
 		me->DespawnCreaturesInArea(NPC_LIVING_MIASMA, 125.0f);
 		me->DespawnCreaturesInArea(NPC_ENTROPIC_BUILDUP, 125.0f);
 		me->RemoveAllAreaTriggers();
 	}
 
-	void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+	void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 	{
 		if (me->HealthBelowPct(67) && this->phase == 1)
 		{
@@ -183,11 +185,11 @@ private:
 	{
 		switch (spell->Id)
 		{
-		case SPELL_UMBRAL_BREATH_CAST:		
+		case SPELL_UMBRAL_BREATH_CAST:
            if (target->IsUnit())
-                me->AddAura(SPELL_UMBRAL_BREATH_STUN, target->ToUnit());  
+                me->AddAura(SPELL_UMBRAL_BREATH_STUN, target->ToUnit());
 			break;
-          
+
 		case SPELL_BUBBLING_BREATH_CAST:
             me->AddAura(SPELL_BUBBLING_BREATH_PERIODIC_DAMAGE, target->ToUnit());
 			break;
@@ -250,13 +252,14 @@ private:
 		}
 		case EVENT_DEBILATITING_SPIT:
 		{
-            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true));
+            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 			{
 				me->CastSpell(me, SPELL_DEBILITATING_SPIT, true);
-				if (Aura* spit = me->GetAura(SPELL_DEBILITATING_SPIT))	
+				if (Aura* spit = me->GetAura(SPELL_DEBILITATING_SPIT))
 					spit->SetStackAmount(4);
 			}
-			events.Repeat(35s);
+
+            events.Repeat(35s);
 			break;
 		}
 		case EVENT_UMBRAL_ERUPTION:
@@ -264,7 +267,7 @@ private:
 			for (uint8 i = 0; i < 15; i++)
 			{
 				me->CastSpell(me->GetRandomNearPosition(20.0f), SPELL_UMBRAL_ERUPTION_MISSILE, true);
-			}			
+			}
 			events.Repeat(20s);
 			break;
 		}
@@ -351,7 +354,7 @@ private:
 	void JustDied(Unit* /*attacker*/) override
 	{
 		_JustDied();
-		CleanEncounter(instance, me);
+		CleanEncounter();
 		//instance->DoModifyPlayerCurrencies(CURRENCY_ECHOES_OF_NYALOTHA, 11);
 	}
 };
@@ -359,29 +362,24 @@ private:
 //307358
 class aura_debilatiting_spit : public AuraScript
 {
-	PrepareAuraScript(aura_debilatiting_spit);
-
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
 		if (!caster || !target)
 			return;
 
-		if (Unit* caster = GetTarget())
-		{
-			std::list<Player*> jumpTargets_li;
-			caster->GetPlayerListInGrid(jumpTargets_li, 25.0f);
-			for (auto& targets : jumpTargets_li)
-			{
-				if (!targets->GetAura(SPELL_DEBILITATING_SPIT))
-				{
-					GetCaster()->CastSpell(targets, SPELL_DEBILITATING_SPIT, true);
-					if (Aura* spit = targets->GetAura(SPELL_DEBILITATING_SPIT))
-						spit->SetStackAmount(2);
-				}
-			}
-		}
+        std::list<Player*> jumpTargets_li;
+        target->GetPlayerListInGrid(jumpTargets_li, 25.0f);
+        for (auto& targets : jumpTargets_li)
+        {
+            if (!targets->GetAura(SPELL_DEBILITATING_SPIT))
+            {
+                GetCaster()->CastSpell(targets, SPELL_DEBILITATING_SPIT, true);
+                if (Aura* spit = targets->GetAura(SPELL_DEBILITATING_SPIT))
+                    spit->SetStackAmount(2);
+            }
+        }
 	}
 
 	void Register() override
@@ -393,7 +391,7 @@ class aura_debilatiting_spit : public AuraScript
 //500600
 struct npc_entropic_buildup : public ScriptedAI
 {
-	npc_entropic_buildup(Creature* c) : ScriptedAI(c) 
+	npc_entropic_buildup(Creature* c) : ScriptedAI(c)
 	{
 		me->SetReactState(REACT_PASSIVE);
 	}
@@ -457,7 +455,7 @@ struct at_entropic_buildup : public AreaTriggerAI
 private:
 	bool soaked;
 
-	void OnCreate() override
+	void OnCreate(Spell const* /*creatingSpell*/) override
 	{
 		soaked = false;
 		at->SetDuration(15000);

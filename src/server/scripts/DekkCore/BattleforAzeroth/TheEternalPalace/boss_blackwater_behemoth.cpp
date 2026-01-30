@@ -85,13 +85,13 @@ struct noTanks //: public std::unary_function<Unit*, bool>
     bool operator() (const Unit* pTarget)
     {
         Player* player = const_cast<Player*>(pTarget->ToPlayer());
-        uint32 specialization = player->GetSpecializationId();
-        return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-            || (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-            || (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-            || (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+        uint32 specialization = player->GetPrimarySpecialization();
+        return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+            || (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+            || (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+            || (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
     }
 };
 
@@ -129,7 +129,7 @@ public:
                 oxy->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(Unit* /*who*/)
         {
             if (!oxygenSpawned)
             {
@@ -247,7 +247,7 @@ public:
                     }
         }
 
-        void EnterEvadeMode(EvadeReason w)
+        void EnterEvadeMode(EvadeReason /*w*/)
         {
             _DespawnAtEvade(15s);
         }
@@ -481,7 +481,7 @@ public:
                         for (auto player : playerList)
                         {
                             std::ostringstream str;
-                            str << player->GetName(); " has been targeted by |cFFF00000|h[Piercing Barb]|h|r!";
+                            str << player->GetName() << " has been targeted by |cFFF00000|h[Piercing Barb]|h|r!";
                             me->TextEmote(str.str().c_str(), 0, true);
 
                             me->CastSpell(player, SPELL_PIERCING_BARB_CAST);
@@ -510,9 +510,7 @@ public:
 
     class bfa_spell_toxic_spine_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_toxic_spine_SpellScript);
-
-        void AfterCast(SpellEffIndex index)
+        void AfterCast(SpellEffIndex /*index*/)
         {
             Unit* caster = GetCaster();
             Unit* target = GetHitUnit();
@@ -563,8 +561,6 @@ public:
 
     class bfa_spell_feeding_frenzy_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_feeding_frenzy_AuraScript);
-
         ObjectGuid currentTarget;
 
         bool Load() override
@@ -572,8 +568,8 @@ public:
             currentTarget = ObjectGuid::Empty;
             return true;
         }
-     
-        void HandleOnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
+
+        void HandleOnProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
         {
             Unit* caster = eventInfo.GetActor(); // boss
             Unit* target = eventInfo.GetActionTarget(); // current target
@@ -584,19 +580,20 @@ public:
             {
                 if (Aura* frenzy = caster->GetAura(SPELL_FEEDING_FRENZY_AURA))
                     frenzy->SetStackAmount(1);
+
                 currentTarget = target->GetGUID();
             }
             else
                 caster->CastSpell(caster, SPELL_FEEDING_FRENZY_AURA, true);
         }
 
-        void Register()
+        void Register() override
         {
             OnEffectProc += AuraEffectProcFn(bfa_spell_feeding_frenzy_AuraScript::HandleOnProc, EFFECT_0, SPELL_AURA_DUMMY);
         }
     };
 
-    AuraScript* GetAuraScript() const
+    AuraScript* GetAuraScript() const override
     {
         return new bfa_spell_feeding_frenzy_AuraScript();
     }
@@ -610,9 +607,7 @@ public:
 
     class bfa_spell_bioelectric_feelers_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_bioelectric_feelers_AuraScript);
-
-        void OnPeriodic(AuraEffect const* aurEff)
+        void OnPeriodic(AuraEffect const* /*aurEff*/)
         {
             Unit* caster = GetCaster();
             if (!caster)
@@ -674,9 +669,7 @@ public:
 
     class bfa_spell_gaze_from_below_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_gaze_from_below_AuraScript);
-
-        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();
             Unit* target = GetTarget()->ToPlayer();
@@ -707,8 +700,6 @@ public:
 
     class bfa_spell_glowing_stinger_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_glowing_stinger_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();
@@ -831,8 +822,6 @@ public:
 
     class bfa_spell_piercing_barb_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_piercing_barb_damage_SpellScript);
-
         uint32 targetList;
 
         bool Load() override
@@ -875,7 +864,7 @@ public:
     }
 };
 
-// 301494 piercing barb 
+// 301494 piercing barb
 class bfa_spell_piercing_barb_beam : public SpellScriptLoader
 {
 public:
@@ -883,8 +872,6 @@ public:
 
     class bfa_spell_piercing_barb_beam_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_piercing_barb_beam_AuraScript);
-
         bool IsOnBeam(WorldObject* obj, Position source, Position destination, float heightDiff, float beamWidth, float beamLenght)
         {
             if (beamLenght < obj->GetExactDist2d(source.GetPositionX(), source.GetPositionY()))
@@ -947,7 +934,7 @@ public:
 };
 
 
-// 292279 shock pulse damage 
+// 292279 shock pulse damage
 class bfa_spell_shock_pulse_damage : public SpellScriptLoader
 {
 public:
@@ -955,8 +942,6 @@ public:
 
     class bfa_spell_shock_pulse_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_shock_pulse_damage_SpellScript);
-
         void DealDamage()
         {
             Unit* caster = GetCaster();
@@ -1002,9 +987,9 @@ public:
             {
                 for (auto player : playerList)
                 {
-                    if (!player->HasAura(SPELL_BIOLUMINESCENCE) && !player->GetRoleForGroup() == ROLE_TANK)
+                    if (!player->HasAura(SPELL_BIOLUMINESCENCE)/* && !player->GetRoleForGroup() == ROLE_TANK*/)
                         player->AddAura(SPELL_BIOLUMINESCENCE, player);
-                    else if (!player->HasAura(SPELL_BIOLUMINESCENCE && player->GetRoleForGroup() == ROLE_TANK))
+                    else if (!player->HasAura(SPELL_BIOLUMINESCENCE/* && player->GetRoleForGroup() == ROLE_TANK*/))
                         player->AddAura(SPELL_RADIANT_BIOMASS_AURA, player);
                 }
             }
@@ -1026,8 +1011,6 @@ public:
 
     class bfa_spell_radiant_biomass_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_radiant_biomass_AuraScript);
-
         void HandleOnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
         {
             Unit* caster = eventInfo.GetActor();

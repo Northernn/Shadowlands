@@ -26,47 +26,6 @@ namespace Instances
 {
     namespace Bloodmaul
     {
-        // AreaTriggers for spells: 151582
-        class AreaTrigger_SuppresionField : public AreaTriggerAI
-        {
-            enum class Spells : uint32
-            {
-                SuppresionFieldEffect = 151638,
-            };
-
-            std::forward_list<ObjectGuid> m_Targets;
-
-        public:
-            AreaTrigger_SuppresionField(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger), m_Targets() { }
-
-            void OnRemove() override
-            {
-                // If We are on the last tick.
-                if (at->GetDuration() < 100)
-                {
-                    for (auto guid : m_Targets)
-                    {
-                        Unit* target = ObjectAccessor::GetUnit(*at, guid);
-                        if (target)
-                            target->RemoveAura(uint32(Spells::SuppresionFieldEffect));
-                    }
-                }
-            }
-
-            void OnUnitEnter(Unit* unit) override
-            {
-                if (at->GetCaster() || !at->GetCaster()->IsValidAttackTarget(unit))
-                    return;
-
-                at->GetCaster()->CastSpell(unit, uint32(Spells::SuppresionFieldEffect), true);
-            }
-
-            void OnUnitExit(Unit* unit) override
-            {
-                unit->RemoveAura(uint32(Spells::SuppresionFieldEffect));
-            }
-        };
-
         // 9686 - Start overseer event
         class AreaTrigger_at_bloodmaul_overseer_event : public AreaTriggerScript
         {
@@ -125,7 +84,6 @@ namespace Instances
 
 void AddSC_areatrigger_Bloodmaul()
 {
-    RegisterAreaTriggerAI(Instances::Bloodmaul::AreaTrigger_SuppresionField);
     new Instances::Bloodmaul::AreaTrigger_at_bloodmaul_overseer_event();
     new Instances::Bloodmaul::AreaTrigger_at_magmolatus_begin_area();
     new Instances::Bloodmaul::AreaTrigger_at_SpawnSlagna();

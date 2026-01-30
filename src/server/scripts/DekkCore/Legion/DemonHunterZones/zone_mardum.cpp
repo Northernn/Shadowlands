@@ -362,8 +362,6 @@ public:
 // 200176 - Learn felsaber // casted when u click on 101518 felsaber npc
 class spell_learn_felsaber : public SpellScript
 {
-    PrepareSpellScript(spell_learn_felsaber);
-
     void HandleMountOnHit(SpellEffIndex /*effIndex*/)
     {
         Unit* hitUnit = GetHitUnit();
@@ -593,8 +591,6 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
 // 192709 - Infernal Smash
 class spell_mardum_infernal_smash : public SpellScript
 {
-    PrepareSpellScript(spell_mardum_infernal_smash);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (!GetCaster() || !GetHitUnit() || !(GetHitUnit()->GetTypeId() == TypeID::TYPEID_PLAYER))
@@ -709,6 +705,8 @@ struct npc_doom_commander_beliash : public ScriptedAI
     {
         if (killer->IsPlayer())
             killer->ToPlayer()->KilledMonsterCredit(NPC_BELIASH_CREDIT, ObjectGuid::Empty);
+            killer->ToPlayer()->ForceCompleteQuest(QUEST_BEFORE_OVERRUN);
+
         me->ForcedDespawn(15000, 60s);
     }
 
@@ -936,8 +934,6 @@ public:
 // 188501 spectral sight
 class spell_mardum_spectral_sight : public SpellScript
 {
-    PrepareSpellScript(spell_mardum_spectral_sight);
-
     void HandleOnCast()
     {
         if (GetCaster()->IsPlayer() && GetCaster()->GetAreaId() == 7754)
@@ -1890,28 +1886,19 @@ public:
 // 192140 - Back to black temple
 class spell_mardum_back_to_black_temple : public SpellScript
 {
-    PrepareSpellScript(spell_mardum_back_to_black_temple);
-
     void HandleOnCast()
     {
         if (Player* player = GetCaster()->ToPlayer())
         {
-            player->AddMovieDelayedAction(471, [player]
-            {
-                WorldLocation location(1468, 4325.46f, -620.53f, -281.40f, 1.517563f);
-                player->SetHomebind(location, 7873);
-                player->SendBindPointUpdate();
-                player->TeleportTo(location);
-            });
+            player->TeleportTo(1468, 4325.46f, -620.53f, -281.40f, 1.517563f);
+            player->SetHomebind(player->GetWorldLocation(), 7873);
 
-            player->GetScheduler().Schedule(Seconds(2), [](TaskContext context)
-            {
-                GetContextUnit()->RemoveAurasDueToSpell(192140); // Remove black screen
-            });
-
-            if (player->GetSpecializationId() == TALENT_SPEC_DEMON_HUNTER_HAVOC)
+            player->RemoveAurasDueToSpell(192140); // Remove black screen
+            
+            if (player->GetPrimarySpecialization() == ChrSpecialization::DemonHunterHavoc)
                 player->LearnSpell(188499, false);
-        }
+        }           
+        
     }
 
     void Register() override

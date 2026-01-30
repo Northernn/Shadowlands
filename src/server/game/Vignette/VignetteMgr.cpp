@@ -21,6 +21,7 @@
 #include "AreaTrigger.h"
 #include "Corpse.h"
 #include "Conversation.h"
+#include "GameObject.h"
 
 namespace Vignette
 {
@@ -152,8 +153,8 @@ VignetteEntry const* GetVignetteEntryFromWorldObject(WorldObject const* target)
     if (target->IsCreature())
         vignetteId = target->ToCreature()->GetCreatureTemplate()->VignetteID;
 
-   //if (target->IsGameObject())
-      //  vignetteId = target->ToGameObject()->GetGOInfo()->GetVignetteId();
+   if (target->IsGameObject())
+        vignetteId = target->ToGameObject()->GetGOInfo()->GetVignetteId();
 
     if (!vignetteId)
         return nullptr;
@@ -167,8 +168,8 @@ uint32 GetTrackingQuestIdFromWorldObject(WorldObject const* target)
     if (target->IsCreature())
         trackingQuest = target->ToCreature()->GetCreatureTemplate()->TrackingQuestID;
 
-   // if (target->IsGameObject())
-     //   trackingQuest = target->ToGameObject()->GetGOInfo()->GetTrackingQuestId();
+    if (target->IsGameObject())
+        trackingQuest = target->ToGameObject()->GetGOInfo()->GetTrackingQuestId();
 
     return trackingQuest;
 }
@@ -253,7 +254,7 @@ bool Manager::CanSeeVignette(WorldObject const* obj, uint32 vignetteID)
     if (guid.IsGameObject())
         if (auto goSource = ObjectAccessor::FindGameObject(guid))
         {
-            //trackingQuest = goSource->GetGOInfo()->GetTrackingQuestId();
+            trackingQuest = goSource->GetGOInfo()->GetTrackingQuestId();
             if (trackingQuest && _owner->IsQuestRewarded(trackingQuest))
                 return false;
         }

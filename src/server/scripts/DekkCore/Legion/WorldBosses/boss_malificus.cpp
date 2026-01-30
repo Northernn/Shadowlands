@@ -140,8 +140,6 @@ public:
     class spell_malificus_pestilence_SpellScript : public SpellScript
     {
     public:
-        PrepareSpellScript(spell_malificus_pestilence_SpellScript);
-
         void HandleDummy(SpellEffIndex)
         {
             if (!GetCaster() || !GetHitUnit())
@@ -161,63 +159,9 @@ public:
         return new spell_malificus_pestilence_SpellScript();
     }
 };
-// 233631,//AT 9466
-struct at_malificus_pestilence : AreaTriggerAI
-{
-    at_malificus_pestilence(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
-    void OnCreate() override
-    {
-        Unit* caster = at->GetCaster();
-
-        if (!caster)
-            return;
-
-        for (auto guid : at->GetInsideUnits())
-            if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                if (unit->GetTypeId() == TYPEID_PLAYER)
-                    unit->CastSpell(unit, SPELL_PESTILENCE_DMG, true);
-    }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        Unit* caster = at->GetCaster();
-
-        if (!caster)
-            return;
-
-        if (!unit)
-            return;
-
-        if (unit->GetTypeId() == TYPEID_PLAYER)
-            unit->CastSpell(unit, SPELL_PESTILENCE_DMG, true);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (!unit)
-            return;
-
-        if (unit->HasAura(SPELL_PESTILENCE_DMG))
-            unit->RemoveAura(SPELL_PESTILENCE_DMG);
-    }
-
-    void OnRemove() override
-    {
-        Unit* caster = at->GetCaster();
-
-        if (!caster)
-            return;
-
-        for (auto guid : at->GetInsideUnits())
-            if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                if (unit->HasAura(SPELL_PESTILENCE_DMG))
-                    unit->RemoveAura(SPELL_PESTILENCE_DMG);
-    }
-};
 void AddSC_boss_malificus()
 {
     new boss_malificus();
     new spell_malificus_pestilence();
-    RegisterAreaTriggerAI(at_malificus_pestilence);
 }

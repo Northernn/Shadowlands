@@ -49,7 +49,7 @@ namespace AIRegistry
         (new CreatureAIFactory<TurretAI>("TurretAI"))->RegisterSelf();
         (new CreatureAIFactory<VehicleAI>("VehicleAI"))->RegisterSelf();
         (new CreatureAIFactory<SmartAI>("SmartAI"))->RegisterSelf();
-       // (new CreatureAIFactory<BattlePetAI>("BattlePetAI"))->RegisterSelf(); why error? 
+       // (new CreatureAIFactory<BattlePetAI>("BattlePetAI"))->RegisterSelf(); TODO 
         (new CreatureAIFactory<ScheduledChangeAI, false>("ScheduledChangeAI"))->RegisterSelf();
 
         (new GameObjectAIFactory<NullGameObjectAI>("NullGameObjectAI"))->RegisterSelf();

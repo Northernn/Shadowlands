@@ -36,7 +36,7 @@ enum eSpells
 
     // burnstachio
     SPELL_WATER_ORB = 228977,
-    SPELL_BURNING_GROUND = 228910, // at    
+    SPELL_BURNING_GROUND = 228910, // at
 
     // meatball
     SPELL_MEATBALL_MAD = 134911,
@@ -425,7 +425,7 @@ Position totemPos[8]
     {2014.44f, -4733.71f, 86.77f, 5.47f},
     {2051.44f, -4733.71f, 86.77f, 3.98f},
 
-    // H    
+    // H
 };
 // 67488, 67487
 class boss_brawguild_gg_engineering : public CreatureScript
@@ -482,10 +482,12 @@ public:
         {
             summons.Summon(summon);
             if (summon->GetEntry() == 67487)
-                if (Unit* owner = me->GetOwner())
+            {
+                if (Unit *owner = me->GetOwner())
                     summon->AI()->AttackStart(owner);
                 else if (summon->GetEntry() == 67500)
                     summon->SetReactState(REACT_PASSIVE);
+            }
         }
 
         void JustDied(Unit* who) override

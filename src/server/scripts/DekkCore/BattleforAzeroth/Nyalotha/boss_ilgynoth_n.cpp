@@ -65,7 +65,7 @@ enum Events
 //158328
 struct ilgynoth_n : public BossAI
 {
-	ilgynoth_n(Creature* creature) : BossAI(creature, DATA_ILGYNOTH) 
+	ilgynoth_n(Creature* creature) : BossAI(creature, DATA_ILGYNOTH)
 	{
 		SetCombatMovement(false);
 		me->SetFlying(true);
@@ -82,7 +82,7 @@ private:
 		me->SetMaxPower(POWER_ENERGY, 100);
 		me->SetPower(POWER_ENERGY, 0);
 		//me->AddAura(AURA_OVERRIDE_POWER_COLOR_PURPLE2);
-		me->SetReactState(REACT_AGGRESSIVE);		
+		me->SetReactState(REACT_AGGRESSIVE);
 	}
 
 	void JustEngagedWith(Unit* who) override
@@ -106,7 +106,7 @@ private:
 			summon->AI()->DoZoneInCombat(nullptr);
 	}
 
-	void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+	void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 	{
 		if (me->HealthBelowPct(2) && this->phase == 1)
 		{
@@ -114,7 +114,7 @@ private:
 			events.Reset();
 			me->SetReactState(REACT_PASSIVE);
 			me->AddUnitState(UNIT_STAND_STATE_SUBMERGED);
-			events.ScheduleEvent(EVENT_CLOTTED_CORRUPTION, 20s);			
+			events.ScheduleEvent(EVENT_CLOTTED_CORRUPTION, 20s);
 			if (this->organDied == 0)
 			{
 				Talk(SAY_ORGANS_OF_CORRUPTION);
@@ -141,7 +141,7 @@ private:
 		CleanEncounter(instance, me);
 	}
 
-	void CleanEncounter(InstanceScript* instance, Creature* me)
+	void CleanEncounter(InstanceScript* /*instance*/, Creature* me)
 	{
 		me->DespawnCreaturesInArea(NPC_ORGAN_OF_CORRUPTION, 125.0f);
 		me->DespawnCreaturesInArea(NPC_BLOOD_OF_NYALOTHA, 125.0f);
@@ -156,13 +156,12 @@ private:
 				Talk(SAY_KILL);
 	}
 
-	void SpellHit(WorldObject* unit, const SpellInfo* spellInfo)
+	void SpellHit(WorldObject* /*unit*/, const SpellInfo* spellInfo) override
 	{
 		if (spellInfo->Id == SPELL_EYE_OF_NZOTH)
 		{
 			me->RemoveAura(SPELL_EYE_OF_NZOTH);
-			uint64 GetHit = 59147.63f;
-			me->SetHealth(me->GetHealth() + GetHit);
+			me->SetHealth(me->GetHealth() + 59147);
 		}
 	}
 
@@ -196,7 +195,7 @@ private:
             if (Unit* target = SelectTarget(SelectTargetMethod::MaxDistance, 0, 20.0f, false))
 			{
 				if (Player* player = target->ToPlayer())
-				{	
+				{
 					me->SetFacingToObject(player, true);
 					me->CastSpell(player, SPELL_EYE_OF_NZOTH, false);
 				}
@@ -209,10 +208,10 @@ private:
 			events.Repeat(35s);
 			break;
 
-		case EVENT_SUMMON_ORGANS:			
+		case EVENT_SUMMON_ORGANS:
 			me->SummonCreature(NPC_ORGAN_OF_CORRUPTION, organ_of_corruption_left, TEMPSUMMON_MANUAL_DESPAWN);
 			me->SummonCreature(NPC_ORGAN_OF_CORRUPTION, organ_of_corruption_mid, TEMPSUMMON_MANUAL_DESPAWN);
-			me->SummonCreature(NPC_ORGAN_OF_CORRUPTION, organ_of_corruption_right, TEMPSUMMON_MANUAL_DESPAWN);			
+			me->SummonCreature(NPC_ORGAN_OF_CORRUPTION, organ_of_corruption_right, TEMPSUMMON_MANUAL_DESPAWN);
 			break;
 
 		case EVENT_PREPARE_ORGANS:
@@ -229,17 +228,21 @@ private:
 
 		case EVENT_TOUCH_OF_THE_CORRUPTOR:
 		{
-			UnitList tarlist;
-            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 150.0F, true))
-			for (Unit* targets : tarlist)
-			{
-				me->CastSpell(nullptr, SPELL_TOUCH_OF_THE_CORRUPTOR, false);
-				me->GetScheduler().Schedule(3100ms, [this, targets](TaskContext context)
-				{
-					me->CastSpell(nullptr, SPELL_TOUCH_OF_THE_CORRUPTOR_MIND_CONTROL, true);
-				});
-			}
-			events.Repeat(45s);
+//			UnitList tarlist;
+//
+//            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 150.0F, true))
+//            {
+//                for (Unit *targets: tarlist)
+//                {
+//                    me->CastSpell(nullptr, SPELL_TOUCH_OF_THE_CORRUPTOR, false);
+//                    me->GetScheduler().Schedule(3100ms, [this, targets](TaskContext /*context*/)
+//                    {
+//                        me->CastSpell(nullptr, SPELL_TOUCH_OF_THE_CORRUPTOR_MIND_CONTROL, true);
+//                    });
+//                }
+//            }
+//
+//            events.Repeat(45s);
 			break;
 		}
 
@@ -283,7 +286,7 @@ private:
 		if (summon->GetEntry() == NPC_ORGAN_OF_CORRUPTION)
 		{
 			organDied++;
-			events.Reset();			
+			events.Reset();
 			me->ClearUnitState(UNIT_STAND_STATE_SUBMERGED);
 			me->SetReactState(REACT_AGGRESSIVE);
 			me->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
@@ -297,7 +300,7 @@ private:
 		}
 	}
 
-	void JustDied(Unit* /*killer*/ override)
+	void JustDied(Unit* /*killer*/) override
 	{
 		_JustDied();
 	//	instance->DoModifyPlayerCurrencies(CURRENCY_ECHOES_OF_NYALOTHA, 16);
@@ -319,10 +322,10 @@ struct npc_organ_of_corruption : public ScriptedAI
 		me->SetPowerType(POWER_ENERGY);
 		me->SetMaxPower(POWER_ENERGY, 100);
 		me->SetPower(POWER_ENERGY, 100);
-	//	me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE);		
+	//	me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE);
 	}
 
-	void IsSummonedBy(WorldObject* summoner) override
+	void IsSummonedBy(WorldObject* /*summoner*/) override
 	{
 		if (instance)
 		{
@@ -365,7 +368,8 @@ struct npc_blood_of_nyalotha : public ScriptedAI
 		me->AddAura(SPELL_RECURRING_NIGHTMARE_TRIGGER, me);
 		me->SetWalk(true);
 		me->GetSpeed(MOVE_WALK);
-		if (instance)
+
+        if (instance)
 		{
 			me->AI()->DoZoneInCombat(nullptr);
 		//	if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
@@ -373,8 +377,8 @@ struct npc_blood_of_nyalotha : public ScriptedAI
 		}
 	}
 
-	void SpellHit(WorldObject* unit, const SpellInfo* spellInfo) 
-	{ 
+	void SpellHit(WorldObject* /*unit*/, const SpellInfo* spellInfo) override
+	{
 		if (spellInfo->Id == SPELL_ABSORBING_CHARGE)
 			me->KillSelf();
 	}
@@ -383,16 +387,12 @@ struct npc_blood_of_nyalotha : public ScriptedAI
 	{
 		me->CastSpell(nullptr, SPELL_HEMORRHAGE, true);
 	}
-private:
-    InstanceScript* instance;
 };
 
 //311159
 class aura_cursed_blood : public AuraScript
 {
-	PrepareAuraScript(aura_cursed_blood);
-
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
@@ -423,7 +423,7 @@ struct npc_clotted_corruption : public ScriptedAI
 		events.ScheduleEvent(EVENT_ABSORBING_CHARGE, 3s);
 	}
 
-	void ExecuteEvent(uint32 eventId)// override
+	void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{
@@ -432,16 +432,11 @@ struct npc_clotted_corruption : public ScriptedAI
 				me->CastSpell(target, SPELL_ABSORBING_CHARGE, false);
 		}
 	}
-private:
-    InstanceScript* instance;
-    EventMap events;
 };
 
 //311367
 class aura_touch_of_the_corruptor : public AuraScript
 {
-	PrepareAuraScript(aura_touch_of_the_corruptor);
-
 	void PeriodicTick(AuraEffect const* /*aurEff*/)
 	{
 		Unit* target = GetTarget();

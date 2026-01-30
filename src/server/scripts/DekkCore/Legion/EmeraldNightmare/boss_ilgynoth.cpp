@@ -822,8 +822,6 @@ void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageTy
 //218415
 class spell_ilgynoth_death_blossom : public SpellScript
 {
-    PrepareSpellScript(spell_ilgynoth_death_blossom);
-
     void HandleOnHit()
     {
         if (GetCaster() && GetHitUnit())
@@ -847,8 +845,6 @@ class spell_ilgynoth_death_blossom : public SpellScript
 //215128
 class spell_ilgynoth_cursed_blood : public AuraScript
 {
-    PrepareAuraScript(spell_ilgynoth_cursed_blood);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         AuraRemoveMode mode = GetTargetApplication()->GetRemoveMode();
@@ -868,8 +864,6 @@ class spell_ilgynoth_cursed_blood : public AuraScript
 //209471 - HACK!!!
 class spell_ilgynoth_nightmare_explosion : public SpellScript
 {
-    PrepareSpellScript(spell_ilgynoth_nightmare_explosion);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (GetCaster() && GetCaster()->GetMap()->GetDifficultyID() != DIFFICULTY_MYTHIC_RAID)
@@ -885,8 +879,6 @@ class spell_ilgynoth_nightmare_explosion : public SpellScript
 //210048
 class spell_ilgynoth_nightmare_explosion_pct : public SpellScript
 {
-    PrepareSpellScript(spell_ilgynoth_nightmare_explosion_pct);
-
     uint8 dmgPct = 0;
 
     void HandleDamage(SpellEffIndex effIndex)

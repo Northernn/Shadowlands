@@ -44,7 +44,7 @@ enum Spells
     FIRE_FROM_MIST = 285428, // at 30 energy, summon two adds npc 146107, on mythic 3, they're stationary, displayid 90376
     BEAM_DAMAGE_AURA = 286503,
     EXPLOSION = 284399,
-    //A Flash of Hostility used by Monk, at 60 energy, 
+    //A Flash of Hostility used by Monk, at 60 energy,
     //BARRIER npc, 147374, displayid 90015
     FLASH_OF_PHOENIXES = 284669,
     RING_OF_HOSTILITY_MESTRAH_PERIODIC_DUMMY = 297568,
@@ -53,7 +53,7 @@ enum Spells
     PHOENIX_STRIKE_DAMAGE = 284388,
     //Transmorms, at 100 energy, both bosses transform
     DRAGONS_BREATH = 286396,
-    BLAZING_PHOENIX_TRANSFORM = 282040, //npc 147536, 89730 displayid    
+    BLAZING_PHOENIX_TRANSFORM = 282040, //npc 147536, 89730 displayid
     SPIRITS_OF_XUEN = 285645,
     TIGER_PAW = 285634,
     POUNCE = 286086,
@@ -86,8 +86,8 @@ enum Events
 //148238,146100
 struct boss_jadefire_masters_horde : public BossAI
 {
-    boss_jadefire_masters_horde(Creature* creature) : BossAI(creature, DATA_JADEFIRE_MASTERS_HORDE) 
-    { 
+    boss_jadefire_masters_horde(Creature* creature) : BossAI(creature, DATA_JADEFIRE_MASTERS_HORDE)
+    {
         this->deathCount = 0;
     }
 
@@ -107,8 +107,6 @@ private:
         instance->DoRemoveAurasDueToSpellOnPlayers(285632);
         me->NearTeleportTo(me->GetHomePosition());
         me->ClearUnitState(UNIT_STATE_ROOT);
-        if (me->GetEntry() == NPC_ANATHOS_FIRECALLER)
-            me->AddAura(AURA_OVERRIDE_POWER_COLOR_ENTROPIC, me);
     }
 
     void JustReachedHome() override
@@ -117,7 +115,7 @@ private:
         switch (me->GetEntry())
         {
         case NPC_MARA_GRIMFANG:
-            me->SetNativeDisplayId(89013, 1.5f);
+            me->SetDisplayId(me->GetDisplayId(), true);
             if (Creature* mara = me->FindNearestCreature(NPC_MARA_GRIMFANG, 100.0f))
             {
                 if (mara->isDead())
@@ -129,7 +127,7 @@ private:
             break;
 
         case NPC_ANATHOS_FIRECALLER:
-            me->SetNativeDisplayId(89012, 1.5f);
+            me->SetDisplayId(me->GetDisplayId(), true);
             if (Creature* anathos = me->FindNearestCreature(NPC_ANATHOS_FIRECALLER, 100.0f))
             {
                 if (anathos->isDead())
@@ -152,7 +150,7 @@ private:
             DoCast(PERIODIC_ENERGY_GAIN);
             events.ScheduleEvent(EVENT_WHIRLING_JADE_STORM, 3s);
             events.ScheduleEvent(EVENT_SPIRITS_OF_XUEN, 20s);
-            events.ScheduleEvent(EVENT_A_FLASH_OF_HOSTILITY, 60s);            
+            events.ScheduleEvent(EVENT_A_FLASH_OF_HOSTILITY, 60s);
             if (Creature* mara = me->FindNearestCreature(NPC_MANCEROY_FLAMEFIST, 100.0f, true))
             {
                 if (mara->IsInCombat())
@@ -165,7 +163,7 @@ private:
 
         case NPC_ANATHOS_FIRECALLER:
             _JustEngagedWith(who);
-            me->GetScheduler().Schedule(4s, [this](TaskContext context)
+            me->GetScheduler().Schedule(4s, [this](TaskContext /*context*/)
             {
                 Talk(0);
             });
@@ -204,19 +202,18 @@ private:
         }
     }
 
-    void OnSpellCast(SpellInfo const* spell) override
+    void OnSpellCast(SpellInfo const* /*spell*/) override
     {
-
-       if (spell->Id == BLAZING_PHOENIX_TRANSFORM)
-       {
-       }      
+//       if (spell->Id == BLAZING_PHOENIX_TRANSFORM)
+//       {
+//       }
    }
 
-   void SpellHitDest(SpellDestination const* dest, SpellInfo const* spellInfo)
+   void SpellHitDest(SpellDestination const* /*dest*/, SpellInfo const* /*spellInfo*/) override
    {
-       if (spellInfo->Id == MAGMA_TRAP_MISSILE_TRIGGER)
-       {       
-       }
+//       if (spellInfo->Id == MAGMA_TRAP_MISSILE_TRIGGER)
+//       {
+//       }
    }
 
    void JustDied(Unit* /*who*/) override
@@ -236,11 +233,11 @@ private:
             summon->AI()->DoCastAOE(EXPLOSION);
             break;
 
-       case NPC_MAGMA_TRAP_BOD:   
+       case NPC_MAGMA_TRAP_BOD:
             summon->SetReactState(REACT_PASSIVE);
             break;
 
-       case NPC_SPIRIT_OF_XUEN:            
+       case NPC_SPIRIT_OF_XUEN:
             if (Unit* tar =SelectTarget(SelectTargetMethod::MinDistance, 0, 500.0f, true))
             {
                  summon->GetMotionMaster()->MoveChase(tar, 500.0f, PET_FOLLOW_ANGLE);
@@ -249,8 +246,8 @@ private:
                  if (tar->HasAura(285632))
                      return;
                  else
-                     summon->AddAura(285632, tar); //Stalking            
-            }    
+                     summon->AddAura(285632, tar); //Stalking
+            }
             break;
        }
    }
@@ -283,7 +280,7 @@ private:
                me->CastStop();
                me->SetReactState(REACT_PASSIVE);
                me->CastSpell(stalker, ROLL);
-               me->GetScheduler().Schedule(1s, [this] (TaskContext context)
+               me->GetScheduler().Schedule(1s, [this] (TaskContext /*context*/)
                {
                     me->SetReactState(REACT_DEFENSIVE);
                     DoCastAOE(WHIRLING_JADE_STORM);
@@ -306,7 +303,7 @@ private:
            break;
        }
        case EVENT_SEARING_EMBERS:
-       {          
+       {
            if (me->GetNativeDisplayId())
            {
                Talk(0);
@@ -314,7 +311,7 @@ private:
              //  SelectTargetList(tarlist, 5, SELECT_TARGET_RANDOM, 100.0f, true);
                for (Unit* tar : tarlist)
                DoCast(tar, SEARING_EMBERS);
-           }      
+           }
            events.Repeat(25s);
            break;
        }
@@ -334,23 +331,26 @@ private:
                    me->SummonCreature(NPC_LIVING_BOMB_BOD, living_bomb_pos_a, TEMPSUMMON_MANUAL_DESPAWN);
                    me->SummonCreature(NPC_LIVING_BOMB_BOD, living_bomb_pos_b, TEMPSUMMON_MANUAL_DESPAWN);
                }
-           }       
+           }
+           break;
        }
        case EVENT_A_FLASH_OF_HOSTILITY:
-       {    
+       {
            Talk(4);
            switch (me->GetEntry())
            {
            case NPC_ANATHOS_FIRECALLER:
                 if (me->GetPower(POWER_ENERGY) >= 60)
                 {
-                }                
+                }
                 break;
 
            case NPC_MARA_GRIMFANG:
                 me->AddAura(RING_OF_HOSTILITY_MESTRAH_PERIODIC_DUMMY, me);
                 break;
            }
+
+           break;
        }
        case EVENT_MARA_GRIMFANG_TRANSFORM:
        {
@@ -363,7 +363,7 @@ private:
                    Talk(5);
                    me->SetDisplayId(46087);
                    events.ScheduleEvent(EVENT_DRAGONS_BREATH, 3s);
-               }               
+               }
            }
            break;
        }
@@ -379,18 +379,18 @@ private:
                if (me->GetNativeDisplayId())
                {
                    DoCast(BLAZING_PHOENIX_TRANSFORM);
-                   me->SetDisplayId(89730);                   
+                   me->SetDisplayId(89730);
                    me->AddAura(282040, me);
                    me->SetObjectScale(2.0f);
                    events.ScheduleEvent(EVENT_RISING_FLAMES, 3s);
                    events.ScheduleEvent(EVENT_MAGMA_TRAPS, 8s);
-               }               
-           }          
+               }
+           }
        }
        break;
 
        case EVENT_DRAGONS_BREATH:
-       {           
+       {
            DoCastRandom(DRAGONS_BREATH, 100.0f);
            events.Repeat(15s);
            break;
@@ -404,7 +404,7 @@ private:
        }
 
        case EVENT_MAGMA_TRAPS:
-       {           
+       {
            if (me->GetNativeDisplayId())
                Talk(0);
 
@@ -432,7 +432,7 @@ private:
            else
            {
                me->SummonCreature(NPC_SPIRIT_OF_XUEN, me->GetRandomNearPosition(10), TEMPSUMMON_MANUAL_DESPAWN);
-           }           
+           }
            events.Repeat(30s);
            break;
        }

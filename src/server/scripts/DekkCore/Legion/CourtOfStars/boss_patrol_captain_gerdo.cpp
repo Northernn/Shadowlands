@@ -519,8 +519,6 @@ public:
 
     class spell_patrol_arcane_lockdown_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_patrol_arcane_lockdown_AuraScript);
-
         uint8 stack = 0;
 
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)

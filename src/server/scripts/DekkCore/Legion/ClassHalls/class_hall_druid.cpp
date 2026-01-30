@@ -1384,7 +1384,7 @@ private:
             if (choiceId != PLAYER_CHOICE_DRUID_SELECTION)
                 return;
 
-            TC_LOG_ERROR("server.worldserver", "druid_playerchoice %u, %u", choiceId, responseId);
+            TC_LOG_ERROR("server.worldserver", "druid_playerchoice {}, {}", choiceId, responseId);
             if (player->HasQuest(QUEST_WEAPONS_OF_LEGEND))
                 player->KilledMonsterCredit(101296);
             if (player->HasQuest(QUEST_ANOTHER_WEAPON_OF_OLD))
@@ -1806,7 +1806,7 @@ private:
 
         void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
-            if (me->HealthWillBeBelowPctDamaged(10, damage))
+            if (me->HealthBelowPctDamaged(10, damage))
             {
                 Player* player = attacker->GetCharmerOrOwnerPlayerOrPlayerItself();
                 me->Yell(107150, player);

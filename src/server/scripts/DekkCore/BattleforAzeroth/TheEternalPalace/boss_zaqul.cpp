@@ -134,13 +134,13 @@ struct checkSpecsPlayers //: public std::unary_function<Unit*, bool>
     bool operator() (const Unit* pTarget)
     {
         Player* player = const_cast<Player*>(pTarget->ToPlayer());
-        uint32 specialization = player->GetSpecializationId();
-        return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-            || (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-            || (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-            || (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+        uint32 specialization = player->GetPrimarySpecialization();
+        return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+            || (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+            || (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+            || (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
     }
 };
 
@@ -179,7 +179,7 @@ public:
             phase4 = false;
             summons.DespawnAll();
             ForcePhaseWipe();
-            SetCustomPhase(me, 1, true);           
+            SetCustomPhase(me, 1, true);
             _echoKilled = 0;
             me->SetPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
@@ -189,12 +189,12 @@ public:
         void JustEngagedWith(Unit* target) override
         {
             _JustEngagedWith(target);
-            Talk(0);            
+            Talk(0);
             me->SummonCreature(NPC_FACING_TRIGGER_CRUSHING_GRASP, centerPos, TEMPSUMMON_MANUAL_DESPAWN);
             SwitchPhases(1);
         }
 
-        void JustDied(Unit* target) override
+        void JustDied(Unit* /*target*/) override
         {
             Talk(1);
             _JustDied();
@@ -203,7 +203,7 @@ public:
             SetCustomPhase(me, 1, true);
         }
 
-        void EnterEvadeMode(EvadeReason w) override
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _DespawnAtEvade(15s);
         }
@@ -247,7 +247,7 @@ public:
                 me->RemoveAura(SPELL_DARK_SHIELD);
         }
 
-        void DamageTaken(Unit* target, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*target*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (me->HealthBelowPct(85) && !phase2)
             {
@@ -635,9 +635,7 @@ public:
 
     class bfa_spell_delirium_realm_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_delirium_realm_aura_AuraScript);
-
-        void OnPeriodic(AuraEffect const* aurEff)
+        void OnPeriodic(AuraEffect const* /*aurEff*/)
         {
             Unit* target = GetTarget()->ToPlayer();
             if (!target)
@@ -647,7 +645,7 @@ public:
                 hysteria->SetStackAmount(hysteria->GetStackAmount() + 1);
         }
 
-        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
         {
             Unit* target = GetTarget()->ToPlayer();
             if (!target)
@@ -690,8 +688,6 @@ public:
 
     class bfa_spell_delirium_realm_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_delirium_realm_cast_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -727,7 +723,7 @@ public:
     }
 };
 
-// 17037 
+// 17037
 class bfa_at_delirium_realm : public AreaTriggerEntityScript
 {
 public:
@@ -879,8 +875,6 @@ public:
 
     class bfa_spell_fear_realm_hysteria_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_fear_realm_hysteria_AuraScript);
-
         void HandlePeriodic(AuraEffect const* aureff)
         {
             Unit* caster = GetCaster();
@@ -912,8 +906,6 @@ public:
 
     class bfa_spell_dread_aura_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_dread_aura_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -944,8 +936,6 @@ public:
 
     class bfa_spell_dread_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_dread_aura_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* target = GetTarget()->ToPlayer();
@@ -981,8 +971,6 @@ public:
 
     class bfa_spell_mind_tether_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_mind_tether_cast_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -1016,8 +1004,6 @@ public:
 
     class bfa_spell_mind_tether_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_mind_tether_aura_AuraScript);
-
         float range;
         Unit* nearestPlayer;
         uint32 damageReceived;
@@ -1071,8 +1057,6 @@ public:
 
     class bfa_spell_fear_realm_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_fear_realm_cast_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -1106,8 +1090,6 @@ public:
 
     class bfa_spell_crushing_grasp_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_crushing_grasp_cast_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -1160,7 +1142,7 @@ public:
 
         void Reset() override
         {
-            events.Reset(); 
+            events.Reset();
         }
 
         void JustEngagedWith(Unit*) override
@@ -1206,8 +1188,6 @@ public:
 
     class bfa_spell_dark_tear_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_dark_tear_cast_SpellScript);
-
         void AfterCastDummy()
         {
             Unit* caster = GetCaster();
@@ -1335,8 +1315,6 @@ public:
 
     class bfa_spell_quivering_claws_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_quivering_claws_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -1362,7 +1340,7 @@ public:
     }
 };
 
-// 17455 
+// 17455
 class bfa_at_nightmare_pool : public AreaTriggerEntityScript
 {
 public:
@@ -1476,8 +1454,6 @@ public:
 
     class bfa_spell_return_to_reality_button_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_return_to_reality_button_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -1514,8 +1490,6 @@ public:
 
     class bfa_spell_manic_dread_missile_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_manic_dread_missile_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
           //  if (Unit* caster = GetCaster())
@@ -1543,8 +1517,6 @@ public:
 
     class bfa_spell_manic_dread_aura_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_manic_dread_aura_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -1575,8 +1547,6 @@ public:
 
     class bfa_spell_manic_dread_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_manic_dread_aura_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* target = GetTarget()->ToPlayer();
@@ -1615,8 +1585,6 @@ public:
 
     class bfa_spell_caustic_delirium_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_caustic_delirium_aura_AuraScript);
-
         void OnPeriodic(AuraEffect const* aurEff)
         {
             Unit* target = GetTarget()->ToPlayer();
@@ -1667,8 +1635,6 @@ public:
 
     class bfa_spell_dark_pulse_shield_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_dark_pulse_shield_AuraScript);
-
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();
@@ -1777,8 +1743,6 @@ public:
 
     class bfa_spell_dark_shield_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_dark_shield_AuraScript);
-
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();
@@ -2055,8 +2019,6 @@ public:
 
     class bfa_spell_fear_gate_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_fear_gate_cast_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -2133,8 +2095,6 @@ public:
 
     class bfa_spell_fear_gate_button_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_fear_gate_button_SpellScript);
-
         void HandleDummy()
         {
             Unit* caster = GetCaster();
@@ -2187,8 +2147,6 @@ public:
 
     class bfa_spell_mind_tether_damage_share_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_mind_tether_damage_share_AuraScript);
-
         void HandleOnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
         {
             Unit* target = GetTarget()->ToPlayer();

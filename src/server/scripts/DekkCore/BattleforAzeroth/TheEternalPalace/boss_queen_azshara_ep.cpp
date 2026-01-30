@@ -242,13 +242,13 @@ struct noTanks //: public std::unary_function<Unit*, bool>
     bool operator() (const Unit* pTarget)
     {
         Player* player = const_cast<Player*>(pTarget->ToPlayer());
-        uint32 specialization = player->GetSpecializationId();
-        return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-            || (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-            || (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-            || (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+        uint32 specialization = player->GetPrimarySpecialization();
+        return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+            || (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+            || (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+            || (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
     }
 };
 
@@ -332,11 +332,6 @@ struct bfa_boss_queen_azshara : public BossAI
             me->SetMaxPower(POWER_MANA, 100);
             me->SetPower(POWER_MANA, 0);
         }
-
-       /* void JustEngagedWith(Unit*) override
-        {
-            _JustEngagedWith(who);
-        }/**/
 
         void KilledUnit(Unit* target) override
         {
@@ -424,7 +419,7 @@ struct bfa_boss_queen_azshara : public BossAI
         void Intermission()
         {
             me->ClearUnitState(UNIT_STATE_ROOT);
-            me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE));            
+            me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE));
 
             me->CastSpell(me, SPELL_QUEENS_DECREE);
             for (uint8 i = 0; i < 4; ++i)
@@ -486,13 +481,14 @@ struct bfa_boss_queen_azshara : public BossAI
             }
         }
 
-        void DamageTaken(Unit* target, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*target*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (me->HealthBelowPct(70) && !phase3)
             {
                 phase3 = true;
                 Intermission();
             }
+
             if (me->HealthBelowPct(45) && !phase4)
             {
                 phase4 = true;
@@ -518,7 +514,7 @@ struct bfa_boss_queen_azshara : public BossAI
                 //events.ScheduleEvent(EVENT_DIVINE_AND_CONQUER, TIMER_DIVIDE_AND_CONQUER);
         }
 
-        void JustDied(Unit* target) override
+        void JustDied(Unit* /*target*/) override
         {
             Talk(8);
             _JustDied();
@@ -564,7 +560,7 @@ struct bfa_boss_queen_azshara : public BossAI
             }
         }
 
-        void EnterEvadeMode(EvadeReason w) override
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             Talk(13);
             RemoveFrames();
@@ -681,7 +677,7 @@ struct bfa_boss_queen_azshara : public BossAI
                 case EVENT_CHANGE_PHASE3:
                 {
                     events.Reset();
-                    Talk(46);                   
+                    Talk(46);
                     me->AddAura(SPELL_ARCANE_MASTERY, me);
 
                     //events.ScheduleEvent(EVENT_BECKON, TIMER_BECKON);
@@ -934,7 +930,7 @@ private:
     }
 
     bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
-    { 
+    {
         if (gossipListId == 0)
             me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
 
@@ -1103,8 +1099,6 @@ private:
 //297934
 class bfa_spell_longing : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_longing);
-
     void HandleDummy()
     {
         if (Unit* caster = GetCaster())
@@ -1120,8 +1114,6 @@ class bfa_spell_longing : public SpellScript
 //297937
 class bfa_spell_painful_memories : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_painful_memories);
-
     void HandleDummy()
     {
         if (Unit* caster = GetCaster())
@@ -1137,8 +1129,6 @@ class bfa_spell_painful_memories : public SpellScript
 //297898
 class bfa_spell_cursed_heart : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_cursed_heart);
-
     void HandlePeriodic(AuraEffect const* aureff)
     {
         Unit* caster = GetCaster();
@@ -1178,11 +1168,9 @@ struct bfa_at_cursed_heart : AreaTriggerAI
     }
 };
 
-//304260 
+//304260
 class bfa_spell_longing_aura : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_longing_aura);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -1222,7 +1210,7 @@ class bfa_spell_longing_aura : public AuraScript
                 if (!caster->IsWithinLOSInMap(aethanel))
                     caster->AddAura(SPELL_TORMENT, caster);
             break;
-        }    
+        }
         }
     }
 
@@ -1234,11 +1222,9 @@ class bfa_spell_longing_aura : public AuraScript
     }
 };
 
-// 304267 
+// 304267
 class bfa_spell_painful_memories_aura : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_painful_memories_aura);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -1417,8 +1403,6 @@ private:
 //298531
 class bfa_spell_ground_pound : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_ground_pound);
-
    void HandlePeriodic(AuraEffect const* aureff)
    {
         Unit* caster = GetCaster();
@@ -1443,8 +1427,6 @@ public:
 
     class bfa_spell_beckon_cast_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_beckon_cast_AuraScript);
-
         bool phase_changed;
 
         bool Load()
@@ -1514,8 +1496,6 @@ public:
 
     class bfa_spell_beckon_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_beckon_cast_SpellScript);
-
         void HandleBeckon()
         {
             Unit* caster = GetCaster();
@@ -1524,7 +1504,7 @@ public:
 
             std::list<Player*> playerList;
             caster->GetPlayerListInGrid(playerList, 100.0f);
-            playerList.remove_if(noTanks());            
+            playerList.remove_if(noTanks());
 
             if (playerList.size() >= (caster->GetMap()->IsMythic() ? 4 : 2))
                 playerList.resize(caster->GetMap()->IsMythic() ? 4 : 2);
@@ -1587,7 +1567,7 @@ private:
         me->SetPowerType(POWER_ENERGY);
         me->SetMaxPower(POWER_ENERGY, 100);
         me->SetPower(POWER_ENERGY, 100);
-        me->SetDisplayId(169, 0.5f);
+        me->SetDisplayId(169, false);
     }
 
     Creature* GetAzshara()
@@ -1734,8 +1714,6 @@ struct bfa_at_arcane_orb : AreaTriggerAI
 //300502
 class bfa_spell_arcane_mastery_periodic : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_arcane_mastery_periodic);
-
     void HandlePeriodic(AuraEffect const* aureff)
     {
         Unit* caster = GetCaster();
@@ -1763,8 +1741,6 @@ class bfa_spell_arcane_mastery_periodic : public AuraScript
 //304475
 class bfa_spell_arcane_jolt : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_arcane_jolt);
-
     void HandleHit()
     {
         Unit* caster = GetCaster();
@@ -1784,8 +1760,6 @@ class bfa_spell_arcane_jolt : public SpellScript
 //303629
 class bfa_spell_arcane_burst_dummy : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_arcane_burst_dummy);
-
     void AfterCastDummy()
     {
         std::list<Player*> playerList;
@@ -1812,8 +1786,6 @@ class bfa_spell_arcane_burst_dummy : public SpellScript
 //303657
 class bfa_spell_arcane_burst_aura : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_arcane_burst_aura);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -1858,10 +1830,10 @@ struct bfa_npc_azshara_indomitable_devoted : public ScriptedAI
             if (Creature* ward = me->FindNearestCreature(NPC_WARD, 100.0f, true))
             {
                 ward->SetPower(POWER_ENERGY, ward->GetPower(POWER_ENERGY) + 5);
-                me->KillSelf();  
+                me->KillSelf();
             }
             break;
-        }           
+        }
         }
     }
 
@@ -1887,7 +1859,7 @@ struct bfa_at_nether_portal : AreaTriggerAI
 
     uint32 _timer;
 
-    void OnCreate() override
+    void OnCreate(Spell const* /*creatingSpell*/) override
     {
        at->SetDuration(120000);
     }
@@ -1950,8 +1922,6 @@ struct bfa_at_piercing_gaze : AreaTriggerAI
 // 299252
 class bfa_spell_march : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_march);
-
     void HandlePeriodic(AuraEffect const* aureff)
     {
         Unit* caster = GetCaster();
@@ -1970,8 +1940,6 @@ class bfa_spell_march : public AuraScript
 //299253
 class bfa_spell_stay : public AuraScript
 {
-    PrepareAuraScript(bfa_spell_stay);
-
     void HandlePeriodic(AuraEffect const* aureff)
     {
         Unit* caster = GetCaster();
@@ -1991,8 +1959,6 @@ class bfa_spell_stay : public AuraScript
 // 307331
 class bfa_spell_divide_and_conquer_cast : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_divide_and_conquer_cast);
-
     void DummyScript()
     {
         Unit* caster = GetCaster();
@@ -2000,7 +1966,7 @@ class bfa_spell_divide_and_conquer_cast : public SpellScript
             return;
 
         /*
-        uint8 getSpawnPos = urand(0, 2);        
+        uint8 getSpawnPos = urand(0, 2);
         switch (getSpawnPos)
         {
         case 0:
@@ -2251,8 +2217,6 @@ private:
 //300807
 class bfa_spell_overload_dummy : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_overload_dummy);
-
     void HandleAfterCast()
     {
         GetCaster()->CastSpell(GetHitUnit(), SPELL_OVERLOAD_SHORT_CIRCUIT_AT_MISSILE, true);
@@ -2277,7 +2241,7 @@ private:
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
         this->bounceCount = 0;
         me->AddAura(SPELL_LIGHTNING_ORB_VISUAL, me);
-        me->SetReactState(REACT_PASSIVE);        
+        me->SetReactState(REACT_PASSIVE);
         me->GetScheduler().Schedule(1s, [this](TaskContext context)
         {
             if (this->bounceCount <= 3)

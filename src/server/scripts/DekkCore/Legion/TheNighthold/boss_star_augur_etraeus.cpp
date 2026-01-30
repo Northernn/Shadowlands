@@ -108,12 +108,6 @@ Position const centrPos = {607.76f, 3187.98f, 195.95f};
 
 inline void SetZoneOverrideLight(Creature* creature, uint32 areaLightID, uint32 lightID, uint32 fadeInTime)
 {
-    WorldPackets::Misc::OverrideLight overrideLight;
-    overrideLight.AreaLightID = areaLightID;
-    overrideLight.OverrideLightID = lightID;
-    overrideLight.TransitionMilliseconds = fadeInTime;
-    overrideLight.Write();
-
     auto const& playerList = creature->GetMap()->GetPlayers();
     if (playerList.isEmpty())
         return;
@@ -121,7 +115,7 @@ inline void SetZoneOverrideLight(Creature* creature, uint32 areaLightID, uint32 
     std::list<Player*> temp;
     for (auto& itr : playerList)
         if (auto player = itr.GetSource())
-            player->SendDirectMessage(overrideLight.GetRawPacket());
+            player->GetSession()->OverrideLight(areaLightID, lightID, fadeInTime);
 }
 
 //103758
@@ -756,8 +750,6 @@ private:
 //205984
 class spell_star_augur_gravity_pull : public AuraScript
 {
-    PrepareAuraScript(spell_star_augur_gravity_pull);
-
     /*bool UpdateGravityPull(InstanceScript* instance)
     {
         instance->SetData(DATA_STAR_AUGUR_ETRAEUS_GRAVITY_PULL_COUNTER, instance->GetData(DATA_STAR_AUGUR_ETRAEUS_GRAVITY_PULL_COUNTER) + 1);
@@ -814,8 +806,6 @@ class spell_star_augur_gravity_pull : public AuraScript
 //206936
 class spell_star_augur_icy_ejection : public AuraScript
 {
-    PrepareAuraScript(spell_star_augur_icy_ejection);
-
     float amount = 0;
 
     void OnTick(AuraEffect const* /*aurEff*/)
@@ -861,8 +851,6 @@ class spell_star_augur_icy_ejection : public AuraScript
 //205649
 class spell_star_augur_fel_ejection_filter : public SpellScript
 {
-    PrepareSpellScript(spell_star_augur_fel_ejection_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -895,8 +883,6 @@ class spell_star_augur_fel_ejection_filter : public SpellScript
 //205649
 class spell_star_augur_fel_ejection : public AuraScript
 {
-    PrepareAuraScript(spell_star_augur_fel_ejection);
-
     void OnTick(AuraEffect const* /*aurEff*/)
     {
         if (InstanceScript* instance = GetCaster()->GetInstanceScript())
@@ -919,8 +905,6 @@ class spell_star_augur_fel_ejection : public AuraScript
 //206433
 class spell_star_augur_etraeus_fel_impact : public SpellScript
 {
-    PrepareSpellScript(spell_star_augur_etraeus_fel_impact);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         std::list<AreaTrigger*> list;
@@ -941,8 +925,6 @@ class spell_star_augur_etraeus_fel_impact : public SpellScript
 //207143
 class spell_star_augur_void_ejection_aura : public AuraScript
 {
-    PrepareAuraScript(spell_star_augur_void_ejection_aura);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         AuraRemoveMode remove = GetTargetApplication()->GetRemoveMode();
@@ -970,8 +952,6 @@ class spell_star_augur_void_ejection_aura : public AuraScript
 // 214486
 class spell_star_augur_void_burst : public SpellScript
 {
-    PrepareSpellScript(spell_star_augur_void_burst);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (auto hitUnit = GetHitUnit())
@@ -988,8 +968,6 @@ class spell_star_augur_void_burst : public SpellScript
 // 206953
 class spell_star_augur_frigid_nova_dmg_trigger : public SpellScript
 {
-    PrepareSpellScript(spell_star_augur_frigid_nova_dmg_trigger);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster() || !GetCaster()->IsPlayer())
@@ -1018,8 +996,6 @@ class spell_star_augur_frigid_nova_dmg_trigger : public SpellScript
 //206517
 class spell_star_augur_fel_nova_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_star_augur_fel_nova_dmg);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         auto caster = GetCaster();
@@ -1044,8 +1020,6 @@ class spell_star_augur_fel_nova_dmg : public SpellScript
 //207720
 class spell_augur_witness_the_void : public SpellScript
 {
-    PrepareSpellScript(spell_augur_witness_the_void);
-
     void HandleScriptEffect(SpellEffIndex effIndex)
     {
         if (GetCaster() && GetHitUnit())
@@ -1064,8 +1038,6 @@ class spell_augur_witness_the_void : public SpellScript
 //205408
 class spell_augur_grand_conjunction : public SpellScript
 {
-    PrepareSpellScript(spell_augur_grand_conjunction);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster() || !GetCaster()->GetAI())
@@ -1173,8 +1145,6 @@ class spell_augur_grand_conjunction : public SpellScript
 //205429, 205445, 216344, 216345
 class spell_star_augur_star_sign : public AuraScript
 {
-    PrepareAuraScript(spell_star_augur_star_sign);
-
     std::list<uint32> StarSignSpell = { SPELL_STAR_SIGN_CRAB, SPELL_STAR_SIGN_WOLF, SPELL_STAR_SIGN_DRAGON, SPELL_STAR_SIGN_HUNTER };
     uint32 tickTimer = 500;
 
@@ -1229,8 +1199,6 @@ class spell_star_augur_star_sign : public AuraScript
 //217054
 class spell_augur_devouring_remnant_filter : public SpellScript
 {
-    PrepareSpellScript(spell_augur_devouring_remnant_filter);
-
     uint8 count = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -1255,8 +1223,6 @@ class spell_augur_devouring_remnant_filter : public SpellScript
 //217046
 class spell_augur_devouring_remnant : public AuraScript
 {
-    PrepareAuraScript(spell_augur_devouring_remnant);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (!GetCaster() || !GetTarget() || GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
@@ -1274,9 +1240,7 @@ class spell_augur_devouring_remnant : public AuraScript
 
 //216768
 class spell_augur_fel_ember : public SpellScript
-{
-    PrepareSpellScript(spell_augur_fel_ember);
-    
+{    
     void HandleScript(SpellEffIndex effIndex)
     {
         if (!GetCaster() || !GetCaster()->IsInCombat())
@@ -1293,41 +1257,6 @@ class spell_augur_fel_ember : public SpellScript
     void Register() override
     {
         OnEffectHit += SpellEffectFn(spell_augur_fel_ember::HandleScript, EFFECT_0, SPELL_EFFECT_TRIGGER_MISSILE);
-    }
-};
-
-//10947
-struct at_augur_absolute_zero : AreaTriggerAI
-{
-    at_augur_absolute_zero(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-    void ActionOnUpdate(GuidList& affectedPlayers)
-    {
-        Unit* caster = at->GetCaster();
-        if (!caster || caster->IsPlayer())
-            return;
-
-        Unit* target = at->GetTarget();
-        if (!target)
-            return;
-
-        if (affectedPlayers.size() > 1)
-        {
-            for (GuidList::iterator itr = affectedPlayers.begin(); itr != affectedPlayers.end(); ++itr)
-            {
-                if (Unit* affectedTarget = ObjectAccessor::GetUnit(*at, *itr))
-                {
-                    if (target->GetGUID() == affectedTarget->GetGUID())
-                        continue;
-
-                    if (affectedTarget->HasAura(SpellChilled))
-                        caster->CastSpell(affectedTarget, SpellFrozenSolid, true);
-                    else
-                        caster->CastSpell(affectedTarget, SpellChilled, true);
-                }
-            }
-            target->RemoveAurasDueToSpell(SpellAbsoluteZero);
-        }
     }
 };
 
@@ -1420,6 +1349,5 @@ void AddSC_boss_star_augur_etraeus()
     RegisterSpellScript(spell_augur_devouring_remnant_filter);
     RegisterSpellScript(spell_augur_devouring_remnant);
     RegisterSpellScript(spell_augur_fel_ember);
-    RegisterAreaTriggerAI(at_augur_absolute_zero);
     //RegisterAreaTriggerAI(at_augur_star_sign);
 }

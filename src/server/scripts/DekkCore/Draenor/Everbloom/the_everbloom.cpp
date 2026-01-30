@@ -36,8 +36,6 @@ public:
 
     class spell_barrage_of_leaves_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_barrage_of_leaves_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex], true);
@@ -47,7 +45,7 @@ public:
         {
             OnEffectHitTarget += SpellEffectFn(spell_barrage_of_leaves_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
         }
-     
+
     };
 
     SpellScript* GetSpellScript() const override
@@ -411,8 +409,6 @@ public:
 
     class spell_growth_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_growth_SpellScript);
-
         void HandleEffect(SpellEffIndex /*effIndex*/)
         {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_GROWTH_2, DIFFICULTY_NONE);
@@ -446,8 +442,6 @@ public:
 
     class spell_enraged_growth_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_enraged_growth_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex]);
@@ -560,8 +554,6 @@ public:
 
     class spell_bounding_whirl_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_bounding_whirl_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex]);
@@ -685,8 +677,6 @@ public:
 
     class spell_choking_vines_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_choking_vines_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex]);
@@ -711,8 +701,6 @@ public:
 
     class spell_spore_breath_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_spore_breath_SpellScript);
-
         void Handle(SpellEffIndex /*effIndex*/)
         {
             GetCaster()->CastSpell(GetHitUnit(), 169854, TRIGGERED_FULL_MASK);
@@ -737,8 +725,6 @@ public:
 
     class spell_black_hole_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_black_hole_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex], true);
@@ -756,34 +742,6 @@ public:
     }
 };
 
-class areatrigger_black_hole : public AreaTriggerAI
-{
-public:
-    areatrigger_black_hole(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnCreate() override
-    {
-        //at->SetCustomRadius(1.0f);
-        directionForce = { at->GetPositionX(), at->GetPositionY(), at->GetPositionZ(), at->GetOrientation() };
-    }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Player* player = unit->ToPlayer())
-            player->ApplyMovementForce(at->GetGUID(), directionForce, 3.0f, MovementForceType::SingleDirectional);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (Player* player = unit->ToPlayer())
-            player->RemoveMovementForce(at->GetGUID());
-    }
-
-private:
-    Position directionForce;
-};
-
-
 class spell_frozen_snap : public SpellScriptLoader
 {
 public:
@@ -791,8 +749,6 @@ public:
 
     class spell_frozen_snap_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_frozen_snap_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex], true);
@@ -817,8 +773,6 @@ public:
 
     class aura_glowbulb_pollen_AuraScript : public AuraScript
     {
-        PrepareAuraScript(aura_glowbulb_pollen_AuraScript);
-
         void HandlePeriodic(AuraEffect const* /*aurEff*/)
         {
             PreventDefaultAction();
@@ -852,8 +806,6 @@ public:
 
     class aura_barrier_AuraScript : public AuraScript
     {
-        PrepareAuraScript(aura_barrier_AuraScript);
-
         void HandlePeriodic(AuraEffect const* /*aurEff*/)
         {
             PreventDefaultAction();
@@ -880,8 +832,6 @@ class spell_vine_pull : public SpellScriptLoader
 
         class spell_vine_pull_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_vine_pull_SpellScript);
-
             void HandleScript(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
@@ -899,22 +849,6 @@ class spell_vine_pull : public SpellScriptLoader
             return new spell_vine_pull_SpellScript();
         }
 };
-
-/*class areatrigger_spore_cloud : public AreaTriggerAI
-{
-    public:
-        areatrigger_spore_cloud() : AreaTriggerAI("at_spore_cloud") { }
-
-        void OnCreate() override
-        {
-            at->SetCustomRadius(3.0f);
-        }
-
-        AreaTriggerAI* GetAI() const
-        {
-            return new areatrigger_spore_cloud();
-        }
-};*/
 
 /// 232552
 class go_everbloom_entrance_portal : public GameObjectScript
@@ -951,8 +885,6 @@ public:
         bool OnGossipHello(Player* player) override
         {
 
-        InstanceScript* pInstance;
-
             if (me->GetEntry() == 234025) // Everbloom to Sw
                 player->TeleportTo(1279, 874.53f, -1221.81f, 197.20f, 0.0f);
             else // Sw to Everbloom
@@ -982,12 +914,10 @@ void AddSC_the_everbloom()
     new spell_choking_vines();
     new spell_spore_breath();
     new spell_black_hole();
-    RegisterAreaTriggerAI(areatrigger_black_hole);
     new spell_frozen_snap();
     new aura_glowbulb_pollen();
     new aura_barrier();
     new spell_vine_pull();
-    //new areatrigger_spore_cloud();
     new go_everbloom_entrance_portal();
     new go_everbloom_stormwind_portal();
 }

@@ -29,11 +29,22 @@
 #include "ObjectGuid.h"
 #include "ScriptMgr.h"
 
+class AreaTrigger;
 class Creature;
 class GameObject;
+class Player;
 class Unit;
 class WorldObject;
 struct CreatureData;
+
+enum class FlagState : uint8;
+
+enum class EncounterType : uint8
+{
+    DungeonEncounter,
+    Battleground,
+    MythicPlusRun
+};
 
 enum ZoneScriptType
 {
@@ -43,6 +54,22 @@ enum ZoneScriptType
     ZONE_SCRIPT_TYPE_OUTDOORPVP,
 };
 
+class TC_GAME_API ControlZoneHandler
+{
+public:
+    explicit ControlZoneHandler() = default;
+    virtual ~ControlZoneHandler() = default;
+
+    virtual void HandleCaptureEventHorde([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleCaptureEventAlliance([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleContestedEventHorde([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleContestedEventAlliance([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleProgressEventHorde([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleProgressEventAlliance([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleNeutralEventHorde([[maybe_unused]] GameObject* controlZone) { HandleNeutralEvent(controlZone); }
+    virtual void HandleNeutralEventAlliance([[maybe_unused]] GameObject* controlZone) { HandleNeutralEvent(controlZone); }
+    virtual void HandleNeutralEvent([[maybe_unused]] GameObject* controlZone) { }
+};
 
 class TC_GAME_API ZoneScript : public ScriptObject
 {
@@ -60,10 +87,22 @@ public:
     virtual void OnGameObjectCreate(GameObject*) { }
     virtual void OnGameObjectRemove(GameObject*) { }
 
+    virtual void OnAreaTriggerCreate([[maybe_unused]] AreaTrigger* areaTrigger) { }
+    virtual void OnAreaTriggerRemove([[maybe_unused]] AreaTrigger* areaTrigger) { }
+
+    virtual void OnUnitDeath([[maybe_unused]] Unit* unit) { }
+
     virtual void OnGameObjectCreateForScript(GameObject* /*go*/) {}
     virtual void OnGameObjectRemoveForScript(GameObject* /*go*/) {}
-    virtual void OnUnitDeath(Unit*) { }
     virtual void OnPlayerDeath(Player*) { }
+
+    virtual void OnCreatureCreateForScript(Creature* /*creature*/) {}
+    virtual void OnCreatureRemoveForScript(Creature* /*creature*/) {}
+    virtual void OnCreatureUpdateDifficulty(Creature* /*creature*/) {}
+    virtual void EnterCombatForScript(Creature* /*creature*/, Unit* /*enemy*/) {}
+    virtual void CreatureDiesForScript(Creature* /*creature*/, Unit* /*killer*/) {}
+    virtual void OnUnitCharmed(Unit* /*unit*/, Unit* /*charmer*/) {}
+    virtual void OnUnitRemoveCharmed(Unit* /*unit*/, Unit* /*charmer*/) {}
 
     // Called when a player successfully enters or exit the zone.
     virtual void OnPlayerEnterZone(Player* /*player*/) { }
@@ -84,6 +123,11 @@ public:
 
     virtual void TriggerGameEvent(uint32 gameEventId, WorldObject* source = nullptr, WorldObject* target = nullptr);
     virtual void ProcessEvent(WorldObject* /*obj*/, uint32 /*eventId*/, WorldObject* /*invoker*/) { }
+
+    virtual void OnFlagStateChange([[maybe_unused]] GameObject* flagInBase, [[maybe_unused]] FlagState oldValue, [[maybe_unused]] FlagState newValue, [[maybe_unused]] Player* player) { }
+
+    virtual bool CanCaptureFlag([[maybe_unused]] AreaTrigger* areaTrigger, [[maybe_unused]] Player* player) { return false; }
+    virtual void OnCaptureFlag([[maybe_unused]] AreaTrigger* areaTrigger, [[maybe_unused]] Player* player) { }
 
     bool IsZoneScript() { return _scriptType == ZONE_SCRIPT_TYPE_ZONE; }
     bool IsInstanceScript() { return _scriptType == ZONE_SCRIPT_TYPE_INSTANCE; }

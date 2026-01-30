@@ -57,7 +57,7 @@ public:
     {
 		if (firstLogin)
 		{
-            /* Cinematic - Pandaren death knight 
+            /* Cinematic - Pandaren death knight
             //Store all future Allied races cinematics on first login here, not in CharacterHandler, it will create camera bugs and some other issues
 			if (player->GetRace() == RACE_PANDAREN_HORDE || RACE_PANDAREN_ALLIANCE && player->GetMapId() == MAP_ALLIED_DK_ICECROWN && player->GetClass() == CLASS_DEATH_KNIGHT)
             {
@@ -208,25 +208,6 @@ public:
     };
 };
 
-// allied dk zone - map id - 2297
-class zone_allied_dk : public ZoneScript
-{
-public:
-    zone_allied_dk() : ZoneScript("zone_allied_dk") { }
-
-    void OnPlayerDeath(Player* player) override
-    {
-        if (player->GetMapId() == MAP_ALLIED_DK_ICECROWN)
-            player->SummonCreature(228534, player->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0s, 0U);
-    }
-
-    void OnPlayerExitZone(Player* player) override
-    {
-        if (player->GetPhaseShift().HasPhase(6000)) PhasingHandler::RemovePhase(player, 6000, true);
-    }
-
-};
-
 // NPC 161709 Highlord Darion Mograine
 struct npc_161709_darion_alliedracestart : public ScriptedAI
 {
@@ -240,7 +221,7 @@ struct npc_161709_darion_alliedracestart : public ScriptedAI
         return true;
     }
 
-    bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* player, uint32 /*sender*/, uint32 action) override
     {
         switch (action)
         {
@@ -322,7 +303,6 @@ void AddSC_AlliedRaces()
 {
     RegisterPlayerScript(AlliedRaces);
     new npc_valkyr_battle_maiden_allied();
-    new zone_allied_dk();
     RegisterCreatureAI(npc_161709_darion_alliedracestart);
     RegisterCreatureAI(npc_161711_knight_of_the_ebonblade_alliedracestart);
     RegisterCreatureAI(npc_163016_LichKing_allieddkstart);

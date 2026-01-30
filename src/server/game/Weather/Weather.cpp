@@ -1,23 +1,11 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * This file is part of DekkCore Team
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** \file
-    \ingroup world
-*/
+ /** \file
+     \ingroup world
+ */
 
 #include "GameTime.h"
 #include "Weather.h"
@@ -29,7 +17,7 @@
 #include "Util.h"
 #include "World.h"
 
-/// Create the Weather object
+ /// Create the Weather object
 Weather::Weather(uint32 zoneId, WeatherData const* weatherChances)
     : m_zone(zoneId), m_weatherChances(weatherChances)
 {
@@ -37,7 +25,7 @@ Weather::Weather(uint32 zoneId, WeatherData const* weatherChances)
     m_type = WEATHER_TYPE_FINE;
     m_intensity = 0;
 
-    TC_LOG_INFO("misc", "WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (MINUTE*IN_MILLISECONDS)));
+    TC_LOG_INFO("misc", "WORLD: Starting weather system for zone {} (change every {} minutes).", m_zone, (uint32)(m_timer.GetInterval() / (MINUTE * IN_MILLISECONDS)));
 }
 
 /// Launch a weather update
@@ -98,7 +86,7 @@ bool Weather::ReGenerate()
 
     static char const* seasonName[WEATHER_SEASONS] = { "spring", "summer", "fall", "winter" };
 
-    TC_LOG_INFO("misc", "Generating a change in %s weather for zone %u.", seasonName[season], m_zone);
+    TC_LOG_INFO("misc", "Generating a change in {} weather for zone {}.", seasonName[season], m_zone);
 
     if ((u < 60) && (m_intensity < 0.33333334f))                // Get fair
     {
@@ -134,7 +122,7 @@ bool Weather::ReGenerate()
         {
             if (m_intensity > 0.6666667f)
             {
-                                                            // Severe change, but how severe?
+                // Severe change, but how severe?
                 uint32 rnd = urand(0, 99);
                 if (rnd < 50)
                 {
@@ -174,16 +162,16 @@ bool Weather::ReGenerate()
     }
     else if (u < 90)
     {
-        m_intensity = (float)rand_norm() * 0.3333f;
+        m_intensity = rand_norm() * 0.3333f;
     }
     else
     {
         // Severe change, but how severe?
         rnd = urand(0, 99);
         if (rnd < 50)
-            m_intensity = (float)rand_norm() * 0.3333f + 0.3334f;
+            m_intensity = rand_norm() * 0.3333f + 0.3334f;
         else
-            m_intensity = (float)rand_norm() * 0.3333f + 0.6667f;
+            m_intensity = rand_norm() * 0.3333f + 0.6667f;
     }
 
     // return true only in case weather changes
@@ -223,49 +211,49 @@ bool Weather::UpdateWeather()
     char const* wthstr;
     switch (state)
     {
-        case WEATHER_STATE_FOG:
-            wthstr = "fog";
-            break;
-        case WEATHER_STATE_LIGHT_RAIN:
-            wthstr = "light rain";
-            break;
-        case WEATHER_STATE_MEDIUM_RAIN:
-            wthstr = "medium rain";
-            break;
-        case WEATHER_STATE_HEAVY_RAIN:
-            wthstr = "heavy rain";
-            break;
-        case WEATHER_STATE_LIGHT_SNOW:
-            wthstr = "light snow";
-            break;
-        case WEATHER_STATE_MEDIUM_SNOW:
-            wthstr = "medium snow";
-            break;
-        case WEATHER_STATE_HEAVY_SNOW:
-            wthstr = "heavy snow";
-            break;
-        case WEATHER_STATE_LIGHT_SANDSTORM:
-            wthstr = "light sandstorm";
-            break;
-        case WEATHER_STATE_MEDIUM_SANDSTORM:
-            wthstr = "medium sandstorm";
-            break;
-        case WEATHER_STATE_HEAVY_SANDSTORM:
-            wthstr = "heavy sandstorm";
-            break;
-        case WEATHER_STATE_THUNDERS:
-            wthstr = "thunders";
-            break;
-        case WEATHER_STATE_BLACKRAIN:
-            wthstr = "blackrain";
-            break;
-        case WEATHER_STATE_FINE:
-        default:
-            wthstr = "fine";
-            break;
+    case WEATHER_STATE_FOG:
+        wthstr = "fog";
+        break;
+    case WEATHER_STATE_LIGHT_RAIN:
+        wthstr = "light rain";
+        break;
+    case WEATHER_STATE_MEDIUM_RAIN:
+        wthstr = "medium rain";
+        break;
+    case WEATHER_STATE_HEAVY_RAIN:
+        wthstr = "heavy rain";
+        break;
+    case WEATHER_STATE_LIGHT_SNOW:
+        wthstr = "light snow";
+        break;
+    case WEATHER_STATE_MEDIUM_SNOW:
+        wthstr = "medium snow";
+        break;
+    case WEATHER_STATE_HEAVY_SNOW:
+        wthstr = "heavy snow";
+        break;
+    case WEATHER_STATE_LIGHT_SANDSTORM:
+        wthstr = "light sandstorm";
+        break;
+    case WEATHER_STATE_MEDIUM_SANDSTORM:
+        wthstr = "medium sandstorm";
+        break;
+    case WEATHER_STATE_HEAVY_SANDSTORM:
+        wthstr = "heavy sandstorm";
+        break;
+    case WEATHER_STATE_THUNDERS:
+        wthstr = "thunders";
+        break;
+    case WEATHER_STATE_BLACKRAIN:
+        wthstr = "blackrain";
+        break;
+    case WEATHER_STATE_FINE:
+    default:
+        wthstr = "fine";
+        break;
     }
 
-    TC_LOG_INFO("misc", "Change the weather of zone %u to %s.", m_zone, wthstr);
+    TC_LOG_INFO("misc", "Change the weather of zone {} to {}.", m_zone, wthstr);
     sScriptMgr->OnWeatherChange(this, state, m_intensity);
     return true;
 }
@@ -289,33 +277,33 @@ WeatherState Weather::GetWeatherState() const
 
     switch (m_type)
     {
-        case WEATHER_TYPE_RAIN:
-            if (m_intensity < 0.40f)
-                return WEATHER_STATE_LIGHT_RAIN;
-            else if (m_intensity < 0.70f)
-                return WEATHER_STATE_MEDIUM_RAIN;
-            else
-                return WEATHER_STATE_HEAVY_RAIN;
-        case WEATHER_TYPE_SNOW:
-            if (m_intensity < 0.40f)
-                return WEATHER_STATE_LIGHT_SNOW;
-            else if (m_intensity < 0.70f)
-                return WEATHER_STATE_MEDIUM_SNOW;
-            else
-                return WEATHER_STATE_HEAVY_SNOW;
-        case WEATHER_TYPE_STORM:
-            if (m_intensity < 0.40f)
-                return WEATHER_STATE_LIGHT_SANDSTORM;
-            else if (m_intensity < 0.70f)
-                return WEATHER_STATE_MEDIUM_SANDSTORM;
-            else
-                return WEATHER_STATE_HEAVY_SANDSTORM;
-        case WEATHER_TYPE_BLACKRAIN:
-            return WEATHER_STATE_BLACKRAIN;
-        case WEATHER_TYPE_THUNDERS:
-            return WEATHER_STATE_THUNDERS;
-        case WEATHER_TYPE_FINE:
-        default:
-            return WEATHER_STATE_FINE;
+    case WEATHER_TYPE_RAIN:
+        if (m_intensity < 0.40f)
+            return WEATHER_STATE_LIGHT_RAIN;
+        else if (m_intensity < 0.70f)
+            return WEATHER_STATE_MEDIUM_RAIN;
+        else
+            return WEATHER_STATE_HEAVY_RAIN;
+    case WEATHER_TYPE_SNOW:
+        if (m_intensity < 0.40f)
+            return WEATHER_STATE_LIGHT_SNOW;
+        else if (m_intensity < 0.70f)
+            return WEATHER_STATE_MEDIUM_SNOW;
+        else
+            return WEATHER_STATE_HEAVY_SNOW;
+    case WEATHER_TYPE_STORM:
+        if (m_intensity < 0.40f)
+            return WEATHER_STATE_LIGHT_SANDSTORM;
+        else if (m_intensity < 0.70f)
+            return WEATHER_STATE_MEDIUM_SANDSTORM;
+        else
+            return WEATHER_STATE_HEAVY_SANDSTORM;
+    case WEATHER_TYPE_BLACKRAIN:
+        return WEATHER_STATE_BLACKRAIN;
+    case WEATHER_TYPE_THUNDERS:
+        return WEATHER_STATE_THUNDERS;
+    case WEATHER_TYPE_FINE:
+    default:
+        return WEATHER_STATE_FINE;
     }
 }

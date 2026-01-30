@@ -432,8 +432,6 @@ public:
 
     class spell_brawling_powershot_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_brawling_powershot_SpellScript);
-
         void HandleOnHit()
         {
             if (!GetCaster())

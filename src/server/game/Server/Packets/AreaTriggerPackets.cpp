@@ -99,3 +99,11 @@ WorldPacket const* WorldPackets::AreaTrigger::AreaTriggerRePath::Write()
 
     return &_worldPacket;
 }
+
+void WorldPackets::AreaTrigger::UpdateAreatriggerVisual::Read()
+{
+    _worldPacket >> AreaTriggerID;
+    _worldPacket >> unk1;
+    _worldPacket >> unk2;
+    _worldPacket >> TriggerGUID;
+}

@@ -734,8 +734,6 @@ struct npc_frostbrood_skytalon : public VehicleAI
 // 55288 - It's All Fun and Games: The Ocular On Death
 class spell_icecrown_the_ocular_on_death : public SpellScript
 {
-    PrepareSpellScript(spell_icecrown_the_ocular_on_death);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()) });
@@ -760,8 +758,6 @@ class spell_icecrown_the_ocular_on_death : public SpellScript
 // 66411 - Summon Tualiq Proxy
 class spell_icecrown_summon_tualiq_proxy : public SpellScript
 {
-    PrepareSpellScript(spell_icecrown_summon_tualiq_proxy);
-
     void SetDest(SpellDestination& dest)
     {
         Position const offset = { 0.0f, 0.0f, 30.0f, 0.0f };
@@ -787,8 +783,6 @@ enum BreakfastOfChampions
 // 66512 - Pound Drum
 class spell_icecrown_pound_drum : public SpellScript
 {
-    PrepareSpellScript(spell_icecrown_pound_drum);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_DEEP_JORMUNGAR, SPELL_STORMFORGED_MOLE_MACHINE });
@@ -828,8 +822,6 @@ std::array<uint32, 4> const ChumTheWaterSummonSpells =
 // 66741 - Chum the Water
 class spell_icecrown_chum_the_water : public SpellScript
 {
-    PrepareSpellScript(spell_icecrown_chum_the_water);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(ChumTheWaterSummonSpells);
@@ -859,42 +851,9 @@ enum ThroughTheEye
     TEXT_USING_THE_EYE_OF_THE_LK = 31493
 };
 
-// 25732 - Through the Eye: Eye of the Lich King
-class spell_icecrown_through_the_eye_the_eye_of_the_lk : public AuraScript
-{
-    PrepareAuraScript(spell_icecrown_through_the_eye_the_eye_of_the_lk);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_SUMMON_IMAGE_OF_VARDMADRA, SPELL_SUMMON_IMAGE_OF_SHADOW_CULTIST }) &&
-            sBroadcastTextStore.LookupEntry(TEXT_USING_THE_EYE_OF_THE_LK);
-    }
-
-    void AfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        if (Player* target = GetTarget()->ToPlayer())
-            target->Unit::Whisper(TEXT_USING_THE_EYE_OF_THE_LK, target, true);
-    }
-
-    void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        target->CastSpell(target, SPELL_SUMMON_IMAGE_OF_VARDMADRA, true);
-        target->CastSpell(target, SPELL_SUMMON_IMAGE_OF_SHADOW_CULTIST, true);
-    }
-
-    void Register() override
-    {
-        AfterEffectApply += AuraEffectApplyFn(spell_icecrown_through_the_eye_the_eye_of_the_lk::AfterApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-        AfterEffectRemove += AuraEffectApplyFn(spell_icecrown_through_the_eye_the_eye_of_the_lk::AfterRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
 // 57884 - Through the Eye: Kill Credit to Master
 class spell_icecrown_through_the_eye_kill_credit_to_master : public SpellScript
 {
-    PrepareSpellScript(spell_icecrown_through_the_eye_kill_credit_to_master);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_USING_THE_EYE_OF_THE_LK });
@@ -918,8 +877,6 @@ class spell_icecrown_through_the_eye_kill_credit_to_master : public SpellScript
 // 56515 - Summon Freed Crusader
 class spell_icecrown_summon_freed_crusader : public SpellScript
 {
-    PrepareSpellScript(spell_icecrown_summon_freed_crusader);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()) });
@@ -947,7 +904,6 @@ void AddSC_icecrown()
     RegisterSpellScript(spell_icecrown_summon_tualiq_proxy);
     RegisterSpellScript(spell_icecrown_pound_drum);
     RegisterSpellScript(spell_icecrown_chum_the_water);
-    RegisterSpellScript(spell_icecrown_through_the_eye_the_eye_of_the_lk);
     RegisterSpellScript(spell_icecrown_through_the_eye_kill_credit_to_master);
     RegisterSpellScript(spell_icecrown_summon_freed_crusader);
 }

@@ -345,8 +345,6 @@ struct npc_ursoc_nightmare_image : public ScriptedAI
 //205272
 class spell_ursoc_periodic_energize : public AuraScript
 {
-    PrepareAuraScript(spell_ursoc_periodic_energize);
-
     uint8 PowerCount;
 
     void OnTick(AuraEffect const* aurEff)
@@ -372,8 +370,6 @@ class spell_ursoc_periodic_energize : public AuraScript
 //199237
 class spell_ursoc_trampling_slam : public SpellScript
 {
-    PrepareSpellScript(spell_ursoc_trampling_slam);
-
     void DealDamage()
     {
         if (!GetCaster() || !GetHitUnit())
@@ -396,8 +392,6 @@ class spell_ursoc_trampling_slam : public SpellScript
 //198109
 class spell_ursoc_barreling_impact : public SpellScript
 {
-    PrepareSpellScript(spell_ursoc_barreling_impact);
-
     void DealDamage()
     {
         if (!GetCaster() || !GetCaster()->IsAIEnabled())
@@ -424,8 +418,6 @@ class spell_ursoc_barreling_impact : public SpellScript
 //198099
 class spell_ursoc_momentum_filter : public SpellScript
 {
-    PrepareSpellScript(spell_ursoc_momentum_filter);
-
     void FilterTargets(WorldObject*& target)
     {
         if (Unit* caster = GetCaster())

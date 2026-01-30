@@ -53,26 +53,6 @@ WorldPacket const* WorldPackets::Pet::PetSpells::Write()
     return &_worldPacket;
 }
 
-WorldPacket const* WorldPackets::Pet::PetStableList::Write()
-{
-    _worldPacket << StableMaster;
-
-    _worldPacket << uint32(Pets.size());
-    for (PetStableInfo const& pet : Pets)
-    {
-        _worldPacket << int32(pet.PetSlot);
-        _worldPacket << int32(pet.PetNumber);
-        _worldPacket << int32(pet.CreatureID);
-        _worldPacket << int32(pet.DisplayID);
-        _worldPacket << int32(pet.ExperienceLevel);
-        _worldPacket << uint8(pet.PetFlags);
-        _worldPacket.WriteBits(pet.PetName.length(), 8);
-        _worldPacket.WriteString(pet.PetName);
-    }
-
-    return &_worldPacket;
-}
-
 WorldPacket const* WorldPackets::Pet::PetStableResult::Write()
 {
     _worldPacket << uint8(Result);
@@ -216,24 +196,11 @@ WorldPacket const* WorldPackets::Pet::PetTameFailure::Write()
     return &_worldPacket;
 }
 
-WorldPacket const* WorldPackets::Pet::PetSlotUpdated::Write()
-{
-    _worldPacket << int32(PetNumberA);
-    _worldPacket << int32(PetSlotA);
-    _worldPacket << int32(PetNumberB);
-    _worldPacket << int32(PetSlotB);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Pet::Mode::Write()
+WorldPacket const* WorldPackets::Pet::PetMode::Write()
 {
     _worldPacket << PetGUID;
-
-    //! custom code - jam data looks like: x >> 0 + x2 >> 8 + x2 >> 16
-    _worldPacket << static_cast<uint8>(_reactState);
-    _worldPacket << static_cast<uint8>(_commandState);
-    _worldPacket << static_cast<uint16>(_flag);
+    _worldPacket << uint16(CommandState | Flag << 8);
+    _worldPacket << uint8(ReactState);
 
     return &_worldPacket;
 }
@@ -254,3 +221,4 @@ WorldPacket const* WorldPackets::Pet::PetDismissSound::Write()
 
     return &_worldPacket;
 }
+

@@ -22,6 +22,7 @@
 #include "InstanceScript.h"
 #include "Map.h"
 #include "Player.h"
+#include "PhasingHandler.h"
 
 BossBoundaryData const boundaries =
 {
@@ -50,6 +51,11 @@ class instance_forge_of_souls : public InstanceMapScript
                 LoadDungeonEncounterData(encounters);
 
                 teamInInstance = 0;
+            }
+
+            void OnPlayerLeave(Player* player) override
+            {
+                PhasingHandler::SetAlwaysVisible(player, player->HasAuraType(SPELL_AURA_PHASE_ALWAYS_VISIBLE), false);
             }
 
             void OnPlayerEnter(Player* player) override

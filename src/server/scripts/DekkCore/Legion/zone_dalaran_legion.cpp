@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -58,13 +58,11 @@ enum
 // 228329 & 228330 - T??ortation
 class spell_dalaran_teleportation : public SpellScript
 {
-    PrepareSpellScript(spell_dalaran_teleportation);
-
     void EffectTeleportDalaranKarazhan(SpellEffIndex effIndex)
     {
         if (Player* player = GetCaster()->ToPlayer())
         {
-            if (player->GetLevel() < 100 || player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) != QUEST_STATUS_INCOMPLETE)
+            if (player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) != QUEST_STATUS_INCOMPLETE)
                 PreventHitEffect(effIndex);
             else
             {
@@ -78,7 +76,7 @@ class spell_dalaran_teleportation : public SpellScript
     void EffectTeleportDalaranLegion(SpellEffIndex effIndex)
     {
         if (Player* player = GetCaster()->ToPlayer())
-            if (player->GetLevel() < 100 || player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) == QUEST_STATUS_INCOMPLETE)
+            if (player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) == QUEST_STATUS_INCOMPLETE)
                 PreventHitEffect(effIndex);
     }
 
@@ -89,33 +87,25 @@ class spell_dalaran_teleportation : public SpellScript
     }
 };
 
-// 113986 - Khadgar
-class npc_dalaran_karazhan_khadgar : public CreatureScript
+enum spell
 {
-public:
-    npc_dalaran_karazhan_khadgar() : CreatureScript("npc_dalaran_karazhan_khadgar") { }
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_dalaran_karazhan_khadgarAI(creature);
-    }
-
-    struct npc_dalaran_karazhan_khadgarAI : public ScriptedAI
-    {
-        npc_dalaran_karazhan_khadgarAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-        {
-            player->CastSpell(player, SPELL_PLAY_DALARAN_TELEPORTATION_SCENE, true);
-            return true;
-        }
-    };
-
-    enum
-    {
-        SPELL_PLAY_DALARAN_TELEPORTATION_SCENE = 227861
-    };
+    SPELL_PLAY_DALARAN_TELEPORTATION_SCENE = 227861
 };
+
+// 113986 - Khadgar
+struct npc_dalaran_karazhan_khadgar : public ScriptedAI
+{
+   npc_dalaran_karazhan_khadgar(Creature* creature) : ScriptedAI(creature) { }
+
+   bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+   {
+        player->CastSpell(player, SPELL_PLAY_DALARAN_TELEPORTATION_SCENE, true);
+        player->ForceCompleteQuest(QUEST_BLINK_OF_AN_EYE);
+        player->TeleportTo(1220, -827.82f, 4369.25f, 738.64f, 1.893364f);
+        return true;
+   }
+ };
+
 
 class scene_dalaran_kharazan_teleportion : public SceneScript
 {
@@ -132,28 +122,6 @@ public:
     {
         player->KilledMonsterCredit(114506);
         player->TeleportTo(1220, -827.82f, 4369.25f, 738.64f, 1.893364f);
-    }
-};
-
-/*
- * Legion Dalaran
- */
-
- // Zone 8392
-class zone_legion_dalaran_underbelly : public ZoneScript
-{
-public:
-    zone_legion_dalaran_underbelly() : ZoneScript("zone_legion_dalaran_underbelly") { }
-
-    void OnPlayerEnterZone(Player* player) override
-    {
-        player->SeamlessTeleportToMap(MAP_DALARAN_UNDERBELLY);
-    }
-
-    void OnPlayerExitZone(Player* player) override
-    {
-        if (player->GetMapId() == MAP_DALARAN_UNDERBELLY)
-            player->SeamlessTeleportToMap(MAP_BROKEN_ISLANDS);
     }
 };
 
@@ -212,7 +180,7 @@ enum
     NPC_H_HOODED_PRIESTESS = 101344, ///H
     QUEST_PRIESTLY_MATTERS = 40705,
 
-    ///WARLOCK Quest 
+    ///WARLOCK Quest
     NPC_RITSSYN_FLAMESCOWL_103506 = 103506,
     QUEST_THE_SIXTH = 40716,
 
@@ -227,151 +195,6 @@ enum
     ///Shaman
     NPC_WHISPERING_WINDS = 99549,
 
-};
-//
-class zone_legion_dalaran : public ZoneScript
-{
-public:
-    zone_legion_dalaran() : ZoneScript("zone_legion_dalaran") { }
-    uint32 _insideNpc;
-    uint32 _killCredit;
-    Creature* creature;
-    Position _positon;
-
-
-    void OnTempSummonNPC(uint32 insideNpc, Player* player)
-    {
-        _insideNpc = insideNpc;
-        if (creature = player->FindNearestCreature(_insideNpc, 100.0f))
-            creature->DestroyForPlayer(player);
-
-        _positon = Position(player->GetPositionX() + 20, player->GetPositionY() + 20, player->GetPositionZ());
-        TempSummon* personalCreature = player->SummonCreature(_insideNpc, _positon, TEMPSUMMON_TIMED_DESPAWN, 1min, 0);
-    }
-
-    void OnTempSummonNPCOnPOS(uint32 insideNpc, Player* player, Position npcPos)
-    {
-        _insideNpc = insideNpc;
-        if (creature = player->FindNearestCreature(_insideNpc, 100.0f))
-        {
-            // TODO : Remove this line when phasing is done properly
-            creature->DestroyForPlayer(player);
-        }
-
-        _positon = npcPos;
-        TempSummon* personalCreature = player->SummonCreature(_insideNpc, _positon, TEMPSUMMON_TIMED_DESPAWN, 1h, 0);
-    }
-    enum BROKEN_ISLES_PATHFINDE
-    {
-        SPELL_BROKEN_ISLES_PATHFINDER_1 = 226342,
-        SPELL_BROKEN_ISLES_PATHFINDER_2 = 233368,
-    };
-
-    void OnPlayerEnterZone(Player* player) override
-    {
-        if (player->HasAchieved(11190))//[BROKEN_ISLES_PATHFINDER]
-            player->LearnSpell(SPELL_BROKEN_ISLES_PATHFINDER_1, true);
-        if (player->HasAchieved(11446))//[BROKEN_ISLES_PATHFINDER]
-            player->LearnSpell(SPELL_BROKEN_ISLES_PATHFINDER_2, true);
-
-        //AGUS ARRAIVE
-        if (player->IsInAlliance() && player->GetQuestStatus(QUEST_A_THE_HAND_OF_FATE) != QUEST_STATUS_REWARDED && player->GetLevel() >= 110 && player->GetZoneId() == 7502)
-        {
-            if (const Quest* quest = sObjectMgr->GetQuestTemplate(QUEST_A_THE_HAND_OF_FATE))
-                if (player->GetQuestStatus(QUEST_A_THE_HAND_OF_FATE) == QUEST_STATUS_NONE)
-                {
-                    player->AddQuest(quest, nullptr);
-                    Conversation::CreateConversation(CONVERSATION_A_THE_HAND_OF_FATE, player, player->GetPosition(), { player->GetGUID() });
-                }
-        }
-        if (player->IsInHorde() && player->GetQuestStatus(QUEST_H_THE_HAND_OF_FATE) != QUEST_STATUS_REWARDED && player->GetLevel() >= 30 && player->GetZoneId() == 7502)
-        {
-            if (const Quest* quest = sObjectMgr->GetQuestTemplate(QUEST_H_THE_HAND_OF_FATE))
-                if (player->GetQuestStatus(QUEST_H_THE_HAND_OF_FATE) == QUEST_STATUS_NONE)
-                {
-                    player->AddQuest(quest, nullptr);
-                    Conversation::CreateConversation(CONVERSATION_H_THE_HAND_OF_FATE, player, player->GetPosition(), { player->GetGUID() });
-                }
-        }
-
-        if (player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) == QUEST_STATUS_REWARDED && player->GetLevel() >= 40 && player->GetZoneId() == 7502)
-        {
-            //Druid Quest
-            if (player->GetClass() == CLASS_DRUID && player->GetQuestStatus(QUEST_A_SUMMONS_FROM_MOONGLADE) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_ARCHDRUID_HAMUUL_RUNETOTEM, player);
-
-            //Paladin Quest
-            if (player->GetClass() == CLASS_PALADIN && player->GetQuestStatus(QUEST_AN_URGENT_GATHERING) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_LORD_MAXWELL_TYROSUS, player);
-
-            //Mage Quest phase 4598
-            if (player->GetClass() == CLASS_MAGE && player->GetQuestStatus(QUEST_FELSTORMS_PLEA) == QUEST_STATUS_NONE)
-            {
-                Conversation::CreateConversation(CONVERSATION_MAGE_QUEST_START, player, player->GetPosition(), { player->GetGUID() });
-
-                if (const Quest* quest = sObjectMgr->GetQuestTemplate(QUEST_FELSTORMS_PLEA))
-                    player->AddQuest(quest, nullptr);
-            }
-            //Death Knight Quest ServerToClient: SMSG_SPELL_START (0x2C3A) Length: 101 ConnIdx: 0 Time: 06/06/2018 13:41:43.782 Number: 6386
-            if (player->GetClass() == CLASS_DEATH_KNIGHT && player->GetQuestStatus(QUEST_THE_CALL_TO_WAR) == QUEST_STATUS_NONE)
-            {
-                player->CastSpell(player, SEPLL_CONVERSATION_THE_CALL_TO_WAR, true);
-                if (const Quest* quest = sObjectMgr->GetQuestTemplate(QUEST_THE_CALL_TO_WAR))
-                    player->AddQuest(quest, nullptr);
-            }
-            //Hunter Quest
-            if (player->GetClass() == CLASS_HUNTER && player->GetQuestStatus(QUEST_NEEDS_OF_THE_HUNTERS) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_SNOWFEATHER_100786, player);
-
-            //DEMON_HUNTER Quest
-            if (player->GetClass() == CLASS_DEMON_HUNTER && (player->GetQuestStatus(QUEST_CALL_OF_THE_ILLIDARI_39261) == QUEST_STATUS_NONE && player->GetQuestStatus(QUEST_CALL_OF_THE_ILLIDARI_39047) == QUEST_STATUS_NONE))
-                OnTempSummonNPC(NPC_KORVAS_BLOODTHORN_99343, player);
-
-            //WARRIOR Quest
-            if (player->GetClass() == CLASS_WARRIOR)
-            {
-                if (player->IsInAlliance() && player->GetQuestStatus(QUEST_A_AN_IMPORTANT_MISSION) == QUEST_STATUS_NONE)
-                    OnTempSummonNPC(NPC_SERGEANT_DALTON_108961, player);
-                if (player->IsInHorde() && player->GetQuestStatus(QUEST_H_A_DESPERATE_PLEA) == QUEST_STATUS_NONE)
-                    OnTempSummonNPC(NPC_EITRIGG_93775, player);
-            }
-            //ROGUE Quest
-            if (player->GetClass() == CLASS_ROGUE && player->GetQuestStatus(QUEST_CALL_OF_THE_UNCROWNED) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_RAVENHOLDT_COURIER_102018, player);
-
-            //Priest Quest
-            if (player->GetClass() == CLASS_PRIEST && player->GetQuestStatus(QUEST_PRIESTLY_MATTERS) == QUEST_STATUS_NONE)
-            {
-                uint32 priestNpc = player->IsInAlliance() ? NPC_A_HOODED_PRIESTESS : NPC_H_HOODED_PRIESTESS;
-                OnTempSummonNPC(priestNpc, player);
-            }
-            //SHAMAN Quest
-            if (player->GetClass() == CLASS_SHAMAN && player->GetQuestStatus(QUEST_THE_CALL_TO_WAR) == QUEST_STATUS_NONE)
-                player->SummonCreature(NPC_WHISPERING_WINDS, Position(-828.6302f, 4386.04f, 738.7358f, 1.828947f), TEMPSUMMON_TIMED_DESPAWN, 1min, 0);
-
-            //WARLOCK Quest
-            if (player->GetClass() == CLASS_WARLOCK && player->GetQuestStatus(QUEST_THE_SIXTH) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_RITSSYN_FLAMESCOWL_103506, player);
-
-            //MONK Quest
-            if (player->GetClass() == CLASS_MONK && player->GetQuestStatus(QUEST_DA_NEL) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_INITIATE_DA_NEL, player);
-
-            //achievement 10596 npc 88317,102639
-            if (player->HasAchieved(10596) && player->GetQuestStatus(QUEST_THE_DALARAN_FOUNTAIN) == QUEST_STATE_COMPLETE && player->GetQuestStatus(QUEST_FISH_FRENZY) == QUEST_STATUS_NONE)
-                OnTempSummonNPC(NPC_NAT_PAGLE, player);
-        }
-
-    }
-
-    void OnPlayerExitZone(Player* player) override
-    {
-        if (creature = player->FindNearestCreature(_insideNpc, 100.0f))
-        {
-            // TODO : Remove this line when phasing is done properly
-            creature->DestroyForPlayer(player);
-        }
-    }
 };
 
 enum CLASS_PHASE
@@ -398,6 +221,7 @@ enum CLASS_PHASE
     PHASE_QUEST_ASSAULT_ON_BROKEN_SHORE = 5705,
     PHASE_QUEST_VALSHARAH = 5706,
 };
+
 class PhaseOnDaralanArea : public PlayerScript
 {
 public:
@@ -409,7 +233,7 @@ public:
     }
 /*
     void OnCheckPhase(Player* player) ANADIR FUNCIONES
-    { 
+    {
         if (player->GetMapId() == 1220)
         {
             if (player->GetAreaId() == 7505 && player->GetClass() == CLASS_PALADIN)
@@ -551,7 +375,7 @@ public:
         }
         if (player->GetAreaId() == 7502)
         {
-            //horde            
+            //horde
          /*   if (player->CheckQuestStatus(39864, CHECK_QUEST_TAKEN_AND_COMPLETE_AND_REWARDED) || player->CheckQuestStatus(44701, CHECK_QUEST_TAKEN_AND_COMPLETE_AND_REWARDED))
                 PhasingHandler::AddPhase(player, PHASE_STORMHEIM_HORDE);
             if (player->CheckQuestStatus(39801, CHECK_QUEST_REWARDED))
@@ -652,7 +476,7 @@ struct npc_emissary_auldbridge_111109 : public ScriptedAI
         if (!m_playerGUID.IsEmpty())
         {
             if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
-                if (player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) == QUEST_STATUS_REWARDED && player->GetLevel() >= 40 && player->GetZoneId() == 7502 && player->IsInWorld() || player->IsAlive())
+                if (player->GetQuestStatus(QUEST_BLINK_OF_AN_EYE) == QUEST_STATUS_REWARDED && player->GetZoneId() == 7502 && player->IsInWorld() || player->IsAlive())
                 {
                     //Druid Quest
                     if (player->GetClass() == CLASS_DRUID && player->GetQuestStatus(QUEST_A_SUMMONS_FROM_MOONGLADE) == QUEST_STATUS_NONE)
@@ -719,7 +543,7 @@ struct npc_emissary_auldbridge_111109 : public ScriptedAI
 
         }
 
-        //RemovePlayer();  
+        //RemovePlayer();
     }
 private:
     EventMap events;
@@ -776,7 +600,7 @@ struct npc_guard_dalaran_legion : public ScriptedAI
                 if (GetClosestCreatureWithEntry(me, NPC_APPLEBOUGH_A, 32.0f))
                 {
                     if (me->isInBackInMap(who, 12.0f))   // In my line of sight, "outdoors", and behind me
-                        player->CastSpell(player, SPELL_TRESPASSER_A, true); // Teleport the Horde unit out                          
+                        player->CastSpell(player, SPELL_TRESPASSER_A, true); // Teleport the Horde unit out
                 }
                 else                                      // In my line of sight, and "indoors"
                 {
@@ -890,11 +714,8 @@ struct npc_hunter_talua : public ScriptedAI
     bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
     {
         CloseGossipMenuFor(player);
-        if (player->GetLevel() < 40 || player->GetClass() != CLASS_HUNTER)
+        if (player->GetClass() != CLASS_HUNTER)
             return true;
-
-     //   if (Pet* pet = player->GetPet())
-      //      player->RemovePet(nullptr, PET_SAVE_DISMISS, false);
 
         player->CastSpell(player, 216213, true);
         player->m_Events.AddEvent(new CastEventTP(player, 216216, true), player->m_Events.CalculateTime(10s));
@@ -976,7 +797,7 @@ struct npc_archmage_khadgar_90417 : public ScriptedAI
             sceneHelper.AddSceneActionMovePos(npc_archmage_khadgar_90417_q41804_pos[2], 2500);
             //sceneHelper.AddSceneActionSay(130254, 500);//Hold on just a moment.I frea I'm a bit of a packrat.
             sceneHelper.AddSceneActionMovePos(npc_archmage_khadgar_90417_q41804_pos[3], 2500);
-            //sceneHelper.AddSceneActionSay(86873, 500);//Now let's see...apexis crystals? No,no,those won't do at all. 
+            //sceneHelper.AddSceneActionSay(86873, 500);//Now let's see...apexis crystals? No,no,those won't do at all.
            // sceneHelper.AddSceneActionSay(86873, 500);//Hmm,I must've put it over here.
             sceneHelper.AddSceneActionMovePos(npc_archmage_khadgar_90417_q41804_pos[4], 2500);
             //sceneHelper.AddSceneActionSay(86873, 500);//Arcane powder...soul shards...that's definitely not it...
@@ -1179,7 +1000,7 @@ struct npc_wyrmtongue_hoarder_89407 : public ScriptedAI
         case 1:
             if (roll_chance_i(25))
             {
-                me->GetMotionMaster()->MoveFleeing(me->GetVictim(), 5000);
+                me->GetMotionMaster()->MoveFleeing(me->GetVictim(), 5s);
             }
             else
             {
@@ -1193,13 +1014,34 @@ struct npc_wyrmtongue_hoarder_89407 : public ScriptedAI
     EventMap events;
 };
 
+// 228539 - Margoss rock throw
+class spell_margoss_rock_throw : public SpellScript
+{
+    void HandleSendEvent(SpellEffIndex /*effIndex*/)
+    {
+        Creature* Margoss = GetCaster()->FindNearestCreature(108825, 500);
+        if (Margoss)
+        {
+            Margoss->AI()->Talk(0);
+
+            if (Creature* Aquaos = Margoss->SummonCreature(113378, -517.315125f, 4699.371094f, 654.679382f, 4.854965f))
+            {
+                Aquaos->Attack(GetCaster(), true);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_margoss_rock_throw::HandleSendEvent, EFFECT_1, SPELL_EFFECT_SEND_EVENT);
+    }
+};
+
 void AddSC_dalaran_legion()
 {
     RegisterSpellScript(spell_dalaran_teleportation);
-    new npc_dalaran_karazhan_khadgar();
+    RegisterCreatureAI(npc_dalaran_karazhan_khadgar);
     new scene_dalaran_kharazan_teleportion();
-    new zone_legion_dalaran_underbelly();
-    new zone_legion_dalaran();
     new PhaseOnDaralanArea();
     RegisterCreatureAI(npc_emissary_auldbridge_111109);
     RegisterCreatureAI(npc_guard_dalaran_legion);
@@ -1213,4 +1055,6 @@ void AddSC_dalaran_legion()
     RegisterCreatureAI(npc_timofey_oshenko_92194);
     RegisterCreatureAI(npc_archmage_khadgar_112130);
     RegisterCreatureAI(npc_wyrmtongue_hoarder_89407);
+
+    RegisterSpellScript(spell_margoss_rock_throw);
 }

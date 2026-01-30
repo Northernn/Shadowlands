@@ -256,8 +256,6 @@ public:
 
     class spell_lighting_surge_2_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_lighting_surge_2_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& unitList)
         {
             unitList.remove_if(CreatureTargetFilter());

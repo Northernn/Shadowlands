@@ -105,7 +105,7 @@ enum ZekvozEvents
     EVENT_SURGING_DARKNESS,
     EVENT_EYE_BEAM,
     EVENT_SUMMON_SILITHID_WARRIOR,
-    EVENT_ROILING_DECEIT,    
+    EVENT_ROILING_DECEIT,
     EVENT_SURGING_DARKNESS_INT,
     EVENT_SURGING_DARKNESS_MID,
     EVENT_SURGING_DARKNESS_EXT,
@@ -156,9 +156,8 @@ private:
         this->phase = 0;
         me->SetReactState(REACT_AGGRESSIVE);
         me->SetPowerType(POWER_ENERGY);
-        me->SetPower(POWER_ENERGY, 0);        
+        me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_ENTROPIC, me);        
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
@@ -179,7 +178,7 @@ private:
         Talk(SAY_AGGRO_WHISPER);
         sixtyfivePercent = false;
         thirtyPercent = false;
-        this->phase = 1;       
+        this->phase = 1;
         me->AddAura(SPELL_SURGING_DARKNESS_ENERGY_BAR, me);
         me->AddAura(SPELL_SURGING_DARKNESS_ENERGIZE, me);
         events.ScheduleEvent(EVENT_MIGHT_OF_THE_VOID, 6s);
@@ -303,7 +302,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             }
         }
         //Phase 1
-        if (this->phase = 1)
+        if (phase == 1)
         {
             switch (eventId)
             {
@@ -327,7 +326,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             }
         }
         //Phase 2
-        if (this->phase = 2)
+        if (phase == 2)
         {
             switch (eventId)
             {
@@ -358,7 +357,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             }
         }
         //Phase 3
-        if (this->phase = 3)
+        if (phase == 3)
         {
             switch (eventId)
             {
@@ -379,7 +378,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
                 case 4:
                     me->SummonCreature(NPC_ORB_OF_CORRUPTION, 231.283f, 187.813f, 733.033f, 0.24f, TEMPSUMMON_MANUAL_DESPAWN);
                     break;
-                }              
+                }
                 events.Repeat(35s);
                 break;
             }
@@ -550,8 +549,6 @@ private:
 //264383
 class spell_eye_beam_selector : public SpellScript
 {
-    PrepareSpellScript(spell_eye_beam_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -576,8 +573,6 @@ class spell_eye_beam_selector : public SpellScript
 //265231
 class spell_void_lash_selector : public SpellScript
 {
-    PrepareSpellScript(spell_void_lash_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* hitUnit = GetHitUnit())
@@ -604,33 +599,9 @@ class spell_void_lash_selector : public SpellScript
     }
 };
 
-class spell_void_second_lash_selector : public SpellScript
-{
-    PrepareSpellScript(spell_void_second_lash_selector);
-
-    void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
-    {
-        if (Unit* hitUnit = GetHitUnit())
-            GetCaster()->CastSpell(hitUnit, SPELL_VOID_LASH_DMG);
-    }
-
-    void FilterTargets(std::list<WorldObject*>& targets)
-    {
-        targets.remove_if([](WorldObject* obj) { return !obj->IsPlayer(); });
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_void_second_lash_selector::DoEffectHitTarget, EFFECT_1, SPELL_EFFECT_DUMMY);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_void_second_lash_selector::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-    }
-};
-
 //265237
 class spell_shatter : public SpellScript
 {
-    PrepareSpellScript(spell_shatter);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (Unit* caster = GetCaster())
@@ -653,8 +624,6 @@ class spell_shatter : public SpellScript
 //267312
 class spell_might_of_the_void : public SpellScript
 {
-    PrepareSpellScript(spell_might_of_the_void);
-
     void HandleDummy()
     {
         if (Unit* caster = GetCaster())
@@ -670,8 +639,6 @@ class spell_might_of_the_void : public SpellScript
 //265437
 class spell_roiling_deceit_selector : public SpellScript
 {
-    PrepareSpellScript(spell_roiling_deceit_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -695,8 +662,6 @@ class spell_roiling_deceit_selector : public SpellScript
 //265360
 class spell_roiling_deceit_aura : public AuraScript
 {
-    PrepareAuraScript(spell_roiling_deceit_aura);
-
     void HandlePeriodic(AuraEffect const* aurEff)
     {
         if (Unit* target = GetTarget())
@@ -722,8 +687,6 @@ class spell_roiling_deceit_aura : public AuraScript
 //265402
 class spell_roiling_deceit_dummy : public SpellScript
 {
-    PrepareSpellScript(spell_roiling_deceit_dummy);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (Unit* caster = GetCaster())
@@ -743,29 +706,9 @@ class spell_roiling_deceit_dummy : public SpellScript
     }
 };
 
-//?
-struct areatrigger_ominous_cloud : AreaTriggerAI
-{
-    areatrigger_ominous_cloud(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit->IsPlayer())
-        {
-            if (Unit* cloudStalker = unit->FindNearestCreature(NPC_OMINOUS_CLOUD_STALKER, 20.0f, true))
-            {
-                cloudStalker->CastSpell(cloudStalker, SPELL_ROILING_DECEIT_SUMMON_GUARD);
-                cloudStalker->KillSelf();
-            }
-        }
-    }
-};
-
 //264954
 class spell_titan_spark_aura : public AuraScript
 {
-    PrepareAuraScript(spell_titan_spark_aura);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
@@ -782,8 +725,6 @@ class spell_titan_spark_aura : public AuraScript
 //265061
 class spell_titan_spark_selector : public SpellScript
 {
-    PrepareSpellScript(spell_titan_spark_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -809,7 +750,7 @@ struct npc_nerubian_voidweaver : public ScriptedAI
 
     void Reset() override
     {
-        ScriptedAI::Reset();       
+        ScriptedAI::Reset();
     }
 
     void IsSummonedBy(WorldObject* summoner) override
@@ -858,10 +799,10 @@ private:
 //159150
 struct npc_orb_of_corruption : public ScriptedAI
 {
-    npc_orb_of_corruption(Creature* creature) : ScriptedAI(creature) 
-    { 
+    npc_orb_of_corruption(Creature* creature) : ScriptedAI(creature)
+    {
         SetCombatMovement(false);
-        me->SetReactState(REACT_PASSIVE);        
+        me->SetReactState(REACT_PASSIVE);
         me->SetUnitFlag(UnitFlags(UNIT_FLAG_UNINTERACTIBLE | UNIT_FLAG_IMMUNE_TO_NPC));
     }
 
@@ -876,7 +817,7 @@ private:
     {
         me->AI()->DoZoneInCombat(nullptr);
         despawn = false;
-        me->SummonCreature(NPC_ORB_OF_CORRUPTION_VISUAL_SOAK, me->GetPosition());     
+        me->SummonCreature(NPC_ORB_OF_CORRUPTION_VISUAL_SOAK, me->GetPosition());
         me->CanFly();
         me->SetFlying(true);
         me->SetHover(true);
@@ -890,7 +831,7 @@ private:
         me->SetFall(true);
         me->GetMotionMaster()->MovePoint(1, x, y, z, false);
         me->GetScheduler().Schedule(17s, [this](TaskContext context)
-        {            
+        {
             if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 25.0f, true))
             {
                 if (Creature* zekvoz = me->FindNearestCreature(NPC_ZEKVOZ, 150.0f, true))
@@ -905,7 +846,7 @@ private:
             else
             {
                 me->CastSpell(nullptr, SPELL_ORB_OF_CORRUPTION, true);
-                AddTimedDelayedOperation(1000, [this]() -> void {               
+                AddTimedDelayedOperation(1000, [this]() -> void {
                 //TODO: damage
                 });
                 if (!despawn)
@@ -939,7 +880,7 @@ struct npc_projection_of_cthun : public ScriptedAI
 
     void Reset() override
     {
-        ScriptedAI::Reset();        
+        ScriptedAI::Reset();
     }
 };
 
@@ -950,7 +891,7 @@ struct npc_projection_of_yogg_saron : public ScriptedAI
 
     void Reset() override
     {
-        ScriptedAI::Reset();        
+        ScriptedAI::Reset();
     }
 };
 
@@ -993,7 +934,7 @@ struct npc_ominous_cloud_stalker : public ScriptedAI
             return;
 
         if (!Timer)
-        {        
+        {
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
             {
                 Timer = urand(15000, 30000);
@@ -1021,8 +962,6 @@ private:
 //265662
 class aura_corruptors_path : public AuraScript
 {
-    PrepareAuraScript(aura_corruptors_path);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
@@ -1045,8 +984,6 @@ class aura_corruptors_path : public AuraScript
 //281473
 class spell_roiling_deceit_damage : public SpellScript
 {
-    PrepareSpellScript(spell_roiling_deceit_damage);
-
     void HandleOnHit()
     {
         Unit* caster = GetCaster();
@@ -1074,7 +1011,6 @@ void AddSC_boss_zekvoz()
     RegisterCreatureAI(npc_surging_darkness);
     RegisterSpellScript(spell_eye_beam_selector);
     RegisterSpellScript(spell_void_lash_selector);
-    RegisterSpellScript(spell_void_second_lash_selector);
     RegisterSpellScript(spell_shatter);
     RegisterSpellScript(spell_might_of_the_void);
     RegisterSpellScript(spell_roiling_deceit_selector);
@@ -1082,7 +1018,6 @@ void AddSC_boss_zekvoz()
     RegisterSpellScript(spell_titan_spark_selector);
     RegisterSpellScript(spell_titan_spark_aura);
     RegisterSpellScript(spell_roiling_deceit_aura);
-    RegisterAreaTriggerAI(areatrigger_ominous_cloud);
     RegisterCreatureAI(npc_nerubian_voidweaver);
     RegisterCreatureAI(npc_orb_of_corruption);
     RegisterCreatureAI(npc_projection_of_cthun);

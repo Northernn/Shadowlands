@@ -17,13 +17,18 @@
 
 #include "Scenario.h"
 #include "Log.h"
-#include "Challenge.h"
+#include "Map.h"
+#include "ChallengeMode.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Group.h"
 #include "Player.h"
 #include "ScenarioMgr.h"
 #include "ScenarioPackets.h"
+#include "InstanceScenario.h"
+#include "InstanceScript.h"
+#include <MapManager.h>
+
 
 Scenario::Scenario(ScenarioData const* scenarioData) : _data(scenarioData), _currentstep(nullptr)
 {
@@ -35,7 +40,9 @@ Scenario::Scenario(ScenarioData const* scenarioData) : _data(scenarioData), _cur
     if (ScenarioStepEntry const* step = GetFirstStep())
         SetStep(step);
     else
-        TC_LOG_ERROR("scenario", "Scenario::Scenario: Could not launch Scenario (id: %u), found no valid scenario step", _data->Entry->ID);
+        TC_LOG_ERROR("scenario", "Scenario::Scenario: Could not launch Scenario (id: {}), found no valid scenario step", _data->Entry->ID);
+
+    _scenarioType = SCENARIO_INSTANCE_TYPE_SCENARIO;
 }
 
 Scenario::~Scenario()
@@ -79,20 +86,34 @@ void Scenario::CompleteStep(ScenarioStepEntry const* step)
     SetStep(newStep);
     if (IsComplete())
         CompleteScenario();
-    else
-        TC_LOG_ERROR("scenario", "Scenario::CompleteStep: Scenario (id: %u, step: %u) was completed, but could not determine new step, or validate scenario completion.", step->ScenarioID, step->ID);
+    else if (!newStep)
+        TC_LOG_ERROR("scenario", "Scenario::CompleteStep: Scenario (id: {}, step: {}) was completed, but could not determine new step, or validate scenario completion.", step->ScenarioID, step->ID);
 }
 
 void Scenario::CompleteScenario()
 {
-    return SendPacket(WorldPackets::Scenario::ScenarioCompleted(_data->Entry->ID).Write());
+    SendPacket(WorldPackets::Scenario::ScenarioCompleted(_data->Entry->ID).Write());
+
+    for (ObjectGuid guid : _players)
+    {
+        if (Player* player = ObjectAccessor::FindPlayer(guid))
+        {
+            player->UpdateCriteria(CriteriaType::CompleteScenario, GetEntry()->ID, 1);
+            player->UpdateCriteria(CriteriaType::CompleteAnyScenario, 1);
+        }
+    }
 }
 
 void Scenario::SetStep(ScenarioStepEntry const* step)
 {
     _currentstep = step;
     if (step)
+    {
         SetStepState(step, SCENARIO_STEP_IN_PROGRESS);
+        for (ObjectGuid const& guid : _players)
+            if (Player* player = ObjectAccessor::GetPlayer(_map, guid))
+                player->StartCriteria(CriteriaStartEvent::BeginScenarioStep, step->ID);
+    }
 
     WorldPackets::Scenario::ScenarioState scenarioState;
     BuildScenarioState(&scenarioState);
@@ -132,7 +153,7 @@ ScenarioEntry const* Scenario::GetEntry() const
 
 ScenarioStepState Scenario::GetStepState(ScenarioStepEntry const* step)
 {
-    std::map<ScenarioStepEntry const*, ScenarioStepState>::const_iterator itr = _stepStates.find(step);
+    auto itr = _stepStates.find(step);
     if (itr == _stepStates.end())
         return SCENARIO_STEP_INVALID;
 
@@ -176,26 +197,48 @@ bool Scenario::CanUpdateCriteriaTree(Criteria const * /*criteria*/, CriteriaTree
 
 bool Scenario::CanCompleteCriteriaTree(CriteriaTree const* tree)
 {
-    ScenarioStepEntry const* step = ASSERT_NOTNULL(tree->ScenarioStep);
-    ScenarioStepState const state = GetStepState(step);
-    if (state == SCENARIO_STEP_DONE)
+    ScenarioStepEntry const* step = tree->ScenarioStep;
+    if (!step)
         return false;
 
-    ScenarioStepEntry const* currentStep = GetStep();
-    if (!currentStep)
+    if (step->ScenarioID != _data->Entry->ID)
         return false;
 
     if (!step->IsBonusObjective())
-        if (step != currentStep)
-            return false;
+        return !IsComplete();
 
-    return CriteriaHandler::CanCompleteCriteriaTree(tree);
+    if (step != GetStep())
+        return false;
+
+    // does this always return true?
+    //return CriteriaHandler::CanCompleteCriteriaTree(tree);
+    return true;
 }
 
-void Scenario::CompletedCriteriaTree(CriteriaTree const* tree, Player* /*referencePlayer*/)
+void Scenario::CompletedCriteriaTree(CriteriaTree const* tree, Player* referencePlayer)
 {
-    ScenarioStepEntry const* step = ASSERT_NOTNULL(tree->ScenarioStep);
-    if (!IsCompletedStep(step))
+    if (_completedCriteriaTree.find(tree->ID) != _completedCriteriaTree.end())
+        return;
+
+    CriteriaHandler::CompletedCriteriaTree(tree, referencePlayer);
+
+    if (InstanceScenario* instanceScenario = ToInstanceScenario())
+        if (InstanceMap* instanceMap = instanceScenario->GetMap()->ToInstanceMap())
+            if (InstanceScript* instanceScript = instanceMap->GetInstanceScript())
+                instanceScript->OnCompletedCriteriaTree(tree);
+
+    ScenarioStepEntry const* step = tree->ScenarioStep;
+    if (!step)
+        return;
+
+    // Do not complete if it's a sub-tree
+    if (step->Criteriatreeid != tree->ID)
+        return;
+
+    if (!step->IsBonusObjective() && step != GetStep())
+        return;
+
+    if (GetStepState(step) == SCENARIO_STEP_DONE)
         return;
 
     SetStepState(step, SCENARIO_STEP_DONE);
@@ -233,12 +276,12 @@ void Scenario::BuildScenarioState(WorldPackets::Scenario::ScenarioState* scenari
 
         switch (state.second)
         {
-            case SCENARIO_STEP_IN_PROGRESS:
-            case SCENARIO_STEP_DONE:
-                break;
-            case SCENARIO_STEP_NOT_STARTED:
-            default:
-                continue;
+        case SCENARIO_STEP_IN_PROGRESS:
+        case SCENARIO_STEP_DONE:
+            break;
+        case SCENARIO_STEP_NOT_STARTED:
+        default:
+            continue;
         }
 
         scenarioState->PickedSteps.push_back(state.first->ID);
@@ -338,109 +381,6 @@ void Scenario::SendBootPlayer(Player* player)
 }
 
 //DekkCore
-void Scenario::CreateChallenge(Player* player) //declarar instances bfa
-{
-    Map* map = GetMap();
-    if (!player || !map)
-        return;
-
-    MapChallengeModeEntry const* m_challengeEntry = player->GetGroup() ? player->GetGroup()->m_challengeEntry : player->m_challengeKeyInfo.challengeEntry;
-    if (!m_challengeEntry)
-        return;
-
-    _challenge = new Challenge(map, player, GetInstanceId(), this);
-
-    if (!_challenge || !_challenge->_canRun)
-        return;
-
-    if (Map* map_ = GetMap())
-    {
-        if (InstanceMap* instanceMap = map_->ToInstanceMap())
-        {
-            if (InstanceScript* script = instanceMap->GetInstanceScript())
-            {
-                script->SetChallenge(_challenge);
-                _challenge->SetInstanceScript(script);
-            }
-        }
-    }
-
-  //  if (ScenarioData2 const* scenarioData = sObjectMgr->GetScenarioOnMap(map->GetId(), DIFFICULTY_MYTHIC_KEYSTONE))
-  //      scenarioId = scenarioData->ScenarioID;
-
-    switch (m_challengeEntry->ID)
-    {
-    case 197: // Eye of Azshara
-        scenarioId = 1169;
-        break;
-    case 198: // Darkheart Thicket
-        scenarioId = 1172;
-        break;
-    case 199: // Black Rook Hold
-        scenarioId = 1166;
-        break;
-    case 200: // Halls of Valor
-        scenarioId = 1046;
-        break;
-    case 206: // Neltharion's Lair
-        scenarioId = 1174;
-        break;
-    case 207: // Vault of the Wardens
-        scenarioId = 1173;
-        break;
-    case 208: // Maw of Souls
-        scenarioId = 1175;
-        break;
-    case 209: // The Arcway
-        scenarioId = 1177;
-        break;
-    case 210: // Court of Stars
-        scenarioId = 1178;
-        break;
-    case 227: // Return to Karazhan: Lower
-        scenarioId = 1309;
-        break;
-    case 233: // Cathedral of Eternal Night
-        scenarioId = 1335;
-        break;
-    case 234: // Return to Karazhan: Upper
-        scenarioId = 1308;
-        break;
-    default:
-        break;
-    }
-
-    _scenarioEntry = sScenarioStore.LookupEntry(scenarioId);
-    ASSERT(_scenarioEntry);
-
-   // ScenarioSteps const* _steps = sScenarioMgr->GetScenarioSteps(scenarioId, _challenge->HasAffix(Affixes::Teeming));
-  //  ASSERT(_steps); TODO THOR
-
-    currentStep = 0;
-   // steps = *_steps;
-    if (steps.size() <= currentStep)
-    {
-        TC_LOG_DEBUG("sql", "CreateChallenge steps %u currentStep %u", steps.size(), currentStep);
-        return;
-    }
-
- //   currentTree = GetScenarioCriteriaByStep(currentStep);
-    ActiveSteps.clear();
-    ActiveSteps.push_back(steps[currentStep]->ID);
-
-    for (auto const& step : steps)
-        SetStepState(step, SCENARIO_STEP_NOT_STARTED);
-
-  //  SetCurrentStep(0);
-
-    TC_LOG_ERROR("LOG_FILTER_CHALLENGE", "%s %u, mapID: %u, scenarioID: %u", __FUNCTION__, __LINE__, map->GetId(), scenarioId);
-}
-
-Challenge* Scenario::GetChallenge()
-{
-    return _challenge;
-}
-
 Map* Scenario::GetMap()
 {
     return curMap;
@@ -453,7 +393,7 @@ uint32 Scenario::GetInstanceId() const
 
 void Scenario::SendScenarioEvent(Player* player, uint32 eventId)
 {
-    UpdateCriteria(CriteriaType::CompleteScenario, eventId, 0, 0, nullptr, player);
+    UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, eventId, 0, 0, nullptr, player);
 }
 
 uint32 Scenario::GetScenarioId() const
@@ -484,7 +424,8 @@ uint32 Scenario::GetCurrentStep() const
     return currentStep;
 }
 
-void Scenario::SendStepUpdate(Player* player, bool full)
+
+void Scenario::SendStepUpdate(Player* player, bool full) 
 {
     WorldPackets::Scenario::ScenarioState state;
     state.BonusObjectives = GetBonusObjectivesData();
@@ -493,57 +434,39 @@ void Scenario::SendStepUpdate(Player* player, bool full)
     state.ScenarioComplete = IsCompleted(false);
     state.PickedSteps = ActiveSteps;
 
+
     std::vector<ScenarioSpellData> const* scSpells = sObjectMgr->GetScenarioSpells(GetScenarioId());
     if (scSpells)
     {
         for (std::vector<ScenarioSpellData>::const_iterator itr = scSpells->begin(); itr != scSpells->end(); ++itr)
         {
-            // if ((*itr).StepId == state.ActiveSteps)
+            //if ((*itr).StepId == state.ActiveSteps)
             if ((*itr).StepId == GetCurrentStep())
             {
-                WorldPackets::Scenario::ScenarioState::ScenarioSpellUpdate spellUpdate;
+                WorldPackets::Scenario::ScenarioSpellUpdate spellUpdate;
                 spellUpdate.Usable = true;
                 spellUpdate.SpellID = (*itr).Spells;
                 state.Spells.emplace_back(spellUpdate);
             }
         }
     }
+}
 
-   // if (full)
-   // {
-      //  CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap();
-      //  if (!progressMap->empty())
-      //  {
-            //for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
-          //  {
-            //    CriteriaProgress const& treeProgress = itr->second;
-            //    CriteriaTreeEntry const* criteriaTreeEntry = sCriteriaTreeStore.LookupEntry(itr->first);
-            //    if (!criteriaTreeEntry)
-            //        continue;
+void Scenario::BroadCastPacket(const WorldPacket* data)
+{
+    uint32 mapId = 0;
+    Map* map = sMapMgr->FindMap(mapId, GetInstanceId());
+    if (!map)
+        return;
 
-            //    WorldPackets::Achievement::CriteriaTreeProgress progress;
-            //    progress.Id = criteriaTreeEntry->CriteriaID;
-            //    progress.Quantity = treeProgress.Counter;
-            //    progress.Player = ObjectGuid::Create<HighGuid::Scenario>(0, GetScenarioId(), 1); // whats the fuck ?
-            //    progress.Flags = 0;
-            //    progress.Date = time(nullptr) - treeProgress.date;
-            //    progress.TimeFromStart = time(nullptr) - treeProgress.date;
-            //    progress.TimeFromCreate = time(nullptr) - treeProgress.date;
-            //    state.Progress.push_back(progress);
-            //}
-     //   }
-  //  }
+    map->SendToPlayers(data);
+}
 
-    if (player)
-        player->SendDirectMessage(state.Write());
- //   else
-   //     BroadCastPacket(state.Write());
-
-    if (full && _challenge)
-    {
-        _challenge->SendChallengeModeStart(player);
-        _challenge->SendStartElapsedTimer(player);
-    }
+void Scenario::SendScenarioEventToPlayers(uint32 eventId)
+{
+    for (ObjectGuid guid : _players)
+        if (Player* player = ObjectAccessor::FindPlayer(guid))
+            CriteriaHandler::UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, eventId, 0, 0, nullptr, player);
 }
 
 //DekkCore

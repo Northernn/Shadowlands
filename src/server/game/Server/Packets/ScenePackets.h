@@ -94,7 +94,7 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             ObjectGuid SceneObjectGUID;
-           // BattlePet::RoundResult MsgData; to do
+          //  BattlePet::RoundResult MsgData; 
         };
 
         class SceneObjectFinalRound final : public ServerPacket
@@ -105,7 +105,7 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             ObjectGuid SceneObjectGUID;
-          //  BattlePet::FinalRound MsgData; todo
+          //  BattlePet::FinalRound MsgData; 
         };
 
         class PetBattleFinished final : public ServerPacket
@@ -126,7 +126,7 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             ObjectGuid SceneObjectGUID;
-         //   BattlePet::PetBattleFullUpdate MsgData; to do 
+            //BattlePet::PetBattleFullUpdate MsgData; 
         };
     }
 }

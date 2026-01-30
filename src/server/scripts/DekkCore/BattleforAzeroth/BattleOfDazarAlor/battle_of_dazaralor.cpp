@@ -89,7 +89,7 @@ public:
 
     void IsSummonedBy(WorldObject* summoner) override
     {
-        Start(false, true, summoner->GetGUID());
+        Start(false, summoner->GetGUID());
     }
 };
 
@@ -117,16 +117,16 @@ struct npc_otoye : public ScriptedAI
                 Talk(0);
         }
     }
-    
+
     void sGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/)
     {
         if (player->IsInCombat())
             return;
 
-        me->GetScheduler().Schedule(5s, [this](TaskContext context)
+        me->GetScheduler().Schedule(5s, [this](TaskContext /*context*/)
         {
-            InstanceScript* instance;
-            instance->DoNearTeleportPlayers(tell_story_horde_pos, false);
+            if (InstanceScript* instance = me->GetInstanceScript())
+                instance->DoNearTeleportPlayers(tell_story_horde_pos, false);
         });
     }
 
@@ -149,11 +149,11 @@ struct npc_master_mathias_shaw_148629 : public ScriptedAI
 
     void sGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/)
     {
-        InstanceScript* instance;
         if (player->IsInCombat())
             return;
 
-       instance->DoNearTeleportPlayers(rastakhan_floor_pos, false);
+        if (auto instance = me->GetInstanceScript())
+            instance->DoNearTeleportPlayers(rastakhan_floor_pos, false);
     }
 };
 
@@ -161,9 +161,6 @@ struct npc_master_mathias_shaw_148629 : public ScriptedAI
 struct npc_riding_gryphon : public ScriptedAI
 {
     npc_riding_gryphon(Creature* creature) : ScriptedAI(creature) { }
-
-private:
-    Vehicle* vehicle;
 
     void Reset() override
     {
@@ -173,7 +170,7 @@ private:
         me->SetFlying(true);
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
             me->SummonCreature(me->GetEntry(), me->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 20s);
@@ -182,7 +179,7 @@ private:
     void IsSummonedBy(WorldObject* summoner) override
     {
         if (summoner->IsPlayer() && me->GetMapId() == 2070)
-        {   
+        {
             summoner->ToUnit()->EnterVehicle(me);
             me->GetMotionMaster()->MovePoint(1, -1461.164f, 805.806f, 135.850f, true);
         }

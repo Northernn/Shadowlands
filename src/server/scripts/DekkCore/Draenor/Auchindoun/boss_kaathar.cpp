@@ -107,7 +107,7 @@ struct auchindoun_kaathar_mob_nyami : public ScriptedAI
         me->SetUnitFlag(UnitFlags(UnitFlags::UNIT_FLAG_IMMUNE_TO_PC | UnitFlags::UNIT_FLAG_NON_ATTACKABLE));
     }
 };
-    
+
 /// Vigilant Kaathar - 75839
 struct boss_kaathar : public BossAI
 {
@@ -128,7 +128,7 @@ struct boss_kaathar : public BossAI
         _Reset();
         events.Reset();
         ClearDelayedOperations();
-        me->SetCurrentEquipmentId(1); // Equipment Id  
+        me->SetCurrentEquipmentId(1); // Equipment Id
         me->RemoveAllAreaTriggers();
 
         std::list<AreaTrigger*> l_listAreaTriggers;
@@ -185,7 +185,7 @@ struct boss_kaathar : public BossAI
     void JustDied(Unit* /*p_Killer*/) override
     {
         _JustDied();
-        
+
         /// From here Teronogor spawns
         //??????
         if (instance)
@@ -193,7 +193,7 @@ struct boss_kaathar : public BossAI
             instance->DoPlayScenePackageIdOnPlayers(SpellAuchindounSceneTeronogorSpawn);
             instance->DoRemoveAurasDueToSpellOnPlayers(eKaatharSpells::SpellSanctifiedGroundAura);
         }
-        
+
         DespawnAllAucheniDraeneis();
 
         /// Remove the auchenai shield npc
@@ -259,7 +259,7 @@ struct boss_kaathar : public BossAI
         if (me->GetMap() && me->GetMap()->IsHeroic())
             events.ScheduleEvent(eKaatharEvents::EventFate, 25s);
 
-        events.ScheduleEvent(eKaatharEvents::EventHallowedGround, (12s, 17s));
+        events.ScheduleEvent(eKaatharEvents::EventHallowedGround, 15s);
         events.ScheduleEvent(eKaatharEvents::EventSanctifiedStrike, 8s);
         events.ScheduleEvent(eKaatharEvents::EventHolyShield, 30s);
 
@@ -278,7 +278,7 @@ struct boss_kaathar : public BossAI
             {
                 l_Tuulani->AI()->Talk(eAuchindounTalks::TUULANITALK14);
                 l_Tuulani->RemoveAura(eAuchindounSpells::SpellTuulaniCapturedVoidPrison);
-            }            
+            }
 
             for (int8 l_I = 0; l_I < 4; l_I++)
             {
@@ -367,23 +367,23 @@ struct boss_kaathar : public BossAI
 
                 l_Tuulani->SummonCreature(NPC_NYAMI, g_PositionNyamiSpawn, TempSummonType::TEMPSUMMON_MANUAL_DESPAWN);
 
-                // Corpses		                          
+                // Corpses
                 for (int8 l_I = 0; l_I < 2; l_I++)                              /// Holy Wall, Object In MIddle
                     l_Tuulani->SummonGameObject(eAuchindounObjects::GameobjectHolyWall, g_PositionWallInMiddleFromNyami.GetPositionX(), g_PositionWallInMiddleFromNyami.GetPositionY(), g_PositionWallInMiddleFromNyami.GetPositionZ(), g_PositionWallInMiddleFromNyami.GetOrientation(), QuaternionData(0, 0, 0, 0), 0s);
 
                 l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargereiDefender, g_PositionMagusAndDefenderHostile[1], TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
 
-                // Hostile near Two corpses          		
+                // Hostile near Two corpses
                 l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargereiMagus, g_PositionMagusAndDefenderHostile[0], TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
 
-                // Two defender		
+                // Two defender
                 for (int8 l_I = 0; l_I < 2; l_I++)
                     l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargereiDefender, g_PositionSargereiDefenders[l_I], TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
 
-                // Magus p_Who control footmans                                  		
+                // Magus p_Who control footmans
                 l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargereiMagus, g_PositionMagusp_WhoControlFootmans, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
 
-                // Twelve prisoners (cosmetic)		
+                // Twelve prisoners (cosmetic)
                 for (int8 l_I = 0; l_I < 11; l_I++)
                 {
                     if (Creature* l_Prisoner = l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureAucheniDefender, g_PositionCorpsesNearNyomi[l_I], TempSummonType::TEMPSUMMON_DEAD_DESPAWN))
@@ -398,47 +398,45 @@ struct boss_kaathar : public BossAI
                 l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargereiMagus, g_PositionThreeHostileArbitrerMagusSoulPriest[1], TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargeriSoulPriest, g_PositionThreeHostileArbitrerMagusSoulPriest[2], TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
 
-                // Warden		
+                // Warden
                 l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargeriWarden, g_PositionWardenAndGuards, TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
 
-                // Defenders		
-                // Twelve prisoners (cosmetic)		
+                // Defenders
+                // Twelve prisoners (cosmetic)
                 for (int8 l_I = 0; l_I < 2; l_I++)
                 {
                     l_Tuulani->SummonCreature(eAuchindounCreatures::CreatureSargereiDefender, g_PositionGuardsAndWardens[l_I], TempSummonType::TEMPSUMMON_DEAD_DESPAWN);
                 }
 
-                
+
                 uint32 l_EntriesOfSargereiDraeneis[8] = { eAuchindounCreatures::CreatureSargeriMagus, eAuchindounCreatures::CreatureAucheniArbiter,
                 eAuchindounCreatures::CreatureSargeriSoulPriest, eAuchindounCreatures::CreatureSargeriWarden,
                 eAuchindounCreatures::CreatureAuchenaiAssainated, eAuchindounCreatures::CreatureSargereiAssasinating, eAuchindounCreatures::CreatureWardenAzzakael/*, eAuchindounBosses::BossNyami */};
 
                 std::list<Creature*> l_ListSargereiDraeneis;
-                for (uint8 l_I = 0; l_I < 8; l_I)
+                for (unsigned int l_EntriesOfSargereiDraenei : l_EntriesOfSargereiDraeneis)
                 {
-                l_Tuulani->GetCreatureListWithEntryInGrid(l_ListSargereiDraeneis, l_EntriesOfSargereiDraeneis[l_I], 1000.0f);
+                    l_Tuulani->GetCreatureListWithEntryInGrid(l_ListSargereiDraeneis, l_EntriesOfSargereiDraenei, 1000.0f);
                 }
 
                 if (!l_ListSargereiDraeneis.empty())
                 {
-                for (Creature* l_Itr : l_ListSargereiDraeneis)
-                {
-               // l_Itr->SetPhaseMask(1, true);
-                l_Itr->SetFaction(HostileFaction);
-                l_Itr->SetReactState(ReactStates::REACT_AGGRESSIVE);
-                l_Itr->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+                    for (Creature* l_Itr : l_ListSargereiDraeneis)
+                    {
+                        // l_Itr->SetPhaseMask(1, true);
+                        l_Itr->SetFaction(HostileFaction);
+                        l_Itr->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                        l_Itr->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
+                    }
                 }
-                }
-
-                
             }
-                       
+
             /// Magus
             if (Creature* l_Magus = me->GetSummonedCreatureByEntry(eAuchindounCreatures::CreatureAucheniMagus))
             {
                 l_Magus->CastSpell(l_Magus, eAuchindounSpells::SpellArcaneChanneling);
                 l_Magus->SummonGameObject(eAuchindounObjects::GameobjectTaladorPortal, g_PositionTuulaniGobjectPortalSpawn.GetPositionX(), g_PositionTuulaniGobjectPortalSpawn.GetPositionY(), g_PositionTuulaniGobjectPortalSpawn.GetPositionZ(), g_PositionTuulaniGobjectPortalSpawn.GetOrientation(), QuaternionData(0, 0, 0, 0), 0s);
-            }             
+            }
             break;
         }
         case Events::EVENT_POST_KAATHAR_3:
@@ -465,7 +463,7 @@ struct boss_kaathar : public BossAI
                         //  l_Itr->SetPhaseMask(1, true);
                     }
                 }
-            }           
+            }
             break;
         }
         case Events::EVENT_NYAMI_ESCAPE_1:
@@ -480,7 +478,7 @@ struct boss_kaathar : public BossAI
 
                 if (Unit* l_Caster = l_Nyami->FindNearestCreature(eAuchindounCreatures::CreatureLeftCrystalTrigger, 1000.0f))
                 events.ScheduleEvent(Events::EVENT_NYAMI_ESCAPE_2, 3s);
-            }           
+            }
             break;
         }
         case Events::EVENT_NYAMI_ESCAPE_2:
@@ -501,11 +499,11 @@ struct boss_kaathar : public BossAI
                         //  G3D::Vector3 l_Dest(1911.731f, 3183.639f, 56.50413f);
                         //  G3D::Vector3 l_Orientation(0.0f, 0.0f, 0.0f);
                         l_Caster->SendPlaySpellVisual(Position(1911.741f, 3183.639f, 56.50413f, 0.0f), 0.f, eAuchindounSpellVisualKit::SpellVisualKitBlackOrbFallingDownInSpiral, 0, 0, 8.0f, true);
-                    }                 
+                    }
                 }
                 events.ScheduleEvent(Events::EVENT_NYAMI_ESCAPE_3, 6s);
             }
-           
+
             break;
         }
         case Events::EVENT_NYAMI_ESCAPE_3:
@@ -527,8 +525,8 @@ struct boss_kaathar : public BossAI
                         l_Caster->SendPlaySpellVisual(Position(l_Caster->GetPositionX(), l_Caster->GetPositionY(), l_Caster->GetPositionZ(), 0.f), 0.0f, eAuchindounSpellVisualKit::SpellVisualKitBlackOrbFallingDownInSpiral, 0, 0, 8.0f, true);
                     }
                 }
-                events.ScheduleEvent(Events::EVENT_NYAMI_ESCAPE_4, 4s);              
-            }  
+                events.ScheduleEvent(Events::EVENT_NYAMI_ESCAPE_4, 4s);
+            }
             break;
         }
         case Events::EVENT_NYAMI_ESCAPE_4:
@@ -562,7 +560,7 @@ struct boss_kaathar : public BossAI
                 me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE));
                 me->GetMotionMaster()->MoveJump(g_PositionKaatharCombatJump.GetPositionX(), g_PositionKaatharCombatJump.GetPositionY(), g_PositionKaatharCombatJump.GetPositionZ(), 10.0f, 10.0f, 10.0f, 0);
                 events.ScheduleEvent(Events::EVENT_NYAMI_ESCAPE_7, 4s);
-            }           
+            }
             break;
         }
         case Events::EVENT_NYAMI_ESCAPE_7:
@@ -589,7 +587,7 @@ struct boss_kaathar : public BossAI
             {
                 l_Tuulani->AI()->Talk(eAuchindounTalks::TUULANITALK9);
                 l_Tuulani->AddAura(eAuchindounSpells::SpellTuulaniCapturedVoidPrison, l_Tuulani);
-            }          
+            }
             break;
         }
         case eKaatharEvents::EventFate:
@@ -624,7 +622,7 @@ struct boss_kaathar : public BossAI
                 std::string l_Str;
                 l_Str += "Vigilant kaathar hurls his |cffff0000[Holy Shield]|cfffaeb00! at ";
                 l_Str += l_Target->GetName();
-                //  me->MonsterTextEmote(l_Str.c_str(), me->GetGUID(), true);                
+                //  me->MonsterTextEmote(l_Str.c_str(), me->GetGUID(), true);
                 events.ScheduleEvent(eKaatharEvents::EventConsecratedLight, 4s);
                 events.ScheduleEvent(eKaatharEvents::EventHolyShieldReturn, 14s);
             }
@@ -696,124 +694,6 @@ struct boss_kaathar : public BossAI
     }
 };
 
-/// Hallowed Ground - 537324
-
-struct auchindoun_kaathar_mob_hallowed_ground : public ScriptedAI
-{
-    auchindoun_kaathar_mob_hallowed_ground(Creature* p_Creature) : ScriptedAI(p_Creature)
-    {
-        m_First = false;
-    }
-
-    uint32 m_VisualDiff;
-    EventMap events;
-    bool m_HasExploded;
-    bool m_First;
-
-    void Reset()
-    {
-        events.Reset();
-        m_HasExploded = false;
-        me->SetFaction(HostileFaction);
-        m_VisualDiff = 1;
-        events.ScheduleEvent(eKaatharEvents::EventCheckPlayer, 4s); // Takes 4 seconds to charge
-
-        if (!m_First)
-        {
-            me->SetObjectScale(1.0f);
-            me->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE));
-            me->SetReactState(ReactStates::REACT_PASSIVE);
-        }
-    }
-
-    void DoAction(int32 p_Action)
-    {
-        switch (p_Action)
-        {
-        case eKaatharActions::ActionFateHallowedGround:
-            DoCast(me, eKaatharSpells::SpellHallowedGround);
-            me->DespawnOrUnsummon(1s);
-            break;
-        default:
-            break;
-        }
-    }
-
-    void UpdateAI(uint32 p_Diff)
-    {
-        events.Update(p_Diff);
-
-        // Visual
-        if (m_VisualDiff <= p_Diff)
-        {
-            me->CastSpell(me, eKaatharSpells::SpellHallowedGroundsTriggerMissile);
-            m_VisualDiff = 1;
-        }
-        else
-            m_VisualDiff -= p_Diff;
-
-        switch (events.ExecuteEvent())
-        {
-        case eKaatharEvents::EventCheckPlayer:
-            if (m_HasExploded)
-                return;
-
-            if (Player* l_Player = me->SelectNearestPlayer(4.0f))  //modify
-            {
-                if (l_Player->IsWithinDistInMap(me, 4.0f))
-                {
-                    m_HasExploded = true;
-
-                    DoCast(me, eKaatharSpells::SpellHallowedGround);
-                    me->DespawnOrUnsummon(1s);
-                }
-            }
-
-            events.ScheduleEvent(eKaatharEvents::EventCheckPlayer, 1s);
-            break;
-        default:
-            break;
-        }
-    }
-};
-
-/// Fissure Spawner Trigger - 543536
-struct auchindoun_kaathar_mob_spawn_fissures : public ScriptedAI
-{
-    auchindoun_kaathar_mob_spawn_fissures(Creature* p_Creature) : ScriptedAI(p_Creature) { }
-
-    void Reset()
-    {
-        me->SetFaction(HostileFaction);
-        me->SetDisplayId(InvisibleDisplay);
-        me->CastSpell(me, eKaatharSpells::SpellSanctifiedStrikeAreaTrigger4);
-        me->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE | UnitFlags::UNIT_FLAG_IMMUNE_TO_PC | UnitFlags::UNIT_FLAG_IMMUNE_TO_NPC));
-    }
-};
-
-/// Post Fight Summoner to Center - 324235
-struct auchindoun_kaathar_mob_teleport_players : public ScriptedAI
-{
-    auchindoun_kaathar_mob_teleport_players(Creature* p_Creature) : ScriptedAI(p_Creature) {}
-
-    void Reset()
-    {
-        me->SetReactState(ReactStates::REACT_PASSIVE);
-        me->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_UNINTERACTIBLE | UnitFlags::UNIT_FLAG_REMOVE_CLIENT_CONTROL | UnitFlags::UNIT_FLAG_IMMUNE_TO_NPC));
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (instance)
-            if (Creature* l_Kaathar = instance->GetCreature(eAuchindounDatas::DataBossKathaar))
-                if (l_Kaathar->isDead())
-                    if (Player * l_Player = me->SelectNearestPlayer(10.0f))
-                        l_Player->TeleportTo(1182, 1904.29f, 3185.111f, 30.799f, 3.34086f);
-    }
-private:
-    InstanceScript* instance;
-};
-
 /// Holy Shield - 76071
 struct auchindoun_kaathar_mob_holy_shield : public ScriptedAI
 {
@@ -853,8 +733,6 @@ public:
 
     class auchindoun_kaathar_spell_consecrated_light_SpellScript : public AuraScript
     {
-        PrepareAuraScript(auchindoun_kaathar_spell_consecrated_light_SpellScript);
-
         void HandlePeriodic(AuraEffect const* /*p_AurEff*/)
         {
             if (GetCaster())
@@ -898,8 +776,6 @@ public:
 
     class auchindoun_kaathar_spell_conscreated_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(auchindoun_kaathar_spell_conscreated_damage_SpellScript);
-
         void RecalculateDamage(SpellEffIndex /*p_EffIndex*/)
         {
             if (!GetCaster() && !GetHitUnit())
@@ -938,8 +814,6 @@ public:
 
     class auchindoun_kaathar_spell_sanctified_ground_AuraScript : public AuraScript
     {
-        PrepareAuraScript(auchindoun_kaathar_spell_sanctified_ground_AuraScript);
-
         void HandlePeriodic(AuraEffect const* p_AurEff)
         {
             PreventDefaultAction();
@@ -971,8 +845,6 @@ public:
 
     class auchindoun_kaathar_spell_fate_SpellScript : public SpellScript
     {
-        PrepareSpellScript(auchindoun_kaathar_spell_fate_SpellScript);
-
         void HandleDummy(SpellEffIndex p_EffIndex)
         {
             if (Unit* l_Caster = GetCaster())
@@ -1002,47 +874,7 @@ public:
     }
 };
 
-/// Sanctified Strike Fissure - 
-
-class auchindoun_kaathar_at_fissure : public AreaTriggerEntityScript
-{
-public:
-
-    auchindoun_kaathar_at_fissure() : AreaTriggerEntityScript("auchindoun_kaathar_at_fissure")
-    {
-    }
-
-    uint32 m_Diff = 2;
-    std::list<uint64> m_Targets;
-
-    void OnUpdate(AreaTrigger* p_AreaTrigger, uint32 p_Time)
-    {
-        if (m_Diff <= p_Time)
-        {
-            std::list<Player*> l_PlayerList;
-            p_AreaTrigger->GetPlayerListInGrid(l_PlayerList, 1.0f);
-            // p_AreaTrigger->VisitNearbyObject(2.0f, searcher);
-
-            if (!l_PlayerList.empty())
-            {
-                for (std::list<Player*>::const_iterator l_Itr = l_PlayerList.begin(); l_Itr != l_PlayerList.end(); ++l_Itr)
-                {
-                    if (!(*l_Itr))
-                        continue;
-
-                    if (!(*l_Itr)->HasAura(eKaatharSpells::SpellSanctifiedGroundAura))
-                        (*l_Itr)->CastSpell((*l_Itr), eKaatharSpells::SpellSanctifiedGroundAura);
-                }
-            }
-
-            m_Diff = 2;
-        }
-        else
-            m_Diff -= p_Time;
-    }
-};
-
-/// Hallowed Ground  - 
+/// Hallowed Ground  -
 
 class auchindoun_kaathar_at_hallowed_ground : public AreaTriggerEntityScript
 {
@@ -1115,14 +947,10 @@ public:
 void AddSC_boss_kaathar()
 {
     RegisterCreatureAI(boss_kaathar);
-    RegisterCreatureAI(auchindoun_kaathar_mob_spawn_fissures);                        ///< 543536//unuse
-    RegisterCreatureAI(auchindoun_kaathar_mob_hallowed_ground);                       ///< 537324//unuse
     RegisterCreatureAI(auchindoun_kaathar_mob_holy_shield);                           ///< 76071
     RegisterCreatureAI(auchindoun_kaathar_mob_nyami);                   ///< 77810
-    RegisterCreatureAI(auchindoun_kaathar_mob_teleport_players);                      ///< 3242352//unuse
     new auchindoun_kaathar_spell_consecrated_light();                   ///< 153006
     new auchindoun_kaathar_spell_fate();                                ///< 157465
     new auchindoun_kaathar_spell_sanctified_ground();                   ///< 153430
-    new auchindoun_kaathar_spell_conscreated_damage();                  ///< 156746
-    new auchindoun_kaathar_at_fissure();                                ///< 165065
+    new auchindoun_kaathar_spell_conscreated_damage();                  ///< 156746             
 }

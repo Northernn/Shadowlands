@@ -135,7 +135,7 @@ public:
                     }
                 }
             }
-            player->RemoveActiveQuest(quest);
+            player->RemoveActiveQuest(quest->GetQuestId(), false);
             player->RemoveRewardedQuest(quest->GetQuestId());
 
             sScriptMgr->OnQuestStatusChange(player, quest->GetQuestId());

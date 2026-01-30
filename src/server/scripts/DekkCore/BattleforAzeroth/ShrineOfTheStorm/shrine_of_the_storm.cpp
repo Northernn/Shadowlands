@@ -1,5 +1,5 @@
 /*
- * Copyright 2021
+ * Copyright 2023 DekkCore
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,8 +55,15 @@ struct npc_rexxar : public ScriptedAI
             {
                 instance->SetData(DATA_INSTANCE_ENTER, 1);
                 Talk(TALK_REXXAR_TALK_01);
-                me->GetScheduler().Schedule(7s, [this](TaskContext context) { GetContextCreature()->AI()->Talk(TALK_REXXAR_TALK_02); });
-                me->GetScheduler().Schedule(14s, [this](TaskContext context) { GetContextCreature()->AI()->Talk(TALK_REXXAR_TALK_03); });
+                me->GetScheduler().Schedule(7s, [](TaskContext context)
+                {
+                    if (context.GetUnit())
+                        GetContextCreature()->AI()->Talk(TALK_REXXAR_TALK_02);
+                });
+                me->GetScheduler().Schedule(14s, [](TaskContext context) {
+                    if (context.GetUnit())
+                        GetContextCreature()->AI()->Talk(TALK_REXXAR_TALK_03);
+                });
             }
         }
     }
@@ -67,7 +74,6 @@ struct npc_rexxar : public ScriptedAI
     }
 private:
     EventMap events;
-    InstanceScript* instance;
 };
 
 // 139970
@@ -105,9 +111,7 @@ public:
 
     class spell_burst_sots_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_burst_sots_AuraScript);
-
-        void OnTick(AuraEffect const* aurEff)
+        void OnTick(AuraEffect const* /*aurEff*/)
         {
             GetTarget()->CastSpell(GetTarget(), SPELL_BURST, true);
         }
@@ -150,13 +154,13 @@ struct npc_lord_stormsong : public ScriptedAI
                 me->RemoveAurasDueToSpell(SPELL_WATER_RITUAL);
                 me->SetFacingTo(0.1939797f);
                 Talk(YELL_STORMSONG_01);
-                me->GetScheduler().Schedule(6s, [this](TaskContext context) { GetContextCreature()->AI()->Talk(YELL_STORMSONG_02); });
-                me->GetScheduler().Schedule(13s, [this](TaskContext context)
+                me->GetScheduler().Schedule(6s, [](TaskContext context) { GetContextCreature()->AI()->Talk(YELL_STORMSONG_02); });
+                me->GetScheduler().Schedule(13s, [](TaskContext context)
                 {
                     GetContextCreature()->AI()->DoCast(SPELL_WATER_RITUAL);
                     GetContextCreature()->AI()->DoCast(SPELL_REQUIEM_OF_THE_ABYSS);
                 });
-                me->GetScheduler().Schedule(18s, [this](TaskContext context)
+                me->GetScheduler().Schedule(18s, [](TaskContext context)
                 {
                     if (Creature* aqusirr = GetContextCreature()->FindNearestCreature(NPC_AQUSIRR, 100.0f))
                     {
@@ -166,7 +170,7 @@ struct npc_lord_stormsong : public ScriptedAI
                     }
                 });
 
-                me->GetScheduler().Schedule(20s, [this](TaskContext context)
+                me->GetScheduler().Schedule(20s, [](TaskContext context)
                 {
                     GetContextCreature()->AI()->DoCast(SPELL_SPLASHING_WATER);
                     GetContextCreature()->DespawnOrUnsummon(3s);
@@ -192,10 +196,10 @@ struct at_slicing_hurricane : AreaTriggerAI
 
     void OnInitialize() override
     {
-      //  at->SetPeriodicProcTimer(2000);
+        at->SetPeriodicProcTimer(2000);
     }
 
-    void OnPeriodicProc() //override
+    void OnPeriodicProc() override
     {
         if (Unit* caster = at->GetCaster())
             for (ObjectGuid guid : at->GetInsideUnits())

@@ -139,63 +139,7 @@ public:
     }
 };
 
-// 215872 - BurningEarth
-class at_sharthos_burning_earth : public AreaTriggerEntityScript
-{
-public:
-    at_sharthos_burning_earth() : AreaTriggerEntityScript("at_sharthos_burning_earth") { }
-
-    struct at_sharthos_burning_earthAI : AreaTriggerAI
-    {
-        at_sharthos_burning_earthAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-        uint32 checkTimer = 1000;
-
-        enum Spells
-        {
-            BurningEarthDOT = 215876,
-        };
-
-        // Called on each AreaTrigger update
-        void OnUpdate(uint32 diff)
-        {
-            if (checkTimer <= diff)
-            {
-                float yards = at->GetTimeSinceCreated() / IN_MILLISECONDS * 1.1f;
-
-                GuidUnorderedSet const& insideTargets = at->GetInsideUnits();
-
-                for (ObjectGuid insideTargetGuid : insideTargets)
-                    if (Unit* insideTarget = ObjectAccessor::GetUnit(*at->GetCaster(), insideTargetGuid))
-                        if (insideTarget->IsPlayer())
-                        {
-                            if (insideTarget->GetDistance(at->GetPosition()) <= yards && !insideTarget->HasAura(Spells::BurningEarthDOT))
-                                at->GetCaster()->AddAura(Spells::BurningEarthDOT, insideTarget);
-                            else if (insideTarget->GetDistance(at->GetPosition()) > yards && insideTarget->HasAura(Spells::BurningEarthDOT))
-                                insideTarget->RemoveAurasDueToSpell(Spells::BurningEarthDOT);
-                        }
-                checkTimer = 1000;
-            }
-            else
-                checkTimer -= diff;
-        }
-
-        // Called when an unit exit the AreaTrigger, or when the AreaTrigger is removed
-        void OnUnitExit(Unit* unit) override
-        {
-            if (unit->IsPlayer() && unit->HasAura(Spells::BurningEarthDOT))
-                unit->RemoveAurasDueToSpell(Spells::BurningEarthDOT);
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new at_sharthos_burning_earthAI(areatrigger);
-    }
-};
-
 void AddSC_boss_sharthos()
 {
     new (boss_sharthos);
-    new at_sharthos_burning_earth();
 }

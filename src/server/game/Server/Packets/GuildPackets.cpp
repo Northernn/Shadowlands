@@ -301,8 +301,8 @@ WorldPacket const* WorldPackets::Guild::GuildEventPlayerLeft::Write()
 WorldPacket const* WorldPackets::Guild::GuildPermissionsQueryResults::Write()
 {
     _worldPacket << uint32(RankID);
-    _worldPacket << int32(WithdrawGoldLimit);
     _worldPacket << int32(Flags);
+    _worldPacket << int32(WithdrawGoldLimit);
     _worldPacket << int32(NumTabs);
     _worldPacket << uint32(Tab.size());
 
@@ -966,4 +966,19 @@ WorldPacket const* WorldPackets::Guild::GuildNameChanged::Write()
     _worldPacket.WriteString(GuildName);
 
     return &_worldPacket;
+}
+
+//DekkCore
+WorldPacket const* WorldPackets::Guild::GuildChangeNameResult::Write()
+{
+    _worldPacket.WriteBit(Success);
+
+    return &_worldPacket;
+}
+//DekkCore
+
+void WorldPackets::Guild::QueryPlayerNameByCommunityId::Read()
+{
+    _worldPacket >> BNetAccountGUID;
+    _worldPacket >> CommunityDbID;
 }

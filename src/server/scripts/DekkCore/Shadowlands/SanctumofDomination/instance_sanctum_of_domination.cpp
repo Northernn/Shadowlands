@@ -37,6 +37,20 @@ ObjectData const creatureData[] =
     { 0,                               0                                } // END
 };
 
+DungeonEncounterData const encounters[] =
+{
+    { DATA_THE_TARRAGRUE,              {{ 2423 }} },
+    { DATA_THE_EYE_OF_THE_JAILER,      {{ 2433 }} },
+    { DATA_THE_NINE,                   {{ 2429 }} },
+    { DATA_REMNANT_OF_NERZHUL,         {{ 2432 }} },
+    { DATA_SOULRENDER_DORMAZAIN,       {{ 2434 }} },
+    { DATA_PAINSMITH_RAZNAL,           {{ 2430 }} },
+    { DATA_GUARDIAN_OF_THE_FIRST_ONES, {{ 2436 }} },
+    { DATA_FATESCRIBE_ROHKALO,         {{ 2431 }} },
+    { DATA_KELTHUZAD,                  {{ 2422 }} },
+    { DATA_SYLVANAS_WINDRUNNER,        {{ 2435 }} }
+};
+
 class instance_sanctum_of_domination : public InstanceMapScript
 {
 public:
@@ -48,10 +62,10 @@ public:
         {
             SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
+            LoadDungeonEncounterData(encounters);
             LoadObjectData(creatureData, nullptr);
 
-            SylvanasIntroductionData = DONE;
-            SylvanasIntermissionData = 0;
+            SylvanasIntroductionData = NOT_STARTED;
         }
 
         void OnCreatureCreate(Creature* creature) override

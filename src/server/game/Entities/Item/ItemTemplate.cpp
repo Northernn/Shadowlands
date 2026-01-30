@@ -20,7 +20,7 @@
 #include "ItemTemplate.h"
 #include "Player.h"
 
-int32 const SocketColorToGemTypeMask[19] =
+int32 const SocketColorToGemTypeMask[26] =
 {
     0,
     SOCKET_COLOR_META,
@@ -40,7 +40,14 @@ int32 const SocketColorToGemTypeMask[19] =
     SOCKET_COLOR_RELIC_WATER,
     SOCKET_COLOR_RELIC_LIFE,
     SOCKET_COLOR_RELIC_WIND,
-    SOCKET_COLOR_RELIC_HOLY
+    SOCKET_COLOR_RELIC_HOLY,
+    SOCKET_COLOR_PUNCHCARD_RED,
+    SOCKET_COLOR_PUNCHCARD_YELLOW,
+    SOCKET_COLOR_PUNCHCARD_BLUE,
+    SOCKET_COLOR_DOMINATION,
+    SOCKET_COLOR_CYPHER,
+    SOCKET_COLOR_TINKER,
+    SOCKET_COLOR_PRIMORDIAL
 };
 
 char const* ItemTemplate::GetName(LocaleConstant locale) const
@@ -64,19 +71,19 @@ bool ItemTemplate::CanChangeEquipStateInCombat() const
 {
     switch (GetInventoryType())
     {
-        case INVTYPE_RELIC:
-        case INVTYPE_SHIELD:
-        case INVTYPE_HOLDABLE:
-            return true;
-        default:
-            break;
+    case INVTYPE_RELIC:
+    case INVTYPE_SHIELD:
+    case INVTYPE_HOLDABLE:
+        return true;
+    default:
+        break;
     }
 
     switch (GetClass())
     {
-        case ITEM_CLASS_WEAPON:
-        case ITEM_CLASS_PROJECTILE:
-            return true;
+    case ITEM_CLASS_WEAPON:
+    case ITEM_CLASS_PROJECTILE:
+        return true;
     }
 
     return false;
@@ -86,34 +93,95 @@ uint32 ItemTemplate::GetSkill() const
 {
     static uint32 const itemWeaponSkills[MAX_ITEM_SUBCLASS_WEAPON] =
     {
-        SKILL_AXES,             SKILL_TWO_HANDED_AXES, SKILL_BOWS,   SKILL_GUNS,              SKILL_MACES,
-        SKILL_TWO_HANDED_MACES, SKILL_POLEARMS,        SKILL_SWORDS, SKILL_TWO_HANDED_SWORDS, SKILL_WARGLAIVES,
-        SKILL_STAVES,           0,                     0,            SKILL_FIST_WEAPONS,      0,
-        SKILL_DAGGERS,          0,                     0,            SKILL_CROSSBOWS,         SKILL_WANDS,
-        SKILL_FISHING_2
+        SKILL_AXES,             
+		SKILL_TWO_HANDED_AXES, 
+		SKILL_BOWS,   
+		SKILL_GUNS,              
+		SKILL_MACES,
+        SKILL_TWO_HANDED_MACES, 
+		SKILL_POLEARMS,        
+		SKILL_SWORDS, 
+		SKILL_TWO_HANDED_SWORDS, 
+		SKILL_WARGLAIVES,
+        SKILL_STAVES,           
+		0,            
+		0,        
+		SKILL_FIST_WEAPONS,      
+		0,
+        SKILL_DAGGERS,          
+		0,                     
+		0,           
+		SKILL_CROSSBOWS,         
+		SKILL_WANDS,
+        SKILL_FISHING, 
+		SKILL_DRAGON_ISLES_FISHING
     };
 
     static uint32 const itemArmorSkills[MAX_ITEM_SUBCLASS_ARMOR] =
     {
-        0, SKILL_CLOTH, SKILL_LEATHER, SKILL_MAIL, SKILL_PLATE_MAIL, 0, SKILL_SHIELD, 0, 0, 0, 0
+        0, 
+		SKILL_CLOTH, 
+		SKILL_LEATHER, 
+		SKILL_MAIL, 
+		SKILL_PLATE_MAIL, 
+		0, 
+		SKILL_SHIELD, 
+		0, 
+		0, 
+		0, 
+		0
+    };
+
+    static uint32 const itemProfessionSkills[MAX_ITEM_SUBCLASS_PROFESSION] =
+    {
+        SKILL_BLACKSMITHING, 
+		SKILL_DRAGON_ISLES_BLACKSMITHING,
+		SKILL_LEATHERWORKING, 
+		SKILL_DRAGON_ISLES_LEATHERWORKING,
+		SKILL_ALCHEMY, 
+		SKILL_DRAGON_ISLES_ALCHEMY,
+		SKILL_HERBALISM, 
+		SKILL_DRAGON_ISLES_HERBALISM,	
+		SKILL_COOKING,
+		SKILL_DRAGON_ISLES_COOKING,
+        SKILL_MINING, 
+		SKILL_DRAGON_ISLES_MINING,
+		SKILL_TAILORING,
+		SKILL_DRAGON_ISLES_TAILORING,
+		SKILL_ENGINEERING, 
+		SKILL_DRAGON_ISLES_ENGINEERING,
+		SKILL_ENCHANTING,
+		SKILL_DRAGON_ISLES_ENCHANTING,
+		SKILL_FISHING,
+		SKILL_DRAGON_ISLES_FISHING,
+        SKILL_SKINNING,
+		SKILL_DRAGON_ISLES_SKINNING,	
+		SKILL_JEWELCRAFTING, 
+		SKILL_DRAGON_ISLES_JEWELCRAFTING,
+		SKILL_INSCRIPTION, 
+		SKILL_DRAGON_ISLES_INSCRIPTION,
+		SKILL_ARCHAEOLOGY
     };
 
     switch (GetClass())
     {
-        case ITEM_CLASS_WEAPON:
-            if (GetSubClass() >= MAX_ITEM_SUBCLASS_WEAPON)
-                return 0;
-            else
-                return itemWeaponSkills[GetSubClass()];
-
-        case ITEM_CLASS_ARMOR:
-            if (GetSubClass() >= MAX_ITEM_SUBCLASS_ARMOR)
-                return 0;
-            else
-                return itemArmorSkills[GetSubClass()];
-
-        default:
+    case ITEM_CLASS_WEAPON:
+        if (GetSubClass() >= MAX_ITEM_SUBCLASS_WEAPON)
             return 0;
+        else
+            return itemWeaponSkills[GetSubClass()];
+    case ITEM_CLASS_ARMOR:
+        if (GetSubClass() >= MAX_ITEM_SUBCLASS_ARMOR)
+            return 0;
+        else
+            return itemArmorSkills[GetSubClass()];
+    case ITEM_CLASS_PROFESSION:
+        if (GetSubClass() >= MAX_ITEM_SUBCLASS_PROFESSION)
+            return 0;
+        else
+            return itemProfessionSkills[GetSubClass()];
+    default:
+        return 0;
     }
 }
 
@@ -151,24 +219,24 @@ uint32 ItemTemplate::GetArmor(uint32 itemLevel) const
         float locationModifier = 1.0f;
         switch (GetSubClass())
         {
-            case ITEM_SUBCLASS_ARMOR_CLOTH:
-                total = armorTotal->Cloth;
-                locationModifier = location->Clothmodifier;
-                break;
-            case ITEM_SUBCLASS_ARMOR_LEATHER:
-                total = armorTotal->Leather;
-                locationModifier = location->Leathermodifier;
-                break;
-            case ITEM_SUBCLASS_ARMOR_MAIL:
-                total = armorTotal->Mail;
-                locationModifier = location->Chainmodifier;
-                break;
-            case ITEM_SUBCLASS_ARMOR_PLATE:
-                total = armorTotal->Plate;
-                locationModifier = location->Platemodifier;
-                break;
-            default:
-                break;
+        case ITEM_SUBCLASS_ARMOR_CLOTH:
+            total = armorTotal->Cloth;
+            locationModifier = location->Clothmodifier;
+            break;
+        case ITEM_SUBCLASS_ARMOR_LEATHER:
+            total = armorTotal->Leather;
+            locationModifier = location->Leathermodifier;
+            break;
+        case ITEM_SUBCLASS_ARMOR_MAIL:
+            total = armorTotal->Mail;
+            locationModifier = location->Chainmodifier;
+            break;
+        case ITEM_SUBCLASS_ARMOR_PLATE:
+            total = armorTotal->Plate;
+            locationModifier = location->Platemodifier;
+            break;
+        default:
+            break;
         }
 
         return uint32(armorQuality->Qualitymod[quality] * total * locationModifier + 0.5f);
@@ -191,45 +259,45 @@ float ItemTemplate::GetDPS(uint32 itemLevel) const
     float dps = 0.0f;
     switch (GetInventoryType())
     {
-        case INVTYPE_AMMO:
-            dps = sItemDamageAmmoStore.AssertEntry(itemLevel)->Quality[quality];
+    case INVTYPE_AMMO:
+        dps = sItemDamageAmmoStore.AssertEntry(itemLevel)->Quality[quality];
+        break;
+    case INVTYPE_2HWEAPON:
+        if (HasFlag(ITEM_FLAG2_CASTER_WEAPON))
+            dps = sItemDamageTwoHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
+        else
+            dps = sItemDamageTwoHandStore.AssertEntry(itemLevel)->Quality[quality];
+        break;
+    case INVTYPE_RANGED:
+    case INVTYPE_THROWN:
+    case INVTYPE_RANGEDRIGHT:
+        switch (GetSubClass())
+        {
+        case ITEM_SUBCLASS_WEAPON_WAND:
+            dps = sItemDamageOneHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
             break;
-        case INVTYPE_2HWEAPON:
+        case ITEM_SUBCLASS_WEAPON_BOW:
+        case ITEM_SUBCLASS_WEAPON_GUN:
+        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
             if (HasFlag(ITEM_FLAG2_CASTER_WEAPON))
                 dps = sItemDamageTwoHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
             else
                 dps = sItemDamageTwoHandStore.AssertEntry(itemLevel)->Quality[quality];
             break;
-        case INVTYPE_RANGED:
-        case INVTYPE_THROWN:
-        case INVTYPE_RANGEDRIGHT:
-            switch (GetSubClass())
-            {
-                case ITEM_SUBCLASS_WEAPON_WAND:
-                    dps = sItemDamageOneHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
-                    break;
-                case ITEM_SUBCLASS_WEAPON_BOW:
-                case ITEM_SUBCLASS_WEAPON_GUN:
-                case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-                    if (HasFlag(ITEM_FLAG2_CASTER_WEAPON))
-                        dps = sItemDamageTwoHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
-                    else
-                        dps = sItemDamageTwoHandStore.AssertEntry(itemLevel)->Quality[quality];
-                    break;
-                default:
-                    break;
-            }
-            break;
-        case INVTYPE_WEAPON:
-        case INVTYPE_WEAPONMAINHAND:
-        case INVTYPE_WEAPONOFFHAND:
-            if (HasFlag(ITEM_FLAG2_CASTER_WEAPON))
-                dps = sItemDamageOneHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
-            else
-                dps = sItemDamageOneHandStore.AssertEntry(itemLevel)->Quality[quality];
-            break;
         default:
             break;
+        }
+        break;
+    case INVTYPE_WEAPON:
+    case INVTYPE_WEAPONMAINHAND:
+    case INVTYPE_WEAPONOFFHAND:
+        if (HasFlag(ITEM_FLAG2_CASTER_WEAPON))
+            dps = sItemDamageOneHandCasterStore.AssertEntry(itemLevel)->Quality[quality];
+        else
+            dps = sItemDamageOneHandStore.AssertEntry(itemLevel)->Quality[quality];
+        break;
+    default:
+        break;
     }
 
     return dps;
@@ -263,7 +331,7 @@ bool ItemTemplate::IsUsableByLootSpecialization(Player const* player, bool alway
         return false;
 
     std::size_t levelIndex = 0;
-    if (player->GetLevel() >= 110)
+    if (player->GetLevel() >= 70)
         levelIndex = 2;
     else if (player->GetLevel() > 40)
         levelIndex = 1;

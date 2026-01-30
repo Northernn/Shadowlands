@@ -170,96 +170,6 @@ const uint32 WorgenOrCitizen[] =
     34981, 35660, 35836
 };
 
-// 36540
-class npc_mountain_horse_36540 : public CreatureScript
-{
-public:
-    npc_mountain_horse_36540() : CreatureScript("npc_mountain_horse_36540") { }
-
-    enum eNpc
-    {
-        EVENT_CHECK_HEALTH_AND_LORNA = 901,
-    };
-
-    struct npc_mountain_horse_36540AI : public ScriptedAI
-    {
-        npc_mountain_horse_36540AI(Creature* creature) : ScriptedAI(creature) { }
-
-        EventMap    m_events;
-        ObjectGuid  m_playerGUID;
-        ObjectGuid  m_lornaGUID;
-        float       m_dist;
-        float       m_angle;
-        float       m_size;
-        Position    m_oldPosition;
-        bool        m_lornaIsNear;
-
-        void Reset() override
-        {
-            m_events.Reset();
-            m_playerGUID = ObjectGuid::Empty;
-            m_lornaGUID = ObjectGuid::Empty;
-            m_lornaIsNear = false;
-        }
-
-        void PassengerBoarded(Unit* passenger, int8 /*seatId*/, bool apply) override
-        {
-            if (apply)
-            {
-                if (Player* player = passenger->ToPlayer())
-                {
-                    m_playerGUID = player->GetGUID();
-                    me->SetMaxHealth(250);
-                }
-                m_events.ScheduleEvent(EVENT_CHECK_HEALTH_AND_LORNA, 1s);
-            }
-            else if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
-            {
-                if (m_lornaIsNear)
-                {
-                    player->KilledMonsterCredit(36560);
-                    me->DespawnOrUnsummon(1s);
-                }
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            m_events.Update(diff);
-
-            while (uint32 eventId = m_events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_CHECK_HEALTH_AND_LORNA:
-                    me->SetHealth(me->GetMaxHealth());
-
-                    if (!m_lornaGUID)
-                        if (Creature* lorna = me->FindNearestCreature(NPC_LORNA_CROWLEY, 100.0f))
-                            m_lornaGUID = lorna->GetGUID();
-
-                    if (Creature* lorna = ObjectAccessor::GetCreature(*me, m_lornaGUID))
-                        if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
-                        {
-                            m_lornaIsNear = player->GetDistance(lorna) < 7.0f;
-
-                            if (m_lornaIsNear)
-                                player->ExitVehicle();
-                        }
-
-                    m_events.ScheduleEvent(EVENT_CHECK_HEALTH_AND_LORNA, 1s);
-                    break;
-                }
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_mountain_horse_36540AI(creature);
-    }
-};
-
 // 36555
 class npc_mountain_horse_36555 : public CreatureScript
 {
@@ -869,12 +779,12 @@ public:
             {
                 if (Loc1)
                 {
-                    me->GetMotionMaster()->MoveJump(-1668.52f + irand(-3, 3), 1439.69f + irand(-3, 3), PLATFORM_Z, 20.0f, 22.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1668.52f + irand(-3, 3), 1439.69f + irand(-3, 3), PLATFORM_Z), 20.0f, 22.0f);
                     Loc1 = false;
                 }
                 else if (Loc2)
                 {
-                    me->GetMotionMaster()->MoveJump(-1678.04f + irand(-3, 3), 1450.88f + irand(-3, 3), PLATFORM_Z, 20.0f, 22.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1678.04f + irand(-3, 3), 1450.88f + irand(-3, 3), PLATFORM_Z), 20.0f, 22.0f);
                     Loc2 = false;
                 }
 
@@ -998,12 +908,12 @@ public:
             {
                 if (Loc1)
                 {
-                    me->GetMotionMaster()->MoveJump(-1685.521f + irand(-3, 3), 1458.48f + irand(-3, 3), PLATFORM_Z, 20.0f, 22.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1685.521f + irand(-3, 3), 1458.48f + irand(-3, 3), PLATFORM_Z), 20.0f, 22.0f);
                     Loc1 = false;
                 }
                 else if (Loc2)
                 {
-                    me->GetMotionMaster()->MoveJump(-1681.81f + irand(-3, 3), 1445.54f + irand(-3, 3), PLATFORM_Z, 20.0f, 22.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1681.81f + irand(-3, 3), 1445.54f + irand(-3, 3), PLATFORM_Z), 20.0f, 22.0f);
                     Loc2 = false;
                 }
 
@@ -1127,12 +1037,12 @@ public:
             {
                 if (Loc1)
                 {
-                    me->GetMotionMaster()->MoveJump(-1668.52f + irand(-3, 3), 1439.69f + irand(-3, 3), PLATFORM_Z, 20.0f, 22.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1668.52f + irand(-3, 3), 1439.69f + irand(-3, 3), PLATFORM_Z), 20.0f, 22.0f);
                     Loc1 = false;
                 }
                 else if (Loc2)
                 {
-                    me->GetMotionMaster()->MoveJump(-1660.17f + irand(-3, 3), 1429.55f + irand(-3, 3), PLATFORM_Z, 22.0f, 20.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1660.17f + irand(-3, 3), 1429.55f + irand(-3, 3), PLATFORM_Z), 22.0f, 20.0f);
                     Loc2 = false;
                 }
 
@@ -1233,7 +1143,7 @@ public:
 
             if (WaypointId >= CommonWPCount) // If we have reached the last waypoint
             {
-                me->GetMotionMaster()->MoveJump(-1685.52f + irand(-3, 3), 1458.48f + irand(-3, 3), PLATFORM_Z, 20.0f, 22.0f);
+                me->GetMotionMaster()->MoveJump(Position(-1685.52f + irand(-3, 3), 1458.48f + irand(-3, 3), PLATFORM_Z), 20.0f, 22.0f);
                 Run = false; // Stop running
                 Jump = true; // Time to Jump
             }
@@ -1244,7 +1154,6 @@ public:
 void AddSC_gilneas_c1()
 {
     new npc_crowleys_horse();
-    new npc_mountain_horse_36540();
     new npc_mountain_horse_36555();
     new npc_sean_dempsey();
     new npc_lord_darius_crowley_c1();

@@ -589,8 +589,6 @@ public:
 	class bfa_spell_arcane_bomb_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_arcane_bomb_SpellScript);
-
 		void HandleSummon()
 		{
 			if (!GetCaster() || !GetHitUnit())
@@ -610,8 +608,6 @@ public:
 	class bfa_spell_arcane_bomb_AuraScript : public AuraScript
 	{
 	public:
-		PrepareAuraScript(bfa_spell_arcane_bomb_AuraScript);
-
 		void HandleDispel(DispelInfo* dispelInfo)
 		{
 			if (!GetCaster() || !GetUnitOwner())
@@ -655,8 +651,6 @@ public:
 	class bfa_spell_crushing_depths_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_crushing_depths_SpellScript);
-
 		bool Load() override
 		{
 			_targetsSize = 1;
@@ -705,8 +699,6 @@ public:
 	class bfa_spell_cry_of_wrath_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_cry_of_wrath_SpellScript);
-
 		void HandleDummy(SpellEffIndex)
 		{
 			if (!GetCaster())

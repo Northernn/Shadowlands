@@ -668,8 +668,6 @@ private:
 // 63018, 65121 - Searing Light
 class spell_xt002_searing_light_spawn_life_spark : public AuraScript
 {
-    PrepareAuraScript(spell_xt002_searing_light_spawn_life_spark);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_LIFE_SPARK });
@@ -691,8 +689,6 @@ class spell_xt002_searing_light_spawn_life_spark : public AuraScript
 // 63024, 64234 - Gravity Bomb
 class spell_xt002_gravity_bomb_aura : public AuraScript
 {
-    PrepareAuraScript(spell_xt002_gravity_bomb_aura);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_VOID_ZONE });
@@ -726,8 +722,6 @@ class spell_xt002_gravity_bomb_aura : public AuraScript
 // 63025, 64233 - Gravity Bomb (Damage)
 class spell_xt002_gravity_bomb_damage : public SpellScript
 {
-    PrepareSpellScript(spell_xt002_gravity_bomb_damage);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (GetHitDamage() >= int32(GetHitUnit()->GetHealth()))
@@ -745,8 +739,6 @@ class spell_xt002_gravity_bomb_damage : public SpellScript
 // 62791 - XT-002 Heart Overload Trigger Spell (SERVERSIDE)
 class spell_xt002_heart_overload_periodic : public SpellScript
 {
-    PrepareSpellScript(spell_xt002_heart_overload_periodic);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo
@@ -791,8 +783,6 @@ class spell_xt002_heart_overload_periodic : public SpellScript
 // 62826 - Energy Orb
 class spell_xt002_energy_orb : public SpellScript
 {
-    PrepareSpellScript(spell_xt002_energy_orb);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo
@@ -830,8 +820,6 @@ class spell_xt002_energy_orb : public SpellScript
 // 62775 - Tympanic Tantrum
 class spell_xt002_tympanic_tantrum : public SpellScript
 {
-    PrepareSpellScript(spell_xt002_tympanic_tantrum);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.remove_if([](WorldObject* object) -> bool
@@ -862,8 +850,6 @@ class spell_xt002_tympanic_tantrum : public SpellScript
 // 65032 - 321-Boombot Aura
 class spell_xt002_321_boombot_aura : public AuraScript
 {
-    PrepareAuraScript(spell_xt002_321_boombot_aura);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_ACHIEVEMENT_CREDIT_NERF_SCRAPBOTS });
@@ -892,8 +878,6 @@ class spell_xt002_321_boombot_aura : public AuraScript
 // 63849 - Exposed Heart
 class spell_xt002_exposed_heart : public AuraScript
 {
-    PrepareAuraScript(spell_xt002_exposed_heart);
-
     bool Load() override
     {
         _damageAmount = 0;

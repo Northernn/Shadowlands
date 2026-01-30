@@ -44,7 +44,7 @@ Position const groupCheckPos[4] =
     {938.15f, 3147.17f, 52.24f},  //???? ????
     {931.61f, 3171.08f, 49.57f},  //???? ?????
     {947.74f, 3202.11f, 22.57f},  //??? ?????
-    {973.10f, 3166.68f, 22.57f},  //??? ???? 
+    {973.10f, 3166.68f, 22.57f},  //??? ????
 };
 
 uint32 const pathId[4] =
@@ -117,7 +117,9 @@ public:
         void UpdateAI(uint32 diff) override
         {
             if (event)
+            {
                 if (elisanda)
+                {
                     if (timer <= diff)
                     {
                         if (queue)
@@ -128,7 +130,7 @@ public:
                             text++;
                         }
 
-                        queue = (queue == true ? false : true);
+                        queue = (queue ? false : true);
 
                         if (text < 2)
                             timer = 5000;
@@ -139,17 +141,20 @@ public:
                             me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
                             me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
                             elisanda->DespawnOrUnsummon(100ms);
-                            if (Unit* target = me->SelectNearestPlayer(30.0f))
+                            if (Unit *target = me->SelectNearestPlayer(30.0f))
                                 me->AI()->AttackStart(target);
                         }
                     }
-                    else timer -= diff;
-
+                    else
+                        timer -= diff;
+                }
+            }
 
             if (checkrange)
+            {
                 if (checkrangetimer <= diff)
                 {
-                    if (Unit* target = me->SelectNearestPlayer(50.0f))
+                    if (Unit *target = me->SelectNearestPlayer(50.0f))
                         if (me->IsWithinMeleeRange(target))
                         {
                             introDone = true;
@@ -159,9 +164,12 @@ public:
                             queue = true;
                             checkrange = false;
                         }
+
                     checkrangetimer = 1000;
                 }
-                else checkrangetimer -= diff;
+                else
+                    checkrangetimer -= diff;
+            }
 
             if (!UpdateVictim())
                 return;
@@ -204,6 +212,7 @@ public:
                     break;
                 }
             }
+
             DoMeleeAttackIfReady();
         }
     };
@@ -222,7 +231,7 @@ public:
 
     struct npc_image_of_advisor_melandrusAI : public ScriptedAI
     {
-        npc_image_of_advisor_melandrusAI(Creature* creature) : ScriptedAI(creature)
+        explicit npc_image_of_advisor_melandrusAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetReactState(REACT_PASSIVE);
         }
@@ -262,16 +271,14 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             me->SetSpeed(MOVE_WALK, 2.0f);
-            instance = me->GetInstanceScript();
+
             if (me->GetGUID() == instance->GetGuidData(107435) && instance->GetBossState(DATA_MELANDRUS_EVENT) != DONE)
                 instance->SetBossState(DATA_MELANDRUS_EVENT, NOT_STARTED);
         }
 
-        InstanceScript* instance;
         EventMap events;
         uint32 Path;
         uint32 pointchek;
-
         bool start = false;
         uint32 starttimer = 1000;
 
@@ -303,6 +310,7 @@ public:
                 me->AI()->Talk(0, player);
                 player->AddAura(213304, player);
             }
+
             return true;
         }
 
@@ -318,7 +326,6 @@ public:
         void JustDied(Unit* who) override
         {
             instance->SetBossState(DATA_MELANDRUS_EVENT, DONE);
-
             instance->DoUpdateCriteria(CriteriaType::BeSpellTarget, 219722);
         }
 
@@ -363,7 +370,8 @@ public:
                     start = false;
 
                 }
-                else starttimer -= diff;
+                else
+                    starttimer -= diff;
             }
 
             if (!UpdateVictim())
@@ -392,6 +400,7 @@ public:
                     break;
                 }
             }
+
             DoMeleeAttackIfReady();
         }
     };
@@ -399,49 +408,6 @@ public:
     CreatureAI* GetAI(Creature* creature) const override
     {
         return new npc_suspicious_nobleAI(creature);
-    }
-};
-
-//
-class npc_advisor_hall_checker : public CreatureScript
-{
-public:
-    npc_advisor_hall_checker() : CreatureScript("npc_advisor_hall_checker") {}
-
-    struct npc_advisor_hall_checkerAI : public ScriptedAI
-    {
-        npc_advisor_hall_checkerAI(Creature* creature) : ScriptedAI(creature)
-        {
-            _conversation = false;
-        }
-
-        bool _conversation;
-
-        void MoveInLineOfSight(Unit* who) override
-        {
-            if (who->GetTypeId() != TYPEID_PLAYER)
-                return;
-
-            if (me->IsWithinDistInMap(who, 20.0f))
-            {
-                if (!who->HasAura(213213))
-                {
-                    who->CastSpell(who, 213233, true);
-                    return;
-                }
-
-                if (!_conversation)
-                {
-                    _conversation = true;
-                }
-            }
-        }
-
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_advisor_hall_checkerAI(creature);
     }
 };
 
@@ -525,8 +491,6 @@ public:
 
     class spell_righteous_indignation_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_righteous_indignation_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();
@@ -556,7 +520,6 @@ void AddSC_boss_advisor_melandrus()
     new boss_advisor_melandrus();
     new npc_image_of_advisor_melandrus();
     new npc_suspicious_noble();
-    new npc_advisor_hall_checker();
     new npc_advisor_enveloping_winds();
     new spell_righteous_indignation();
 }

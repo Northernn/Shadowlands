@@ -21,9 +21,10 @@
 #include "PhasingHandler.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
+#include "ScriptedEscortAI.h"
 #include "ScriptedGossip.h"
+#include "TemporarySummon.h"
 #include "GameObjectAI.h"
-#include <Spells/SpellScript.cpp>
 
 enum StormwindQuests
 {
@@ -41,6 +42,8 @@ enum StormwindQuests
     NPC_GENN_GREYMANE = 45253,
     NPC_MASTER_MATHIAS_SHAW = 139636,
 
+    QUEST_THE_ALLIANCE_WAY = 30988,    //Pandaria Quest
+    QUEST_AN_OLD_PIT_FIGHTER = 30989,
     QUEST_TIDES_OF_WAR = 46727,
     QUEST_THE_NATION_OF_KULTIRAS = 46728,
     QUEST_THE_MISSION = 29548,
@@ -49,14 +52,15 @@ enum StormwindQuests
     QUEST_A_CHILLING_SUMMONS = 60545,
     QUEST_THE_DARK_PORTAL = 34398,
     QUEST_THE_LEGION_RETURNS = 40519,
+    QUEST_TO_THE_DRAGON_ISLES = 67700,
+    QUEST_BURNING_CRUSADE     = 60120,
 };
 enum MapsID
 {
     MAP_BLASTED_LANDS_PHASED = 1190
 };
 
-Position blastedlandsteleportpos{ -11279.2f, -3639.3f, 200.3f, 0.56f };
-
+Position blastedlandsteleportpos{ -11811.057f, -3222.556f, -30.878f, 2.437f };
 
 
 class sl_start_a_chilling_summons : public PlayerScript
@@ -133,7 +137,7 @@ public:
                     });
             }
         }
-       
+
     };
 
 };
@@ -148,9 +152,9 @@ public:
         return new npc_anduin_wrynn_107574AI(creature);
     }
 
-    struct npc_anduin_wrynn_107574AI : public ScriptedAI
+    struct npc_anduin_wrynn_107574AI : public EscortAI
     {
-        npc_anduin_wrynn_107574AI(Creature* creature) : ScriptedAI(creature)
+        npc_anduin_wrynn_107574AI(Creature* creature) : EscortAI(creature)
         {
             Reset();
         }
@@ -158,12 +162,14 @@ public:
         bool EventStart;
         uint32 uiStep;
         uint32 uiPhase_timer;
+        ObjectGuid m_playerGUID;
 
         void Reset() override
         {
             EventStart = false;
             uiStep = 0;
             uiPhase_timer = 3000;
+            m_playerGUID.Clear();
         }
 
 
@@ -178,13 +184,104 @@ public:
                         anduin->RemoveAura(SPELL_INVISIBLE);
                      }
         }
-        
+
         void OnQuestAccept(Player* player, Quest const* quest) override
         {
             if (player->HasQuest(QEUST_VICTERS_SPOILS))
             {
                 player->CastSpell(player, 218029, true);
                 player->CastSpell(player, 218023, true);
+            }
+            if (player->HasQuest(QUEST_THE_ALLIANCE_WAY))
+            {
+                m_playerGUID = player->GetGUID();
+                if (Creature* aysa = me->FindNearestCreature(60566, 30.0f))
+                    aysa->ForcedDespawn();
+                if (TempSummon* aysa2 = me->SummonCreature(60566, Position(-8370.22f, 236.653f, 155.746f, 5.5363f), TEMPSUMMON_TIMED_DESPAWN, 60s))
+                    aysa2->GetMotionMaster()->MoveFollow(me, 1.f, 210);
+                if (Creature* jojo = me->FindNearestCreature(60567, 30.0f))
+                    jojo->ForcedDespawn();
+                if (TempSummon* jojo2 = me->SummonCreature(60567, Position(-8365.39f, 240.071f, 155.776f, 5.0651f), TEMPSUMMON_TIMED_DESPAWN, 60s))
+                    jojo2->GetMotionMaster()->MoveFollow(me, 3.f, 160);
+                me->RemoveAura(281643);
+                Start(true);
+            }
+        }
+        void WaypointReached(uint32 waypointId, uint32 /*pathId*/) override
+        {
+            switch (waypointId)
+            {
+            case 1:
+                Talk(4);
+                break;
+            case 2:
+                Talk(5);
+                break;
+            case 3:
+                Talk(6);
+                break;
+            case 4:
+                Talk(7);
+                me->AddDelayedEvent(5000, [this]() -> void
+                    {
+                        if (Creature* aysa = me->FindNearestCreature(60566, 30.0f))
+                            aysa->AI()->Talk(5);
+                    });
+                break;
+            case 6:
+                Talk(8);
+                break;
+            case 7:
+                Talk(9);
+                break;
+            case 9:
+                Talk(10);
+                me->AddDelayedEvent(6000, [this]() -> void
+                    {
+                        if (Creature* aysa = me->FindNearestCreature(60566, 30.0f))
+                            aysa->AI()->Talk(6);
+                    });
+                break;
+            case 10:
+                Talk(11);
+                break;
+            case 11:
+                Talk(12);
+                break;
+            case 12:
+                Talk(13);
+                me->AddDelayedEvent(4500, [this]() -> void
+                    {
+                        Talk(14);
+                    });
+                me->AddDelayedEvent(12500, [this]() -> void
+                    {
+                        Talk(15);
+                    });
+                me->AddDelayedEvent(22500, [this]() -> void
+                    {
+                        Talk(16);
+                    });
+                break;
+            case 20:
+                SetEscortPaused(true);
+                Talk(17);
+                me->AddDelayedEvent(3500, [this]() -> void
+                    {
+                        if (Creature* aysa = me->FindNearestCreature(60566, 30.0f))
+                            aysa->AI()->Talk(7);
+                    });
+                me->AddDelayedEvent(7500, [this]() -> void
+                    {
+                        if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
+                        {
+                            player->KilledMonsterCredit(61798);
+                            me->SetNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+                            me->SetFacingToObject(player);
+                            Talk(18, player);
+                        }
+                    });
+                break;;
             }
         }
 
@@ -199,7 +296,7 @@ public:
 
         void UpdateAI(uint32 diff) override
         {
-            ScriptedAI::UpdateAI(diff);
+            EscortAI::UpdateAI(diff);
 
             if (!EventStart)
                 return;
@@ -218,7 +315,7 @@ public:
                     JumpToNextStep(3000);
                     break;
 
-                case 1: 
+                case 1:
                     Talk(0);
                     JumpToNextStep(6000);
                     break;
@@ -321,7 +418,7 @@ public:
 
             if (player->IsInDist(me, 30.0f))
             {
-                m_playerGUID = player->GetGUID();                   // write playerguid in empty_guid 
+                m_playerGUID = player->GetGUID();                   // write playerguid in empty_guid
 
                 if (player->GetQuestStatus(QUEST_TIDES_OF_WAR) == QUEST_STATUS_INCOMPLETE)
                 {
@@ -621,55 +718,26 @@ public:
     };
 };
 
-// @TODO Rewrite levels
-// 120590
-class npc_jaina_tides_of_war : public CreatureScript
-{
-public:
-    npc_jaina_tides_of_war() : CreatureScript("npc_jaina_tides_of_war") { }
-
-    struct npc_jaina_tides_of_warAI : public ScriptedAI
-    {
-        npc_jaina_tides_of_warAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool OnGossipHello(Player* player) override
-        {
-            ClearGossipMenuFor(player);
-            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready to set sail!", GOSSIP_SENDER_MAIN, 0);
-            SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-        {
-            switch (action)
-            {
-            case 0:
-                if (player->HasQuest(QUEST_THE_NATION_OF_KULTIRAS))
-                    player->CastSpell(player, SPELL_STORMWIND_TO_BORALUS_TRANSITION, true);
-                CloseGossipMenuFor(player);
-                break;
-            }
-            return true;
-        }
-
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_jaina_tides_of_warAI(creature);
-    }
-};
-
-
 class npc_captain_rodgers_66292 : public ScriptedAI
 {
 public:
     npc_captain_rodgers_66292(Creature* creature) : ScriptedAI(creature) { }
 
+    bool OnGossipHello(Player* player) override
+    {
+        if (me->IsQuestGiver())
+            player->PrepareQuestMenu(me->GetGUID());
+
+        AddGossipItemFor(player, GossipOptionNpc::None, "Im ready to depart.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 0);
+        SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
+        return true;
+    }
+
     bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
     {
-        if (player->GetQuestStatus(QUEST_THE_MISSION) == QUEST_STATUS_INCOMPLETE)
+        ClearGossipMenuFor(player);
+
+        if (player->HasQuest(QUEST_THE_MISSION))
         {
             player->ForceCompleteQuest(QUEST_THE_MISSION);
             player->TeleportTo(870, -676.116f, -1482.635f, 1.922f, 4.731f);
@@ -697,7 +765,34 @@ public:
         if (player->GetQuestStatus(QUEST_THE_DARK_PORTAL) == QUEST_STATUS_INCOMPLETE)
         {
             player->KilledMonsterCredit(149625);
-            player->TeleportTo(MAP_BLASTED_LANDS_PHASED, blastedlandsteleportpos, player->GetOrientation());
+            player->TeleportTo(MAP_BLASTED_LANDS_PHASED, blastedlandsteleportpos);
+        }
+        return true;
+    }
+};
+
+Position outlandteleportpos{ -254.269f, 938.644f, 84.379f, 1.509f };
+
+//150122 honor hold mage
+class npc_honor_hold_mage_150122 : public ScriptedAI
+{
+public:
+    npc_honor_hold_mage_150122(Creature* creature) : ScriptedAI(creature) { }
+
+    bool OnGossipHello(Player* player) override
+    {
+        AddGossipItemFor(player, GossipOptionNpc::None, "I must report to the Dark Portal", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 0);
+        SendGossipMenuFor(player, 23796, me->GetGUID());
+        player->ForceCompleteQuest(QUEST_BURNING_CRUSADE);
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
+    {
+        if (player->HasQuest(QUEST_BURNING_CRUSADE))
+        {
+            player->ForceCompleteQuest(QUEST_BURNING_CRUSADE);
+            player->TeleportTo(MAP_OUTLAND , outlandteleportpos);
         }
         return true;
     }
@@ -770,6 +865,7 @@ std::map<uint32, uint32> const creatureAbilities
     { 108753,  172670 }, // Rorin Rivershade : MindFlay
     { 108757,  171884 }, // Haagios : denounce
     { 108767,  172757 }, // Kiruud the Relentless : BloodThirst
+    { 113951,  171884 }, // Sahale denounce
 };
 
 #define GOSSIP_LETS_DUEL "Let's duel."
@@ -876,41 +972,6 @@ private:
 
 };
 
-// 108920
-class npc_Captain_Angelica : public ScriptedAI
-{
-public:
-    npc_Captain_Angelica(Creature* creature) : ScriptedAI(creature) { }
-
-   bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
-    {
-        player->PlayerTalkClass->ClearMenus();
-
-        //214608
-        player->KilledMonsterCredit(me->GetEntry());
-        player->CastSpell(player, 216356, false); //scene
-
-        player->CastSpell(player, 227058, false); //join Broken Shore Scenario
-
-        return true;
-
-    };      
-};
-
-//class sceneTrigger_enterBrockenShores : public SceneScript
-//{
-//public:
-//    sceneTrigger_enterBrockenShores() : SceneScript("enterBrockenShores")
-//    {}
-//
-//    void OnSceneTriggerEvent(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* /*sceneTemplate*/, std::string const& triggerName)
-//    {
-//        std::set<uint32> Slot;
-//        Slot.insert(908); //The Battle for Broken Shore
-//        sLFGMgr->JoinLfg(player, player->GetSpecializationRoleMaskForGroup(), Slot);
-//    }
-//};
-
 // recluiter lee 107934
 struct npc_recluiter_lee_107934 : public ScriptedAI
 {
@@ -976,10 +1037,7 @@ struct npc_captain_ruso : public ScriptedAI
     {
         player->PlayerTalkClass->ClearMenus();
 
-        player->KilledMonsterCredit(113118);
-        player->CastSpell(player, 225147, false); //scene
-
-        player->CastSpell(player, 227058, false); //join Broken Shore Scenario
+        player->ForceCompleteQuest(40518);
 
         return true;
     }
@@ -1066,24 +1124,65 @@ public:
     }
 };
 
+// Chrovo 198079
+class npc_chrovo_198079 : public CreatureScript
+{
+public:
+    npc_chrovo_198079() : CreatureScript("npc_chrovo_198079") { }
+
+    struct npc_chrovo_198079AI : public ScriptedAI
+    {
+        npc_chrovo_198079AI(Creature* creature) : ScriptedAI(creature) { }
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready to go to waking shore!", GOSSIP_SENDER_MAIN, 0);
+            SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+        {
+            switch (action)
+            {
+            case 0:
+                if (player->HasQuest(QUEST_TO_THE_DRAGON_ISLES))
+                    player->ForceCompleteQuest(QUEST_TO_THE_DRAGON_ISLES);
+                    player->TeleportTo(2444, 3732.435f, -1900.060f, 6.006f, 2.6638f);
+
+                CloseGossipMenuFor(player);
+                break;
+            }
+            return true;
+        }
+
+    };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_chrovo_198079AI(creature);
+    }
+};
+
+
 void AddSC_DekkCore_stormwind_city()
 {
     new sl_start_a_chilling_summons();
     new npc_tides_of_war_q46727();
     new npc_anduin_wrynn_107574();
     new npc_anduin_wrynn_120756();
-    new npc_jaina_tides_of_war();
     RegisterCreatureAI(npc_captain_rodgers_66292);
     RegisterCreatureAI(npc_vanguard_battlemage_149626);
+    RegisterCreatureAI(npc_honor_hold_mage_150122);
     RegisterGameObjectAI(go_keg_of_armor_polish);
     RegisterGameObjectAI(go_Light_Infused_Crystals);
     RegisterGameObjectAI(go_Dumplings);
     RegisterCreatureAI (npc_stormwind_duelist);
-    RegisterCreatureAI(npc_Captain_Angelica);
-    //new sceneTrigger_enterBrockenShores();
     RegisterCreatureAI(npc_recluiter_lee_107934);
     RegisterCreatureAI(npc_holgar_stormaxe);
     RegisterCreatureAI(npc_stone_guard_mukar);
     RegisterCreatureAI (npc_captain_ruso);
     RegisterCreatureAI(npc_eitrigg);
+    new npc_chrovo_198079();
 }

@@ -80,7 +80,7 @@ void LanguageMgr::LoadLanguages()
     _langsMap.emplace(LANG_ADDON_LOGGED, LanguageDesc());
 
     // Log load time
-    TC_LOG_INFO("server.loading", ">> Loaded %u languages in %u ms", uint32(_langsMap.size()), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} languages in {} ms", uint32(_langsMap.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
 void LanguageMgr::LoadLanguagesWords()
@@ -99,7 +99,7 @@ void LanguageMgr::LoadLanguagesWords()
     }
 
     // log load time
-    TC_LOG_INFO("server.loading", ">> Loaded %u word groups from %u words in %u ms", uint32(_wordsMap.size()), wordsNum, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} word groups from {} words in {} ms", uint32(_wordsMap.size()), wordsNum, GetMSTimeDiffToNow(oldMSTime));
 }
 
 LanguageMgr::WordList const* LanguageMgr::FindWordGroup(uint32 language, uint32 wordLen) const
@@ -130,33 +130,33 @@ namespace
 
             switch (source[i + 1])
             {
-                case 'c':
-                case 'C':
-                    // skip color
-                    i += 9;
-                    break;
-                case 'r':
-                    ++i;
-                    break;
-                case 'H':
-                    // skip just past first |h
-                    i = source.find("|h", i);
-                    if (i != std::string::npos)
-                        i += 2;
-                    skipSquareBrackets = true;
-                    break;
-                case 'h':
-                    ++i;
-                    skipSquareBrackets = false;
-                    break;
-                case 'T':
-                    // skip just past closing |t
-                    i = source.find("|t", i);
-                    if (i != std::string::npos)
-                        i += 2;
-                    break;
-                default:
-                    break;
+            case 'c':
+            case 'C':
+                // skip color
+                i += 9;
+                break;
+            case 'r':
+                ++i;
+                break;
+            case 'H':
+                // skip just past first |h
+                i = source.find("|h", i);
+                if (i != std::string::npos)
+                    i += 2;
+                skipSquareBrackets = true;
+                break;
+            case 'h':
+                ++i;
+                skipSquareBrackets = false;
+                break;
+            case 'T':
+                // skip just past closing |t
+                i = source.find("|t", i);
+                if (i != std::string::npos)
+                    i += 2;
+                break;
+            default:
+                break;
             }
         }
 
@@ -229,36 +229,36 @@ std::string LanguageMgr::Translate(std::string const& msg, uint32 language, Loca
 
             switch (locale)
             {
-                case LOCALE_koKR:
-                case LOCALE_zhCN:
-                case LOCALE_zhTW:
+            case LOCALE_koKR:
+            case LOCALE_zhCN:
+            case LOCALE_zhTW:
+            {
+                size_t length = std::min(str.length(), strlen(replacementWord));
+                for (size_t i = 0; i < length; ++i)
                 {
-                    size_t length = std::min(str.length(), strlen(replacementWord));
+                    if (str[i] >= 'A' && str[i] <= 'Z')
+                        result += charToUpper(replacementWord[i]);
+                    else
+                        result += replacementWord[i];
+                }
+                break;
+            }
+            default:
+            {
+                std::wstring wstrSourceWord;
+                if (Utf8toWStr(str, wstrSourceWord))
+                {
+                    size_t length = std::min(wstrSourceWord.length(), strlen(replacementWord));
                     for (size_t i = 0; i < length; ++i)
                     {
-                        if (str[i] >= 'A' && str[i] <= 'Z')
-                            result += char(toupper(replacementWord[i]));
+                        if (isUpper(wstrSourceWord[i]))
+                            result += charToUpper(replacementWord[i]);
                         else
-                            result += replacementWord[i];
+                            result += charToLower(replacementWord[i]);
                     }
-                    break;
                 }
-                default:
-                {
-                    std::wstring wstrSourceWord;
-                    if (Utf8toWStr(str, wstrSourceWord))
-                    {
-                        size_t length = std::min(wstrSourceWord.length(), strlen(replacementWord));
-                        for (size_t i = 0; i < length; ++i)
-                        {
-                            if (isUpper(wstrSourceWord[i]))
-                                result += char(toupper(replacementWord[i]));
-                            else
-                                result += char(tolower(replacementWord[i]));
-                        }
-                    }
-                    break;
-                }
+                break;
+            }
             }
         }
 

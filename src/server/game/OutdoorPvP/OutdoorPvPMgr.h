@@ -87,6 +87,9 @@ public:
 
     std::string GetDefenseMessage(uint32 zoneId, uint32 id, LocaleConstant locale) const;
 
+    //DekkCore
+    ZoneScript* GetZoneScript(uint32 zoneId);
+    //DekkCore
 private:
     typedef std::unordered_map<std::pair<Map*, uint32 /*zoneid*/>, OutdoorPvP*> OutdoorPvPMap;
     typedef std::array<uint32, MAX_OUTDOORPVP_TYPES> OutdoorPvPScriptIds;
@@ -105,6 +108,11 @@ private:
 
     // update interval
     uint32 m_UpdateTimer;
+
+    //DekkCore
+    typedef std::map<uint32 /* zoneid */, OutdoorPvP*> OutdoorPvPZone;
+    OutdoorPvPZone m_OutdoorPvPZone;
+    //DekkCOre
 };
 
 #define sOutdoorPvPMgr OutdoorPvPMgr::instance()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2023 DekkCore
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,6 +23,7 @@
 #include "InstanceScript.h"
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "ChallengeMode.h"
 
 enum Volzith
 {
@@ -158,19 +159,12 @@ enum SoundIds
 #define DEATH_TEXT_VOID "Bwixki amala zal qullllll...."
 #define DEATH_TEXT "I will await you... in the dark..."
 
-class bfa_boss_volzith_the_whisperer : public CreatureScript
-{
-public:
-    bfa_boss_volzith_the_whisperer() : CreatureScript("bfa_boss_volzith_the_whisperer")
-    {}
-
-    struct bfa_boss_volzith_the_whisperer_AI : public BossAI
+struct bfa_boss_volzith_the_whisperer : public BossAI
     {
-        bfa_boss_volzith_the_whisperer_AI(Creature* creature) : BossAI(creature, DATA_VOLZITH), summons(me)
+        bfa_boss_volzith_the_whisperer(Creature* creature) : BossAI(creature, DATA_VOLZITH), summons(me)
         {
             instance = me->GetInstanceScript();
             me->RemoveUnitFlag2(UNIT_FLAG2_REGENERATE_POWER);
-         //   me->setRegeneratingHealth(false);
         }
 
         EventMap events;
@@ -240,7 +234,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who) override
+        void MoveInLineOfSight(Unit* /*who*/) override
         {
             if (!introText)
             {
@@ -256,12 +250,12 @@ public:
             }
         }
 
-        void KilledUnit(Unit* at) override
+        void KilledUnit(Unit*) override
         {
             SelectSoundAndText(me, 5);
         }
 
-        void EnterEvadeMode(EvadeReason why) override
+        void EnterEvadeMode(EvadeReason /*why*/) override
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             DespawnCreature(NPC_SUNKEN_DENIZEN);
@@ -310,40 +304,34 @@ public:
             dpsList.clear();
             TanksHealersList.clear();
 
-
-            bool dps = false; // spliting with this, true = only dmg, false = tanks and healer
-
             //gather info about available players
-            Map::PlayerList const& playerList = me->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
-                if (Player* player = i->GetSource())
+            for (const auto & i : me->GetMap()->GetPlayers())
+            {
+                if (Player *player = i.GetSource())
                 {
                     if (!player->IsGameMaster()) //gm check
                     {
-                        uint32 specialization = player->GetSpecializationId();
+                        uint32 specialization = player->GetPrimarySpecialization();
 
-                        if (player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_DISCIPLINE ||
-                            player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_HOLY ||
-                            player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_RESTORATION ||
-                            player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_MISTWEAVER ||
-                            player->GetClass() == CLASS_SHAMAN && specialization == TALENT_SPEC_SHAMAN_RESTORATION ||
-                            player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION ||
-                            player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD ||
-                            player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION ||
-                            player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER ||
-                            player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE ||
-                            player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
+                        if ((player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestDiscipline) ||
+                            (player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestHoly) ||
+                            (player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidRestoration) ||
+                            (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkMistweaver) ||
+                            (player->GetClass() == CLASS_SHAMAN && specialization == ChrSpecialization::ShamanRestoration) ||
+                            (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection) ||
+                            (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood) ||
+                            (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection) ||
+                            (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster) ||
+                            (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance) ||
+                            (player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian))
                         {
-                            dps = false;
-                        }
-
-                        if (!dps)
                             TanksHealersList.push_back(player);
+                        }
                         else
                             dpsList.push_back(player);
                     }
-
                 }
+            }
 
             if (!TanksHealersList.empty())
             {
@@ -370,7 +358,7 @@ public:
             }
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -410,23 +398,24 @@ public:
             {
                 bool checkAlive;
 
-                Map::PlayerList const& playerList = me->GetMap()->GetPlayers();
-                for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
-                    if (Player* player = i->GetSource())
+                for (const auto & i : me->GetMap()->GetPlayers())
+                {
+                    if (Player *player = i.GetSource())
                     {
                         if (!player->IsGameMaster() && player->IsAlive() &&
-                            player->HasAura(SPELL_GRASP_OF_THE_SUNKEN_CITY_DPS_PHASE) || player->HasAura(SPELL_GRASP_OF_THE_SUNKEN_CITY_TANK_PHASE))
+                            (player->HasAura(SPELL_GRASP_OF_THE_SUNKEN_CITY_DPS_PHASE) || player->HasAura(SPELL_GRASP_OF_THE_SUNKEN_CITY_TANK_PHASE)))
                             checkAlive = true;
                         else
                             checkAlive = false;
                     }
+                }
 
                 if (!checkAlive)
                     EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
             }
         }
 
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override 
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (me->HasAura(SPELL_GRASP_OF_THE_SUNKEN_CITY_CHANNEL))
             {
@@ -436,8 +425,11 @@ public:
             }
         }
 
-        void JustDied(Unit*) override
+        void JustDied(Unit* who) override
         {
+            BossAI::JustDied(who);
+            instance->SetBossState(DATA_VOLZITH, DONE);
+            instance->SetBossState(DATA_AQUALING, DONE);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             DespawnCreature(NPC_SUNKEN_DENIZEN);
             DespawnCreature(NPC_TENTACLE);
@@ -445,10 +437,14 @@ public:
             DespawnCreature(NPC_MANIFESTATION_OF_THE_DEEP);
             me->RemoveAllAreaTriggers();
             SelectSoundAndText(me, 4);
+
+            if (auto challenge = me->GetInstanceScript()->GetChallenge())
+                challenge->Complete();
         }
 
         void JustEngagedWith(Unit* w) override
         {
+            BossAI::JustEngagedWith(w);
             SelectSoundAndText(me, 2);
 
             tankhealAdd = 0;
@@ -456,43 +452,41 @@ public:
             endPhaseCheck = 0;
 
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-
-            /*events.ScheduleEvent(EVENT_ADD_POWER, TIMER_ADD_POWER);
-            events.ScheduleEvent(EVENT_YAWNING_GATE, TIMER_YAWNING_GATE);
-            events.ScheduleEvent(EVENT_TENTACLE_SUMMON, TIMER_TENTACLE_SUMMON);
-            events.ScheduleEvent(EVENT_WHISPER_OF_POWER, TIMER_WHISPERS_OF_POWER);
+            instance->SetBossState(DATA_VOLZITH, IN_PROGRESS);
+            instance->SetBossState(DATA_AQUALING, IN_PROGRESS);
+            
+            events.ScheduleEvent(EVENT_ADD_POWER, 10s);
+            events.ScheduleEvent(EVENT_YAWNING_GATE, 12s);
+            events.ScheduleEvent(EVENT_TENTACLE_SUMMON, 8s);
+            events.ScheduleEvent(EVENT_WHISPER_OF_POWER, 18s);
 
             if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-                events.ScheduleEvent(EVENT_CALL_THE_ABYSS, TIMER_CALL_THE_ABYSS);*/
+                events.ScheduleEvent(EVENT_CALL_THE_ABYSS, 19s);
         }
 
         // one empty container, gather all players, select only by spec active and insert into container than select only one as valid, no healer spec > select random
         void SelectHealerOrOther()
         {
             std::list<Unit*> validTargets;
-            bool isHealer = false;
 
             Map::PlayerList const& playerList = me->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
-                if (Player* player = i->GetSource())
+            for (const auto & i : playerList)
+                if (Player* player = i.GetSource())
                 {
                     if (!player->IsGameMaster()) //gm check
                     {
-                        uint32 specialization = player->GetSpecializationId();
+                        uint32 specialization = player->GetPrimarySpecialization();
 
-                        if (player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_DISCIPLINE ||
-                            player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_HOLY ||
-                            player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_RESTORATION ||
-                            player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_MISTWEAVER ||
-                            player->GetClass() == CLASS_SHAMAN && specialization == TALENT_SPEC_SHAMAN_RESTORATION)
+                        if ((player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestDiscipline) ||
+                            (player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestHoly) ||
+                            (player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidRestoration) ||
+                            (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkMistweaver) ||
+                            (player->GetClass() == CLASS_SHAMAN && specialization == ChrSpecialization::ShamanRestoration))
                         {
-                            isHealer = true;
-                        }
-
-                        if (isHealer)
                             validTargets.push_back(player);
+                        }
                         else
-                            validTargets.push_back(player); 
+                            validTargets.push_back(player);
                     }
                 }
 
@@ -562,7 +556,7 @@ public:
                         me->SetPower(POWER_ENERGY, 0);
                         events.ScheduleEvent(EVENT_GRASP_OF_THE_SUNKEN_CITY, 1s);
                     }
-                 //   events.ScheduleEvent(EVENT_ADD_POWER, TIMER_ADD_POWER);
+                    events.ScheduleEvent(EVENT_ADD_POWER, 10s);
                     break;
                 }
                 case EVENT_GRASP_OF_THE_SUNKEN_CITY:
@@ -580,12 +574,11 @@ public:
                     break;
                 case EVENT_YAWNING_GATE:
                     me->CastSpell(me, SPELL_YAWNING_GATE);
-               //     events.ScheduleEvent(EVENT_YAWNING_GATE, TIMER_YAWNING_GATE);
+                    events.ScheduleEvent(EVENT_YAWNING_GATE, 15s);
                     break;
                 case EVENT_TENTACLE_SUMMON:
                 {
                     std::list<Unit*> targets;
-                   // SelectTargetList(targets, 1, SelectTargetMethod::Random, 500.0f, true);
 
                     if (!targets.empty())
                         if (targets.size() >= 1)
@@ -595,29 +588,23 @@ public:
                     {
                         me->CastSpell(target, SPELL_TENTACLE_SLAM_SUMMON, true);
                     }
-                 //   events.ScheduleEvent(EVENT_TENTACLE_SUMMON, TIMER_TENTACLE_SUMMON);
+                    events.ScheduleEvent(EVENT_TENTACLE_SUMMON, 14s);
                     break;
                 }
                 case EVENT_WHISPER_OF_POWER:
                     SelectHealerOrOther();
-                 //   events.ScheduleEvent(EVENT_WHISPER_OF_POWER, TIMER_WHISPERS_OF_POWER);
+                    events.ScheduleEvent(EVENT_WHISPER_OF_POWER, 19s);
                     break;
                 case EVENT_CALL_THE_ABYSS:
                     SelectSoundAndText(me, 3);
                     me->CastSpell(me, SPELL_CALL_THE_ABYSS);
-                 //   events.ScheduleEvent(EVENT_CALL_THE_ABYSS, TIMER_CALL_THE_ABYSS);
+                    events.ScheduleEvent(EVENT_CALL_THE_ABYSS, 13s);
                     break;
                 }
             }
             DoMeleeAttackIfReady();
         }
     };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new bfa_boss_volzith_the_whisperer_AI(creature);
-    }
-};
 
 class bfa_npc_tentacle : public CreatureScript
 {
@@ -639,9 +626,9 @@ public:
             events.Reset();
         }
 
-        void JustEngagedWith(Unit* w) override
+        void JustEngagedWith(Unit* /*w*/) override
         {
-           // events.ScheduleEvent(EVENT_TENTACLE_SLAM, TIMER_TENTACLE_SLAM);
+            events.ScheduleEvent(EVENT_TENTACLE_SLAM, 8s);
         }
 
         void UpdateAI(uint32 diff) override
@@ -664,7 +651,7 @@ public:
                     {
                         me->CastSpell(target, SPELL_TENTACLE_SLAM_DMG);
                     }
-                 //   events.ScheduleEvent(EVENT_TENTACLE_SLAM, TIMER_TENTACLE_SLAM);
+                    events.ScheduleEvent(EVENT_TENTACLE_SLAM, 8s);
                     break;
                 }
                 }
@@ -789,7 +776,7 @@ public:
                 {
                 case EVENT_CONSUME_ESSENCE:
                     me->CastSpell(me->GetVictim(), SPELL_CONSUME_ESSENCE);
-                   // events.ScheduleEvent(EVENT_CONSUME_ESSENCE, TIMER_CONSUME_ESSENCE);
+                    events.ScheduleEvent(EVENT_CONSUME_ESSENCE, 14s);
                     break;
                 }
             }
@@ -881,27 +868,25 @@ public:
 
     class bfa_spell_call_the_abyss_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_call_the_abyss_AuraScript);
-
-        void OnPeriodic(AuraEffect const* aurEff)
+        void OnPeriodic(AuraEffect const* /*aurEff*/)
         {
             Position const dest = manifestSpawnPoints[urand(0, 15)];
             GetCaster()->CastSpell(dest, SPELL_CALL_THE_ABYSS_SUMMON, true);
         }
 
-        void Register()
+        void Register() override
         {
             OnEffectPeriodic += AuraEffectPeriodicFn(bfa_spell_call_the_abyss_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
         }
     };
 
-    AuraScript* GetAuraScript() const
+    AuraScript* GetAuraScript() const override
     {
         return new bfa_spell_call_the_abyss_AuraScript();
     }
 };
 
-// 13312 
+// 13312
 class bfa_yawning_gate_at : public AreaTriggerEntityScript
 {
 public:
@@ -933,7 +918,7 @@ public:
 
 void AddSC_boss_volzith_the_whisperer()
 {
-    new bfa_boss_volzith_the_whisperer();
+    RegisterCreatureAI(bfa_boss_volzith_the_whisperer);
     new bfa_npc_tentacle();
     new bfa_npc_forgotten_denizen();
     new bfa_npc_manifestation_of_the_deep();

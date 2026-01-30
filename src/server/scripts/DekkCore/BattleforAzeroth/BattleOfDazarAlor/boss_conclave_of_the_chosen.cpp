@@ -163,7 +163,7 @@ struct boss_conclave_of_the_chosen : public BossAI
         case NPC_GONK:
             _JustEngagedWith(who);
             DoCastSelf(SPELL_PERIODIC_ENERGY_GAIN);
-            events.ScheduleEvent(EVENT_RAPTOR_FORM, 15s);            
+            events.ScheduleEvent(EVENT_RAPTOR_FORM, 15s);
             if (auto* paku = me->FindNearestCreature(NPC_PAKU, 125.0f, true))
                 if (!paku->IsInCombat())
                     paku->AI()->DoZoneInCombat();
@@ -249,12 +249,11 @@ struct boss_conclave_of_the_chosen : public BossAI
         {
             Talk(SAY_GONK_CRAWLING_HEX);
             UnitList tar_li;
-          //  SelectTargetList(tar_li, 3, SELECT_TARGET_RANDOM, 100.0f, true);
             for (Unit* target : tar_li)
             {
                 me->CastSpell(target, SPELL_CRAWLING_HEX, true);
                 target->SetDisplayId(48056);
-                target->GetScheduler().Schedule(6s, [this, target](TaskContext context)
+                target->GetScheduler().Schedule(6s, [target](TaskContext /*context*/)
                 {
                     target->DeMorph();
                 });
@@ -292,7 +291,6 @@ struct boss_conclave_of_the_chosen : public BossAI
         case EVENT_MIND_WIPE:
         {
             UnitList tar_li;
-           // SelectTargetList(tar_li, 2, SELECT_TARGET_RANDOM, 100.0f, true);
             for (Unit* target : tar_li)
             {
                 me->CastSpell(target, SPELL_MIND_WIPE_SPAWN_EFFECT, true);
@@ -385,7 +383,7 @@ struct boss_conclave_of_the_chosen : public BossAI
             //Gonk + Paku are dead now, so Kimbul is joing the fight
             if (Creature* paku = me->FindNearestCreature(NPC_PAKU, 125.0f, false && me->isDead()))
             {
-                if (Creature* kimbul = me->FindNearestCreature(NPC_KIMBUL, 125.0f, true))  
+                if (Creature* kimbul = me->FindNearestCreature(NPC_KIMBUL, 125.0f, true))
                 {
                     kimbul->RemoveAllAuras();
                     kimbul->RemoveUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
@@ -446,7 +444,7 @@ struct boss_conclave_of_the_chosen : public BossAI
             if (auto* conclaveEntrance = me->FindNearestGameObject(GO_ENCLAVE_DOOR_ENTRANCE, 125.0f))
                 conclaveEntrance->SetGoState(GO_STATE_ACTIVE);
 
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LOAS_WRATH);            
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LOAS_WRATH);
             instance->SendBossKillCredit(2268);
             if (IsMythic())
                 instance->DoCompleteAchievement(13300);
@@ -479,12 +477,12 @@ struct npc_paku_conclave : public ScriptedAI
         }
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
         me->CanFly();
         me->SetFlying(true);
-        me->GetScheduler().Schedule(1s, [this](TaskContext context)
+        me->GetScheduler().Schedule(1s, [this](TaskContext /*context*/)
         {
             me->GetMotionMaster()->MovePoint(1, me->GetRandomPoint(me->GetPosition(), 30.0f), true);
         });
@@ -510,7 +508,7 @@ struct npc_gonk_conclave : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
         me->CastSpell(nullptr, SPELL_GONKS_WRATH, false);
@@ -533,10 +531,10 @@ struct npc_kimbul_conclave : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-        me->GetScheduler().Schedule(1s, [this] (TaskContext context)
+        me->GetScheduler().Schedule(1s, [this] (TaskContext /*context*/)
         {
             if (Unit* target = SelectTarget(SelectTargetMethod::MaxDistance, 0, 100.0f, true))
             {
@@ -544,7 +542,7 @@ struct npc_kimbul_conclave : public ScriptedAI
                 me->AddAura(SPELL_BLEEDING_WOUNDS, target);
             }
 
-        }).Schedule(2s, [this](TaskContext context)
+        }).Schedule(2s, [this](TaskContext /*context*/)
         {
             if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
@@ -552,14 +550,14 @@ struct npc_kimbul_conclave : public ScriptedAI
                 me->AddAura(SPELL_BLEEDING_WOUNDS, target);
             }
 
-        }).Schedule(3s, [this](TaskContext context)
+        }).Schedule(3s, [this](TaskContext /*context*/)
         {
             if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
                 me->CastSpell(target, SPELL_KIMBULS_WRATH_JUMP, true);
                 me->AddAura(SPELL_BLEEDING_WOUNDS, target);
             }
-        }).Schedule(4s, [this](TaskContext context)
+        }).Schedule(4s, [this](TaskContext /*context*/)
         {
             if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
@@ -590,15 +588,14 @@ struct npc_akunda_conclave : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
-        me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);       
+        me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
         UnitList tar_li;
-      //  SelectTargetList(tar_li, 3, SELECT_TARGET_RANDOM, 100.0f, true);
         for (Unit* targets : tar_li)
         {
             me->CastSpell(targets, SPELL_AKUNDAS_WRATH, true);
-            targets->GetScheduler().Schedule(7s, [this, targets](TaskContext context)
+            targets->GetScheduler().Schedule(7s, [this, targets](TaskContext /*context*/)
             {
                 me->CastSpell(targets, SPELL_AKUNDAS_WRAT_EXP, true);
                 for (int8 i = 0; i < 6; i++)
@@ -621,14 +618,14 @@ struct npc_ravenous_stalker : public ScriptedAI
         ScriptedAI::Reset();
     }
 
-    void IsSummonedBy(WorldObject* summoner)
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
-        me->AI()->DoZoneInCombat(nullptr);        
+        me->AI()->DoZoneInCombat(nullptr);
     }
 
     void MoveInLineOfSight(Unit* unit) override
     {
-        if (unit->GetEntry() == NPC_GONK || unit->GetEntry() == NPC_PAKU || unit->GetEntry() == NPC_KIMBUL || unit->GetEntry() == NPC_AKUNDA && me->GetDistance2d(unit) <= 5.0f)
+        if ((unit->GetEntry() == NPC_GONK || unit->GetEntry() == NPC_PAKU || unit->GetEntry() == NPC_KIMBUL || unit->GetEntry() == NPC_AKUNDA) && me->GetDistance2d(unit) <= 5.0f)
         {
             if (!me->HasAura(SPELL_PACK_HUNTER))
                 me->AddAura(SPELL_PACK_HUNTER, me);
@@ -636,7 +633,8 @@ struct npc_ravenous_stalker : public ScriptedAI
             if (!unit->HasAura(SPELL_PACK_HUNTER))
                 unit->AddAura(SPELL_PACK_HUNTER, unit);
         }
-        if (unit->GetEntry() == NPC_GONK || unit->GetEntry() == NPC_PAKU || unit->GetEntry() == NPC_KIMBUL || unit->GetEntry() == NPC_AKUNDA && me->GetDistance2d(unit) > 5.0f)
+
+        if ((unit->GetEntry() == NPC_GONK || unit->GetEntry() == NPC_PAKU || unit->GetEntry() == NPC_KIMBUL || unit->GetEntry() == NPC_AKUNDA) && me->GetDistance2d(unit) > 5.0f)
         {
             if (me->HasAura(SPELL_PACK_HUNTER))
                 me->RemoveAura(SPELL_PACK_HUNTER);
@@ -658,10 +656,10 @@ struct npc_kragwa : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-        me->GetScheduler().Schedule(1s, [this](TaskContext context)
+        me->GetScheduler().Schedule(1s, [this](TaskContext /*context*/)
         {
             if (Unit* target = SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
@@ -669,22 +667,22 @@ struct npc_kragwa : public ScriptedAI
                 me->CastSpell(target->GetPosition(), SPELL_KRAGWAS_WRATH_MAIN, true);
             }
 
-        }).Schedule(2s, [this](TaskContext context)
+        }).Schedule(2s, [this](TaskContext /*context*/)
         {
-            if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
+            if (Unit* target = SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
                 me->CastSpell(target, SPELL_KIMBULS_WRATH_JUMP, true);
                 me->CastSpell(target->GetPosition(), SPELL_KRAGWAS_WRATH_MAIN, true);
             }
 
-        }).Schedule(3s, [this](TaskContext context)
+        }).Schedule(3s, [this](TaskContext /*context*/)
         {
             if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
                 me->CastSpell(target, SPELL_KIMBULS_WRATH_JUMP, true);
                 me->CastSpell(target->GetPosition(), SPELL_KRAGWAS_WRATH_MAIN, true);
             }
-        }).Schedule(4s, [this](TaskContext context)
+        }).Schedule(4s, [this](TaskContext /*context*/)
         {
             if (Unit* target =SelectTarget(SelectTargetMethod::MinDistance, 0, 100.0f, true))
             {
@@ -715,7 +713,7 @@ struct npc_bwonsamdi_conclave : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         Talk(SAY_BWONSAMDIS_WRATH);
         if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
@@ -724,13 +722,11 @@ struct npc_bwonsamdi_conclave : public ScriptedAI
     }
 };
 
-//284663 - Bwonsamdis Wrath 
+//284663 - Bwonsamdis Wrath
 class aura_bwonsamdis_wrath : public AuraScript
 {
-    PrepareAuraScript(aura_bwonsamdis_wrath);
-
     void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {  
+    {
         if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL || (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH))
             if (Unit* newTarget = GetTarget()->SelectNearestPlayer(30.0f))
                 GetTarget()->AddAura(SPELL_BWONSAMDIS_WRATH, newTarget);

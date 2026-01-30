@@ -103,21 +103,23 @@ void BrawlBattlegroundShadoPan::PostUpdateImpl(uint32 diff)
     //    Battleground::BattlegroundTimedWin();
 
     if (m_waitChestRespawn)
+    {
         if (m_chestRespawnTimer <= diff)
         {
             SpawnBGObject(urand(BG_SP_CHEST_1, BG_SP_CHEST_2), RESPAWN_IMMEDIATELY);
 
-            if(Creature* controller = GetBGCreature(SP_CONTROLLER))
+            if (Creature *controller = GetBGCreature(SP_CONTROLLER))
                 controller->AI()->ZoneTalk(2, controller);
             m_waitChestRespawn = false;
         }
         else
             m_chestRespawnTimer -= diff;
+    }
 }
 
-void BrawlBattlegroundShadoPan::AddPlayer(Player * player)
+void BrawlBattlegroundShadoPan::AddPlayer(Player* player, BattlegroundQueueTypeId queueId)
 {
-    Battleground::AddPlayer(player);
+    Battleground::AddPlayer(player, queueId);
 
     auto playerGuid = player->GetGUID();
 
@@ -135,7 +137,7 @@ void BrawlBattlegroundShadoPan::AddPlayer(Player * player)
         if (Creature* cre = GetBGCreature(SP_BOSS_FOR_PURPLE))
             cre->CastSpell(cre, player->GetTeamId() == TEAM_ALLIANCE ? SPELL_PURPLE_ALLIANCE : SPELL_PURPLE_HORDE, true);
     }
- 
+
 }
 
 void BrawlBattlegroundShadoPan::RemovePlayer(Player* player, ObjectGuid /*guid*/, uint32 /*team*/)
@@ -174,7 +176,7 @@ void BrawlBattlegroundShadoPan::EventPlayerUsedGO(Player * player, GameObject * 
 
     m_chestRespawnTimer = urand(43000, 50000);
     m_waitChestRespawn = true;
-    
+
  //   if (Creature* controller = GetBGCreature(SP_CONTROLLER))
    //     controller->AI()->ZoneTalk(player->GetTeamId());
 
@@ -192,16 +194,19 @@ void BrawlBattlegroundShadoPan::CheckAndUpdatePointStatus(uint32 diff)
         return;
     int8 changeAmount = 0;
     for (auto itr : GetPlayers())
-        if (Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr.first))
+    {
+        if (Player *player = ObjectAccessor::FindPlayer(GetBgMap(), itr.first))
+        {
             if (player->IsAlive() && player->GetDistance2d(controller) <= 10.0f)
             {
                 player->SendUpdateWorldState(13195, true, false);
                 player->SendUpdateWorldState(13196, m_score, false);
 
                 changeAmount += (player->GetTeamId() == TEAM_ALLIANCE ? 1 : -1);
-            }
-            else
+            } else
                 player->SendUpdateWorldState(13195, false, false);
+        }
+    }
 
     m_pointUpdateTimer = 0;
 
@@ -279,12 +284,12 @@ enum eSpells
 // 119194 122183
 struct npc_bg_shado_pan_boss : ScriptedAI
 {
-    npc_bg_shado_pan_boss(Creature* creature) : ScriptedAI(creature) 
+    npc_bg_shado_pan_boss(Creature* creature) : ScriptedAI(creature)
     {
         me->SetRegenerateHealth(false);
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_BRUTAL_SLASH, 3s);
         events.ScheduleEvent(EVENT_STORM, 8s);

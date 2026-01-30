@@ -273,9 +273,9 @@ public:
         // Start events after 5 seconds
         _scheduler.Schedule(5s, [this](TaskContext /*context*/)
         {
-            _events.ScheduleEvent(EVENT_HEAL, 10s);
-            _events.ScheduleEvent(EVENT_POWER_WORD_SHIELD, 15s);
-            _events.ScheduleEvent(EVENT_HOLY_SMITE, 6s);
+            _events.ScheduleEvent(EVENT_HEAL, 15s);
+            _events.ScheduleEvent(EVENT_POWER_WORD_SHIELD, 20s);
+            _events.ScheduleEvent(EVENT_HOLY_SMITE, 13s);
         });
     }
 

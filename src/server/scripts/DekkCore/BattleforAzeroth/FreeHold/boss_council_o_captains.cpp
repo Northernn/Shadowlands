@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,8 +55,8 @@ enum CouncilCaptainSpells
     TappedKegBuff = 272900,
     TradeWindsVigor = 281329, /// Casted by Captain Jolly if he is Allied
     ///Heroic Mode
-    ConfidenceBoostingFreeholdBrew = 265086, ///On Heroic difficulty, the nearby bartender Rummy Mancomb will throw beverages 
-    InvigoratingFreeholdBrew = 264715, ///to the location of a randomly selected boss. These beverages will apply a buff 
+    ConfidenceBoostingFreeholdBrew = 265086, ///On Heroic difficulty, the nearby bartender Rummy Mancomb will throw beverages
+    InvigoratingFreeholdBrew = 264715, ///to the location of a randomly selected boss. These beverages will apply a buff
     CausticFreeholdBrew = 265171  ///to any boss or player that stands within them.
 };
 
@@ -122,79 +122,6 @@ enum Actions
 ///This work like Cache of Madness in Zulgurub a different allied by week, is good did that by GameEvent
 
 Position const CouncilTributePos = { -1784.44f, -684.403f, 38.517f,	3.15363f };
-
-struct npc_captains_controller : public ScriptedAI
-{
-    npc_captains_controller(Creature* creature) : ScriptedAI(creature)
-    {
-        Initialize();
-        m_Instance = creature->GetInstanceScript();
-
-        SetCombatMovement(false);
-    }
-
-    void Initialize()
-    {
-        summonChest = false;
-        captainsDeathCount = 0;
-    }
-
-    InstanceScript* m_Instance;
-
-    uint8 captainsDeathCount;
-    bool summonChest;
-
-    void InitializeAI() override
-    {
-        me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-        me->SetUnitFlag(UNIT_FLAG_NOT_ATTACKABLE_1);
-        me->AddUnitState(UNIT_STATE_STUNNED);
-
-        ScriptedAI::InitializeAI();
-    }
-
-    void Reset() override
-    {
-        Initialize();
-    }
-    
-     void DoAction(int32 action)
-    {
-        switch (action)
-        {
-        case ACTION_COUNT_DEATHS:
-            ++captainsDeathCount;
-            break;
-        }
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        if (instance)
-        {
-            if (captainsDeathCount > 2 && instance->GetBossState(FreeholdData::DataCounciloCaptains) != DONE)
-            {
-                if (!summonChest)
-                {
-                    Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
-                    if (!PlayerList.isEmpty())
-                    {
-                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        {
-                            Player* player = i->GetSource();
-                            player->SummonGameObject(FreeholdGameObject::GoCouncilTribute, CouncilTributePos, QuaternionData(), 0s);
-                            summonChest = true;
-                            break;
-                        }
-                    }
-                }
-                instance->SetBossState(FreeholdData::DataCounciloCaptains, DONE);
-            }
-        }
-    }
-private:
-    InstanceScript* instance;
-};
 
 /// 126845 Captain Jolly, 126848 Captain Eudora, 126847 Captain Raoul
 struct boss_council_captain : public BossAI
@@ -284,10 +211,6 @@ struct boss_council_captain : public BossAI
       //  me->DeleteThreatList();
         me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveTargetedHome();
-
-        // Reset the controller
-        if (Creature* capControl = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DataCaptainsController)))
-            ENSURE_AI(npc_captains_controller, capControl->AI())->Reset();
     }
 
     void JustReachedHome() override
@@ -297,7 +220,7 @@ struct boss_council_captain : public BossAI
         Reset();
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit*) override
     {
         if (instance)
         {
@@ -371,28 +294,28 @@ struct boss_council_captain : public BossAI
             }
         }
     }
-    
+
      Creature* GetController()
     {
         return me->FindNearestCreature(NpcCaptainsController, 500.0f);
     }
 
-    void JustDied(Unit* killer) override
+    void JustDied(Unit* /*killer*/) override
     {
         switch (me->GetEntry())
         {
-        case FreeholdCreature::NpcCaptainJolly:
-        {
-            Talk(TextJolly::TalkDeadJolly);
-            break;
+            case FreeholdCreature::NpcCaptainJolly:
+            {
+                Talk(TextJolly::TalkDeadJolly);
+                break;
+            }
+            case FreeholdCreature::NpcCaptainEudora:
+            {
+                Talk(TextEudora::TalkDeadEudora);
+                break;
+            }
         }
-        case FreeholdCreature::NpcCaptainEudora:
-        {
-            Talk(TextEudora::TalkDeadEudora);
-            break;
-        }
-        }
-        
+
         if (Creature* controller = GetController())
         {
             controller->AI()->DoAction(ACTION_COUNT_DEATHS);
@@ -678,7 +601,7 @@ struct npc_rummy_mancomb : public ScriptedAI
 {
     npc_rummy_mancomb(Creature* creature) : ScriptedAI(creature) { }
 
-    void Reset()
+    void Reset() override
     {
         me->SetReactState(REACT_PASSIVE);
         me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
@@ -725,16 +648,16 @@ struct npc_rummy_mancomb : public ScriptedAI
                 if (targetList.empty())
                     return;
 
-                targetList.remove_if([this](Unit* unit) -> bool
-                    {
-                        if (!unit)
-                            return true;
-
-                        if (unit->GetEntry() == FreeholdCreature::NpcCaptainRaoul || unit->GetEntry() == FreeholdCreature::NpcCaptainEudora || unit->GetEntry() == FreeholdCreature::NpcCaptainJolly)
-                            return false;
-
+                targetList.remove_if([](Unit* unit) -> bool
+                {
+                    if (!unit)
                         return true;
-                    });
+
+                    if (unit->GetEntry() == FreeholdCreature::NpcCaptainRaoul || unit->GetEntry() == FreeholdCreature::NpcCaptainEudora || unit->GetEntry() == FreeholdCreature::NpcCaptainJolly)
+                        return false;
+
+                    return true;
+                });
 
                 if (Unit* target = Trinity::Containers::SelectRandomContainerElement(targetList))
                     me->CastSpell(target, HeroicSpell[urand(0, 2)], true);
@@ -754,16 +677,16 @@ struct npc_blackout_barrel : public ScriptedAI
 {
     npc_blackout_barrel(Creature* creature) : ScriptedAI(creature) { }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetReactState(REACT_PASSIVE);
         AddTimedDelayedOperation(1 * TimeConstants::IN_MILLISECONDS, [this]() -> void
-            {
-                me->CastSpell(me, CouncilCaptainSpells::BlackoutBarrelVehicleAura, true);
-            });
+        {
+            me->CastSpell(me, CouncilCaptainSpells::BlackoutBarrelVehicleAura, true);
+        });
     }
 
-    void UpdateAI(uint32 const diff) override
+    void UpdateAI(uint32 const /*diff*/) override
     {
         //UpdateOperations(diff);
     }
@@ -772,9 +695,6 @@ struct npc_blackout_barrel : public ScriptedAI
 ///258875 Blackout Barrel
 class spell_blackout_vehicle : public SpellScript
 {
-    PrepareSpellScript(spell_blackout_vehicle);
-
-
     void FilterTargetsNoTanks(std::list<WorldObject*>& unitList)
     {
         unitList.remove_if([](WorldObject* object) -> bool
@@ -782,8 +702,8 @@ class spell_blackout_vehicle : public SpellScript
                 if (!object->ToPlayer())
                     return true;
 
-                if (object->ToPlayer()->GetRoleForGroup() == Roles::ROLE_TANK)
-                    return true;
+            //    if (object->ToPlayer()->GetRoleForGroup() == Roles::ROLE_TANK)
+                //    return true;
 
                 return false;
             });
@@ -801,8 +721,6 @@ class spell_blackout_vehicle : public SpellScript
 ///281329 Trade Wind's Vigor
 class spell_trade_winds_vigor : public SpellScript
 {
-    PrepareSpellScript(spell_trade_winds_vigor);
-
 
     void FilterTargets(std::list<WorldObject*>& unitList)
     {
@@ -846,10 +764,10 @@ struct at_whirlpool_of_blades : AreaTriggerAI
 
     void OnInitialize() override
     {
-     //   at->SetPeriodicProcTimer(1s);
+        at->SetPeriodicProcTimer(1000);
     }
 
-    void OnPeriodicProc() //override
+    void OnPeriodicProc() override
     {
         if (Unit* caster = at->GetCaster())
         {
@@ -868,7 +786,6 @@ void AddSC_boss_council_o_captains()
     RegisterCreatureAI(boss_council_captain);
     RegisterCreatureAI(npc_rummy_mancomb);
     RegisterCreatureAI(npc_blackout_barrel);
-    RegisterCreatureAI(npc_captains_controller);
     ///Spell
     RegisterSpellScript(spell_blackout_vehicle);
     RegisterSpellScript(spell_trade_winds_vigor);

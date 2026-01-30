@@ -45,8 +45,6 @@ public:
 
     class spell_vantus_rune_the_emerald_nightmare_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_vantus_rune_the_emerald_nightmare_AuraScript);
-
         uint16 checkOnProc;
         uint16 checkOnRemove;
 
@@ -193,8 +191,6 @@ public:
 
     class spell_vantus_rune_the_emerald_nightmare_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vantus_rune_the_emerald_nightmare_SpellScript);
-
         SpellCastResult CheckCast()
         {
             if (auto player = GetCaster()->ToPlayer())

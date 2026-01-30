@@ -4,6 +4,7 @@
 
 #include "GarrisonConstants.h"
 #include "Packets/GarrisonPackets.h"
+#include <Entities/Player/Player.h>
 
 struct Followersss;
 
@@ -11,7 +12,7 @@ struct Missionssss
 {
     WorldPackets::Garrison::GarrisonMission PacketInfo;
     std::list<uint64> CurrentFollowerDBIDs;
-    ObjectDBState DbState = DB_STATE_NEW;
+    //ObjectDBState DbState = DB_STATE_NEW;
 
     void Start(Player* owner, std::vector<uint64> const &followers);
     void BonusRoll(Player* onwer);

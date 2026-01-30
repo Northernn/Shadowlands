@@ -128,7 +128,7 @@ struct npc_lucille_waycrest_intro : public ScriptedAI
 				if (Creature* lucille = instance->GetCreature(NPC_LUCILLE_WAYCREST_INTRO))
 				{
 					std::list<Creature*> c_list;
-					//lucille->GetCreatureListInGrid(c_list, 13.0f);
+					lucille->GetCreatureListInGrid(c_list, 13.0f);
 					for (auto & creatures : c_list)
 					switch (creatures->GetEntry())
 					{
@@ -175,7 +175,6 @@ struct npc_lucille_waycrest_intro : public ScriptedAI
 
 private:
 	TaskScheduler scheduler;
-    InstanceScript* instance;
 };
 
 //135357

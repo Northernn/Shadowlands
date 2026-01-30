@@ -614,8 +614,6 @@ public:
 	class bfa_spell_beckon_storm_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_beckon_storm_SpellScript);
-
 		void FilterTargets(std::list<WorldObject*>& targets)
 		{
 			if (targets.empty())
@@ -660,8 +658,6 @@ public:
 	class bfa_spell_curse_of_witch_AuraScript : public AuraScript
 	{
 	public:
-		PrepareAuraScript(bfa_spell_curse_of_witch_AuraScript);
-
 		void HandleEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
 		{
 			if (!GetUnitOwner() || !GetCaster())
@@ -708,8 +704,6 @@ public:
 	class bfa_spell_static_nova_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_static_nova_SpellScript);
-
 		void FilterTargets(std::list<WorldObject*> & targets)
 		{
 			targets.remove_if([](WorldObject*& target)

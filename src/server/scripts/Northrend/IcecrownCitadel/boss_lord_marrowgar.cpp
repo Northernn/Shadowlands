@@ -214,7 +214,7 @@ struct boss_lord_marrowgar : public BossAI
                 case EVENT_WARN_BONE_STORM:
                     _boneSlice = false;
                     Talk(EMOTE_BONE_STORM);
-                    me->FinishSpell(CURRENT_MELEE_SPELL, false);
+                    me->FinishSpell(CURRENT_MELEE_SPELL, SPELL_FAILED_INTERRUPTED);
                     DoCast(me, SPELL_BONE_STORM);
                     events.DelayEvents(3s, EVENT_GROUP_SPECIAL);
                     events.ScheduleEvent(EVENT_BONE_STORM_BEGIN, 3050ms);
@@ -242,7 +242,7 @@ struct boss_lord_marrowgar : public BossAI
                     {
                         if (a->GetMovementGeneratorType() == POINT_MOTION_TYPE)
                         {
-                            PointMovementGenerator<Creature> const* pointMovement = dynamic_cast<PointMovementGenerator<Creature> const*>(a);
+                            PointMovementGenerator const* pointMovement = dynamic_cast<PointMovementGenerator const*>(a);
                             return pointMovement && pointMovement->GetId() == POINT_TARGET_BONESTORM_PLAYER;
                         }
                         return false;
@@ -483,8 +483,6 @@ private:
 // 69140 - Coldflame
 class spell_marrowgar_coldflame : public SpellScript
 {
-    PrepareSpellScript(spell_marrowgar_coldflame);
-
     void SelectTarget(std::list<WorldObject*>& targets)
     {
         targets.clear();
@@ -515,8 +513,6 @@ class spell_marrowgar_coldflame : public SpellScript
 // 72705 - Coldflame (Bonestorm)
 class spell_marrowgar_coldflame_bonestorm : public SpellScript
 {
-    PrepareSpellScript(spell_marrowgar_coldflame_bonestorm);
-
     void HandleScriptEffect(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
@@ -533,8 +529,6 @@ class spell_marrowgar_coldflame_bonestorm : public SpellScript
 // 69146, 70823, 70824, 70825 - Coldflame (Damage)
 class spell_marrowgar_coldflame_damage : public AuraScript
 {
-    PrepareAuraScript(spell_marrowgar_coldflame_damage);
-
     bool CanBeAppliedOn(Unit* target)
     {
         if (target->HasAura(SPELL_IMPALED))
@@ -559,8 +553,6 @@ class spell_marrowgar_coldflame_damage : public AuraScript
 // 69057, 70826, 72088, 72089 - Bone Spike Graveyard
 class spell_marrowgar_bone_spike_graveyard : public SpellScript
 {
-    PrepareSpellScript(spell_marrowgar_bone_spike_graveyard);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo(BoneSpikeSummonId);
@@ -619,8 +611,6 @@ class spell_marrowgar_bone_spike_graveyard : public SpellScript
 // 69075, 70834, 70835, 70836 - Bone Storm
 class spell_marrowgar_bone_storm : public SpellScript
 {
-    PrepareSpellScript(spell_marrowgar_bone_storm);
-
     void RecalculateDamage()
     {
         SetHitDamage(int32(GetHitDamage() / std::max(std::sqrt(GetHitUnit()->GetExactDist2d(GetCaster())), 1.0f)));
@@ -635,8 +625,6 @@ class spell_marrowgar_bone_storm : public SpellScript
 // 69055, 70814 - Bone Slice
 class spell_marrowgar_bone_slice : public SpellScript
 {
-    PrepareSpellScript(spell_marrowgar_bone_slice);
-
 public:
     spell_marrowgar_bone_slice()
     {

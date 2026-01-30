@@ -1076,8 +1076,6 @@ class spell_commander_vojak_player_throw_barrel : public SpellScriptLoader
 
         class spell_commander_vojak_player_throw_barrel_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_commander_vojak_player_throw_barrel_SpellScript);
-
             void CastAura()
             {
                 if (Unit* caster = GetCaster())
@@ -1114,8 +1112,6 @@ class spell_commander_vojak_grab_barrel : public SpellScriptLoader
 
         class spell_commander_vojak_grab_barrel_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_commander_vojak_grab_barrel_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove_if(BarrelTargetSelector());
@@ -1160,8 +1156,6 @@ class spell_commander_vojak_bombard_trigger : public SpellScriptLoader
 
         class spell_commander_vojak_bombard_trigger_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_commander_vojak_bombard_trigger_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove_if(BombardPlayerTargetSelector());

@@ -1629,8 +1629,6 @@ class spell_spawn_flash_1_periodic : public SpellScriptLoader
 
         class spell_spawn_flash_1_periodic_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_spawn_flash_1_periodic_AuraScript);
-
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
@@ -1660,8 +1658,6 @@ class spell_spawn_flash_2_periodic : public SpellScriptLoader
 
         class spell_spawn_flash_2_periodic_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_spawn_flash_2_periodic_AuraScript);
-
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
@@ -1693,8 +1689,6 @@ class spell_spawn_flash_3_periodic : public SpellScriptLoader
 
         class spell_spawn_flash_3_periodic_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_spawn_flash_3_periodic_AuraScript);
-
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
@@ -1722,8 +1716,6 @@ class spell_touch_of_titans : public SpellScriptLoader
 
         class spell_touch_of_titans_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_touch_of_titans_AuraScript);
-
             void OnTick(AuraEffect const* /*p_AurEff*/)
             {
                 if (!GetTarget())
@@ -1773,8 +1765,6 @@ class spell_radiating_energies : public SpellScriptLoader
 
         class spell_radiating_energies_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_radiating_energies_SpellScript);
-
             void CorrectRange(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -1811,8 +1801,6 @@ class spell_draw_power : public SpellScriptLoader
 
         class spell_draw_power_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_draw_power_AuraScript);
-
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* elegon = GetCaster())
@@ -1842,8 +1830,6 @@ class spell_core_checker : public SpellScriptLoader
 
         class spell_core_checker_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_core_checker_AuraScript);
-
             void OnTick(AuraEffect const* /*p_AurEff*/)
             {
                 if (Unit* energyCharge = GetTarget())
@@ -1877,8 +1863,6 @@ class spell_grasping_energy_tendrils : public SpellScriptLoader
 
         class spell_grasping_energy_tendrils_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_grasping_energy_tendrils_SpellScript);
-
             void HandleOnHit()
             {
                 if (Unit* elegon = GetCaster())
@@ -1930,8 +1914,6 @@ class spell_destabilizing_energies : public SpellScriptLoader
 
         class spell_destabilizing_energies_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_destabilizing_energies_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1963,8 +1945,6 @@ class spell_total_annihilation : public SpellScriptLoader
 
         class spell_total_annihilation_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_total_annihilation_SpellScript);
-
             uint32 targetCount;
 
             bool Load() override
@@ -2007,8 +1987,6 @@ class spell_unstable_energy : public SpellScriptLoader
 
         class spell_unstable_energy_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_unstable_energy_AuraScript);
-
             void OnTick(AuraEffect const* /*p_AurEff*/)
             {
                 if (Unit* elegon = GetTarget())

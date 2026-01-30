@@ -312,8 +312,6 @@ struct gob_mark_of_tanaan : public GameObjectAI
             {
                 player->RemoveAurasDueToSpell(TanaanPhases::PhaseChoGallSpell);
 
-                if (player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjNorthernSpireDisabled) >= 1)
-                    return true;
 
                 player->KilledMonsterCredit(TanaanKillCredits::CreditNorthernSpireDisabled);
                 player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneChoGallsFreedom, SceneFlag::None);
@@ -323,29 +321,11 @@ struct gob_mark_of_tanaan : public GameObjectAI
             {
                 player->RemoveAurasDueToSpell(TanaanPhases::PhaseTeronGorSpell);
 
-                if (player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjSouthernSpireDisabled) >= 1)
-                    return true;
-
                 player->KilledMonsterCredit(TanaanKillCredits::CreditSouthernSpireDisabled);
                 player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneTeronGorsFreedom, SceneFlag::None);
             }
         }
         return true;
-    }
-};
-
-// Custom AT gul'dan trigger - 100000
-struct at_tanaan_guldan_trigger : AreaTriggerAI
-{
-    at_tanaan_guldan_trigger(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    int32 timeInterval;
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Player* player = unit->ToPlayer())
-            if (player->GetQuestStatus(TanaanQuests::QuestThePortalPower) == QUEST_STATUS_INCOMPLETE)
-                player->KilledMonsterCredit(TanaanKillCredits::CreditEnterGuldanPrison);
     }
 };
 
@@ -356,16 +336,12 @@ struct gob_static_rune : public GameObjectAI
 
     bool OnGossipHello(Player* player) override
     {
-        if (player->GetQuestStatus(TanaanQuests::QuestThePortalPower) == QUEST_STATUS_INCOMPLETE && player->GetQuestObjectiveCounter(273936) < 1)
+        if (player->GetQuestStatus(TanaanQuests::QuestThePortalPower))
         {
-        if (player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjBurningBladeDestroyed) == 0 ||
-            player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjShatteredHandDestroyed) == 0 ||
-            player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjBlackrockMarkDestroyed) == 0)
-            return true;
-
-        player->KilledMonsterCredit(TanaanKillCredits::CreditStatisRuneDestroyed);
-        player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneGulDanFreedom, SceneFlag::None);
+          player->KilledMonsterCredit(TanaanKillCredits::CreditStatisRuneDestroyed);
+          player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneGulDanFreedom, SceneFlag::None);
         }
+
         return true;
     }
 };
@@ -374,9 +350,6 @@ void AddSC_tanaan_intro_portal()
 {
     new npc_generic_tanaan_guardian();
     new npc_iron_gronnling();
-
-    RegisterAreaTriggerAI(at_tanaan_guldan_trigger);
-
     new gob_intact_portal();
     RegisterGameObjectAI(gob_static_rune);
     RegisterGameObjectAI(gob_mark_of_tanaan);

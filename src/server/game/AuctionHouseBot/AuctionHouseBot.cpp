@@ -81,10 +81,10 @@ bool AuctionBotConfig::Initialize()
                 _AHBotCharacters.push_back(ObjectGuid::Create<HighGuid::Player>((*result)[0].GetUInt64()));
             } while (result->NextRow());
 
-            TC_LOG_DEBUG("ahbot", "AuctionHouseBot found " UI64FMTD " characters", result->GetRowCount());
+            TC_LOG_DEBUG("ahbot", "AuctionHouseBot found {} characters", result->GetRowCount());
         }
         else
-            TC_LOG_WARN("ahbot", "AuctionHouseBot Account ID %u has no associated characters.", ahBotAccId);
+            TC_LOG_WARN("ahbot", "AuctionHouseBot Account ID {} has no associated characters.", ahBotAccId);
     }
 
     return true;
@@ -96,7 +96,7 @@ void AuctionBotConfig::SetConfig(AuctionBotConfigUInt32Values index, char const*
 
     if (int32(GetConfig(index)) < 0)
     {
-        TC_LOG_ERROR("ahbot", "AHBot: %s (%i) can't be negative. Using %u instead.", fieldname, int32(GetConfig(index)), defvalue);
+        TC_LOG_ERROR("ahbot", "AHBot: {} ({}) can't be negative. Using {} instead.", fieldname, int32(GetConfig(index)), defvalue);
         SetConfig(index, defvalue);
     }
 }
@@ -107,7 +107,7 @@ void AuctionBotConfig::SetConfigMax(AuctionBotConfigUInt32Values index, char con
 
     if (GetConfig(index) > maxvalue)
     {
-        TC_LOG_ERROR("ahbot", "AHBot: %s (%u) must be in range 0...%u. Using %u instead.", fieldname, GetConfig(index), maxvalue, maxvalue);
+        TC_LOG_ERROR("ahbot", "AHBot: {} ({}) must be in range 0...{}. Using {} instead.", fieldname, GetConfig(index), maxvalue, maxvalue);
         SetConfig(index, maxvalue);
     }
 }
@@ -118,13 +118,13 @@ void AuctionBotConfig::SetConfigMinMax(AuctionBotConfigUInt32Values index, char 
 
     if (GetConfig(index) > maxvalue)
     {
-        TC_LOG_ERROR("ahbot", "AHBot: %s (%u) must be in range %u...%u. Using %u instead.", fieldname, GetConfig(index), minvalue, maxvalue, maxvalue);
+        TC_LOG_ERROR("ahbot", "AHBot: {} ({}) must be in range {}...{}. Using {} instead.", fieldname, GetConfig(index), minvalue, maxvalue, maxvalue);
         SetConfig(index, maxvalue);
     }
 
     if (GetConfig(index) < minvalue)
     {
-        TC_LOG_ERROR("ahbot", "AHBot: %s (%u) must be in range %u...%u. Using %u instead.", fieldname, GetConfig(index), minvalue, maxvalue, minvalue);
+        TC_LOG_ERROR("ahbot", "AHBot: {} ({}) must be in range {}...{}. Using {} instead.", fieldname, GetConfig(index), minvalue, maxvalue, minvalue);
         SetConfig(index, minvalue);
     }
 }
@@ -351,12 +351,12 @@ uint32 AuctionBotConfig::GetConfigItemAmountRatio(AuctionHouseType houseType) co
 {
     switch (houseType)
     {
-        case AUCTION_HOUSE_ALLIANCE:
-            return GetConfig(CONFIG_AHBOT_ALLIANCE_ITEM_AMOUNT_RATIO);
-        case AUCTION_HOUSE_HORDE:
-            return GetConfig(CONFIG_AHBOT_HORDE_ITEM_AMOUNT_RATIO);
-        default:
-            return GetConfig(CONFIG_AHBOT_NEUTRAL_ITEM_AMOUNT_RATIO);
+    case AUCTION_HOUSE_ALLIANCE:
+        return GetConfig(CONFIG_AHBOT_ALLIANCE_ITEM_AMOUNT_RATIO);
+    case AUCTION_HOUSE_HORDE:
+        return GetConfig(CONFIG_AHBOT_HORDE_ITEM_AMOUNT_RATIO);
+    default:
+        return GetConfig(CONFIG_AHBOT_NEUTRAL_ITEM_AMOUNT_RATIO);
     }
 }
 
@@ -364,12 +364,12 @@ uint32 AuctionBotConfig::GetConfigPriceRatio(AuctionHouseType houseType) const
 {
     switch (houseType)
     {
-        case AUCTION_HOUSE_ALLIANCE:
-            return GetConfig(CONFIG_AHBOT_ALLIANCE_PRICE_RATIO);
-        case AUCTION_HOUSE_HORDE:
-            return GetConfig(CONFIG_AHBOT_HORDE_PRICE_RATIO);
-        default:
-            return GetConfig(CONFIG_AHBOT_NEUTRAL_PRICE_RATIO);
+    case AUCTION_HOUSE_ALLIANCE:
+        return GetConfig(CONFIG_AHBOT_ALLIANCE_PRICE_RATIO);
+    case AUCTION_HOUSE_HORDE:
+        return GetConfig(CONFIG_AHBOT_HORDE_PRICE_RATIO);
+    default:
+        return GetConfig(CONFIG_AHBOT_NEUTRAL_PRICE_RATIO);
     }
 }
 
@@ -377,12 +377,12 @@ bool AuctionBotConfig::GetConfigBuyerEnabled(AuctionHouseType houseType) const
 {
     switch (houseType)
     {
-        case AUCTION_HOUSE_ALLIANCE:
-            return GetConfig(CONFIG_AHBOT_BUYER_ALLIANCE_ENABLED);
-        case AUCTION_HOUSE_HORDE:
-            return GetConfig(CONFIG_AHBOT_BUYER_HORDE_ENABLED);
-        default:
-            return GetConfig(CONFIG_AHBOT_BUYER_NEUTRAL_ENABLED);
+    case AUCTION_HOUSE_ALLIANCE:
+        return GetConfig(CONFIG_AHBOT_BUYER_ALLIANCE_ENABLED);
+    case AUCTION_HOUSE_HORDE:
+        return GetConfig(CONFIG_AHBOT_BUYER_HORDE_ENABLED);
+    default:
+        return GetConfig(CONFIG_AHBOT_BUYER_NEUTRAL_ENABLED);
     }
 }
 
@@ -390,24 +390,24 @@ uint32 AuctionBotConfig::GetConfigItemQualityAmount(AuctionQuality quality) cons
 {
     switch (quality)
     {
-        case AUCTION_QUALITY_GRAY:
-            return GetConfig(CONFIG_AHBOT_ITEM_GRAY_AMOUNT);
-        case AUCTION_QUALITY_WHITE:
-            return GetConfig(CONFIG_AHBOT_ITEM_WHITE_AMOUNT);
-        case AUCTION_QUALITY_GREEN:
-            return GetConfig(CONFIG_AHBOT_ITEM_GREEN_AMOUNT);
-        case AUCTION_QUALITY_BLUE:
-            return GetConfig(CONFIG_AHBOT_ITEM_BLUE_AMOUNT);
-        case AUCTION_QUALITY_PURPLE:
-            return GetConfig(CONFIG_AHBOT_ITEM_PURPLE_AMOUNT);
-        case AUCTION_QUALITY_ORANGE:
-            return GetConfig(CONFIG_AHBOT_ITEM_ORANGE_AMOUNT);
-        default:
-            return GetConfig(CONFIG_AHBOT_ITEM_YELLOW_AMOUNT);
+    case AUCTION_QUALITY_GRAY:
+        return GetConfig(CONFIG_AHBOT_ITEM_GRAY_AMOUNT);
+    case AUCTION_QUALITY_WHITE:
+        return GetConfig(CONFIG_AHBOT_ITEM_WHITE_AMOUNT);
+    case AUCTION_QUALITY_GREEN:
+        return GetConfig(CONFIG_AHBOT_ITEM_GREEN_AMOUNT);
+    case AUCTION_QUALITY_BLUE:
+        return GetConfig(CONFIG_AHBOT_ITEM_BLUE_AMOUNT);
+    case AUCTION_QUALITY_PURPLE:
+        return GetConfig(CONFIG_AHBOT_ITEM_PURPLE_AMOUNT);
+    case AUCTION_QUALITY_ORANGE:
+        return GetConfig(CONFIG_AHBOT_ITEM_ORANGE_AMOUNT);
+    default:
+        return GetConfig(CONFIG_AHBOT_ITEM_YELLOW_AMOUNT);
     }
 }
 
-AuctionHouseBot::AuctionHouseBot(): _buyer(nullptr), _seller(nullptr), _operationSelector(0)
+AuctionHouseBot::AuctionHouseBot() : _buyer(nullptr), _seller(nullptr), _operationSelector(0)
 {
 }
 

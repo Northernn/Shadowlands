@@ -175,19 +175,19 @@ void SceneActionRemovePhase::DoAction()
     }
 }
 
-/*
+
 void SceneActionSetFlag::DoAction()
 {
     if (Creature* actor = GetActor())
     {
-        actor->SetFlag(index, newFlag);
+        actor->SetUnitFlag(SceneActionSetFlag::flag);
     }
-}*/
+}
 
-/*void SceneActionRemoveFlag::DoAction()
+void SceneActionRemoveFlag::DoAction()
 {
     if (Creature* actor = GetActor())
     {
-        //    actor->RemoveUnitFlag(index, oldFlag);
+        actor->RemoveUnitFlag(SceneActionRemoveFlag::flag);
     }
-}*/
+}

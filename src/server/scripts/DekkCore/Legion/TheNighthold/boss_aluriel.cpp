@@ -1136,8 +1136,6 @@ public:
 
     class spell_aluriel_enchantment_controll_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_aluriel_enchantment_controll_AuraScript);
-
         uint8 manaCount = 0;
 
         void OnPereodic(AuraEffect const* /*aurEff*/)
@@ -1180,8 +1178,6 @@ public:
 //212587
 class spell_aluriel_mark_of_frost : public AuraScript
 {
-    PrepareAuraScript(spell_aluriel_mark_of_frost);
-
     void OnApply(AuraEffect const* /*auraEffect*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTarget())
@@ -1209,8 +1205,6 @@ public:
 
     class spell_aluriel_mark_of_frost_searcher_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_aluriel_mark_of_frost_searcher_SpellScript);
-
         void HandleOnHit()
         {
             Unit* caster = GetCaster();
@@ -1257,8 +1251,6 @@ public:
 
     class spell_aluriel_mark_of_frost_friendly_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_aluriel_mark_of_frost_friendly_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (!GetCaster())
@@ -1295,7 +1287,7 @@ public:
                 {
                     if (auto const& player = target->ToPlayer())
                     {
-                        switch (player->GetSpecializationId())
+                        switch (player->GetPrimarySpecialization())
                         {
                         case ROLE_DAMAGE:
                             meleeList.push_back(target);
@@ -1348,8 +1340,6 @@ public:
 
     class spell_aluriel_detonate_arcane_orb_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_aluriel_detonate_arcane_orb_SpellScript);
-
         void HandleDamage(SpellEffIndex /*effIndex*/)
         {
             if (!GetCaster() || !GetHitUnit())
@@ -1384,8 +1374,6 @@ public:
 
     class spell_aluriel_entombed_in_ice_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_aluriel_entombed_in_ice_AuraScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -1421,8 +1409,6 @@ public:
 
     class spell_aluriel_searing_brand_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_aluriel_searing_brand_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -1459,8 +1445,6 @@ public:
 
     class spell_aluriel_bound_in_flame_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_aluriel_bound_in_flame_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (Unit* caster = GetCaster())
@@ -1495,8 +1479,6 @@ public:
 //212530
 class spell_replicate_mark_of_frost_filter : public SpellScript
 {
-    PrepareSpellScript(spell_replicate_mark_of_frost_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         std::list<WorldObject*> tempList;
@@ -1527,8 +1509,6 @@ public:
 
     class spell_aluriel_frozen_tempest_tp_filter_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_aluriel_frozen_tempest_tp_filter_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (!targets.empty())
@@ -1579,8 +1559,6 @@ public:
 //213145, 213182
 class spell_aluriel_searing_brand_filter : public SpellScript
 {
-    PrepareSpellScript(spell_aluriel_searing_brand_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         std::list<WorldObject*> tempList;
@@ -1605,8 +1583,6 @@ class spell_aluriel_searing_brand_filter : public SpellScript
 //213130
 class spell_aluriel_frozen_tempest_jump : public SpellScript
 {
-    PrepareSpellScript(spell_aluriel_frozen_tempest_jump);
-
     void HandleScript(SpellEffIndex /*effectIndex*/)
     {
         PreventHitDefaultEffect(EFFECT_1);

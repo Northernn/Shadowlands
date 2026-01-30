@@ -15,43 +15,60 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef THE_UNDERROT_H
-#define THE_UNDERROT_H
+#ifndef DEF_UNDERROT_H_
+#define DEF_UNDERROT_H_
 
-#define DataHeader "TU"
+#include "CreatureAIImpl.h"
 
-uint32 const EncounterCount = 8;
+#define DataHeader "Underrot"
+#define UnderrotScriptName "instance_underrot"
+
+uint32 const EncounterCount = 4;
 
 enum EncounterData
 {
-    DATA_ELDER_LEAXA = 1,
+    // Encounters
+    DATA_ELDER_LEAXA = 0,
     DATA_CRAGMAW_THE_INFESTED,
     DATA_SPORECALLER_ZANCHA,
     DATA_UNBOUND_ABOMINATION,
+    DATA_CRAGMAW_CRAWG_EATING,
+
     DATA_FACELESS_CORRUPTOR_1,
     DATA_FACELESS_CORRUPTOR_2,
     DATA_EVENT_HERZEL,
     DATA_BOSS_HERZEL,
 };
 
-enum CreatureIds
+enum UnderrotCreatureIds
 {
-    NPC_ELDER_LEAXA                 = 131318,
-    NPC_CRAGMAW_THE_INFESTED        = 131817,
     NPC_BLOODSWORN_DEFILER          = 144306,
-    NPC_SPORECALLER_ZANCHA          = 131383,
     NPC_VOLATILE_POD                = 139127,
-    NPC_UNBOUND_ABOMINATION         = 133007,
     NPC_TITAN_KEEPER_HEZREL         = 134419,
     NPC_BLOOD_VISAGE                = 137103,
     NPC_ROTTING_SPORE               = 137458,
-    SUMMON_GROUP_BLOODSWORN_DEFILER = 1
+    SUMMON_GROUP_BLOODSWORN_DEFILER = 1,
+    // Bosses
+    BOSS_ELDER_LEAXA = 131318,
+    BOSS_SPORECALLER_ZANCHA = 131383,
+    BOSS_CRAGMAW_THE_INFESTED = 131817,
+    BOSS_UNBOUND_ABOMINATION = 133007
 };
 
-enum GameObjectIds
+enum UnderrotGameObjectIds
 {
     GOB_PYRAMID_WEB             = 296384,
-    GOB_PYRAMID_DOOR            = 296385,
+    GO_PYRAMID_DOOR_UNBOUND_ABOMINATION_ENTRANCE = 296385,
+    GO_WALL_DOOR_SHORTCUT_ENTRANCE = 295356
 };
 
-#endif // THE_UNDERROT_H
+template <class AI, class T>
+inline AI* GetUnderrotAI(T* obj)
+{
+    return GetInstanceAI<AI>(obj, UnderrotScriptName);
+}
+
+#define RegisterUnderrotCreatureAI(ai_name) RegisterCreatureAIWithFactory(ai_name, GetUnderrotAI)
+
+#endif
+

@@ -18,6 +18,7 @@
 #include "WorldSession.h"
 #include "CellImpl.h"
 #include "Common.h"
+#include "Containers.h"
 #include "Corpse.h"
 #include "Creature.h"
 #include "DB2Stores.h"
@@ -25,7 +26,6 @@
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Guild.h"
-#include "GuildMgr.h"
 #include "Item.h"
 #include "Log.h"
 #include "Loot.h"
@@ -35,6 +35,9 @@
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "SpellMgr.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 class AELootCreatureCheck
 {
@@ -78,7 +81,6 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
     AELootResult aeResult;
     AELootResult* aeResultPtr = player->GetAELootView().size() > 1 ? &aeResult : nullptr;
 
-    /// @todo Implement looting by LootObject guid
     for (WorldPackets::Loot::LootRequest const& req : packet.Loot)
     {
         Loot* loot = Trinity::Containers::MapGetValuePtr(player->GetAELootView(), req.Object);
@@ -141,8 +143,17 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
 void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet*/)
 {
     Player* player = GetPlayer();
-    for (std::pair<ObjectGuid const, Loot*> const& lootView : player->GetAELootView())
+    std::vector<Loot*> forceLootRelease;
+    auto aoelootView = player->GetAELootView();
+
+    if (aoelootView.size() == 0)
+        return;
+
+    for (std::pair<ObjectGuid const, Loot*> const& lootView : aoelootView)
     {
+        if (!lootView.second)
+            return;
+        
         Loot* loot = lootView.second;
         ObjectGuid guid = loot->GetOwnerGUID();
         bool shareMoney = loot->loot_type == LOOT_CORPSE;
@@ -196,7 +207,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
             SendPacket(packet.Write());
         }
 
-        loot->gold = 0;
+#ifdef ELUNA
+        sEluna->OnLootMoney(player, loot->gold);
+#endif
+
+        loot->LootMoney();
 
         // Delete the money loot record from the DB
         if (loot->loot_type == LOOT_ITEM)
@@ -204,8 +219,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
 
         // Delete container if empty
         if (loot->isLooted() && guid.IsItem())
-            player->GetSession()->DoLootRelease(loot);
+            forceLootRelease.push_back(loot);
     }
+
+    for (Loot* loot : forceLootRelease)
+        player->GetSession()->DoLootRelease(loot);
 }
 
 void WorldSession::HandleLootOpcode(WorldPackets::Loot::LootUnit& packet)
@@ -261,7 +279,7 @@ void WorldSession::HandleLootReleaseOpcode(WorldPackets::Loot::LootRelease& pack
 void WorldSession::DoLootRelease(Loot* loot)
 {
     ObjectGuid lguid = loot->GetOwnerGUID();
-    Player  *player = GetPlayer();
+    Player* player = GetPlayer();
 
     if (player->GetLootGUID() == lguid)
         player->SetLootGUID(ObjectGuid::Empty);
@@ -287,7 +305,11 @@ void WorldSession::DoLootRelease(Loot* loot)
 
         if (loot->isLooted() || go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE || go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
         {
-            if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
+            if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE)
+            {
+                go->SetLootState(GO_JUST_DEACTIVATED);
+            }
+            else if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
             {                                               // The fishing hole used once more
                 go->AddUse();                               // if the max usage is reached, will be despawned in next tick
                 if (go->GetUseCount() >= go->GetGOValue()->FishingHole.MaxOpens)
@@ -371,9 +393,7 @@ void WorldSession::DoLootRelease(Loot* loot)
             if (player->GetGUID() == loot->roundRobinPlayer)
             {
                 loot->roundRobinPlayer.Clear();
-
-                if (Group* group = player->GetGroup())
-                    loot->NotifyLootList(creature->GetMap());
+                loot->NotifyLootList(creature->GetMap());
             }
         }
         // force dynflag update to update looter and lootable info
@@ -406,7 +426,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
         return;
     }
 
-    TC_LOG_DEBUG("network", "WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [%s].", target->GetName().c_str());
+    TC_LOG_DEBUG("network", "WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [{}].", target->GetName());
 
     for (WorldPackets::Loot::LootRequest const& req : masterLootItem.Loot)
     {
@@ -418,7 +438,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
         if (!_player->IsInRaidWith(target) || !_player->IsInMap(target))
         {
             _player->SendLootError(req.Object, loot->GetOwnerGUID(), LOOT_ERROR_MASTER_OTHER);
-            TC_LOG_INFO("entities.player.cheat", "MasterLootItem: Player %s tried to give an item to ineligible player %s !", GetPlayer()->GetName().c_str(), target->GetName().c_str());
+            TC_LOG_INFO("entities.player.cheat", "MasterLootItem: Player {} tried to give an item to ineligible player {} !", GetPlayer()->GetName(), target->GetName());
             return;
         }
 
@@ -430,8 +450,8 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
 
         if (req.LootListID >= loot->items.size())
         {
-            TC_LOG_DEBUG("loot", "MasterLootItem: Player %s might be using a hack! (slot %d, size " SZFMTD ")",
-                GetPlayer()->GetName().c_str(), req.LootListID, loot->items.size());
+            TC_LOG_DEBUG("loot", "MasterLootItem: Player {} might be using a hack! (slot {}, size {})",
+                GetPlayer()->GetName(), req.LootListID, loot->items.size());
             return;
         }
 
@@ -453,8 +473,12 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
         }
 
         // now move item from loot to target inventory
-        Item* newitem = target->StoreNewItem(dest, item.itemid, true, item.randomBonusListId, item.GetAllowedLooters(), item.context, item.BonusListIDs);
+        Item* newitem = target->StoreNewItem(dest, item.itemid, true, item.randomBonusListId, item.GetAllowedLooters(), item.context, &item.BonusListIDs);
         aeResult.Add(newitem, item.count, loot->loot_type, loot->GetDungeonEncounterId());
+
+#ifdef ELUNA
+        sEluna->OnLootItem(target, newitem, item.count, loot->GetOwnerGUID());
+#endif
 
         // mark as looted
         item.count = 0;
@@ -529,9 +553,9 @@ void WorldSession::HandleDoMasterLootRoll(WorldPackets::Loot::DoMasterLootRoll& 
     packet.LootListID -= 1; //restore slot index;
     if (packet.LootListID >= loot->items.size())
     {
-        // TC_LOG_DEBUG(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), packet.LootListID, (unsigned long)loot->items.size());
+         TC_LOG_DEBUG("LOG_FILTER_LOOT", "MasterLootItem: Player {} might be using a hack! (slot {}, size {})", GetPlayer()->GetName(), packet.LootListID, (unsigned long)loot->items.size());
         return;
     }
 
-    //_player->GetGroup()->DoRollForAllMembers(packet.LootObj, packet.LootListID, _player->GetMapId(), loot, item, _player);
+   // _player->GetGroup()->DoRollForAllMembers(packet.LootObj, packet.LootListID, _player->GetMapId(), loot, _player);
 }

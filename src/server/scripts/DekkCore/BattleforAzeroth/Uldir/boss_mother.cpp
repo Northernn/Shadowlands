@@ -100,7 +100,6 @@ struct boss_mother : public BossAI
         me->SetPowerType(POWER_ENERGY);
         me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_ENTROPIC, me);
         defeated = false;
     }
 
@@ -550,39 +549,6 @@ private:
     TaskScheduler scheduler;    
 };
 
-struct at_surgical_grid : public AreaTriggerAI
-{
-    at_surgical_grid(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-    void OnInitialize() override
-    {
-        Unit* caster = at->GetCaster();
-        if (!caster)
-            return;
-
-        Position pos = caster->GetPosition();
-
-        at->MovePosition(pos, 60.0f, caster->GetOrientation());
-        at->SetDestination(pos, 15000);    
-    }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->IsPlayer())
-        {
-            at->GetCaster()->CastSpell(unit, SPELL_ULDIR_DEFENSE_BEAM_AT_DAMAGE);
-        }
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (unit->HasAura(SPELL_ULDIR_DEFENSE_BEAM_AT_DAMAGE))
-        {
-            unit->RemoveAurasDueToSpell(SPELL_ULDIR_DEFENSE_BEAM_AT_DAMAGE);
-        }
-    }
-};
-
 //291079
 struct go_mothers_cache : public GameObjectAI
 {
@@ -618,6 +584,5 @@ void AddSC_boss_mother()
     RegisterAreaTriggerAI(at_wind_tunnel_l_to_r);
     RegisterAreaTriggerAI(at_wind_tunnel_r_to_l);
     RegisterCreatureAI(npc_surgical_grid);
-    RegisterAreaTriggerAI(at_surgical_grid);
     RegisterGameObjectAI(go_mothers_cache);
 }

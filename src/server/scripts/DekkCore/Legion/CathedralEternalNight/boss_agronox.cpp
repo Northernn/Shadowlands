@@ -186,8 +186,6 @@ public:
 
     class spell_agronox_choking_vines_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_agronox_choking_vines_AuraScript);
-
         void OnTick(AuraEffect const* /*aurEff*/)
         {
             if (Unit* target = GetTarget())

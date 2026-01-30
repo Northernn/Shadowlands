@@ -19,39 +19,9 @@
 #include "GarrisonAI.h"
 #include "Player.h"
 #include "ScriptMgr.h"
-
-enum Quests
-{
-    QUEST_MY_VERY_OWN_FORTRESS = 36614,
-    QUEST_MY_VERY_OWN_CASTLE = 36615,
-};
-
-/*
- * Common scripts for garrison level 2 Alliance & Horde
- */
-struct garrison_level_2 : public GarrisonAI
-{
-    garrison_level_2(Garrison* gar) : GarrisonAI(gar) { }
-
-    bool OnCheckUpgradeable() override
-    {
-        return garrison->GetOwner()->HasQuest(QUEST_MY_VERY_OWN_FORTRESS) ||
-            garrison->GetOwner()->HasQuest(QUEST_MY_VERY_OWN_CASTLE);
-    }
-};
-
-struct garrison_level_2_alliance : public garrison_level_2
-{
-    garrison_level_2_alliance(Garrison* gar) : garrison_level_2(gar) { }
-};
-
-struct garrison_level_2_horde : public garrison_level_2
-{
-    garrison_level_2_horde(Garrison* gar) : garrison_level_2(gar) { }
-};
+ //place for quests
 
 void AddSC_garrison_level_2()
 {
-    RegisterGarrisonAI(garrison_level_2_alliance);
-    RegisterGarrisonAI(garrison_level_2_horde);
+
 };

@@ -1,6 +1,5 @@
 /*
- * Copyright (C) DekkCore
- * Copyright (C) 2016 Firestorm Servers <https://firestorm-servers.com>
+ * Copyright (C) DekkCore Team Devs 
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -379,14 +378,6 @@ class boss_shekzeer : public CreatureScript
                     if (Player* l_Player = l_Itr->GetSource())
                         me->CastSpell(l_Player, SPELL_SHEKZEER_BONUS, true);
                 }
-
-                /*if (me->GetMap()->IsLFR())
-                {
-                    me->ResetLootRecipients();
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->GetSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                }*/
             }
 
             void KilledUnit(Unit* victim) override
@@ -399,13 +390,10 @@ class boss_shekzeer : public CreatureScript
             {
                 if (pInstance)
                 {
-                  //  if (pInstance->IsWipe())
-                    {
                         me->SetReactState(REACT_DEFENSIVE);
                         // Sha becomes invisible
                         if (Creature* sha = GetClosestCreatureWithEntry(me, NPC_SHA_OF_FEAR_MOB, 200.0f))
-                            sha->SetDisplayId(DISPLAYID_INVISIBLE);
-                    }
+                            sha->SetDisplayId(DISPLAYID_INVISIBLE); 
                 }
 
                 isInChamber = true;
@@ -660,24 +648,14 @@ class boss_shekzeer : public CreatureScript
 
             void UpdateAI(const uint32 diff) override
             {
-                // Check wipe
                 if (pInstance)
-                {
-                  //  if (pInstance->IsWipe() && !isWipe)
                     {
                         EnterEvadeMode(EVADE_REASON_OTHER);
                         Talk(SAY_WIPE);
                         isWipe = true;
                         return;
                     }
-                 /*   else if (!pInstance->IsWipe() && isWipe)
-                    {
-                        isWipe = false;
-                        if (isInChamber)
-                            DoAction(ACTION_COMBAT);
-                    }*/
-                }
-
+               
                 // Starting combat
                 if (!loaded)
                 {
@@ -1013,15 +991,6 @@ class mob_add_setthik_windblade : public CreatureScript
                             if (Unit* target = me->GetVictim())
                                 me->CastSpell(target, SPELL_ADD_SONIC_BLADE, true);
                             events.ScheduleEvent(EVENT_SONIC_BLADE, 20s);
-                            break;
-                        }
-                        case EVENT_STICKY_RESIN:
-                        {
-                            float x, y, z;
-                          //  me->GetNearPoint(me, x, y, z, 1.0f, frand(5.0f, 30.0f), frand(0.0, 2.f * float(M_PI)));
-
-                         //   me->CastSpell(x, y, z, SPELL_STICKY_RESIN, false);
-                            events.ScheduleEvent(EVENT_STICKY_RESIN, 20s);
                             break;
                         }
                         default:
@@ -1674,8 +1643,6 @@ class spell_eyes_of_the_empress : public SpellScriptLoader
 
         class spell_eyes_of_the_empress_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_eyes_of_the_empress_SpellScript);
-
             void Transform(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* target = GetHitUnit())
@@ -1714,8 +1681,6 @@ class spell_servant_of_the_empress : public SpellScriptLoader
 
         class spell_servant_of_the_empress_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_servant_of_the_empress_SpellScript);
-
             void Charm(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1743,8 +1708,6 @@ class spell_cry_of_terror : public SpellScriptLoader
 
         class spell_cry_of_terror_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_cry_of_terror_SpellScript);
-
             void Cancel(std::list<WorldObject*>& targets)
             {
                 WorldObject* uniqueTarget = 0;
@@ -1788,8 +1751,6 @@ class spell_amassing_darkness : public SpellScriptLoader
 
         class spell_amassing_darkness_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_amassing_darkness_SpellScript);
-
             void ScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1837,8 +1798,6 @@ class spell_calamity : public SpellScriptLoader
 
         class spell_calamity_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_calamity_SpellScript);
-
             void DivideLife()
             {
                 if (Unit* target = GetHitUnit())
@@ -1865,8 +1824,6 @@ class spell_visions_of_demise : public SpellScriptLoader
 
         class spell_visions_of_demise_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_visions_of_demise_SpellScript);
-
             void SelectTargets(std::list<WorldObject*> &targets)
             {
                 // Starting form

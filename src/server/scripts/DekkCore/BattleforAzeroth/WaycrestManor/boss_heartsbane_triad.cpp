@@ -386,8 +386,6 @@ struct boss_heartsbane_triad : public BossAI
 // 260703
 class spell_unstable_runic_mark : public AuraScript
 {
-	PrepareAuraScript(spell_unstable_runic_mark);
-
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		if (GetCaster() && GetTarget())
@@ -404,8 +402,6 @@ class spell_unstable_runic_mark : public AuraScript
 // 268086
 class spell_aura_of_dread : public AuraScript
 {
-	PrepareAuraScript(spell_aura_of_dread);
-
 	void HandlePeriodic(AuraEffect const*)
 	{
 		if (!GetUnitOwner())

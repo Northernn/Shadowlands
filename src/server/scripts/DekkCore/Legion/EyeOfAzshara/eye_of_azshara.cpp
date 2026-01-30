@@ -27,8 +27,6 @@
 // 196027
 class spell_hatecoil_arcanist_aqua_spout : public SpellScript
 {
-    PrepareSpellScript(spell_hatecoil_arcanist_aqua_spout);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* target = GetHitUnit();
@@ -47,8 +45,6 @@ class spell_hatecoil_arcanist_aqua_spout : public SpellScript
 // 196031
 class aura_hatecoil_wavebinder_bubble_shield : public AuraScript
 {
-    PrepareAuraScript(aura_hatecoil_wavebinder_bubble_shield);
-
     void OnRemove(AuraEffect const* /*auraEff*/, AuraEffectHandleModes /*modes*/)
     {
         if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
@@ -67,8 +63,6 @@ class aura_hatecoil_wavebinder_bubble_shield : public AuraScript
 // 195528
 class spell_animated_storm_water_spout : public SpellScript
 {
-    PrepareSpellScript(spell_animated_storm_water_spout);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -110,8 +104,6 @@ struct at_animated_storm_water_spout : AreaTriggerAI
 // 195827
 class spell_skrog_tidestomper_massive_quake : public SpellScript
 {
-    PrepareSpellScript(spell_skrog_tidestomper_massive_quake);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* target = GetHitUnit();
@@ -152,8 +144,6 @@ struct at_skrog_tidestomper_massive_quake : AreaTriggerAI
 // 196175
 class aura_makrana_hardshell_armorshell : public AuraScript
 {
-    PrepareAuraScript(aura_makrana_hardshell_armorshell);
-
     void OnRemove(AuraEffect const* /*auraEff*/, AuraEffectHandleModes /*modes*/)
     {
         if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
@@ -172,8 +162,6 @@ class aura_makrana_hardshell_armorshell : public AuraScript
 // 191792, 191805, 192649
 class aura_eoa_violent_winds_broadcast : public AuraScript
 {
-    PrepareAuraScript(aura_eoa_violent_winds_broadcast);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         Map::PlayerList const& playerList = GetTarget()->GetInstanceScript()->instance->GetPlayers();
@@ -193,8 +181,6 @@ class aura_eoa_violent_winds_broadcast : public AuraScript
 // 191797
 class aura_eoa_violent_winds_force_move : public AuraScript
 {
-    PrepareAuraScript(aura_eoa_violent_winds_force_move);
-
     void ApplyForceMove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -217,8 +203,6 @@ class aura_eoa_violent_winds_force_move : public AuraScript
 // 192737
 class aura_eoa_lightning_strikes : public AuraScript
 {
-    PrepareAuraScript(aura_eoa_lightning_strikes);
-
     void OnPeriodic(AuraEffect const* aurEff)
     {
         if (Unit* caster = GetCaster())
@@ -251,8 +235,6 @@ class aura_eoa_lightning_strikes : public AuraScript
 // 192794
 class spell_eoa_lightning_strikes_damage : public SpellScript
 {
-    PrepareSpellScript(spell_eoa_lightning_strikes_damage);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false));

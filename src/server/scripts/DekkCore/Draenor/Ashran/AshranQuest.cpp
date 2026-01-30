@@ -206,8 +206,6 @@ public:
 
     class spell_ashran_blade_twister_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ashran_blade_twister_AuraScript);
-
         enum eSpells
         {
             BladeTwisterDamage = 177167
@@ -262,8 +260,6 @@ public:
 
     class spell_ashran_emberfall_living_bomb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ashran_emberfall_living_bomb_AuraScript);
-
         enum eSpells
         {
             LivingBombTriggered = 176673
@@ -303,8 +299,6 @@ public:
 
     class spell_ashran_faction_rewards_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_ashran_faction_rewards_SpellScript);
-
         enum Items
         {
             StrongboxHorde = 120151,
@@ -368,8 +362,6 @@ public:
 
     class spell_ashran_booming_shout_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_ashran_booming_shout_SpellScript);
-
         void CorrectTargets(std::list<WorldObject*>& p_Targets)
         {
             if (p_Targets.empty())
@@ -424,8 +416,6 @@ public:
 
     class spell_ashran_horde_and_alliance_racer_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ashran_horde_and_alliance_racer_AuraScript);
-
             enum eSpells
         {
             HordeRider = 166819,

@@ -109,13 +109,13 @@ struct checkSpec// : public std::unary_function<Unit*, bool>
     bool operator() (const Unit* pTarget)
     {
         Player* player = const_cast<Player*>(pTarget->ToPlayer());
-        uint32 specialization = player->GetSpecializationId();
-        return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-            || (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-            || (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-            || (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+        uint32 specialization = player->GetPrimarySpecialization();
+        return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+            || (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+            || (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+            || (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
     }
 };
 
@@ -156,7 +156,7 @@ public:
 
         void JustEngagedWith(Unit* who) override
         {
-            Talk(3);      
+            Talk(3);
             _JustEngagedWith(who);
             ChangePhase(1);
         }
@@ -171,7 +171,7 @@ public:
                 summon->SetInCombatWithZone();
                 break;
             }
-        }        
+        }
 
         void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
         {
@@ -198,7 +198,7 @@ public:
                 Talk(5);
         }
 
-        void EnterEvadeMode(EvadeReason w) override
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _JustReachedHome();
             summons.DespawnAll();
@@ -345,11 +345,11 @@ public:
                 case EVENT_SQAULL_TRAP:
                 {
                     for (uint8 i = 0; i < 7; ++i)
+                        me->CastSpell(squallTrapPosition[0][i], SPELL_SQUALL_TRAP_AT);
+                    for (uint8 i = 0; i < 5; ++i)
                         me->CastSpell(squallTrapPosition[1][i], SPELL_SQUALL_TRAP_AT);
                     for (uint8 i = 0; i < 5; ++i)
                         me->CastSpell(squallTrapPosition[2][i], SPELL_SQUALL_TRAP_AT);
-                    for (uint8 i = 0; i < 5; ++i)
-                        me->CastSpell(squallTrapPosition[3][i], SPELL_SQUALL_TRAP_AT);
                     break;
                 }
                 }
@@ -371,8 +371,6 @@ public:
 
     class bfa_spell_arcanado_burst_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_arcanado_burst_cast_SpellScript);
-
         void AfterCast(SpellEffIndex index)
         {
             Unit* caster = GetCaster();
@@ -418,8 +416,6 @@ public:
 
     class bfa_spell_arcane_bomb_radiance_dummy_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_arcane_bomb_radiance_dummy_SpellScript);
-
         void AfterCast(SpellEffIndex index)
         {
             Unit* caster = GetCaster();
@@ -437,7 +433,7 @@ public:
             for (std::list<Player*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
             {
                 std::ostringstream str;
-                str << (*itr)->GetName(); " is targeted by |cFFF00000|h[Arcane Bomb]|h|r!";
+                str << (*itr)->GetName() << " is targeted by |cFFF00000|h[Arcane Bomb]|h|r!";
                 caster->TextEmote(str.str().c_str(), 0, true);
                 caster->CastSpell((*itr), SPELL_ARCANE_BOMB_VEH, true);
             }
@@ -464,8 +460,6 @@ public:
 
     class bfa_spell_arcanado_burst_dummy_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_arcanado_burst_dummy_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (targets.size() == 0 || targets.size())
@@ -497,7 +491,7 @@ public:
     }
 };
 
-// 17469 
+// 17469
 class bfa_at_arcanado : public AreaTriggerEntityScript
 {
 public:
@@ -570,7 +564,7 @@ public:
     }
 };
 
-//16695 
+//16695
 class bfa_at_squall_trap : public AreaTriggerEntityScript
 {
 public:
@@ -625,8 +619,6 @@ public:
     class bfa_spell_arcane_bomb_radiance_SpellScript : public SpellScript
     {
     public:
-        PrepareSpellScript(bfa_spell_arcane_bomb_radiance_SpellScript);
-
         void HandleSummon()
         {
             if (!GetCaster() || !GetHitUnit())
@@ -646,8 +638,6 @@ public:
     class bfa_spell_arcane_bomb_radiance_Aurascript : public AuraScript
     {
     public:
-        PrepareAuraScript(bfa_spell_arcane_bomb_radiance_Aurascript);
-
         void HandleDispel(DispelInfo* dispelInfo)
         {
             if (!GetCaster() || !GetUnitOwner())
@@ -753,7 +743,7 @@ public:
     struct bfa_npc_stormwraith_AI : public ScriptedAI
     {
         bfa_npc_stormwraith_AI(Creature* creature) : ScriptedAI(creature) { }
-        
+
         void Reset() override
         {
             events.Reset();
@@ -864,8 +854,6 @@ public:
 
     class bfa_spell_ancient_tempest_players_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_ancient_tempest_players_AuraScript);
-
         void OnPeriodic(AuraEffect const* aurEff)
         {
             Unit* caster = GetCaster();

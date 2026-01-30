@@ -46,20 +46,19 @@ void CharacterTemplateDataStore::LoadCharacterTemplates()
             if (!((factionGroup & (FACTION_MASK_PLAYER | FACTION_MASK_ALLIANCE)) == (FACTION_MASK_PLAYER | FACTION_MASK_ALLIANCE)) &&
                 !((factionGroup & (FACTION_MASK_PLAYER | FACTION_MASK_HORDE)) == (FACTION_MASK_PLAYER | FACTION_MASK_HORDE)))
             {
-                TC_LOG_ERROR("sql.sql", "Faction group %u defined for character template %u in `character_template_class` is invalid. Skipped.", factionGroup, templateId);
+                TC_LOG_ERROR("sql.sql", "Faction group {} defined for character template {} in `character_template_class` is invalid. Skipped.", factionGroup, templateId);
                 continue;
             }
 
             ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classID);
             if (!classEntry)
             {
-                TC_LOG_ERROR("sql.sql", "Class %u defined for character template %u in `character_template_class` does not exists, skipped.", classID, templateId);
+                TC_LOG_ERROR("sql.sql", "Class {} defined for character template {} in `character_template_class` does not exists, skipped.", classID, templateId);
                 continue;
             }
 
             characterTemplateClasses[templateId].emplace_back(factionGroup, classID);
-        }
-        while (classesResult->NextRow());
+        } while (classesResult->NextRow());
     }
     else
     {
@@ -86,15 +85,14 @@ void CharacterTemplateDataStore::LoadCharacterTemplates()
 
         if (templ.Classes.empty())
         {
-            TC_LOG_ERROR("sql.sql", "Character template %u does not have any classes defined in `character_template_class`. Skipped.", templ.TemplateSetId);
+            TC_LOG_ERROR("sql.sql", "Character template {} does not have any classes defined in `character_template_class`. Skipped.", templ.TemplateSetId);
             continue;
         }
 
         _characterTemplateStore[templ.TemplateSetId] = templ;
-    }
-    while (templates->NextRow());
+    } while (templates->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " character templates in %u ms.", _characterTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} character templates in {} ms.", _characterTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 CharacterTemplateContainer const& CharacterTemplateDataStore::GetCharacterTemplates() const

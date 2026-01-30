@@ -19,1129 +19,1100 @@
 #include "CharacterPackets.h"
 #include "SpellPackets.h"
 
-void WorldPackets::Spells::CancelAura::Read()
+namespace WorldPackets::Spells
 {
-    _worldPacket >> SpellID;
-    _worldPacket >> CasterGUID;
-}
-
-void WorldPackets::Spells::PetCancelAura::Read()
-{
-    _worldPacket >> PetGUID;
-    _worldPacket >> SpellID;
-}
-
-void WorldPackets::Spells::CancelChannelling::Read()
-{
-    _worldPacket >> ChannelSpell;
-    _worldPacket >> Reason;
-}
-
-WorldPacket const* WorldPackets::Spells::CategoryCooldown::Write()
-{
-    _worldPacket.reserve(4 + 8 * CategoryCooldowns.size());
-
-    _worldPacket << uint32(CategoryCooldowns.size());
-
-    for (CategoryCooldownInfo const& cooldown : CategoryCooldowns)
+    void CancelAura::Read()
     {
-        _worldPacket << uint32(cooldown.Category);
-        _worldPacket << int32(cooldown.ModCooldown);
+        _worldPacket >> SpellID;
+        _worldPacket >> CasterGUID;
     }
 
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SendKnownSpells::Write()
-{
-    _worldPacket.reserve(1 + 4 * KnownSpells.size() + 4 * FavoriteSpells.size());
-
-    _worldPacket.WriteBit(InitialLogin);
-    _worldPacket << uint32(KnownSpells.size());
-    _worldPacket << uint32(FavoriteSpells.size());
-
-    for (uint32 spellId : KnownSpells)
-        _worldPacket << uint32(spellId);
-
-    for (uint32 spellId : FavoriteSpells)
-        _worldPacket << uint32(spellId);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::UpdateActionButtons::Write()
-{
-    _worldPacket.append(ActionButtons.data(), ActionButtons.size());
-    _worldPacket << Reason;
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::SetActionButton::Read()
-{
-    _worldPacket >> Action;
-    _worldPacket >> Index;
-}
-
-WorldPacket const* WorldPackets::Spells::SendUnlearnSpells::Write()
-{
-    _worldPacket << uint32(Spells.size());
-    for (uint32 spellId : Spells)
-        _worldPacket << uint32(spellId);
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::AuraDataInfo const& auraData)
-{
-    data << auraData.CastID;
-    data << int32(auraData.SpellID);
-    data << auraData.Visual;
-    data << uint16(auraData.Flags);
-    data << uint32(auraData.ActiveFlags);
-    data << uint16(auraData.CastLevel);
-    data << uint8(auraData.Applications);
-    data << int32(auraData.ContentTuningID);
-    data.WriteBit(auraData.CastUnit.has_value());
-    data.WriteBit(auraData.Duration.has_value());
-    data.WriteBit(auraData.Remaining.has_value());
-    data.WriteBit(auraData.TimeMod.has_value());
-    data.WriteBits(auraData.Points.size(), 6);
-    data.WriteBits(auraData.EstimatedPoints.size(), 6);
-    data.WriteBit(auraData.ContentTuning.has_value());
-
-    if (auraData.ContentTuning)
-        data << *auraData.ContentTuning;
-
-    if (auraData.CastUnit)
-        data << *auraData.CastUnit;
-
-    if (auraData.Duration)
-        data << uint32(*auraData.Duration);
-
-    if (auraData.Remaining)
-        data << uint32(*auraData.Remaining);
-
-    if (auraData.TimeMod)
-        data << float(*auraData.TimeMod);
-
-    if (!auraData.Points.empty())
-        data.append(auraData.Points.data(), auraData.Points.size());
-
-    if (!auraData.EstimatedPoints.empty())
-        data.append(auraData.EstimatedPoints.data(), auraData.EstimatedPoints.size());
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::AuraInfo const& aura)
-{
-    data << aura.Slot;
-    data.WriteBit(aura.AuraData.has_value());
-    data.FlushBits();
-
-    if (aura.AuraData)
-        data << *aura.AuraData;
-
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::AuraUpdate::Write()
-{
-    _worldPacket.WriteBit(UpdateAll);
-    _worldPacket.WriteBits(Auras.size(), 9);
-    for (AuraInfo const& aura : Auras)
-        _worldPacket << aura;
-
-    _worldPacket << UnitGUID;
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator>>(ByteBuffer& buffer, Optional<WorldPackets::Spells::TargetLocation>& location)
-{
-    location.emplace();
-    buffer >> location->Transport;
-    buffer >> location->Location.m_positionX;
-    buffer >> location->Location.m_positionY;
-    buffer >> location->Location.m_positionZ;
-    return buffer;
-}
-
-ByteBuffer& operator>>(ByteBuffer& buffer, WorldPackets::Spells::SpellTargetData& targetData)
-{
-    buffer.ResetBitPos();
-
-    targetData.Flags = buffer.ReadBits(26);
-    bool hasSrcLocation = buffer.ReadBit();
-    bool hasDstLocation = buffer.ReadBit();
-    bool hasOrientation = buffer.ReadBit();
-    bool hasMapID = buffer.ReadBit();
-    uint32 nameLength = buffer.ReadBits(7);
-
-    buffer >> targetData.Unit;
-    buffer >> targetData.Item;
-
-    if (hasSrcLocation)
-        buffer >> targetData.SrcLocation;
-
-    if (hasDstLocation)
-        buffer >> targetData.DstLocation;
-
-    if (hasOrientation)
-        targetData.Orientation = buffer.read<float>();
-
-    if (hasMapID)
-        targetData.MapID = buffer.read<int32>();
-
-    targetData.Name = buffer.ReadString(nameLength);
-
-    return buffer;
-}
-
-ByteBuffer& operator>>(ByteBuffer& buffer, WorldPackets::Spells::MissileTrajectoryRequest& trajectory)
-{
-    buffer >> trajectory.Pitch;
-    buffer >> trajectory.Speed;
-    return buffer;
-}
-
-ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Spells::SpellOptionalReagent& optionalReagent)
-{
-    data >> optionalReagent.ItemID;
-    data >> optionalReagent.Slot;
-    return data;
-}
-
-ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Spells::SpellExtraCurrencyCost& extraCurrencyCost)
-{
-    data >> extraCurrencyCost.CurrencyID;
-    data >> extraCurrencyCost.Count;
-    return data;
-}
-
-ByteBuffer& operator>>(ByteBuffer& buffer, WorldPackets::Spells::SpellCastRequest& request)
-{
-    buffer >> request.CastID;
-    buffer >> request.Misc[0];
-    buffer >> request.Misc[1];
-    buffer >> request.SpellID;
-    buffer >> request.Visual;
-    buffer >> request.MissileTrajectory;
-    buffer >> request.CraftingNPC;
-    request.OptionalReagents.resize(buffer.read<uint32>());
-    request.OptionalCurrencies.resize(buffer.read<uint32>());
-
-    for (WorldPackets::Spells::SpellOptionalReagent& optionalReagent : request.OptionalReagents)
-        buffer >> optionalReagent;
-
-    for (WorldPackets::Spells::SpellExtraCurrencyCost& optionalCurrency : request.OptionalCurrencies)
-        buffer >> optionalCurrency;
-
-    request.SendCastFlags = buffer.ReadBits(5);
-    bool hasMoveUpdate = buffer.ReadBit();
-    request.Weight.resize(buffer.ReadBits(2));
-    buffer >> request.Target;
-
-    if (hasMoveUpdate)
+    void CancelChannelling::Read()
     {
-        request.MoveUpdate.emplace();
-        buffer >> *request.MoveUpdate;
+        _worldPacket >> ChannelSpell;
+        _worldPacket >> Reason;
     }
 
-    for (WorldPackets::Spells::SpellWeight& weight : request.Weight)
+    void CancelModSpeedNoControlAuras::Read()
+    {
+        _worldPacket >> TargetGUID;
+    }
+
+    void PetCancelAura::Read()
+    {
+        _worldPacket >> PetGUID;
+        _worldPacket >> SpellID;
+    }
+
+    WorldPacket const* SendKnownSpells::Write()
+    {
+        _worldPacket.reserve(1 + 4 * KnownSpells.size() + 4 * FavoriteSpells.size());
+
+        _worldPacket.WriteBit(InitialLogin);
+        _worldPacket << uint32(KnownSpells.size());
+        _worldPacket << uint32(FavoriteSpells.size());
+
+        for (uint32 spellId : KnownSpells)
+            _worldPacket << uint32(spellId);
+
+        for (uint32 spellId : FavoriteSpells)
+            _worldPacket << uint32(spellId);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* UpdateActionButtons::Write()
+    {
+        _worldPacket.append(ActionButtons.data(), ActionButtons.size());
+        _worldPacket << Reason;
+
+        return &_worldPacket;
+    }
+
+    void SetActionButton::Read()
+    {
+        _worldPacket >> Action;
+        _worldPacket >> Index;
+    }
+
+    WorldPacket const* SendUnlearnSpells::Write()
+    {
+        _worldPacket << uint32(Spells.size());
+        for (uint32 spellId : Spells)
+            _worldPacket << uint32(spellId);
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, AuraDataInfo const& auraData)
+    {
+        data << auraData.CastID;
+        data << int32(auraData.SpellID);
+        data << auraData.Visual;
+        data << uint16(auraData.Flags);
+        data << uint32(auraData.ActiveFlags);
+        data << uint16(auraData.CastLevel);
+        data << uint8(auraData.Applications);
+        data << int32(auraData.ContentTuningID);
+        data.WriteBit(auraData.CastUnit.has_value());
+        data.WriteBit(auraData.Duration.has_value());
+        data.WriteBit(auraData.Remaining.has_value());
+        data.WriteBit(auraData.TimeMod.has_value());
+        data.WriteBits(auraData.Points.size(), 6);
+        data.WriteBits(auraData.EstimatedPoints.size(), 6);
+        data.WriteBit(auraData.ContentTuning.has_value());
+
+        if (auraData.ContentTuning)
+            data << *auraData.ContentTuning;
+
+        if (auraData.CastUnit)
+            data << *auraData.CastUnit;
+
+        if (auraData.Duration)
+            data << uint32(*auraData.Duration);
+
+        if (auraData.Remaining)
+            data << uint32(*auraData.Remaining);
+
+        if (auraData.TimeMod)
+            data << float(*auraData.TimeMod);
+
+        if (!auraData.Points.empty())
+            data.append(auraData.Points.data(), auraData.Points.size());
+
+        if (!auraData.EstimatedPoints.empty())
+            data.append(auraData.EstimatedPoints.data(), auraData.EstimatedPoints.size());
+
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, AuraInfo const& aura)
+    {
+        data << aura.Slot;
+        data.WriteBit(aura.AuraData.has_value());
+        data.FlushBits();
+
+        if (aura.AuraData)
+            data << *aura.AuraData;
+
+        return data;
+    }
+
+    WorldPacket const* AuraUpdate::Write()
+    {
+        _worldPacket.WriteBit(UpdateAll);
+        _worldPacket.WriteBits(Auras.size(), 9);
+        for (AuraInfo const& aura : Auras)
+            _worldPacket << aura;
+
+        _worldPacket << UnitGUID;
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator>>(ByteBuffer& buffer, TargetLocation& location)
+    {
+        buffer >> location.Transport;
+        buffer >> location.Location;
+        return buffer;
+    }
+
+    ByteBuffer& operator>>(ByteBuffer& buffer, SpellTargetData& targetData)
     {
         buffer.ResetBitPos();
-        weight.Type = buffer.ReadBits(2);
-        buffer >> weight.ID;
-        buffer >> weight.Quantity;
+
+        targetData.Flags = buffer.ReadBits(28);
+        bool hasSrcLocation = buffer.ReadBit();
+        bool hasDstLocation = buffer.ReadBit();
+        bool hasOrientation = buffer.ReadBit();
+        bool hasMapID = buffer.ReadBit();
+        uint32 nameLength = buffer.ReadBits(7);
+
+        buffer >> targetData.Unit;
+        buffer >> targetData.Item;
+
+        if (hasSrcLocation)
+            buffer >> targetData.SrcLocation.emplace();
+
+        if (hasDstLocation)
+            buffer >> targetData.DstLocation.emplace();
+
+        if (hasOrientation)
+            targetData.Orientation = buffer.read<float>();
+
+        if (hasMapID)
+            targetData.MapID = buffer.read<int32>();
+
+        targetData.Name = buffer.ReadString(nameLength);
+
+        return buffer;
     }
 
-    return buffer;
-}
-
-void WorldPackets::Spells::CastSpell::Read()
-{
-    _worldPacket >> Cast;
-}
-
-void WorldPackets::Spells::PetCastSpell::Read()
-{
-    _worldPacket >> PetGUID;
-    _worldPacket >> Cast;
-}
-
-void WorldPackets::Spells::UseItem::Read()
-{
-    _worldPacket >> PackSlot;
-    _worldPacket >> Slot;
-    _worldPacket >> CastItem;
-    _worldPacket >> Cast;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellPrepare::Write()
-{
-    _worldPacket << ClientCastID;
-    _worldPacket << ServerCastID;
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::TargetLocation const& targetLocation)
-{
-    data << targetLocation.Transport;
-    data << float(targetLocation.Location.m_positionX);
-    data << float(targetLocation.Location.m_positionY);
-    data << float(targetLocation.Location.m_positionZ);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellTargetData const& spellTargetData)
-{
-    data.WriteBits(spellTargetData.Flags, 26);
-    data.WriteBit(spellTargetData.SrcLocation.has_value());
-    data.WriteBit(spellTargetData.DstLocation.has_value());
-    data.WriteBit(spellTargetData.Orientation.has_value());
-    data.WriteBit(spellTargetData.MapID.has_value());
-    data.WriteBits(spellTargetData.Name.size(), 7);
-    data.FlushBits();
-
-    data << spellTargetData.Unit;
-    data << spellTargetData.Item;
-
-    if (spellTargetData.SrcLocation)
-        data << *spellTargetData.SrcLocation;
-
-    if (spellTargetData.DstLocation)
-        data << *spellTargetData.DstLocation;
-
-    if (spellTargetData.Orientation)
-        data << *spellTargetData.Orientation;
-
-    if (spellTargetData.MapID)
-        data << *spellTargetData.MapID;
-
-    data.WriteString(spellTargetData.Name);
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellMissStatus const& spellMissStatus)
-{
-    data.WriteBits(spellMissStatus.Reason, 4);
-    if (spellMissStatus.Reason == SPELL_MISS_REFLECT)
-        data.WriteBits(spellMissStatus.ReflectStatus, 4);
-
-    data.FlushBits();
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellHitStatus const& spellHitStatus)
-{
-    data << uint8(spellHitStatus.Reason);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellPowerData const& spellPowerData)
-{
-    data << int32(spellPowerData.Cost);
-    data << int8(spellPowerData.Type);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::RuneData const& runeData)
-{
-    data << uint8(runeData.Start);
-    data << uint8(runeData.Count);
-    data << uint32(runeData.Cooldowns.size());
-    if (!runeData.Cooldowns.empty())
-        data.append(runeData.Cooldowns.data(), runeData.Cooldowns.size());
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::MissileTrajectoryResult const& missileTrajectory)
-{
-    data << uint32(missileTrajectory.TravelTime);
-    data << float(missileTrajectory.Pitch);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellAmmo const& spellAmmo)
-{
-    data << int32(spellAmmo.DisplayID);
-    data << int8(spellAmmo.InventoryType);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::CreatureImmunities const& immunities)
-{
-    data << int32(immunities.School);
-    data << int32(immunities.Value);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellHealPrediction const& spellPred)
-{
-    data << int32(spellPred.Points);
-    data << uint8(spellPred.Type);
-    data << spellPred.BeaconGUID;
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellCastData const& spellCastData)
-{
-    data << spellCastData.CasterGUID;
-    data << spellCastData.CasterUnit;
-    data << spellCastData.CastID;
-    data << spellCastData.OriginalCastID;
-    data << int32(spellCastData.SpellID);
-    data << spellCastData.Visual;
-    data << uint32(spellCastData.CastFlags);
-    data << uint32(spellCastData.CastFlagsEx);
-    data << uint32(spellCastData.CastTime);
-    data << spellCastData.MissileTrajectory;
-    data << int32(spellCastData.Ammo.DisplayID);
-    data << uint8(spellCastData.DestLocSpellCastIndex);
-    data << spellCastData.Immunities;
-    data << spellCastData.Predict;
-    data.WriteBits(spellCastData.HitTargets.size(), 16);
-    data.WriteBits(spellCastData.MissTargets.size(), 16);
-    data.WriteBits(spellCastData.HitStatus.size(), 16);
-    data.WriteBits(spellCastData.MissStatus.size(), 16);
-    data.WriteBits(spellCastData.RemainingPower.size(), 9);
-    data.WriteBit(spellCastData.RemainingRunes.has_value());
-    data.WriteBits(spellCastData.TargetPoints.size(), 16);
-    data.FlushBits();
-
-    for (WorldPackets::Spells::SpellMissStatus const& missStatus : spellCastData.MissStatus)
-        data << missStatus;
-
-    data << spellCastData.Target;
-
-    for (ObjectGuid const& hitTarget : spellCastData.HitTargets)
-        data << hitTarget;
-
-    for (ObjectGuid const& missTarget : spellCastData.MissTargets)
-        data << missTarget;
-
-    for (WorldPackets::Spells::SpellHitStatus const& hitStatus : spellCastData.HitStatus)
-        data << hitStatus;
-
-    for (WorldPackets::Spells::SpellPowerData const& power : spellCastData.RemainingPower)
-        data << power;
-
-    if (spellCastData.RemainingRunes)
-        data << *spellCastData.RemainingRunes;
-
-    for (WorldPackets::Spells::TargetLocation const& targetLoc : spellCastData.TargetPoints)
-        data << targetLoc;
-
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellStart::Write()
-{
-    _worldPacket << Cast;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellGo::Write()
-{
-    *this << Cast;
-
-    WriteLogDataBit();
-    FlushBits();
-
-    WriteLogData();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::LearnedSpells::Write()
-{
-    _worldPacket << uint32(SpellID.size());
-    _worldPacket << uint32(FavoriteSpellID.size());
-    _worldPacket << uint32(SpecializationID);
-    for (int32 spell : SpellID)
-        _worldPacket << spell;
-
-    for (int32 spell : FavoriteSpellID)
-        _worldPacket << spell;
-
-    _worldPacket.WriteBit(SuppressMessaging);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SupercededSpells::Write()
-{
-    _worldPacket << uint32(SpellID.size());
-    _worldPacket << uint32(Superceded.size());
-    _worldPacket << uint32(FavoriteSpellID.size());
-
-    if (!SpellID.empty())
-        _worldPacket.append(SpellID.data(), SpellID.size());
-
-    if (!Superceded.empty())
-        _worldPacket.append(Superceded.data(), Superceded.size());
-
-    if (!FavoriteSpellID.empty())
-        _worldPacket.append(FavoriteSpellID.data(), FavoriteSpellID.size());
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellFailure::Write()
-{
-    _worldPacket << CasterUnit;
-    _worldPacket << CastID;
-    _worldPacket << int32(SpellID);
-    _worldPacket << Visual;
-    _worldPacket << uint16(Reason);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellFailedOther::Write()
-{
-    _worldPacket << CasterUnit;
-    _worldPacket << CastID;
-    _worldPacket << uint32(SpellID);
-    _worldPacket << Visual;
-    _worldPacket << uint8(Reason);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::CastFailed::Write()
-{
-    _worldPacket << CastID;
-    _worldPacket << int32(SpellID);
-    _worldPacket << Visual;
-    _worldPacket << int32(Reason);
-    _worldPacket << int32(FailedArg1);
-    _worldPacket << int32(FailedArg2);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::PetCastFailed::Write()
-{
-    _worldPacket << CastID;
-    _worldPacket << int32(SpellID);
-    _worldPacket << int32(Reason);
-    _worldPacket << int32(FailedArg1);
-    _worldPacket << int32(FailedArg2);
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellModifierData const& spellModifierData)
-{
-    data << float(spellModifierData.ModifierValue);
-    data << uint8(spellModifierData.ClassIndex);
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellModifier const& spellModifier)
-{
-    data << uint8(spellModifier.ModIndex);
-    data << uint32(spellModifier.ModifierData.size());
-    for (WorldPackets::Spells::SpellModifierData const& modData : spellModifier.ModifierData)
-        data << modData;
-
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::SetSpellModifier::Write()
-{
-    _worldPacket << uint32(Modifiers.size());
-    for (WorldPackets::Spells::SpellModifier const& spellMod : Modifiers)
-        _worldPacket << spellMod;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::UnlearnedSpells::Write()
-{
-    _worldPacket << uint32(SpellID.size());
-    for (uint32 spellId : SpellID)
-        _worldPacket << uint32(spellId);
-
-    _worldPacket.WriteBit(SuppressMessaging);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::CooldownEvent::Write()
-{
-    _worldPacket << int32(SpellID);
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ClearCooldowns::Write()
-{
-    _worldPacket << uint32(SpellID.size());
-    if (!SpellID.empty())
-        _worldPacket.append(SpellID.data(), SpellID.size());
-
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ClearCooldown::Write()
-{
-    _worldPacket << uint32(SpellID);
-    _worldPacket.WriteBit(ClearOnHold);
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ModifyCooldown::Write()
-{
-    _worldPacket << int32(SpellID);
-    _worldPacket << int32(DeltaTime);
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.WriteBit(WithoutCategoryCooldown);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellCooldownStruct const& cooldown)
-{
-    data << uint32(cooldown.SrecID);
-    data << uint32(cooldown.ForcedCooldown);
-    data << float(cooldown.ModRate);
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellCooldown::Write()
-{
-    _worldPacket << Caster;
-    _worldPacket << uint8(Flags);
-    _worldPacket << uint32(SpellCooldowns.size());
-    for (SpellCooldownStruct const& cooldown : SpellCooldowns)
-        _worldPacket << cooldown;
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellHistoryEntry const& historyEntry)
-{
-    data << uint32(historyEntry.SpellID);
-    data << uint32(historyEntry.ItemID);
-    data << uint32(historyEntry.Category);
-    data << int32(historyEntry.RecoveryTime);
-    data << int32(historyEntry.CategoryRecoveryTime);
-    data << float(historyEntry.ModRate);
-    data.WriteBit(historyEntry.unused622_1.has_value());
-    data.WriteBit(historyEntry.unused622_2.has_value());
-    data.WriteBit(historyEntry.OnHold);
-    if (historyEntry.unused622_1)
-        data << uint32(*historyEntry.unused622_1);
-    if (historyEntry.unused622_2)
-        data << uint32(*historyEntry.unused622_2);
-    data.FlushBits();
-
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::SendSpellHistory::Write()
-{
-    _worldPacket << uint32(Entries.size());
-    for (SpellHistoryEntry const& historyEntry : Entries)
-        _worldPacket << historyEntry;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ClearAllSpellCharges::Write()
-{
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ClearSpellCharges::Write()
-{
-    _worldPacket << int32(Category);
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SetSpellCharges::Write()
-{
-    _worldPacket << int32(Category);
-    _worldPacket << uint32(NextRecoveryTime);
-    _worldPacket << uint8(ConsumedCharges);
-    _worldPacket << float(ChargeModRate);
-    _worldPacket.WriteBit(IsPet);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellChargeEntry const& chargeEntry)
-{
-    data << uint32(chargeEntry.Category);
-    data << uint32(chargeEntry.NextRecoveryTime);
-    data << float(chargeEntry.ChargeModRate);
-    data << uint8(chargeEntry.ConsumedCharges);
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::SendSpellCharges::Write()
-{
-    _worldPacket << uint32(Entries.size());
-    for (SpellChargeEntry const& chargeEntry : Entries)
-        _worldPacket << chargeEntry;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ClearTarget::Write()
-{
-    _worldPacket << Guid;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::CancelOrphanSpellVisual::Write()
-{
-    _worldPacket << int32(SpellVisualID);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::CancelSpellVisual::Write()
-{
-    _worldPacket << Source;
-    _worldPacket << int32(SpellVisualID);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::CancelSpellVisualKit::Write()
-{
-    _worldPacket << Source;
-    _worldPacket << int32(SpellVisualKitID);
-    _worldPacket.WriteBit(MountedVisual);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::PlayOrphanSpellVisual::Write()
-{
-    _worldPacket << SourceLocation;
-    _worldPacket << SourceRotation;
-    _worldPacket << TargetLocation;
-    _worldPacket << Target;
-    _worldPacket << int32(SpellVisualID);
-    _worldPacket << float(TravelSpeed);
-    _worldPacket << float(LaunchDelay);
-    _worldPacket << float(MinDuration);
-    _worldPacket.WriteBit(SpeedAsTime);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::PlaySpellVisual::Write()
-{
-    _worldPacket << Source;
-    _worldPacket << Target;
-    _worldPacket << Transport;
-    _worldPacket << TargetPosition;
-    _worldPacket << uint32(SpellVisualID);
-    _worldPacket << float(TravelSpeed);
-    _worldPacket << uint16(HitReason);
-    _worldPacket << uint16(MissReason);
-    _worldPacket << uint16(ReflectStatus);
-    _worldPacket << float(LaunchDelay);
-    _worldPacket << float(MinDuration);
-    _worldPacket.WriteBit(SpeedAsTime);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::PlaySpellVisualKit::Write()
-{
-    _worldPacket << Unit;
-    _worldPacket << int32(KitRecID);
-    _worldPacket << int32(KitType);
-    _worldPacket << uint32(Duration);
-    _worldPacket.WriteBit(MountedVisual);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellVisualLoadScreen::Write()
-{
-    _worldPacket << int32(SpellVisualKitID);
-    _worldPacket << int32(Delay);
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::CancelCast::Read()
-{
-    _worldPacket >> CastID;
-    _worldPacket >> SpellID;
-}
-
-void WorldPackets::Spells::OpenItem::Read()
-{
-    _worldPacket >> Slot
-                 >> PackSlot;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellChannelStartInterruptImmunities const& interruptImmunities)
-{
-    data << int32(interruptImmunities.SchoolImmunities);
-    data << int32(interruptImmunities.Immunities);
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellTargetedHealPrediction const& targetedHealPrediction)
-{
-    data << targetedHealPrediction.TargetGUID;
-    data << targetedHealPrediction.Predict;
-    return data;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellChannelStart::Write()
-{
-    _worldPacket << CasterGUID;
-    _worldPacket << int32(SpellID);
-    _worldPacket << Visual;
-    _worldPacket << uint32(ChannelDuration);
-    _worldPacket.WriteBit(InterruptImmunities.has_value());
-    _worldPacket.WriteBit(HealPrediction.has_value());
-    _worldPacket.FlushBits();
-
-    if (InterruptImmunities)
-        _worldPacket << *InterruptImmunities;
-
-    if (HealPrediction)
-        _worldPacket << *HealPrediction;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::SpellChannelUpdate::Write()
-{
-    _worldPacket << CasterGUID;
-    _worldPacket << int32(TimeRemaining);
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ResurrectRequest::Write()
-{
-    _worldPacket << ResurrectOffererGUID;
-    _worldPacket << uint32(ResurrectOffererVirtualRealmAddress);
-    _worldPacket << uint32(PetNumber);
-    _worldPacket << int32(SpellID);
-    _worldPacket.WriteBits(Name.length(), 11);
-    _worldPacket.WriteBit(UseTimer);
-    _worldPacket.WriteBit(Sickness);
-    _worldPacket.FlushBits();
-
-    _worldPacket.WriteString(Name);
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::UnlearnSkill::Read()
-{
-    _worldPacket >> SkillLine;
-}
-
-void WorldPackets::Spells::SelfRes::Read()
-{
-    _worldPacket >> SpellID;
-}
-
-void WorldPackets::Spells::GetMirrorImageData::Read()
-{
-    _worldPacket >> UnitGUID;
-    _worldPacket >> DisplayID;
-}
-
-WorldPackets::Spells::MirrorImageComponentedData::MirrorImageComponentedData()
-    : ServerPacket(SMSG_MIRROR_IMAGE_COMPONENTED_DATA, 8 + 4 + 8 * 1 + 8 + 11 * 4)
-{
-}
-
-WorldPackets::Spells::MirrorImageComponentedData::~MirrorImageComponentedData() = default;
-
-WorldPacket const* WorldPackets::Spells::MirrorImageComponentedData::Write()
-{
-    _worldPacket << UnitGUID;
-    _worldPacket << int32(DisplayID);
-    _worldPacket << int32(SpellVisualKitID);
-    _worldPacket << uint8(RaceID);
-    _worldPacket << uint8(Gender);
-    _worldPacket << uint8(ClassID);
-    _worldPacket << uint32(Customizations.size());
-    _worldPacket << GuildGUID;
-    _worldPacket << uint32(ItemDisplayID.size());
-
-    for (Character::ChrCustomizationChoice const& customization : Customizations)
-        _worldPacket << customization;
-
-    for (int32 itemDisplayId : ItemDisplayID)
-        _worldPacket << int32(itemDisplayId);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::MirrorImageCreatureData::Write()
-{
-    _worldPacket << UnitGUID;
-    _worldPacket << int32(DisplayID);
-    _worldPacket << int32(SpellVisualKitID);
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::SpellClick::Read()
-{
-    _worldPacket >> SpellClickUnitGuid;
-    TryAutoDismount = _worldPacket.ReadBit();
-}
-
-WorldPacket const* WorldPackets::Spells::ResyncRunes::Write()
-{
-    _worldPacket << Runes;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::AddRunePower::Write()
-{
-    _worldPacket << uint32(AddedRunesMask);
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::MissileTrajectoryCollision::Read()
-{
-    _worldPacket >> Target;
-    _worldPacket >> SpellID;
-    _worldPacket >> CastID;
-    _worldPacket >> CollisionPos;
-}
-
-WorldPacket const* WorldPackets::Spells::NotifyMissileTrajectoryCollision::Write()
-{
-    _worldPacket << Caster;
-    _worldPacket << CastID;
-    _worldPacket << CollisionPos;
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::UpdateMissileTrajectory::Read()
-{
-    _worldPacket >> Guid;
-    _worldPacket >> CastID;
-    _worldPacket >> MoveMsgID;
-    _worldPacket >> SpellID;
-    _worldPacket >> Pitch;
-    _worldPacket >> Speed;
-    _worldPacket >> FirePos;
-    _worldPacket >> ImpactPos;
-    bool hasStatus = _worldPacket.ReadBit();
-
-    _worldPacket.ResetBitPos();
-    if (hasStatus)
+    ByteBuffer& operator>>(ByteBuffer& buffer, MissileTrajectoryRequest& trajectory)
     {
-        Status.emplace();
-        _worldPacket >> *Status;
+        buffer >> trajectory.Pitch;
+        buffer >> trajectory.Speed;
+        return buffer;
     }
-}
 
-WorldPacket const* WorldPackets::Spells::SpellDelayed::Write()
-{
-    _worldPacket << Caster;
-    _worldPacket << uint32(ActualDelay);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::DispelFailed::Write()
-{
-    _worldPacket << CasterGUID;
-    _worldPacket << VictimGUID;
-    _worldPacket << uint32(SpellID);
-    _worldPacket << uint32(FailedSpells.size());
-    if (!FailedSpells.empty())
-        _worldPacket.append(FailedSpells.data(), FailedSpells.size());
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::CustomLoadScreen::Write()
-{
-    _worldPacket << uint32(TeleportSpellID);
-    _worldPacket << uint32(LoadingScreenID);
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::MountResult::Write()
-{
-    _worldPacket << int32(Result);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::MissileCancel::Write()
-{
-    _worldPacket << OwnerGUID;
-    _worldPacket << int32(SpellID);
-    _worldPacket.WriteBit(Reverse);
-    _worldPacket.FlushBits();
-
-    return &_worldPacket;
-}
-
-//DekkCore
-WorldPacket const* WorldPackets::Spells::ScriptCast::Write()
-{
-    _worldPacket << SpellID;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::AddLossOfControl::Write()
-{
-    _worldPacket << Victim;
-    _worldPacket << SpellID;
-    _worldPacket << Caster;
-    _worldPacket << Duration;
-    _worldPacket << DurationRemaining;
-    _worldPacket << LockoutSchoolMask;
-    _worldPacket.WriteBits(Type, 8);
-    _worldPacket.WriteBits(Mechanic, 8);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::AuraPointsDepleted::Write()
-{
-    _worldPacket << Unit;
-    _worldPacket << Slot;
-    _worldPacket << EffectIndex;
-
-    return &_worldPacket;
-}
-
-void WorldPackets::Spells::CancelModSpeedNoControlAuras::Read()
-{
-    _worldPacket >> TargetGUID;
-}
-
-WorldPacket const* WorldPackets::Spells::WeeklySpellUsage::Write()
-{
-   _worldPacket << static_cast<uint32>(SpellUsage.size());
-    for (auto const& x : SpellUsage)
-     {
-       _worldPacket << x.Category;
-       _worldPacket << x.Uses;
-     }
-    
-        return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ResumeCastBar::Write()
-{
-    _worldPacket << Guid;
-    _worldPacket << Target;
-    _worldPacket << SpellID;
-    _worldPacket << SpellXSpellVisualID;
-    _worldPacket << TimeRemaining;
-    _worldPacket << TotalTime;
-    _worldPacket.WriteBit(Immunities.has_value());
-    if (Immunities)
-        _worldPacket << *Immunities;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::ResumeCast::Write()
-{
-    _worldPacket << CasterGUID;
-    _worldPacket << Target;
-    _worldPacket << CastID;
-    _worldPacket << SpellXSpellVisualID;
-    _worldPacket << SpellID;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::RefreshSpellHistory::Write()
-{
-    _worldPacket << static_cast<uint32>(Entries.size());
-    for (SpellHistoryEntry const& historyEntry : Entries)
-         _worldPacket << historyEntry;
-    
-        return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::PushSpellToActionBar::Write()
-{
-    _worldPacket << SpellID;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::NotifyDestLocSpellCast::Write()
-{
-    _worldPacket << Caster;
-    _worldPacket << DestTransport;
-    _worldPacket << SpellID;
-    _worldPacket << SourceLoc;
-    _worldPacket << DestLoc;
-    _worldPacket << MissileTrajectoryPitch;
-    _worldPacket << MissileTrajectorySpeed;
-    _worldPacket << TravelTime;
-    _worldPacket << DestLocSpellCastIndex;
-    _worldPacket << CastID;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Spells::LossOfControlAuraUpdate::Write()
-{
-    _worldPacket << TargetGuid;
-    _worldPacket << static_cast<uint32>(Infos.size());
-    for (auto const& x : Infos)
+    ByteBuffer& operator>>(ByteBuffer& data, SpellCraftingReagent& optionalReagent)
     {
-        _worldPacket << x.AuraSlot;
-        _worldPacket << x.EffectIndex;
-        _worldPacket.WriteBits(x.Type, 8);
-        _worldPacket.WriteBits(x.Mechanic, 8);
+        data >> optionalReagent.ItemID;
+        data >> optionalReagent.DataSlotIndex;
+        data >> optionalReagent.Quantity;
+        if (data.ReadBit())
+            optionalReagent.Unknown_1000 = data.read<uint8>();
+
+        return data;
     }
 
-    return &_worldPacket;
+    ByteBuffer& operator>>(ByteBuffer& data, SpellExtraCurrencyCost& extraCurrencyCost)
+    {
+        data >> extraCurrencyCost.CurrencyID;
+        data >> extraCurrencyCost.Count;
+        return data;
+    }
+
+    ByteBuffer& operator>>(ByteBuffer& buffer, SpellCastRequest& request)
+    {
+        buffer >> request.CastID;
+        buffer >> request.Misc[0];
+        buffer >> request.Misc[1];
+        buffer >> request.SpellID;
+        buffer >> request.Visual;
+        buffer >> request.MissileTrajectory;
+        buffer >> request.CraftingNPC;
+        request.OptionalCurrencies.resize(buffer.read<uint32>());
+        request.OptionalReagents.resize(buffer.read<uint32>());
+        request.RemovedModifications.resize(buffer.read<uint32>());
+
+        for (SpellExtraCurrencyCost& optionalCurrency : request.OptionalCurrencies)
+            buffer >> optionalCurrency;
+
+        request.SendCastFlags = buffer.ReadBits(5);
+        bool hasMoveUpdate = buffer.ReadBit();
+        request.Weight.resize(buffer.ReadBits(2));
+        bool hasCraftingOrderID = buffer.ReadBit();
+        buffer >> request.Target;
+
+        if (hasCraftingOrderID)
+            request.CraftingOrderID = buffer.read<uint64>();
+
+        for (SpellCraftingReagent& optionalReagent : request.OptionalReagents)
+            buffer >> optionalReagent;
+
+        for (SpellCraftingReagent& optionalReagent : request.RemovedModifications)
+            buffer >> optionalReagent;
+
+        if (hasMoveUpdate)
+            buffer >> request.MoveUpdate.emplace();
+
+        for (SpellWeight& weight : request.Weight)
+        {
+            buffer.ResetBitPos();
+            weight.Type = buffer.ReadBits(2);
+            buffer >> weight.ID;
+            buffer >> weight.Quantity;
+        }
+
+        return buffer;
+    }
+
+    void CastSpell::Read()
+    {
+        _worldPacket >> Cast;
+    }
+
+    void PetCastSpell::Read()
+    {
+        _worldPacket >> PetGUID;
+        _worldPacket >> Cast;
+    }
+
+    void UseItem::Read()
+    {
+        _worldPacket >> PackSlot;
+        _worldPacket >> Slot;
+        _worldPacket >> CastItem;
+        _worldPacket >> Cast;
+    }
+
+    WorldPacket const* SpellPrepare::Write()
+    {
+        _worldPacket << ClientCastID;
+        _worldPacket << ServerCastID;
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, TargetLocation const& targetLocation)
+    {
+        data << targetLocation.Transport;
+        data << targetLocation.Location;
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellTargetData const& spellTargetData)
+    {
+        data.WriteBits(spellTargetData.Flags, 28);
+        data.WriteBit(spellTargetData.SrcLocation.has_value());
+        data.WriteBit(spellTargetData.DstLocation.has_value());
+        data.WriteBit(spellTargetData.Orientation.has_value());
+        data.WriteBit(spellTargetData.MapID.has_value());
+        data.WriteBits(spellTargetData.Name.size(), 7);
+        data.FlushBits();
+
+        data << spellTargetData.Unit;
+        data << spellTargetData.Item;
+
+        if (spellTargetData.SrcLocation)
+            data << *spellTargetData.SrcLocation;
+
+        if (spellTargetData.DstLocation)
+            data << *spellTargetData.DstLocation;
+
+        if (spellTargetData.Orientation)
+            data << *spellTargetData.Orientation;
+
+        if (spellTargetData.MapID)
+            data << *spellTargetData.MapID;
+
+        data.WriteString(spellTargetData.Name);
+
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellMissStatus const& spellMissStatus)
+    {
+        data << uint8(spellMissStatus.Reason);
+        if (spellMissStatus.Reason == SPELL_MISS_REFLECT)
+            data << uint8(spellMissStatus.ReflectStatus);
+
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellHitStatus const& spellHitStatus)
+    {
+        data << uint8(spellHitStatus.Reason);
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellPowerData const& spellPowerData)
+    {
+        data << int32(spellPowerData.Cost);
+        data << int8(spellPowerData.Type);
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, RuneData const& runeData)
+    {
+        data << uint8(runeData.Start);
+        data << uint8(runeData.Count);
+        data << uint32(runeData.Cooldowns.size());
+        if (!runeData.Cooldowns.empty())
+            data.append(runeData.Cooldowns.data(), runeData.Cooldowns.size());
+
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, MissileTrajectoryResult const& missileTrajectory)
+    {
+        data << uint32(missileTrajectory.TravelTime);
+        data << float(missileTrajectory.Pitch);
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, CreatureImmunities const& immunities)
+    {
+        data << int32(immunities.School);
+        data << int32(immunities.Value);
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellHealPrediction const& spellPred)
+    {
+        data << int32(spellPred.Points);
+        data << uint8(spellPred.Type);
+        data << spellPred.BeaconGUID;
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellCastData const& spellCastData)
+    {
+        data << spellCastData.CasterGUID;
+        data << spellCastData.CasterUnit;
+        data << spellCastData.CastID;
+        data << spellCastData.OriginalCastID;
+        data << int32(spellCastData.SpellID);
+        data << spellCastData.Visual;
+        data << uint32(spellCastData.CastFlags);
+        data << uint32(spellCastData.CastFlagsEx);
+        data << uint32(spellCastData.CastTime);
+        data << spellCastData.MissileTrajectory;
+        data << int32(spellCastData.AmmoDisplayID);
+        data << uint8(spellCastData.DestLocSpellCastIndex);
+        data << spellCastData.Immunities;
+        data << spellCastData.Predict;
+        data.WriteBits(spellCastData.HitTargets.size(), 16);
+        data.WriteBits(spellCastData.MissTargets.size(), 16);
+        data.WriteBits(spellCastData.HitStatus.size(), 16);
+        data.WriteBits(spellCastData.MissStatus.size(), 16);
+        data.WriteBits(spellCastData.RemainingPower.size(), 9);
+        data.WriteBit(spellCastData.RemainingRunes.has_value());
+        data.WriteBits(spellCastData.TargetPoints.size(), 16);
+        data.FlushBits();
+
+        data << spellCastData.Target;
+
+        for (ObjectGuid const& hitTarget : spellCastData.HitTargets)
+            data << hitTarget;
+
+        for (ObjectGuid const& missTarget : spellCastData.MissTargets)
+            data << missTarget;
+
+        for (SpellHitStatus const& hitStatus : spellCastData.HitStatus)
+            data << hitStatus;
+
+        for (SpellMissStatus const& missStatus : spellCastData.MissStatus)
+            data << missStatus;
+
+        for (SpellPowerData const& power : spellCastData.RemainingPower)
+            data << power;
+
+        if (spellCastData.RemainingRunes)
+            data << *spellCastData.RemainingRunes;
+
+        for (TargetLocation const& targetLoc : spellCastData.TargetPoints)
+            data << targetLoc;
+
+        return data;
+    }
+
+    WorldPacket const* SpellStart::Write()
+    {
+        _worldPacket << Cast;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SpellGo::Write()
+    {
+        *this << Cast;
+
+        WriteLogDataBit();
+        FlushBits();
+
+        WriteLogData();
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, LearnedSpellInfo const& learnedSpellInfo)
+    {
+        data << int32(learnedSpellInfo.SpellID);
+        data.WriteBit(learnedSpellInfo.IsFavorite);
+        data.WriteBit(learnedSpellInfo.field_8.has_value());
+        data.WriteBit(learnedSpellInfo.Superceded.has_value());
+        data.WriteBit(learnedSpellInfo.TraitDefinitionID.has_value());
+        data.FlushBits();
+
+        if (learnedSpellInfo.field_8)
+            data << int32(*learnedSpellInfo.field_8);
+
+        if (learnedSpellInfo.Superceded)
+            data << int32(*learnedSpellInfo.Superceded);
+
+        if (learnedSpellInfo.TraitDefinitionID)
+            data << int32(*learnedSpellInfo.TraitDefinitionID);
+
+        return data;
+    }
+
+    WorldPacket const* LearnedSpells::Write()
+    {
+        _worldPacket << uint32(ClientLearnedSpellData.size());
+        _worldPacket << uint32(SpecializationID);
+        _worldPacket.WriteBit(SuppressMessaging);
+        _worldPacket.FlushBits();
+
+        for (LearnedSpellInfo const& spell : ClientLearnedSpellData)
+            _worldPacket << spell;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SupercededSpells::Write()
+    {
+        _worldPacket << uint32(ClientLearnedSpellData.size());
+
+        for (LearnedSpellInfo const& spell : ClientLearnedSpellData)
+            _worldPacket << spell;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SpellFailure::Write()
+    {
+        _worldPacket << CasterUnit;
+        _worldPacket << CastID;
+        _worldPacket << int32(SpellID);
+        _worldPacket << Visual;
+        _worldPacket << uint16(Reason);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SpellFailedOther::Write()
+    {
+        _worldPacket << CasterUnit;
+        _worldPacket << CastID;
+        _worldPacket << uint32(SpellID);
+        _worldPacket << Visual;
+        _worldPacket << uint8(Reason);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* CastFailed::Write()
+    {
+        _worldPacket << CastID;
+        _worldPacket << int32(SpellID);
+        _worldPacket << Visual;
+        _worldPacket << int32(Reason);
+        _worldPacket << int32(FailedArg1);
+        _worldPacket << int32(FailedArg2);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* PetCastFailed::Write()
+    {
+        _worldPacket << CastID;
+        _worldPacket << int32(SpellID);
+        _worldPacket << int32(Reason);
+        _worldPacket << int32(FailedArg1);
+        _worldPacket << int32(FailedArg2);
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellModifierData const& spellModifierData)
+    {
+        data << float(spellModifierData.ModifierValue);
+        data << uint8(spellModifierData.ClassIndex);
+
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellModifier const& spellModifier)
+    {
+        data << uint8(spellModifier.ModIndex);
+        data << uint32(spellModifier.ModifierData.size());
+        for (SpellModifierData const& modData : spellModifier.ModifierData)
+            data << modData;
+
+        return data;
+    }
+
+    WorldPacket const* SetSpellModifier::Write()
+    {
+        _worldPacket << uint32(Modifiers.size());
+        for (SpellModifier const& spellMod : Modifiers)
+            _worldPacket << spellMod;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* UnlearnedSpells::Write()
+    {
+        _worldPacket << uint32(SpellID.size());
+        for (uint32 spellId : SpellID)
+            _worldPacket << uint32(spellId);
+
+        _worldPacket.WriteBit(SuppressMessaging);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* CooldownEvent::Write()
+    {
+        _worldPacket << int32(SpellID);
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ClearCooldowns::Write()
+    {
+        _worldPacket << uint32(SpellID.size());
+        if (!SpellID.empty())
+            _worldPacket.append(SpellID.data(), SpellID.size());
+
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ClearCooldown::Write()
+    {
+        _worldPacket << uint32(SpellID);
+        _worldPacket.WriteBit(ClearOnHold);
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ModifyCooldown::Write()
+    {
+        _worldPacket << int32(SpellID);
+        _worldPacket << int32(DeltaTime);
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.WriteBit(WithoutCategoryCooldown);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellCooldownStruct const& cooldown)
+    {
+        data << uint32(cooldown.SrecID);
+        data << uint32(cooldown.ForcedCooldown);
+        data << float(cooldown.ModRate);
+        return data;
+    }
+
+    WorldPacket const* SpellCooldown::Write()
+    {
+        _worldPacket << Caster;
+        _worldPacket << uint8(Flags);
+        _worldPacket << uint32(SpellCooldowns.size());
+        for (SpellCooldownStruct const& cooldown : SpellCooldowns)
+            _worldPacket << cooldown;
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellHistoryEntry const& historyEntry)
+    {
+        data << uint32(historyEntry.SpellID);
+        data << uint32(historyEntry.ItemID);
+        data << uint32(historyEntry.Category);
+        data << int32(historyEntry.RecoveryTime);
+        data << int32(historyEntry.CategoryRecoveryTime);
+        data << float(historyEntry.ModRate);
+        data.WriteBit(historyEntry.unused622_1.has_value());
+        data.WriteBit(historyEntry.unused622_2.has_value());
+        data.WriteBit(historyEntry.OnHold);
+        if (historyEntry.unused622_1)
+            data << uint32(*historyEntry.unused622_1);
+        if (historyEntry.unused622_2)
+            data << uint32(*historyEntry.unused622_2);
+        data.FlushBits();
+
+        return data;
+    }
+
+    WorldPacket const* SendSpellHistory::Write()
+    {
+        _worldPacket << uint32(Entries.size());
+        for (SpellHistoryEntry const& historyEntry : Entries)
+            _worldPacket << historyEntry;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ClearAllSpellCharges::Write()
+    {
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ClearSpellCharges::Write()
+    {
+        _worldPacket << int32(Category);
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SetSpellCharges::Write()
+    {
+        _worldPacket << int32(Category);
+        _worldPacket << uint32(NextRecoveryTime);
+        _worldPacket << uint8(ConsumedCharges);
+        _worldPacket << float(ChargeModRate);
+        _worldPacket.WriteBit(IsPet);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellChargeEntry const& chargeEntry)
+    {
+        data << uint32(chargeEntry.Category);
+        data << uint32(chargeEntry.NextRecoveryTime);
+        data << float(chargeEntry.ChargeModRate);
+        data << uint8(chargeEntry.ConsumedCharges);
+        return data;
+    }
+
+    WorldPacket const* SendSpellCharges::Write()
+    {
+        _worldPacket << uint32(Entries.size());
+        for (SpellChargeEntry const& chargeEntry : Entries)
+            _worldPacket << chargeEntry;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ClearTarget::Write()
+    {
+        _worldPacket << Guid;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* CancelOrphanSpellVisual::Write()
+    {
+        _worldPacket << int32(SpellVisualID);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* CancelSpellVisual::Write()
+    {
+        _worldPacket << Source;
+        _worldPacket << int32(SpellVisualID);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* CancelSpellVisualKit::Write()
+    {
+        _worldPacket << Source;
+        _worldPacket << int32(SpellVisualKitID);
+        _worldPacket.WriteBit(MountedVisual);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* PlayOrphanSpellVisual::Write()
+    {
+        _worldPacket << SourceLocation;
+        _worldPacket << SourceRotation;
+        _worldPacket << TargetLocation;
+        _worldPacket << Target;
+        _worldPacket << int32(SpellVisualID);
+        _worldPacket << float(TravelSpeed);
+        _worldPacket << float(LaunchDelay);
+        _worldPacket << float(MinDuration);
+        _worldPacket.WriteBit(SpeedAsTime);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* PlaySpellVisual::Write()
+    {
+        _worldPacket << Source;
+        _worldPacket << Target;
+        _worldPacket << Transport;
+        _worldPacket << TargetPosition;
+        _worldPacket << uint32(SpellVisualID);
+        _worldPacket << float(TravelSpeed);
+        _worldPacket << uint16(HitReason);
+        _worldPacket << uint16(MissReason);
+        _worldPacket << uint16(ReflectStatus);
+        _worldPacket << float(LaunchDelay);
+        _worldPacket << float(MinDuration);
+        _worldPacket.WriteBit(SpeedAsTime);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* PlaySpellVisualKit::Write()
+    {
+        _worldPacket << Unit;
+        _worldPacket << int32(KitRecID);
+        _worldPacket << int32(KitType);
+        _worldPacket << uint32(Duration);
+        _worldPacket.WriteBit(MountedVisual);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SpellVisualLoadScreen::Write()
+    {
+        _worldPacket << int32(SpellVisualKitID);
+        _worldPacket << int32(Delay);
+
+        return &_worldPacket;
+    }
+
+    void CancelCast::Read()
+    {
+        _worldPacket >> CastID;
+        _worldPacket >> SpellID;
+    }
+
+    void OpenItem::Read()
+    {
+        _worldPacket >> Slot
+            >> PackSlot;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellChannelStartInterruptImmunities const& interruptImmunities)
+    {
+        data << int32(interruptImmunities.SchoolImmunities);
+        data << int32(interruptImmunities.Immunities);
+        return data;
+    }
+
+    ByteBuffer& operator<<(ByteBuffer& data, SpellTargetedHealPrediction const& targetedHealPrediction)
+    {
+        data << targetedHealPrediction.TargetGUID;
+        data << targetedHealPrediction.Predict;
+        return data;
+    }
+
+    WorldPacket const* SpellChannelStart::Write()
+    {
+        _worldPacket << CasterGUID;
+        _worldPacket << int32(SpellID);
+        _worldPacket << Visual;
+        _worldPacket << uint32(ChannelDuration);
+        _worldPacket.WriteBit(InterruptImmunities.has_value());
+        _worldPacket.WriteBit(HealPrediction.has_value());
+        _worldPacket.FlushBits();
+
+        if (InterruptImmunities)
+            _worldPacket << *InterruptImmunities;
+
+        if (HealPrediction)
+            _worldPacket << *HealPrediction;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* SpellChannelUpdate::Write()
+    {
+        _worldPacket << CasterGUID;
+        _worldPacket << int32(TimeRemaining);
+        return &_worldPacket;
+    }
+
+    WorldPacket const* ResurrectRequest::Write()
+    {
+        _worldPacket << ResurrectOffererGUID;
+        _worldPacket << uint32(ResurrectOffererVirtualRealmAddress);
+        _worldPacket << uint32(PetNumber);
+        _worldPacket << int32(SpellID);
+        _worldPacket.WriteBits(Name.length(), 11);
+        _worldPacket.WriteBit(UseTimer);
+        _worldPacket.WriteBit(Sickness);
+        _worldPacket.FlushBits();
+
+        _worldPacket.WriteString(Name);
+
+        return &_worldPacket;
+    }
+
+    void UnlearnSkill::Read()
+    {
+        _worldPacket >> SkillLine;
+    }
+
+    void SelfRes::Read()
+    {
+        _worldPacket >> SpellID;
+    }
+
+    void GetMirrorImageData::Read()
+    {
+        _worldPacket >> UnitGUID;
+    }
+
+    MirrorImageComponentedData::MirrorImageComponentedData()
+        : ServerPacket(SMSG_MIRROR_IMAGE_COMPONENTED_DATA, 8 + 4 + 8 * 1 + 8 + 11 * 4)
+    {
+    }
+
+    MirrorImageComponentedData::~MirrorImageComponentedData() = default;
+
+    WorldPacket const* MirrorImageComponentedData::Write()
+    {
+        _worldPacket << UnitGUID;
+        _worldPacket << int32(DisplayID);
+        _worldPacket << int32(SpellVisualKitID);
+        _worldPacket << uint8(RaceID);
+        _worldPacket << uint8(Gender);
+        _worldPacket << uint8(ClassID);
+        _worldPacket << uint32(Customizations.size());
+        _worldPacket << GuildGUID;
+        _worldPacket << uint32(ItemDisplayID.size());
+
+        for (Character::ChrCustomizationChoice const& customization : Customizations)
+            _worldPacket << customization;
+
+        for (int32 itemDisplayId : ItemDisplayID)
+            _worldPacket << int32(itemDisplayId);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* MirrorImageCreatureData::Write()
+    {
+        _worldPacket << UnitGUID;
+        _worldPacket << int32(DisplayID);
+        _worldPacket << int32(SpellVisualKitID);
+
+        return &_worldPacket;
+    }
+
+    void SpellClick::Read()
+    {
+        _worldPacket >> SpellClickUnitGuid;
+        TryAutoDismount = _worldPacket.ReadBit();
+    }
+
+    WorldPacket const* ResyncRunes::Write()
+    {
+        _worldPacket << Runes;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* AddRunePower::Write()
+    {
+        _worldPacket << uint32(AddedRunesMask);
+
+        return &_worldPacket;
+    }
+
+    void MissileTrajectoryCollision::Read()
+    {
+        _worldPacket >> Target;
+        _worldPacket >> SpellID;
+        _worldPacket >> CastID;
+        _worldPacket >> CollisionPos;
+    }
+
+    WorldPacket const* NotifyMissileTrajectoryCollision::Write()
+    {
+        _worldPacket << Caster;
+        _worldPacket << CastID;
+        _worldPacket << CollisionPos;
+
+        return &_worldPacket;
+    }
+
+    void UpdateMissileTrajectory::Read()
+    {
+        _worldPacket >> Guid;
+        _worldPacket >> CastID;
+        _worldPacket >> MoveMsgID;
+        _worldPacket >> SpellID;
+        _worldPacket >> Pitch;
+        _worldPacket >> Speed;
+        _worldPacket >> FirePos;
+        _worldPacket >> ImpactPos;
+        bool hasStatus = _worldPacket.ReadBit();
+
+        _worldPacket.ResetBitPos();
+        if (hasStatus)
+            _worldPacket >> Status.emplace();
+    }
+
+    WorldPacket const* SpellDelayed::Write()
+    {
+        _worldPacket << Caster;
+        _worldPacket << uint32(ActualDelay);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* DispelFailed::Write()
+    {
+        _worldPacket << CasterGUID;
+        _worldPacket << VictimGUID;
+        _worldPacket << uint32(SpellID);
+        _worldPacket << uint32(FailedSpells.size());
+        if (!FailedSpells.empty())
+            _worldPacket.append(FailedSpells.data(), FailedSpells.size());
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* CustomLoadScreen::Write()
+    {
+        _worldPacket << uint32(TeleportSpellID);
+        _worldPacket << uint32(LoadingScreenID);
+        return &_worldPacket;
+    }
+
+    WorldPacket const* MountResult::Write()
+    {
+        _worldPacket << int32(Result);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* MissileCancel::Write()
+    {
+        _worldPacket << OwnerGUID;
+        _worldPacket << int32(SpellID);
+        _worldPacket.WriteBit(Reverse);
+        _worldPacket.FlushBits();
+
+        return &_worldPacket;
+    }
+
+    void TradeSkillSetFavorite::Read()
+    {
+        _worldPacket >> RecipeID;
+        IsFavorite = _worldPacket.ReadBit();
+    }
+
+    void WorldPackets::Spells::UpdateSpellVisual::Read()
+    {
+        _worldPacket >> SpellID;
+        _worldPacket >> SpellXSpellVisualId;
+        _worldPacket >> TargetGUID;
+    }
+
+    void KeyboundOverride::Read()
+    {
+        _worldPacket >> OverrideID;
+    }
+
+    WorldPacket const* EmpowerSetStage::Write()
+    {
+        _worldPacket << CastGUID;
+        _worldPacket << CasterGUID;
+        _worldPacket << uint32(StageId);
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* EmpowerUpdate::Write()
+    {
+        _worldPacket << castGUID;
+        _worldPacket << CasterGUID;
+        _worldPacket << int32(timeRemaining);
+        _worldPacket.ResetBitPos();
+
+        _worldPacket << unkBit;
+
+        return &_worldPacket;
+    }
+
+    void  WorldPackets::Spells::SpellEmpowerRelease::Read()
+    {
+        _worldPacket >> SpellId;
+    }
+
+    void  WorldPackets::Spells::SpellEmpowerRestart::Read()
+    {
+        _worldPacket >> SpellId;
+    }
+
+    void  WorldPackets::Spells::SpellEmpowerMinHold::Read()
+    {
+        _worldPacket >> holdPct;
+    }
+
+    WorldPacket const* SpellEmpowerSart::Write()
+    {
+        _worldPacket << castID;
+        _worldPacket << caster;
+        _worldPacket << static_cast<uint32>(targets.size());
+        _worldPacket << spellID;
+        _worldPacket << visual;
+        _worldPacket << duration;
+        _worldPacket << firstStageDuration;
+        _worldPacket << finalStageDuration;
+        _worldPacket << static_cast<uint32>(stageDurations.size());
+
+        for (const auto& target : targets)
+            _worldPacket << target;
+
+        for (const auto& duration : stageDurations)
+            _worldPacket << duration;
+
+        _worldPacket << immunities.has_value();
+        _worldPacket << healPrediction.has_value();
+
+        if (immunities)
+            _worldPacket << *immunities;
+
+        if (healPrediction)
+            _worldPacket << *healPrediction;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* PushSpellToactionBar::Write()
+    {
+        _worldPacket << spellID;
+
+        return &_worldPacket;
+    }
+
+    WorldPacket const* RemoveSpellFromactionBar::Write()
+    {
+        _worldPacket << spellID;
+
+        return &_worldPacket;
+    }
+
 }
-//DekkCore

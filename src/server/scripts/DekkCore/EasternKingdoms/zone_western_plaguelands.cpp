@@ -282,25 +282,10 @@ public:
     }
 };
 
-// Zone 138
-class zone_western_plaguelands : public ZoneScript
-{
-public:
-    zone_western_plaguelands() : ZoneScript("zone_western_plaguelands") { }
-
-    void OnPlayerAreaUpdate(Player* player, uint32 newAreaId, uint32 /*oldAreaId*/) override
-    {
-        // Check paladin class area
-        if (newAreaId == 7638 && !player->IsGameMaster() && (player->GetClass() != CLASS_PALADIN || player->GetLevel() < 50)) //todo check level req
-            player->NearTeleportTo(2283.882080f, -5322.789551f, 89.235878f, 2.362668f);
-    }
-};
-
 void AddSC_DekkCore_western_plaguelands()
 {
     new npc_the_scourge_cauldron();
     new npc_andorhal_tower();
     new npcs_dithers_and_arbington();
     new npc_myranda_the_hag();
-    new zone_western_plaguelands();
 }

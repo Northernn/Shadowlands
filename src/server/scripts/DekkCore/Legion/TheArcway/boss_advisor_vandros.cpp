@@ -308,8 +308,6 @@ public:
 
     class spell_vandros_teleport_plr_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vandros_teleport_plr_SpellScript);
-
         uint8 rand = 0;
 
         void HandleScriptEffect(SpellEffIndex effIndex)
@@ -346,8 +344,6 @@ public:
 
     class spell_vandros_banish_in_time_timer_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_vandros_banish_in_time_timer_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             if (!GetTarget())
@@ -380,8 +376,6 @@ public:
 
     class spell_vandros_unstable_mana_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_vandros_unstable_mana_AuraScript);
-
         void OnPereodic(AuraEffect const* aurEff)
         {
             if (!GetCaster() || !GetTarget())

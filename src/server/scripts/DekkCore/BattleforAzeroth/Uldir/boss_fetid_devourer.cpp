@@ -149,11 +149,11 @@ struct boss_fetid_devourer : public BossAI
         {
             if (Creature* corruption = me->FindNearestCreature(NPC_CORRUPTION_CORPUSCLE, 20.0f, true && !eaten))
             {
-                if (me->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))                
+                if (me->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
                     me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 
                 me->SetReactState(REACT_AGGRESSIVE);
-            
+
                 eaten = true;
                 corruption->CastSpell(me, SPELL_CONSUME_CORRUPTION, false);
                 me->GetMotionMaster()->Clear();
@@ -196,10 +196,11 @@ struct boss_fetid_devourer : public BossAI
         {
             if (Unit* tank = SelectTarget(SelectTargetMethod::MaxDistance, 0, 100.0f, true))
             {
-                if (tank =SelectTarget(SelectTargetMethod::MinDistance, 0, 25.0f, true))
-                {
-                    me->CastSpell(tank, SPELL_TERRIBLE_THRASH_DAMAGE, false);
-                }
+                me->CastSpell(tank, SPELL_TERRIBLE_THRASH_DAMAGE, false);
+//                if (tank =SelectTarget(SelectTargetMethod::MinDistance, 0, 25.0f, true))
+//                {
+//                    me->CastSpell(tank, SPELL_TERRIBLE_THRASH_DAMAGE, false);
+//                }
             }
             events.Repeat(4s);
             break;
@@ -225,7 +226,7 @@ struct boss_fetid_devourer : public BossAI
             switch (Position)
             {
             case 0:
-                me->SummonCreature(NPC_CORRUPTION_CORPUSCLE, corruption_corpuscle_spawn_pos);                
+                me->SummonCreature(NPC_CORRUPTION_CORPUSCLE, corruption_corpuscle_spawn_pos);
                 break;
 
             case 1:
@@ -262,9 +263,9 @@ struct boss_fetid_devourer : public BossAI
                 events.CancelEvent(EVENT_SHOCKWAVE_STOMP);
             }
             if (Unit* corruption = instance->GetCreature(NPC_CORRUPTION_CORPUSCLE))
-            {               
+            {
                 me->SetReactState(REACT_PASSIVE);
-                me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);                
+                me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFacingToObject(corruption, true);
                 me->GetMotionMaster()->MovePoint(1, corruption_corpuscle_spawn_pos, true);
             }

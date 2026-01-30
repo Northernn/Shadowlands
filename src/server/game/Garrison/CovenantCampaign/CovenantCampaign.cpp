@@ -62,5 +62,5 @@ void CovenantCampaign::Delete()
 
 bool CovenantCampaign::IsAllowedArea(AreaTableEntry const* area) const
 {
-    return area->Flags[1] & AREA_FLAG_GARRISON;
+    return area->GetFlags2().HasFlag(AreaFlags2::IsGarrison);
 }

@@ -737,14 +737,6 @@ class grimrail_depot_nitrogg_thundertower_mob_assault_turret : public CreatureSc
 
             if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
                 return;
-
-            // wtf is this...
-/*            switch (events.ExecuteEvent())
-            {
-                default:
-                    break;
-            }
-*/
         }
     };
 
@@ -780,13 +772,6 @@ class grimrail_depot_nitrogg_thundertower_mob_iron_infantry : public CreatureScr
             if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
                 return;
 
-            // wtf is this...
-/*            switch (events.ExecuteEvent())
-            {
-            default:
-                break;
-            }
-*/
             DoMeleeAttackIfReady();
         }
     };
@@ -916,8 +901,6 @@ class grimrail_depot_nitrogg_thundertower_spell_suppressive_fire : public SpellS
 
     class grimrail_depot_nitrogg_thundertower_spell_suppressive_fire_AuraScript : public AuraScript
     {
-        PrepareAuraScript(grimrail_depot_nitrogg_thundertower_spell_suppressive_fire_AuraScript);
-
         enum eSuppressiveFireSpells
         {
             SpellSuppressiveFireTriggerMissile = 160683
@@ -950,13 +933,11 @@ class grimrail_depot_nitrogg_thundertower_spell_suppressive_fire : public SpellS
                         {
                             l_NearestTrigger->SetReactState(ReactStates::REACT_PASSIVE);
                             l_NearestTrigger->SetUnitFlag(UnitFlags(UNIT_FLAG_REMOVE_CLIENT_CONTROL));
-                       //     l_Caster->SendPlaySpellVisual(l_NearestTrigger->GetGUID(), eNitroggThundertowerSpellVisuals::SpellFireSuppressionVisualId, 0, 0, 50.0f, false);
                             l_Caster->CastSpell(l_NearestTrigger, eSuppressiveFireSpells::SpellSuppressiveFireTriggerMissile, true);
                         }
                     }
                     else
                     {
-                      //  l_Caster->SendPlaySpellVisual(l_Target->GetGUID(), eNitroggThundertowerSpellVisuals::SpellFireSuppressionVisualId, 0, 0, 50.0f, false);
                         l_Caster->CastSpell(l_Target, eSuppressiveFireSpells::SpellSuppressiveFireTriggerMissile, true);
                     }
                 }
@@ -984,8 +965,6 @@ class grimrail_depot_nitrogg_thundertower_spell_blackrock_bomb : public SpellScr
 
     class grimrail_depot_nitrogg_thundertower_spell_blackrock_bomb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(grimrail_depot_nitrogg_thundertower_spell_blackrock_bomb_AuraScript);
-
         enum eBlackrockSpells
         {
             SpellBlackRockTriggerMissile = 163541
@@ -1023,8 +1002,6 @@ class grimrail_depot_nitrogg_thundertower_slag_blast : public SpellScriptLoader
 
     class grimrail_depot_nitrogg_thundertower_slag_blast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(grimrail_depot_nitrogg_thundertower_slag_blast_SpellScript);
-
         enum eSlagBlastSpells
         {
             SpellSlagBlastAreatrigger = 166571
@@ -1104,7 +1081,7 @@ class grimrail_depot_nitrogg_thundertower_at_slagblast : public AreaTriggerEntit
                 m_Timer -= diff;
         }
 
-        void OnCreate() override
+        void OnCreate(Spell const* /*creatingSpell*/) override
         {
             std::list<Creature*> l_ListCreatures;
             at->GetCreatureListWithEntryInGrid(l_ListCreatures, eSlagblastCreatures::CreatureSlagblast, 200.0f);
@@ -1112,7 +1089,6 @@ class grimrail_depot_nitrogg_thundertower_at_slagblast : public AreaTriggerEntit
             {
                 /// Sort so fire spreads from the hit point.
                 l_ListCreatures.sort();
-                //l_ListCreatures.sort(Trinity::WorldObjectDistanceCompareOrderPred(at));
                 l_ListCreatures.resize(l_ListCreatures.max_size());
 
                 for (std::list<Creature*>::iterator l_Itr = l_ListCreatures.begin(); l_Itr != l_ListCreatures.end(); l_Itr++)

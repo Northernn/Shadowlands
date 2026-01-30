@@ -37,11 +37,11 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int32 MythicPlusDisplaySeasonID = 17;
-            int32 MythicPlusMilestoneSeasonID = 92;
-            int32 PreviousArenaSeason = 32;
-            int32 CurrentArenaSeason = 31;
-            int32 PvpSeasonID = 22;
+            int32 MythicPlusDisplaySeasonID = 21;
+            int32 MythicPlusMilestoneSeasonID = 97;
+            int32 PreviousArenaSeason = 35;
+            int32 CurrentArenaSeason = 34;
+            int32 PvpSeasonID = 29;
             int32 ConquestWeeklyProgressCurrencyID = 1891;
             bool WeeklyRewardChestsEnabled = true;
         };
@@ -135,9 +135,10 @@ namespace WorldPackets
                 Optional<int32> RatingChange;
                 Optional<uint32> PreMatchMMR;
                 Optional<int32> MmrChange;
+                Optional<uint32> PostMatchMMR;
                 std::vector<PVPMatchPlayerPVPStat> Stats;
                 int32 PrimaryTalentTree = 0;
-                int32 Sex = 0;
+                int8 Sex = 0;
                 int32 Race = 0;
                 int32 Class = 0;
                 int32 CreatureID = 0;
@@ -322,12 +323,12 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            bool WargameArenas = false;
-            bool RatedArenas = false;
-            bool WargameBattlegrounds = false;
-            bool ArenaSkirmish = false;
-            bool PugBattlegrounds = false;
-            bool RatedBattlegrounds = false;
+            bool WargameArenas = true;
+            bool RatedArenas = true;
+            bool WargameBattlegrounds = true;
+            bool ArenaSkirmish = true;
+            bool PugBattlegrounds = true;
+            bool RatedBattlegrounds = true;
         };
 
         class RequestBattlefieldStatus final : public ClientPacket
@@ -436,30 +437,50 @@ namespace WorldPackets
         class RatedPvpInfo final : public ServerPacket
         {
         public:
-            RatedPvpInfo() : ServerPacket(SMSG_RATED_PVP_INFO, 6 * sizeof(BracketInfo)) { }
+            RatedPvpInfo() : ServerPacket(SMSG_RATED_PVP_INFO, 7 * sizeof(BracketInfo)) { }
 
             WorldPacket const* Write() override;
 
             struct BracketInfo
             {
-                int32 PersonalRating = 0;
-                int32 Ranking = 0;
-                int32 SeasonPlayed = 0;
-                int32 SeasonWon = 0;
-                int32 Unused1 = 0;
-                int32 Unused2 = 0;
-                int32 WeeklyPlayed = 0;
-                int32 WeeklyWon = 0;
-                int32 BestWeeklyRating = 0;
-                int32 LastWeeksBestRating = 0;
-                int32 BestSeasonRating = 0;
-                int32 PvpTierID = 0;
-                int32 Unused3 = 0;
-                int32 WeeklyBestWinPvpTierID = 0;
-                int32 Unused4 = 0;
-                int32 Rank = 0;
+                uint32 PersonalRating = 0;
+                uint32 Ranking = 0;
+                uint32 SeasonPlayed = 0;
+                uint32 SeasonWon = 0;
+                uint32 Unused1 = 0;
+                uint32 Unused2 = 0;
+                uint32 WeeklyPlayed = 0;
+                uint32 WeeklyWon = 0;
+                uint32 RoundsSeasonPlayed = 0;
+                uint32 RoundsSeasonWon = 0;
+                uint32 RoundsWeeklyPlayed = 0;
+                uint32 RoundsWeeklyWon = 0;
+                uint32 BestWeeklyRating = 0;
+                uint32 LastWeeksBestRating = 0;
+                uint32 BestSeasonRating = 0;
+                uint32 PvpTierID = 0;
+                uint32 Unused3 = 0;
+                uint32 Unused4 = 0;
+                uint32 Rank = 0;
                 bool Disqualified = false;
-            } Bracket[6];
+            } Bracket[7];
+        };
+
+        struct RatedMatchDeserterPenalty
+        {
+            int32 PersonalRatingChange = 0;
+            int32 QueuePenaltySpellID = 0;
+            WorldPackets::Duration<Milliseconds, int32> QueuePenaltyDuration;
+        };
+
+        enum class PVPMatchState : uint8
+        {
+            Waiting = 0,
+            StartUp = 1,
+            Engaged = 2,
+            PostRound = 3,
+            Inactive = 4,
+            Complete = 5
         };
 
         class PVPMatchInitialize final : public ServerPacket
@@ -469,21 +490,26 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            enum MatchState : uint8
-            {
-                InProgress = 1,
-                Complete = 3,
-                Inactive = 4
-            };
-
             uint32 MapID = 0;
-            MatchState State = Inactive;
+            PVPMatchState State = PVPMatchState::Inactive;
             Timestamp<> StartTime;
             WorldPackets::Duration<Seconds> Duration;
+            Optional<RatedMatchDeserterPenalty> DeserterPenalty;
             uint8 ArenaFaction = 0;
             uint32 BattlemasterListID = 0;
             bool Registered = false;
             bool AffectsRating = false;
+            bool HasRatedMatchDeserterPenalty = false;
+        };
+
+        class PVPMatchSetState final : public ServerPacket
+        {
+        public:
+            explicit PVPMatchSetState(PVPMatchState state) : ServerPacket(SMSG_PVP_MATCH_SET_STATE, 1), State(state) { }
+
+            WorldPacket const* Write() override;
+
+            PVPMatchState State;
         };
 
         class PVPMatchComplete final : public ServerPacket
@@ -538,7 +564,7 @@ namespace WorldPackets
             ObjectGuid CapturePointGUID;
         };
 
-        
+
 
         // DekkCore >
         class WargameRequestSuccessfullySentToOpponent final : public ServerPacket
@@ -548,9 +574,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            Optional<uint32> UnkInt2;
-            Optional<uint32> UnkInt3;
-            uint32 UnkInt = 0;
+            ObjectGuid opponentguid;
         };
 
         class ArenaPrepOpponentSpecializations final : public ServerPacket
@@ -589,7 +613,7 @@ namespace WorldPackets
             void Read() override;
 
             ObjectGuid OpposingPartyMember;
-            uint64 QueueID = 0;
+            int64 QueueID = 0;
             bool Accept = false;
         };
 
@@ -621,7 +645,7 @@ namespace WorldPackets
             TaggedPosition<Position::XY> Pos;
             uint32 CaptureTime = 0;
             uint32 CaptureTotalDuration = 0;
-            int8 NodeState = NODE_STATE_NONE;
+            int8 NodeState;
         };
 
         class MapObjectivesInit final : public ServerPacket
@@ -661,8 +685,8 @@ namespace WorldPackets
             BattlefieldStatusHeader Header;
             uint32 Mapid = 0;
             uint32 Timeout = 0;
-            uint8 TotalPlayers[MAX_TEAMS] = { };
-            uint8 AwaitingPlayers[MAX_TEAMS] = { };
+            uint8 TotalPlayers[TEAM_MAX] = { };
+            uint8 AwaitingPlayers[TEAM_MAX] = { };
         };
 
         //< SMSG_BATTLEGROUND_INFO_THROTTLED
@@ -689,9 +713,9 @@ namespace WorldPackets
         {
         public:
             BattlemasterJoinBrawl(WorldPacket && packet) : ClientPacket(CMSG_BATTLEMASTER_JOIN_BRAWL, std::move(packet)) { }
-            
+
             void Read() override;
-            
+
             uint8 RolesMask = 0;
         };
 
@@ -699,9 +723,9 @@ namespace WorldPackets
         {
         public:
             JoinSkirmish(WorldPacket && packet) : ClientPacket(CMSG_BATTLEMASTER_JOIN_SKIRMISH, std::move(packet)) { }
-            
+
             void Read() override;
-            
+
             uint8 Roles = 0;
             uint8 Bracket = 0;
             bool JoinAsGroup = false;
@@ -724,14 +748,14 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int32 PvpBrawlID = 0;
-            int32 TimeToBrawl = 0;
+            int32 PvpBrawlID = 3;
+            int32 TimeToBrawl = 516572;
             bool IsActive = true;
             uint8 Bracket;
             int32 UNK;
             uint8 UNK1;
             int32 UNK2;
-            bool UNK3;
+            bool UNK3 = false;
         };
 
         class RequestScheduledPVPInfo final : public ClientPacket
@@ -741,6 +765,29 @@ namespace WorldPackets
 
             void Read() override { }
         };
+
+        class MapObjEvents final : public ServerPacket
+        {
+        public:
+            MapObjEvents() : ServerPacket(SMSG_MAP_OBJ_EVENTS, 12) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 UniqueID = 0;
+            uint32 DataSize = 0;
+            std::vector<uint8> Unk2;
+        };
+
+        class BattlemasterJoinRatedSoloShuffle final : public ClientPacket
+        {
+        public:
+            BattlemasterJoinRatedSoloShuffle(WorldPacket&& packet) : ClientPacket(CMSG_BATTLEMASTER_JOIN_RATED_SOLO_SHUFFLE, std::move(packet)) { }
+
+            void Read() override;
+
+            uint8 RolesMask;
+        };
+        
         // < DekkCore
     }
 }

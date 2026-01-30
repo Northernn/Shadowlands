@@ -782,8 +782,6 @@ class spell_garalon_furious_swipe: public SpellScriptLoader
 
         class spell_garalon_furious_swipeSpellScript: public SpellScript
         {
-            PrepareSpellScript(spell_garalon_furious_swipeSpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -824,8 +822,6 @@ class spell_garalon_pheromones_forcecast: public SpellScriptLoader
 
         class spell_garalon_pheromones_forcecastSpellScript: public SpellScript
         {
-            PrepareSpellScript(spell_garalon_pheromones_forcecastSpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -868,8 +864,6 @@ class spell_garalon_mend_leg: public SpellScriptLoader
 
         class spell_garalon_mend_legSpellScript: public SpellScript
         {
-            PrepareSpellScript(spell_garalon_mend_legSpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -938,8 +932,6 @@ class spell_garalon_crush_trigger: public SpellScriptLoader
 
         class spell_garalon_crush_triggerSpellScript: public SpellScript
         {
-            PrepareSpellScript(spell_garalon_crush_triggerSpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -990,8 +982,6 @@ class spell_garalon_pheromones_taunt: public SpellScriptLoader
 
         class spell_garalon_pheromones_tauntSpellScript: public SpellScript
         {
-            PrepareSpellScript(spell_garalon_pheromones_tauntSpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -1032,8 +1022,6 @@ class spell_garalon_broken_leg : public SpellScriptLoader
 
         class spell_garalon_broken_leg_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_garalon_broken_leg_SpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -1075,8 +1063,6 @@ class spell_garalon_damaged : public SpellScriptLoader
 
         class spell_garalon_damaged_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_garalon_damaged_SpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -1116,8 +1102,6 @@ class spell_garalon_pheromones_summon : public SpellScriptLoader
 
         class spell_garalon_pheromones_summon_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_garalon_pheromones_summon_SpellScript);
-
             bool Validate(SpellInfo const* spellEntry) override
             {
                 return ValidateSpellInfo({ spellEntry->Id });
@@ -1164,8 +1148,6 @@ public:
 
     class spell_garalon_pheromones_trail_dmg_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_garalon_pheromones_trail_dmg_SpellScript);
-
         bool Validate(SpellInfo const* spellEntry) override
         {
             return ValidateSpellInfo({ spellEntry->Id });
@@ -1206,8 +1188,6 @@ public:
 
     class spell_garalon_pheromones_switch_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_garalon_pheromones_switch_SpellScript);
-
         bool Validate(SpellInfo const* spellEntry) override
         {
             return ValidateSpellInfo({ spellEntry->Id });
@@ -1258,8 +1238,6 @@ class spell_garalon_pungency : public SpellScriptLoader
 
         class spell_garalon_pungencyAuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_garalon_pungencyAuraScript);
-
             void Duration(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())

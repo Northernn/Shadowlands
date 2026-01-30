@@ -58,8 +58,12 @@ class TC_GAME_API Arena : public Battleground
     protected:
         Arena(BattlegroundTemplate const* battlegroundTemplate);
 
-        void AddPlayer(Player* player) override;
+        void AddPlayer(Player* player, BattlegroundQueueTypeId queueId) override;
         void RemovePlayer(Player* /*player*/, ObjectGuid /*guid*/, uint32 /*team*/) override;
+
+        //DekkCore
+        void FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& packet) override;
+        //DekkCore
 
         void UpdateArenaWorldState();
 

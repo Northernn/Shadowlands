@@ -61,7 +61,7 @@ enum Events
     EVENT_GATLING_GUN,
     EVENT_DRILL_SMASH,
     EVENT_SUMMON_BIG_RED_ROCKET,
-    EVENT_MICRO_MISSILE, 
+    EVENT_MICRO_MISSILE,
     EVENT_MISSILE_EXPLODE,
     EVENT_FIXATE,
     EVENT_FOLLOW,
@@ -183,7 +183,8 @@ struct bfa_boss_mogul_razdunk : public BossAI
         events.ScheduleEvent(EVENT_SUMMON_BIG_RED_ROCKET, 13s);
         me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 3.0f, false);
     }
-    void EnterEvadeMode(EvadeReason /*why*/)
+
+    void EnterEvadeMode(EvadeReason /*why*/) override
     {
         BossAI::EnterEvadeMode();
         me->GetMotionMaster()->MoveTargetedHome();
@@ -420,8 +421,6 @@ struct bfa_boss_mogul_razdunk : public BossAI
 
 class bfa_spell_gatling_gun : public SpellScript
 {
-    PrepareSpellScript(bfa_spell_gatling_gun);
-
     void HandleAfterCast()
     {
         Unit* caster = GetCaster();
@@ -435,27 +434,6 @@ class bfa_spell_gatling_gun : public SpellScript
     void Register()
     {
         AfterCast += SpellCastFn(bfa_spell_gatling_gun::HandleAfterCast);
-    }
-};
-
-
-// Spell 260280 - Effect 0 [AT: 17012]
-struct at_mogulrazdunk_gatling_gun : AreaTriggerAI
-{
-    at_mogulrazdunk_gatling_gun(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Unit* caster = at->GetCaster())
-            if (unit->IsPlayer() || unit->IsPet())
-                caster->AddAura(SPELL_GATLING_GUN_DAMAGE, unit);
-
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (Unit* caster = at->GetCaster())
-            unit->RemoveAura(SPELL_GATLING_GUN_DAMAGE);
     }
 };
 
@@ -558,7 +536,7 @@ struct bfa_npc_venture_skyscorcher : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit*) //override
+    void JustEngagedWith(Unit* who) override
     {
         events.ScheduleEvent(EVENT_BUSTER_SHOT, 2s);
         events.ScheduleEvent(EVENT_CONCUSSION_CHARGE, 10s);
@@ -588,16 +566,22 @@ struct bfa_npc_venture_skyscorcher : public ScriptedAI
             }
             case EVENT_CONCUSSION_CHARGE:
             {
-                if (concussion_charge_target = SelectTarget(SelectTargetMethod::Random, 0, 90.0f, true))
-                    me->CastSpell(concussion_charge_target, SPELL_CONCUSSION_CHARGE_CAST);
+                if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 90.0f, true))
+                {
+                    me->CastSpell(target, SPELL_CONCUSSION_CHARGE_CAST);
+                    concussion_charge_target = target;
+                }
 
                 events.ScheduleEvent(EVENT_CONCUSSION_CHARGE, 10s);
                 break;
             }
             case EVENT_AZERITE_HEARTSEEKER:
             {
-                if (azerite_heartseeker_target = SelectTarget(SelectTargetMethod::Random, 0, 90.0f, true))
-                    me->CastSpell(azerite_heartseeker_target, SPELL_AZERITE_HEARTSEEKER_CAST);
+                if (auto target = SelectTarget(SelectTargetMethod::Random, 0, 90.0f, true))
+                {
+                    me->CastSpell(target, SPELL_AZERITE_HEARTSEEKER_CAST);
+                    azerite_heartseeker_target = target;
+                }
 
                 events.ScheduleEvent(EVENT_AZERITE_HEARTSEEKER, 17s);
                 break;
@@ -612,10 +596,11 @@ struct bfa_npc_venture_skyscorcher : public ScriptedAI
             }
             }
         }
+
         DoMeleeAttackIfReady();
     }
 
-    void OnSpellFinished(SpellInfo const* spellInfo)// override
+    void OnSpellFinished(SpellInfo const* spellInfo) override
     {
         switch (spellInfo->Id)
         {
@@ -640,9 +625,8 @@ struct bfa_npc_venture_skyscorcher : public ScriptedAI
 void AddSC_boss_mogulrazdunk()
 {
     RegisterCreatureAI(bfa_boss_mogul_razdunk);
-    // RegisterCreatureAI(bfa_npc_boomba);
+   // RegisterCreatureAI(bfa_npc_boomba);
     RegisterCreatureAI(bfa_npc_homing_missile);
     RegisterCreatureAI(bfa_npc_venture_skyscorcher);
     RegisterSpellScript(bfa_spell_gatling_gun);
-    RegisterAreaTriggerAI(at_mogulrazdunk_gatling_gun);
 }

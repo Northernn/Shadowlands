@@ -529,8 +529,6 @@ public:
 
     class spell_fenryr_scent_of_blood_filter_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_fenryr_scent_of_blood_filter_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (!GetCaster() || targets.empty())
@@ -565,8 +563,6 @@ public:
 
     class spell_fenryr_scent_of_blood_fixate_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_fenryr_scent_of_blood_fixate_AuraScript);
-
         void OnApply(AuraEffect const* pAuraEffect, AuraEffectHandleModes eMode)
         {
             if (!GetCaster())

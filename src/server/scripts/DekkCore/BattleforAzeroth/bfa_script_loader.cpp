@@ -23,7 +23,7 @@ void AddSC_zone_stormsong_valley();
 void AddSC_zone_tiragarde_sound();
 
 void AddSC_boss_elder_leaxa();
-void AddSC_boss_cragmaw_infested();
+void AddSC_boss_cragmaw_the_infested();
 void AddSC_boss_sporecaller_zancha();
 void AddSC_boss_unbound_abomination();
 void AddSC_the_underrot();
@@ -160,7 +160,7 @@ void Add_DekkCore_BFAScripts()
     AddSC_zone_tiragarde_sound();
 
     AddSC_boss_elder_leaxa();
-    AddSC_boss_cragmaw_infested();
+    AddSC_boss_cragmaw_the_infested();
     AddSC_boss_sporecaller_zancha();
     AddSC_boss_unbound_abomination();
     AddSC_the_underrot();

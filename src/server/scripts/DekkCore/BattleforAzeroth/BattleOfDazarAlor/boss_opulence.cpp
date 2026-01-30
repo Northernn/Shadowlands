@@ -62,7 +62,6 @@ struct boss_opulence : public BossAI
         me->SetPowerType(POWER_ENERGY);
         me->RemoveAura(PERIODIC_ENERGY_GAIN);
         me->SetPower(POWER_ENERGY, 0);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_PURPLE, me);
         me->DespawnCreaturesInArea(NPC_SPIRIT_OF_GOLD, 125.0f);
         me->NearTeleportTo(me->GetHomePosition());
         _JustReachedHome();
@@ -85,16 +84,16 @@ struct boss_opulence : public BossAI
 
     void JustEngagedWith(Unit* who) override
     {
-        _JustEngagedWith(who);        
+        _JustEngagedWith(who);
         DoCast(PERIODIC_ENERGY_GAIN);
         if (Creature* gallywix = me->FindNearestCreature(NPC_TRADE_PRINCE_GALLYWIX, 100.0f, true))
         {
             gallywix->AI()->Talk(SAY_GALLYWIX_STAGE_TWO_BEGINS);
-            gallywix->GetScheduler().Schedule(7s, [this, gallywix] (TaskContext context)
+            gallywix->GetScheduler().Schedule(7s, [gallywix] (TaskContext /*context*/)
             {
                 gallywix->AI()->Talk(SAY_GALLYWIX_STAGE_TWO_BEGINS_1);
 
-            }).Schedule(20s, [this, gallywix](TaskContext context)
+            }).Schedule(20s, [gallywix](TaskContext /*context*/)
             {
                 gallywix->AI()->Talk(SAY_GALLYWIX_OPULENCE_AGGRO);
             });
@@ -109,10 +108,10 @@ struct boss_opulence : public BossAI
 
     void OnSpellCast(SpellInfo const* spell) override
     {
-        if (spell->Id == HOARD_POWER)        
+        if (spell->Id == HOARD_POWER)
             return;
 
-        if (spell->Id == SPIRITS_OF_GOLD)        
+        if (spell->Id == SPIRITS_OF_GOLD)
         {
             for (uint8 i = 0; i < 8; i++)
             me->SummonCreature(NPC_SPIRIT_OF_GOLD, me->GetPosition());
@@ -139,7 +138,7 @@ struct boss_opulence : public BossAI
                     gallywix->AI()->Talk(SAY_GALLYWIX_KILL);
     }
 
-    void JustDied(Unit* unit) override
+    void JustDied(Unit* /*unit*/) override
     {
         _JustDied();
         me->DespawnCreaturesInArea(NPC_SPIRIT_OF_GOLD, 125.0f);
@@ -150,12 +149,12 @@ struct boss_opulence : public BossAI
             gallywix->AI()->Talk(SAY_GALLYWIX_DEATH);
     }
 
-    void EnterEvadeMode(EvadeReason /*why*/) override 
-    { 
+    void EnterEvadeMode(EvadeReason /*why*/) override
+    {
        /* if (instance->IsWipe())
         {
             me->DespawnCreaturesInArea(NPC_SPIRIT_OF_GOLD, 125.0f);
-            me->ForcedDespawn(100, 3s);            
+            me->ForcedDespawn(100, 3s);
         }*/
         engaged = true;
     }
@@ -206,7 +205,7 @@ struct boss_opulence : public BossAI
             events.Repeat(35s);
             break;
         }
-        
+
         default:
             break;
         }

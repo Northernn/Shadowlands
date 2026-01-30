@@ -36,87 +36,6 @@ enum Actions
     ACTION_REPLY_3_ARCHANAGOS   = 4,
 };
 
-class npc_kara_image_of_medivh : public CreatureScript
-{
-    public:
-        npc_kara_image_of_medivh() : CreatureScript("npc_kara_image_of_medivh")
-        {}
-
-        struct npc_kara_image_of_medivh_AI : public ScriptedAI
-        {
-            explicit npc_kara_image_of_medivh_AI(Creature* me) : ScriptedAI(me)
-            {}
-
-            void Reset() override
-            {
-                if (me->GetInstanceScript()->GetData(DATA_NIGHTBANE_EVENT) == DONE)
-                    _intro = true;
-            }
-
-            bool OnGossipHello(Player* player) override
-            {
-                if (!player || !me)
-                    return false;
-
-                player->PrepareGossipMenu(me, me->GetCreatureTemplate()->GossipMenuId, false);
-                AddGossipItemFor(player, GossipOptionNpc::None, "Summon Nightbane", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
-                return true;
-            }
-
-            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-            {
-                ClearGossipMenuFor(player);
-                CloseGossipMenuFor(player);
-
-                if (me->GetInstanceScript()->GetData(DATA_NIGHTBANE_TIMER) == 2)
-                {
-                    Aura* echo = player->GetAura(SPELL_MEDIVH_PRESSENCE);
-                    if (echo)
-                        me->GetAI()->DoAction(ACTION_SUMMON_NIGHTBANE);
-                }
-
-                return true;
-            }
-
-            void DoAction(int32 action) override
-            {
-                if (action == ACTION_SUMMON_NIGHTBANE)
-                {
-                    if (_intro)
-                        return;
-
-                    _intro = true;
-                    Creature* nightbane = me->FindNearestCreature(NPC_NIGHTBANE, 250.f, true);
-
-                    if (nightbane)
-                        nightbane->GetAI()->DoAction(1); // Action NightBane Ready
-
-                    me->GetInstanceScript()->SetData(DATA_NIGHTBANE_EVENT, DONE);
-
-                    const auto & players = me->GetMap()->GetPlayers();
-                    for (auto & it : players)
-                    {
-                        if (Player* ptr = it.GetSource())
-                        {
-                            if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(NIGHTBANE_ACHIEVEMENT))
-                                ptr->CompletedAchievement(achievementEntry);
-                        }
-                    }
-                    me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                }
-            }
-
-            private:
-                bool _intro;
-        };
-
-        CreatureAI* GetAI(Creature* me) const override
-        {
-            return new npc_kara_image_of_medivh_AI(me);
-        }
-};
-
 class go_door_entrance : public GameObjectScript
 {
     public:
@@ -192,7 +111,6 @@ class npc_kara_soul_fragment : public CreatureScript
 
 void AddSC_new_karazhan()
 {
-    new npc_kara_image_of_medivh();
     new npc_kara_soul_fragment();
     new go_door_entrance();
 };

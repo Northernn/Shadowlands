@@ -34,7 +34,6 @@
 
 class spell_generic_quest_update_entry_SpellScript : public SpellScript
 {
-    PrepareSpellScript(spell_generic_quest_update_entry_SpellScript);
     private:
         uint16 _spellEffect;
         uint8 _effIndex;
@@ -96,8 +95,6 @@ enum BendingShinbone
 // 8856 - Bending Shinbone
 class spell_q1846_bending_shinbone : public SpellScript
 {
-    PrepareSpellScript(spell_q1846_bending_shinbone);
-
     void HandleScriptEffect(SpellEffIndex /* effIndex */)
     {
         Item* target = GetHitItem();
@@ -123,8 +120,6 @@ enum ThaumaturgyChannel
 // 9712 - Thaumaturgy Channel
 class spell_q2203_thaumaturgy_channel : public AuraScript
 {
-    PrepareAuraScript(spell_q2203_thaumaturgy_channel);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_THAUMATURGY_CHANNEL });
@@ -153,8 +148,6 @@ enum Quest5206Data
 // 17271 - Test Fetid Skull
 class spell_q5206_test_fetid_skull : public SpellScript
 {
-    PrepareSpellScript(spell_q5206_test_fetid_skull);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -193,8 +186,6 @@ constexpr Milliseconds Quest6124_6129_DESPAWN_TIME = 30s;
 // 19512 - Apply Salve
 class spell_q6124_6129_apply_salve : public SpellScript
 {
-    PrepareSpellScript(spell_q6124_6129_apply_salve);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -263,8 +254,6 @@ enum Quest11396_11399Data
 // 43874 - Scourge Mur'gul Camp: Force Shield Arcane Purple x3
 class spell_q11396_11399_force_shield_arcane_purple_x3 : public AuraScript
 {
-    PrepareAuraScript(spell_q11396_11399_force_shield_arcane_purple_x3);
-
     void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -287,8 +276,6 @@ class spell_q11396_11399_force_shield_arcane_purple_x3 : public AuraScript
 // 50133 - Scourging Crystal Controller
 class spell_q11396_11399_scourging_crystal_controller : public SpellScript
 {
-    PrepareSpellScript(spell_q11396_11399_scourging_crystal_controller);
-
     bool Validate(SpellInfo const* /*spellEntry*/) override
     {
         return ValidateSpellInfo({ SPELL_FORCE_SHIELD_ARCANE_PURPLE_X3, SPELL_SCOURGING_CRYSTAL_CONTROLLER });
@@ -312,8 +299,6 @@ class spell_q11396_11399_scourging_crystal_controller : public SpellScript
 // 43882 - Scourging Crystal Controller Dummy
 class spell_q11396_11399_scourging_crystal_controller_dummy : public SpellScript
 {
-    PrepareSpellScript(spell_q11396_11399_scourging_crystal_controller_dummy);
-
     bool Validate(SpellInfo const* /*spellEntry*/) override
     {
         return ValidateSpellInfo({ SPELL_FORCE_SHIELD_ARCANE_PURPLE_X3 });
@@ -361,8 +346,6 @@ enum Quest11587Data
 // 45449 - Arcane Prisoner Rescue
 class spell_q11587_arcane_prisoner_rescue : public SpellScript
 {
-    PrepareSpellScript(spell_q11587_arcane_prisoner_rescue);
-
     bool Validate(SpellInfo const* /*spellEntry*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_ARCANE_PRISONER_MALE, SPELL_SUMMON_ARCANE_PRISONER_FEMALE });
@@ -402,8 +385,6 @@ enum Quest11730Data
 // 46023 - The Ultrasonic Screwdriver
 class spell_q11730_ultrasonic_screwdriver : public SpellScript
 {
-    PrepareSpellScript(spell_q11730_ultrasonic_screwdriver);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER && GetCastItem();
@@ -467,8 +448,6 @@ enum Quest12459Data
 // 49587 - Seeds of Nature's Wrath
 class spell_q12459_seeds_of_natures_wrath : public SpellScript
 {
-    PrepareSpellScript(spell_q12459_seeds_of_natures_wrath);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Creature* creatureTarget = GetHitCreature())
@@ -503,8 +482,6 @@ enum Quest12634Data
 // 51840 - Despawn Fruit Tosser
 class spell_q12634_despawn_fruit_tosser : public SpellScript
 {
-    PrepareSpellScript(spell_q12634_despawn_fruit_tosser);
-
     bool Validate(SpellInfo const* /*spellEntry*/) override
     {
         return ValidateSpellInfo(
@@ -540,8 +517,6 @@ class spell_q12634_despawn_fruit_tosser : public SpellScript
 // 52308 - Take Sputum Sample
 class spell_q12683_take_sputum_sample : public SpellScript
 {
-    PrepareSpellScript(spell_q12683_take_sputum_sample);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return spellInfo->GetEffects().size() > EFFECT_1;
@@ -579,8 +554,6 @@ enum Quest12851Data
 // 54798 - FLAMING Arrow Triggered Effect
 class spell_q12851_going_bearback : public AuraScript
 {
-    PrepareAuraScript(spell_q12851_going_bearback);
-
     void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
@@ -625,8 +598,6 @@ enum Whoarethey
 // 48917 - Who Are They: Cast from Questgiver
 class spell_q10041_q10040_who_are_they : public SpellScript
 {
-    PrepareSpellScript(spell_q10041_q10040_who_are_they);
-
     bool Validate(SpellInfo const* /*spellEntry*/) override
     {
         return ValidateSpellInfo({ SPELL_MALE_DISGUISE, SPELL_FEMALE_DISGUISE, SPELL_GENERIC_DISGUISE });
@@ -657,8 +628,6 @@ enum Quest12659Data
 // 52090 - Ahunae's Knife
 class spell_q12659_ahunaes_knife : public SpellScript
 {
-    PrepareSpellScript(spell_q12659_ahunaes_knife);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -688,8 +657,6 @@ enum SalvagingLifesStength
 // 54190 - Lifeblood Dummy
 class spell_q12805_lifeblood_dummy : public SpellScript
 {
-    PrepareSpellScript(spell_q12805_lifeblood_dummy);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -729,8 +696,6 @@ enum BattleStandard
 // 59643 - Plant Horde Battle Standard
 class spell_q13280_13283_plant_battle_standard : public SpellScript
 {
-    PrepareSpellScript(spell_q13280_13283_plant_battle_standard);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -758,8 +723,6 @@ class spell_q13280_13283_plant_battle_standard : public SpellScript
 // 4336 - Jump Jets
 class spell_q13280_13283_jump_jets : public SpellScript
 {
-    PrepareSpellScript(spell_q13280_13283_jump_jets);
-
     void HandleCast()
     {
         Unit* caster = GetCaster();
@@ -785,8 +748,6 @@ enum ChumTheWaterSummons
 // 66741 - Chum the Water
 class spell_q14112_14145_chum_the_water : public SpellScript
 {
-    PrepareSpellScript(spell_q14112_14145_chum_the_water);
-
     bool Validate(SpellInfo const* /*spellEntry*/) override
     {
         return ValidateSpellInfo({ SUMMON_ANGRY_KVALDIR, SUMMON_NORTH_SEA_MAKO, SUMMON_NORTH_SEA_THRESHER, SUMMON_NORTH_SEA_BLUE_SHARK });
@@ -813,8 +774,6 @@ enum RedSnapperVeryTasty
 // 29866 - Cast Fishing Net
 class spell_q9452_cast_net : public SpellScript
 {
-    PrepareSpellScript(spell_q9452_cast_net);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_FISHED_UP_RED_SNAPPER, SPELL_FISHED_UP_MURLOC });
@@ -845,8 +804,6 @@ enum BreakfastOfChampions
 // 66512 - Pound Drum
 class spell_q14076_14092_pound_drum : public SpellScript
 {
-    PrepareSpellScript(spell_q14076_14092_pound_drum);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_DEEP_JORMUNGAR, SPELL_STORMFORGED_MOLE_MACHINE });
@@ -876,8 +833,6 @@ enum FocusOnTheBeach
 // 50546 - The Focus on the Beach: Ley Line Focus Control Ring Effect
 class spell_q12066_bunny_kill_credit : public SpellScript
 {
-    PrepareSpellScript(spell_q12066_bunny_kill_credit);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Creature* target = GetHitCreature())
@@ -904,8 +859,6 @@ enum ACleansingSong
 // 52941 - Song of Cleansing
 class spell_q12735_song_of_cleansing : public SpellScript
 {
-    PrepareSpellScript(spell_q12735_song_of_cleansing);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -939,8 +892,6 @@ enum DefendingWyrmrestTemple
 // 49213 - Defending Wyrmrest Temple: Character Script Cast From Gossip
 class spell_q12372_cast_from_gossip_trigger : public SpellScript
 {
-    PrepareSpellScript(spell_q12372_cast_from_gossip_trigger);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         GetCaster()->CastSpell(GetCaster(), SPELL_SUMMON_WYRMREST_DEFENDER, true);
@@ -962,8 +913,6 @@ enum Quest12372Data
 // 49370 - Wyrmrest Defender: Destabilize Azure Dragonshrine Effect
 class spell_q12372_destabilize_azure_dragonshrine_dummy : public SpellScript
 {
-    PrepareSpellScript(spell_q12372_destabilize_azure_dragonshrine_dummy);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (GetHitCreature())
@@ -994,8 +943,6 @@ enum Quest11010_11102_11023Data
 // 40113 - Knockdown Fel Cannon: The Aggro Check Aura
 class spell_q11010_q11102_q11023_aggro_check_aura : public AuraScript
 {
-    PrepareAuraScript(spell_q11010_q11102_q11023_aggro_check_aura);
-
     void HandleTriggerSpell(AuraEffect const* /*aurEff*/)
     {
         if (Unit* target = GetTarget())
@@ -1012,8 +959,6 @@ class spell_q11010_q11102_q11023_aggro_check_aura : public AuraScript
 // 40112 - Knockdown Fel Cannon: The Aggro Check
 class spell_q11010_q11102_q11023_aggro_check : public SpellScript
 {
-    PrepareSpellScript(spell_q11010_q11102_q11023_aggro_check);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Player* playerTarget = GetHitPlayer())
@@ -1031,8 +976,6 @@ class spell_q11010_q11102_q11023_aggro_check : public SpellScript
 // 40119 - Knockdown Fel Cannon: The Aggro Burst
 class spell_q11010_q11102_q11023_aggro_burst : public AuraScript
 {
-    PrepareAuraScript(spell_q11010_q11102_q11023_aggro_burst);
-
     void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* target = GetTarget())
@@ -1049,8 +992,6 @@ class spell_q11010_q11102_q11023_aggro_burst : public AuraScript
 // 40056 - Knockdown Fel Cannon: Choose Loc
 class spell_q11010_q11102_q11023_choose_loc : public SpellScript
 {
-    PrepareSpellScript(spell_q11010_q11102_q11023_choose_loc);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -1076,8 +1017,6 @@ class spell_q11010_q11102_q11023_choose_loc : public SpellScript
 // 40160 - Throw Bomb
 class spell_q11010_q11102_q11023_q11008_check_fly_mount : public SpellScript
 {
-    PrepareSpellScript(spell_q11010_q11102_q11023_q11008_check_fly_mount);
-
     SpellCastResult CheckRequirement()
     {
         Unit* caster = GetCaster();
@@ -1102,8 +1041,6 @@ enum RecoverTheCargo
 // 42287 - Salvage Wreckage
 class spell_q11140salvage_wreckage : public SpellScript
 {
-    PrepareSpellScript(spell_q11140salvage_wreckage);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_LOCKBOX, SPELL_SUMMON_BURROWER });
@@ -1133,8 +1070,6 @@ enum SpellZuldrakRat
 // 50894 - Zul'Drak Rat
 class spell_q12527_zuldrak_rat : public SpellScript
 {
-    PrepareSpellScript(spell_q12527_zuldrak_rat);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_GORGED_LURKING_BASILISK });
@@ -1159,8 +1094,6 @@ class spell_q12527_zuldrak_rat : public SpellScript
 // 55368 - Summon Stefan
 class spell_q12661_q12669_q12676_q12677_q12713_summon_stefan : public SpellScript
 {
-    PrepareSpellScript(spell_q12661_q12669_q12676_q12677_q12713_summon_stefan);
-
     void SetDest(SpellDestination& dest)
     {
         // Adjust effect summon position
@@ -1182,8 +1115,6 @@ enum QuenchingMist
 // 53350 - Quenching Mist
 class spell_q12730_quenching_mist : public AuraScript
 {
-    PrepareAuraScript(spell_q12730_quenching_mist);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_FLICKERING_FLAMES });
@@ -1213,8 +1144,6 @@ enum Quest13291_13292_13239_13261Data
 // 59318 - Grab Fake Soldier
 class spell_q13291_q13292_q13239_q13261_frostbrood_skytalon_grab_decoy : public SpellScript
 {
-    PrepareSpellScript(spell_q13291_q13292_q13239_q13261_frostbrood_skytalon_grab_decoy);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_RIDE });
@@ -1238,8 +1167,6 @@ class spell_q13291_q13292_q13239_q13261_frostbrood_skytalon_grab_decoy : public 
 // 59303 - Summon Frost Wyrm
 class spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon : public SpellScript
 {
-    PrepareSpellScript(spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon);
-
     void SetDest(SpellDestination& dest)
     {
         // Adjust effect summon position
@@ -1256,8 +1183,6 @@ class spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon : public S
 // 12601 - Second Chances: Summon Landgren's Soul Moveto Target Bunny
 class spell_q12847_summon_soul_moveto_bunny : public SpellScript
 {
-    PrepareSpellScript(spell_q12847_summon_soul_moveto_bunny);
-
     void SetDest(SpellDestination& dest)
     {
         // Adjust effect summon position
@@ -1275,8 +1200,6 @@ class spell_q12847_summon_soul_moveto_bunny : public SpellScript
 // 57412 - Reckoning Bomb
 class spell_q13086_cannons_target : public SpellScript
 {
-    PrepareSpellScript(spell_q13086_cannons_target);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return !spellInfo->GetEffects().empty()
@@ -1334,8 +1257,6 @@ enum BurstAtTheSeams
 // 59576 - Burst at the Seams
 class spell_q13264_q13276_q13288_q13289_burst_at_the_seams_59576 : public SpellScript
 {
-    PrepareSpellScript(spell_q13264_q13276_q13288_q13289_burst_at_the_seams_59576);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -1374,8 +1295,6 @@ class spell_q13264_q13276_q13288_q13289_burst_at_the_seams_59576 : public SpellS
 // 59579 - Burst at the Seams
 class spell_q13264_q13276_q13288_q13289_burst_at_the_seams_59579 : public AuraScript
 {
-    PrepareAuraScript(spell_q13264_q13276_q13288_q13289_burst_at_the_seams_59579);
-
     void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -1418,8 +1337,6 @@ class spell_q13264_q13276_q13288_q13289_burst_at_the_seams_59579 : public AuraSc
 // 52593 - Bloated Abomination Feign Death
 class spell_q13264_q13276_q13288_q13289_bloated_abom_feign_death : public AuraScript
 {
-    PrepareAuraScript(spell_q13264_q13276_q13288_q13289_bloated_abom_feign_death);
-
     void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -1447,8 +1364,6 @@ class spell_q13264_q13276_q13288_q13289_bloated_abom_feign_death : public AuraSc
 // 76245 - Area Restrict Abom
 class spell_q13264_q13276_q13288_q13289_area_restrict_abom : public SpellScript
 {
-    PrepareSpellScript(spell_q13264_q13276_q13288_q13289_area_restrict_abom);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (Creature* creature = GetHitCreature()) {
@@ -1469,8 +1384,6 @@ class spell_q13264_q13276_q13288_q13289_area_restrict_abom : public SpellScript
 // 60041 - Assign Geist Kill Credit to Master
 class spell_q13264_q13276_q13288_q13289_assign_credit_to_master : public SpellScript
 {
-    PrepareSpellScript(spell_q13264_q13276_q13288_q13289_assign_credit_to_master);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -1491,8 +1404,6 @@ class spell_q13264_q13276_q13288_q13289_assign_credit_to_master : public SpellSc
 // 52510 - Burst at the Seams
 class spell_q12690_burst_at_the_seams_52510 : public SpellScript
 {
-    PrepareSpellScript(spell_q12690_burst_at_the_seams_52510);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -1557,8 +1468,6 @@ enum EscapeFromSilverbrook
 // 48682 - Escape from Silverbrook - Periodic Dummy
 class spell_q12308_escape_from_silverbrook : public SpellScript
 {
-    PrepareSpellScript(spell_q12308_escape_from_silverbrook);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_WORGEN });
@@ -1578,8 +1487,6 @@ class spell_q12308_escape_from_silverbrook : public SpellScript
 // 48681 - Summon Silverbrook Worgen
 class spell_q12308_escape_from_silverbrook_summon_worgen : public SpellScript
 {
-    PrepareSpellScript(spell_q12308_escape_from_silverbrook_summon_worgen);
-
     void ModDest(SpellDestination& dest)
     {
         float dist = GetEffectInfo(EFFECT_0).CalcRadius(GetCaster());
@@ -1611,8 +1518,6 @@ enum DeathComesFromOnHigh
 // 51858 - Siphon of Acherus
 class spell_q12641_death_comes_from_on_high : public SpellScript
 {
-    PrepareSpellScript(spell_q12641_death_comes_from_on_high);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -1663,8 +1568,6 @@ enum Recall_Eye_of_Acherus
 // 52694 - Recall Eye of Acherus
 class spell_q12641_recall_eye_of_acherus : public SpellScript
 {
-    PrepareSpellScript(spell_q12641_recall_eye_of_acherus);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Player* player = GetCaster()->GetCharmerOrOwner()->ToPlayer())
@@ -1684,8 +1587,6 @@ class spell_q12641_recall_eye_of_acherus : public SpellScript
 // 51769 - Emblazon Runeblade
 class spell_q12619_emblazon_runeblade : public AuraScript
 {
-    PrepareAuraScript(spell_q12619_emblazon_runeblade);
-
     void HandleEffectPeriodic(AuraEffect const* aurEff)
     {
         PreventDefaultAction();
@@ -1702,8 +1603,6 @@ class spell_q12619_emblazon_runeblade : public AuraScript
 // 51770 - Emblazon Runeblade
 class spell_q12619_emblazon_runeblade_effect : public SpellScript
 {
-    PrepareSpellScript(spell_q12619_emblazon_runeblade_effect);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         GetCaster()->CastSpell(GetCaster(), uint32(GetEffectValue()), false);
@@ -1724,8 +1623,6 @@ enum Quest_The_Storm_King
 // 55516 - Gymer's Grab
 class spell_q12919_gymers_grab : public SpellScript
 {
-    PrepareSpellScript(spell_q12919_gymers_grab);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_RIDE_GYMER });
@@ -1755,8 +1652,6 @@ enum Quest_The_Storm_King_Throw
 // 55421 - Gymer's Throw
 class spell_q12919_gymers_throw : public SpellScript
 {
-   PrepareSpellScript(spell_q12919_gymers_throw);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -1782,8 +1677,6 @@ enum Quest_The_Hunter_And_The_Prince
 // 61752 - Illidan Kill Credit Master
 class spell_q13400_illidan_kill_master : public SpellScript
 {
-   PrepareSpellScript(spell_q13400_illidan_kill_master);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_ILLIDAN_KILL_CREDIT });
@@ -1811,8 +1704,6 @@ enum RelicOfTheEarthenRing
 // 66744 - Make Player Destroy Totems
 class spell_q14100_q14111_make_player_destroy_totems : public SpellScript
 {
-    PrepareSpellScript(spell_q14100_q14111_make_player_destroy_totems);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_TOTEM_OF_THE_EARTHEN_RING });
@@ -1839,8 +1730,6 @@ enum Fumping
 // 39238 - Fumping
 class spell_q10929_fumping : public AuraScript
 {
-    PrepareAuraScript(spell_q10929_fumping);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_SUMMON_SAND_GNOME, SPELL_SUMMON_BONE_SLICER });
@@ -1875,8 +1764,6 @@ public:
 
     class spell_q28813_get_our_boys_back_dummy_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_q28813_get_our_boys_back_dummy_SpellScript);
-
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             return ValidateSpellInfo({ SPELL_RENEWED_LIFE });
@@ -1913,8 +1800,6 @@ public:
 
     class spell_q28813_set_health_random_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_q28813_set_health_random_SpellScript);
-
         void HandleDummyEffect()
         {
             Unit* caster = GetCaster();
@@ -1936,8 +1821,6 @@ public:
 // 49285 - Hand Over Reins
 class spell_q12414_hand_over_reins : public SpellScript
 {
-    PrepareSpellScript(spell_q12414_hand_over_reins);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         Creature* caster = GetCaster()->ToCreature();
@@ -1957,8 +1840,6 @@ class spell_q12414_hand_over_reins : public SpellScript
 // 13665 13745 13750 13756 13761 13767 13772 13777 13782  13787 - The Grand Melee
 class spell_q13665_q13790_bested_trigger : public SpellScript
 {
-    PrepareSpellScript(spell_q13665_q13790_bested_trigger);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         Unit* target = GetHitUnit()->GetCharmerOrOwnerOrSelf();
@@ -1988,8 +1869,6 @@ enum ApplyHeatAndStir
 // 43972 - Mixing Blood
 class spell_q11306_mixing_blood : public SpellScript
 {
-    PrepareSpellScript(spell_q11306_mixing_blood);
-
     void HandleEffect(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -2006,8 +1885,6 @@ class spell_q11306_mixing_blood : public SpellScript
 // 43375 - Mixing Vrykul Blood
 class spell_q11306_mixing_vrykul_blood : public SpellScript
 {
-    PrepareSpellScript(spell_q11306_mixing_vrykul_blood);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -2038,8 +1915,6 @@ class spell_q11306_mixing_vrykul_blood : public SpellScript
 // 43376 - Failed Mix
 class spell_q11306_failed_mix_43376 : public SpellScript
 {
-    PrepareSpellScript(spell_q11306_failed_mix_43376);
-
     void HandleEffect(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -2056,8 +1931,6 @@ class spell_q11306_failed_mix_43376 : public SpellScript
 // 43378 - Failed Mix
 class spell_q11306_failed_mix_43378 : public SpellScript
 {
-    PrepareSpellScript(spell_q11306_failed_mix_43378);
-
     void HandleEffect(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -2074,8 +1947,6 @@ class spell_q11306_failed_mix_43378 : public SpellScript
 // 46444 - Weakness to Lightning: Cast on Master Script Effect
 class spell_q11896_weakness_to_lightning_46444 : public SpellScript
 {
-    PrepareSpellScript(spell_q11896_weakness_to_lightning_46444);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -2135,8 +2006,6 @@ enum TamingTheBeast
 
 class spell_quest_taming_the_beast : public AuraScript
 {
-    PrepareAuraScript(spell_quest_taming_the_beast);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -2206,11 +2075,9 @@ class spell_quest_taming_the_beast : public AuraScript
 // 53099, 57896, 58418, 58420, 59064, 59065, 59439, 60900, 60940
 class spell_quest_portal_with_condition : public SpellScript
 {
-    PrepareSpellScript(spell_quest_portal_with_condition);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
-        return spellInfo->GetEffects().size() > EFFECT_1
+        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 } })
             && ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()) })
             && sObjectMgr->GetQuestTemplate(uint32(spellInfo->GetEffect(EFFECT_1).CalcValue()));
     }
@@ -2253,8 +2120,6 @@ enum TributeSpells
 // 24195 - Grom's Tribute
 class spell_quest_uther_grom_tribute : public SpellScript
 {
-    PrepareSpellScript(spell_quest_uther_grom_tribute);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -2311,8 +2176,6 @@ enum CallAttackMastiffs
 // 68682 Call Attack Mastiffs
 class spell_q14386_call_attack_mastiffs : public SpellScript
 {
-    PrepareSpellScript(spell_q14386_call_attack_mastiffs);
-
     void HandleEffect(SpellEffIndex /*eff*/)
     {
         Unit* caster = GetCaster();

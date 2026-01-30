@@ -6,7 +6,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <Challenge.h>
+#include "ChallengeMode.h"
 enum eAshranDatas
 {
     /// Maps, Zones, Areas IDs

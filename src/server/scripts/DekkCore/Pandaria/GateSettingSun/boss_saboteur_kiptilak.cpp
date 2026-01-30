@@ -295,8 +295,6 @@ class spell_kiptilak_munitions_explosion: public SpellScriptLoader
 
         class spell_kiptilak_munitions_explosion_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_kiptilak_munitions_explosion_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& unitList)
             {
                 if (Unit* caster = GetCaster())
@@ -322,8 +320,6 @@ class spell_kiptilak_sabotage: public SpellScriptLoader
 
         class spell_kiptilak_sabotage_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_kiptilak_sabotage_AuraScript);
-
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();

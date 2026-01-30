@@ -32,7 +32,7 @@ class TC_GAME_API ChannelMgr
     typedef std::unordered_map<ObjectGuid, Channel*> BuiltinChannelContainer;
 
     protected:
-        explicit ChannelMgr(uint32 team) : _team(team) { }
+        explicit ChannelMgr(uint32 team) : _team(team), _guidGenerator(HighGuid::ChatChannel) { }
         ~ChannelMgr();
 
     public:
@@ -45,6 +45,7 @@ class TC_GAME_API ChannelMgr
         static ChannelMgr* ForTeam(uint32 team);
         static Channel* GetChannelForPlayerByNamePart(std::string const& namePart, Player* playerSearcher);
         static Channel* GetChannelForPlayerByGuid(ObjectGuid channelGuid, Player* playerSearcher);
+        static AreaTableEntry const* SpecialLinkedArea;
 
         void SaveToDB();
         Channel* GetSystemChannel(uint32 channelId, AreaTableEntry const* zoneEntry = nullptr);
@@ -57,7 +58,7 @@ class TC_GAME_API ChannelMgr
         CustomChannelContainer _customChannels;
         BuiltinChannelContainer _channels;
         uint32 const _team;
-        ObjectGuidGenerator<HighGuid::ChatChannel> _guidGenerator;
+        ObjectGuidGenerator _guidGenerator;
 
         static void SendNotOnChannelNotify(Player const* player, std::string const& name);
         ObjectGuid CreateCustomChannelGuid();

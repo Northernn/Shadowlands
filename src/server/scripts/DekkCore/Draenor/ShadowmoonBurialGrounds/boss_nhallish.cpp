@@ -658,8 +658,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_void_devestation_trigger_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_void_devestation_trigger_SpellScript);
-
         bool Load() override
         {
             if (!GetSpellInfo())
@@ -706,8 +704,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_void_blast_SpellScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadowmoon_burial_grounds_void_blast_SpellScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
@@ -755,8 +751,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_void_vortex_SpellScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadowmoon_burial_grounds_void_vortex_SpellScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
@@ -799,8 +793,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_soul_steal_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_soul_steal_SpellScript);
-
         bool Load() override
         {
             if (!GetSpellInfo())
@@ -870,8 +862,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_teleport_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_teleport_SpellScript);
-
         void HandleAfterCast()
         {
             if (!GetCaster())

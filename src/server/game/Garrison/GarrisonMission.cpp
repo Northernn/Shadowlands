@@ -90,21 +90,21 @@ void Missionssss::Start(Player* owner, std::vector<uint64> const &followers)
         }*/
 
         //@TODO GarrTypeID check here too?
-         if (missionEntry->TargetLevel && missionEntry->TargetLevel > follower->PacketInfo.FollowerLevel)
-         {
-             missionStartFailed(GARRISON_ERROR_INVALID_FOLLOWER_LEVEL);
-             return;
-         }
+        if (missionEntry->TargetLevel && uint32(missionEntry->TargetLevel) > follower->PacketInfo.FollowerLevel)
+        {
+            missionStartFailed(GARRISON_ERROR_INVALID_FOLLOWER_LEVEL);
+            return;
+        }
 
-     /*   if (follower->PacketInfo.FollowerStatus & GarrisonConst::GarrisonFollowerFlags::FOLLOWER_STATUS_INACTIVE)
+        if (follower->PacketInfo.FollowerStatus & GarrisonFollowerStatus::FOLLOWER_STATUS_INACTIVE)
         {
             missionStartFailed(GARRISON_ERROR_FOLLOWER_INACTIVE);
             return;
-        }*/
+        }
 
        // follower->DbState = DB_STATE_CHANGED;
-       // follower->PacketInfo.CurrentMissionID = PacketInfo.MissionRecID;
-        //CurrentFollowerDBIDs.push_back(f);
+        follower->PacketInfo.CurrentMissionID = PacketInfo.MissionRecID;
+        CurrentFollowerDBIDs.push_back(f);
     }
 
     PacketInfo.MissionState = MISSION_STATE_IN_PROGRESS;
@@ -123,9 +123,9 @@ void Missionssss::Start(Player* owner, std::vector<uint64> const &followers)
     if (missionEntry->MissionCost > 0)
         owner->ModifyCurrency(missionEntry->MissionCostCurrencyTypesID, missionEntry->MissionCost * -1);
 
-    garrison->SendMissionListUpdate(false);
+ //   garrison->SendMissionListUpdate(false);
 
-  //  owner->UpdateAchievementCriteria(CRITERIA_TYPE_START_GARRISON_MISSION, PacketInfo.RecID);
+    owner->UpdateCriteria(CriteriaType::StartGarrisonMission, PacketInfo.MissionRecID);
 }
 
 void Missionssss::Complete(Player* owner)
@@ -179,17 +179,17 @@ void Missionssss::Complete(Player* owner)
                     follower->PacketInfo.Health -= 1;
 
                 //remove.
-              //  if (follower->PacketInfo.Health <= 0)
-              //  {
-                    //ASSERT(followerEntry->Vitality < 5);
-                 //   garrison->DecrementTroopCount(followerEntry->Vitality);
+                if (follower->PacketInfo.Health <= 0)
+                {
+                    ASSERT(followerEntry->Vitality < 5);
+                   // garrison->DecrementTroopCount(followerEntry->Vitality);
 
-                    //! unlock 
+                    //! unlock
                     //for (auto& v : garrison->GetFollowers())
                     //{
-                    //    if (v.second.PacketInfo.FollowerStatus & GarrisonFollowerStatus::FOLLOWER_STATUS_INACTIVE) 
+                    //    if (v.second.PacketInfo.FollowerStatus & GarrisonFollowerStatus::FOLLOWER_STATUS_INACTIVE)
                     //    {
-                    //      //  v.second.PacketInfo.FollowerStatus = v.second.PacketInfo.FollowerStatus & ~GarrisonFollowerFlags::FOLLOWER_STATUS_INACTIVE;
+                    //     //   v.second.PacketInfo.FollowerStatus = v.second.PacketInfo.FollowerStatus & ~GarrisonFollowerStatus::FOLLOWER_STATUS_INACTIVE;
                     //      //  v.second.DbState = DB_STATE_CHANGED;
 
                     //       // WorldPackets::Garrison::GarrisonFollowerChangedAbilities followers;
@@ -197,8 +197,8 @@ void Missionssss::Complete(Player* owner)
                     //      //  owner->SendDirectMessage(followers.Write());
                     //        break;
                     //    }
-                //    }
-//
+                    //}
+
                     WorldPackets::Garrison::GarrisonRemoveFollowerResult removeFollowerResult;
                     removeFollowerResult.FollowerDBID = follower->PacketInfo.DbID;
                     removeFollowerResult.GarrTypeID = followerEntry->GarrTypeID;
@@ -207,11 +207,11 @@ void Missionssss::Complete(Player* owner)
                     owner->SendDirectMessage(removeFollowerResult.Write());
 
                     //follower->DbState = DB_STATE_REMOVED;
-                    follower->PacketInfo.FollowerStatus != GarrisonFollowerStatus::FOLLOWER_STATUS_EXHAUSTED;
+//                    follower->PacketInfo.FollowerStatus != GarrisonFollowerStatus::FOLLOWER_STATUS_EXHAUSTED;
                 }
             }
         }
-//    }
+    }
 
     owner->SendDirectMessage(completeMissionResult.Write());
 
@@ -235,7 +235,7 @@ void Missionssss::Complete(Player* owner)
     {
         CurrentFollowerDBIDs.clear();
         //garrison->RemoveMissionByGuid(PacketInfo.DbID);
-        garrison->SendMissionListUpdate(true);
+       // garrison->SendMissionListUpdate(true);
     }
 
     owner->UpdateCriteria(CriteriaType::SucceedGarrisonMission, PacketInfo.MissionRecID);
@@ -283,7 +283,7 @@ void Missionssss::BonusRoll(Player* owner)
               //  ASSERT(followerEntry->Vitality < 5);
 //                garrison->DecrementTroopCount(followerEntry->Vitality);
 
-                //! unlock 
+                //! unlock
               //  for (auto& v : garrison->GetFollowers())
              //   {
                //     if (v.second.PacketInfo.FollowerStatus & GarrisonFollowerStatus::FOLLOWER_STATUS_INACTIVE)
@@ -308,10 +308,10 @@ void Missionssss::BonusRoll(Player* owner)
               //  follower->DbState = DB_STATE_REMOVED;
             }
        }
- 
-       // if (!missionRewardEntry || follower->PacketInfo.FollowerStatus & GarrisonConst::GarrisonFollowerFlags::FOLLOWER_STATUS_NO_XP_GAIN)
-// //        //   continue;
-//
+
+        if (/*!missionRewardEntry || */follower->PacketInfo.FollowerStatus & GarrisonFollowerStatus::FOLLOWER_STATUS_NO_XP_GAIN)
+            continue;
+
 //        if (missionRewardEntry->HasFollowerXPReward())
 // //       {
 // //           WorldPackets::Garrison::GarrisonFollowerChangedXP data;
@@ -330,16 +330,11 @@ void Missionssss::BonusRoll(Player* owner)
 
     ObjectGuid guid;
 
-    WorldPackets::Garrison::GarrisonOpenMissionNpc packet;
-    packet.NpcGUID = guid;
-    packet.FollowerType = GarrisonFollowerType::FOLLOWER_TYPE_COVENANT;
-    owner->SendDirectMessage(packet.Write());
-
 //    garrison->RewardMission(PacketInfo.MissionRecID);
-    if (PacketInfo.MissionState == MISSION_STATE_COMPLETED_OWERMAX)
+ //   if (PacketInfo.MissionState == MISSION_STATE_COMPLETED_OWERMAX)
     //    garrison->RewardMission(PacketInfo.MissionRecID, true);
    // garrison->RemoveMissionByGuid(PacketInfo.DbID);
-    garrison->SendMissionListUpdate(true);
+    //garrison->SendMissionListUpdate(true);
 }
 
 float Missionssss::ComputeSuccessChance()
@@ -358,10 +353,10 @@ float Missionssss::CalcChance(float a, float b, float c)
     return d;
 }
 
-std::vector<Followersss*> Missionssss::GetMissionFollowers(uint32 garrMissionId)
+std::vector<Followersss*> Missionssss::GetMissionFollowers(uint32 /*garrMissionId*/)
 {
     std::vector<Followersss*> missionFollowers;
-    for (auto f : CurrentFollowerDBIDs)
+//    for (auto f : CurrentFollowerDBIDs)
       //  if (Followersss* follower = garrison->GetFollower(f))
          //   missionFollowers.push_back(follower);
     return missionFollowers;

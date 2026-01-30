@@ -18,17 +18,19 @@
 #include "KillRewarder.h"
 #include "Creature.h"
 #include "DB2Stores.h"
+#include "FlatSet.h"
 #include "Formulas.h"
 #include "Group.h"
 #include "Guild.h"
 #include "GuildMgr.h"
-#include "InstanceScript.h"
 #include "Pet.h"
 #include "Player.h"
 #include "Scenario.h"
 #include "SpellAuraEffects.h"
-#include <boost/container/flat_set.hpp>
 #include <boost/container/small_vector.hpp>
+ //npcbot
+#include "botmgr.h"
+//end npcbot
 
  // == KillRewarder ====================================================
  // KillRewarder encapsulates logic of rewarding player upon kill with:
@@ -162,6 +164,17 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
         xp *= player->GetTotalAuraMultiplier(SPELL_AURA_MOD_XP_PCT);
         xp *= player->GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_XP_FROM_CREATURE_TYPE, int32(_victim->GetCreatureType()));
 
+        //npcbot 4.2.2.1. Apply NpcBot XP reduction
+        if (player->GetNpcBotsCount() > 1)
+        {
+            if (uint8 xp_reduction = BotMgr::GetNpcBotXpReduction())
+            {
+                uint32 ratePct = std::max<int32>(100 - ((player->GetNpcBotsCount() - 1) * xp_reduction), 10);
+                xp = xp * ratePct / 100;
+            }
+        }
+        //end npcbot
+
         // 4.2.3. Give XP to player.
         player->GiveXP(xp, _victim, _groupRate);
         if (Pet* pet = player->GetPet())
@@ -259,7 +272,7 @@ void KillRewarder::_RewardGroup(Group const* group, Player const* killer)
 
 void KillRewarder::Reward()
 {
-    boost::container::flat_set<Group const*, std::less<>, boost::container::small_vector<Group const*, 3>> processedGroups;
+    Trinity::Containers::FlatSet<Group const*, std::less<>, boost::container::small_vector<Group const*, 3>> processedGroups;
     for (Player* killer : _killers)
     {
         _InitGroupData(killer);
@@ -292,15 +305,14 @@ void KillRewarder::Reward()
     // 7. Credit scenario criterias
     if (Creature* victim = _victim->ToCreature())
     {
-        if (victim->IsDungeonBoss())
-            if (InstanceScript* instance = _victim->GetInstanceScript())
-                instance->UpdateEncounterStateForKilledCreature(_victim->GetEntry(), _victim);
+        if (_killers.begin() != _killers.end())
+        {
+            if (ObjectGuid::LowType guildId = victim->GetMap()->GetOwnerGuildId())
+                if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+                    guild->UpdateCriteria(CriteriaType::KillCreature, victim->GetEntry(), 1, 0, victim, *_killers.begin());
 
-        if (ObjectGuid::LowType guildId = victim->GetMap()->GetOwnerGuildId())
-            if (Guild* guild = sGuildMgr->GetGuildById(guildId))
-                guild->UpdateCriteria(CriteriaType::KillCreature, victim->GetEntry(), 1, 0, victim, *_killers.begin());
-
-        if (Scenario* scenario = victim->GetScenario())
-            scenario->UpdateCriteria(CriteriaType::KillCreature, victim->GetEntry(), 1, 0, victim, *_killers.begin());
+            if (Scenario* scenario = victim->GetScenario())
+                scenario->UpdateCriteria(CriteriaType::KillCreature, victim->GetEntry(), 1, 0, victim, *_killers.begin());
+        }
     }
 }

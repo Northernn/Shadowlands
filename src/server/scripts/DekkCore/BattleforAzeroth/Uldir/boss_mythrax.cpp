@@ -346,8 +346,6 @@ private:
 //272536
 class aura_imminent_ruin : public AuraScript
 {
-    PrepareAuraScript(aura_imminent_ruin);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())

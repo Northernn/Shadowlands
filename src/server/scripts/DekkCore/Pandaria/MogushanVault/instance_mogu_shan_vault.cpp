@@ -362,7 +362,6 @@ class instance_mogu_shan_vault : public InstanceMapScript
 
             void OnPlayerLeave(Player* player) override
             {
-                InstanceScript::OnPlayerExit(player);
 
                 for (const uint32& l_AuraID : m_AuraToClear)
                 {

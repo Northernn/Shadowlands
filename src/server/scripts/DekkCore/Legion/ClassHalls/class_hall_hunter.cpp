@@ -79,63 +79,6 @@ private:
     bool SayHi;
 };
 
-struct npc_grif_wildheart_100810 : public ScriptedAI
-{
-    npc_grif_wildheart_100810(Creature* creature) : ScriptedAI(creature) {  }
-
-    bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
-    {
-        TC_LOG_ERROR("server.worldserver", "sGossipSelect %u, %u", menuId, gossipListId);
-        if (player->HasQuest(QUEST_The_Hunters_Call))
-        {
-            if (gossipListId == 0)
-            {
-                player->KilledMonsterCredit(104297);
-                CloseGossipMenuFor(player);
-            }
-        }
-        return false;
-    }
-};
-
-struct npc_apata_highmountain_99986 : public ScriptedAI
-{
-    npc_apata_highmountain_99986(Creature* creature) : ScriptedAI(creature) {  }
-
-    bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
-    {
-        TC_LOG_ERROR("server.worldserver", "sGossipSelect %u, %u", menuId, gossipListId);
-        if (player->HasQuest(QUEST_The_Hunters_Call))
-        {
-            if (gossipListId == 0)
-            {
-                player->KilledMonsterCredit(104298);
-                CloseGossipMenuFor(player);
-            }
-        }
-        return false;
-    }
-};
-
-struct npc_courier_larkspur_100171 : public ScriptedAI
-{
-    npc_courier_larkspur_100171(Creature* creature) : ScriptedAI(creature) {  }
-
-    bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
-    {
-        TC_LOG_ERROR("server.worldserver", "sGossipSelect %u, %u", menuId, gossipListId);
-        if (player->HasQuest(QUEST_The_Hunters_Call))
-        {
-            if (gossipListId == 0)
-            {
-                player->KilledMonsterCredit(104299);
-                CloseGossipMenuFor(player);
-            }
-        }
-        return false;
-    }
-};
-
 class PlayerScript_hunter_artifact_choice : public PlayerScript
 {
 public:
@@ -242,9 +185,6 @@ public:
 void AddSC_class_hall_hunter()
 {
     RegisterCreatureAI(npc_snowfeather_100786);
-    RegisterCreatureAI(npc_grif_wildheart_100810);
-    RegisterCreatureAI(npc_apata_highmountain_99986);
-    RegisterCreatureAI(npc_courier_larkspur_100171);
     new PlayerScript_hunter_artifact_choice();
     new npc_40618_artifact();
 }

@@ -145,7 +145,6 @@ struct npc_tol_dagor_ashavane_quartermaster : public ScriptedAI
         {
             case ACTION_THROW_BOMB:
                 Talk(0);
-            //    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true)) fix add correct target
                 if (Unit* target = me->FindNearestCreature(NPC_KNIGHT_CAPTAIN_VALYRI, 50.0f, true))
                     me->CastSpell(target, SPELL_ARMAMENT);
                     me->CastSpell(BarrelPositions[urand(0, 3)], SPELL_ARMAMENT);
@@ -228,8 +227,6 @@ private:
 //256970
 class spell_ignition : public SpellScript
 {
-    PrepareSpellScript(spell_ignition);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -249,8 +246,6 @@ class spell_ignition : public SpellScript
 //257028 todo fix
 class spell_fuselighter : public AuraScript
 {
-    PrepareAuraScript(spell_fuselighter);
-
     void AfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();

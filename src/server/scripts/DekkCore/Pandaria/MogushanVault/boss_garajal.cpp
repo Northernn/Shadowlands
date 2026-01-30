@@ -793,8 +793,6 @@ class spell_soul_back : public SpellScriptLoader
 
         class spell_soul_back_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_soul_back_SpellScript);
-
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* target = GetHitUnit())
@@ -830,8 +828,6 @@ class spell_final_destination : public SpellScriptLoader
 
         class spell_final_destination_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_final_destination_AuraScript);
-
             void OnTick(AuraEffect const* /*p_AurEff*/)
             {
                 if (Unit* Garajal = GetCaster())
@@ -869,8 +865,6 @@ class spell_voodoo_doll : public SpellScriptLoader
 
         class spell_voodoo_doll_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_voodoo_doll_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())

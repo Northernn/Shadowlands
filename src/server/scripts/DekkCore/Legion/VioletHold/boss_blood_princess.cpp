@@ -272,8 +272,6 @@ public:
 
     class spell_thalena_shroud_of_sorrow_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_thalena_shroud_of_sorrow_SpellScript);
-
         uint8 vampireCount = 0;
         uint32 spellId = 0;
         float damage = 0;
@@ -329,8 +327,6 @@ public:
 
     class spell_thalena_vampiric_bite_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_thalena_vampiric_bite_SpellScript);
-
         SpellCastResult CheckTarget()
         {
             if (IsVampire(GetExplTargetUnit()))
@@ -373,8 +369,6 @@ public:
 
     class spell_thalena_frenzied_bloodthirst_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_thalena_frenzied_bloodthirst_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();

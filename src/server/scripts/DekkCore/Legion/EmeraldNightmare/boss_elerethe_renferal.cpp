@@ -1009,8 +1009,6 @@ struct npc_en_venomous_spiderling : public ScriptedAI
 //223029
 class spell_en_wretched_ambush : public SpellScript
 {
-    PrepareSpellScript(spell_en_wretched_ambush);
-
     void HandleDamage(SpellEffIndex /*effectIndex*/)
     {
         auto caster = GetCaster();
@@ -1034,8 +1032,6 @@ class spell_en_wretched_ambush : public SpellScript
 //225364
 class spell_elerethe_energy_tracker_transform : public AuraScript
 {
-    PrepareAuraScript(spell_elerethe_energy_tracker_transform);
-
     uint8 powerTick = 0;
 
     void OnTick(AuraEffect const* aurEff)
@@ -1072,8 +1068,6 @@ class spell_elerethe_energy_tracker_transform : public AuraScript
 //215288
 class spell_elerethe_web_of_pain_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elerethe_web_of_pain_filter);
-
     Unit* secondTarget = nullptr;
 
     void FilterTargets(std::list<WorldObject*>& targetsList)
@@ -1132,8 +1126,6 @@ class spell_elerethe_web_of_pain_filter : public SpellScript
 //215300, 215307
 class spell_elerethe_web_of_pain : public AuraScript
 {
-    PrepareAuraScript(spell_elerethe_web_of_pain);
-
     void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
         amount = 100;
@@ -1163,8 +1155,6 @@ class spell_elerethe_web_of_pain : public AuraScript
 //214348
 class spell_elerethe_vile_ambush : public SpellScript
 {
-    PrepareSpellScript(spell_elerethe_vile_ambush);
-
     void DealDamage()
     {
         if (!GetCaster() || !GetHitUnit())
@@ -1191,8 +1181,6 @@ class spell_elerethe_vile_ambush : public SpellScript
 //214311
 class spell_elerethe_feeding_time_filter : public SpellScript
 {
-    PrepareSpellScript(spell_elerethe_feeding_time_filter);
-
     void FilterTargets(std::list<WorldObject*>& targetsList)
     {
         std::list<WorldObject*> tempTargets;
@@ -1223,8 +1211,6 @@ class spell_elerethe_feeding_time_filter : public SpellScript
 //215449
 class spell_elerethe_necrotic_venom : public AuraScript
 {
-    PrepareAuraScript(spell_elerethe_necrotic_venom);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         AuraRemoveMode mode = GetTargetApplication()->GetRemoveMode();
@@ -1244,8 +1230,6 @@ class spell_elerethe_necrotic_venom : public AuraScript
 //212993
 class spell_elerethe_shimmering_feather_proc : public AuraScript
 {
-    PrepareAuraScript(spell_elerethe_shimmering_feather_proc);
-
     void OnProc(AuraEffect * aurEff, ProcEventInfo& eventInfo)
     {
         if (GetCaster())

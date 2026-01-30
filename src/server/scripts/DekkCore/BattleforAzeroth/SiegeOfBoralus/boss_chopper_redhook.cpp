@@ -52,7 +52,7 @@ struct boss_chopper_redhook : public BossAI
 
 	void Reset() override
 	{
-		BossAI::Reset();		
+		BossAI::Reset();
 	}
 
 	void JustEngagedWith(Unit* who) override
@@ -63,7 +63,7 @@ struct boss_chopper_redhook : public BossAI
 		events.ScheduleEvent(EVENT_BARRAGE, 6s);
 	}
 
-	void JustDied(Unit* u) override
+	void JustDied(Unit*) override
 	{
 		_JustDied();
 	}
@@ -72,12 +72,12 @@ struct boss_chopper_redhook : public BossAI
 	{
 		switch (eventid)
 		{
-		case EVENT_GORE_CRASH:	
+		case EVENT_GORE_CRASH:
 			if (me->GetDistance(me->GetVictim()))
 			{
 				Talk(SAY_GORE);
 				DoCastVictim(GORE_CRASH);
-			}	
+			}
 			events.Repeat(15s);
 			break;
 
@@ -87,15 +87,15 @@ struct boss_chopper_redhook : public BossAI
 				Talk(SAY_HOOK);
 				me->RemoveAurasDueToSpell(HEAVY_HITTER);
 				me->AddAura(ON_THE_HOOK, tar);
-				//me->AddThreat(tar, 100.0f, SPELL_SCHOOL_MASK_NORMAL);	
+				//me->AddThreat(tar, 100.0f, SPELL_SCHOOL_MASK_NORMAL);
 				me->SetWalk(false);
 				me->SetSpeedRate(MOVE_RUN, 0.5f);
 				if (!me->HasAura(BOILING_RAGE))
 				{
 					me->CastSpell(me, BOILING_RAGE);
-				}				
+				}
 				me->GetMotionMaster()->MoveChase(tar, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-			}		
+			}
 			events.Repeat(15s);
 			break;
 

@@ -215,8 +215,6 @@ public:
 
     class spell_flotsam_jetsam_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_flotsam_jetsam_target_SpellScript);
-
         void HandleHitTarget(SpellEffIndex /*effIndex*/)
         {
             PreventHitAura();
@@ -259,8 +257,6 @@ public:
 
     class spell_flotsam_getsam_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_flotsam_getsam_target_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& p_Targets)
         {
             if (Unit* caster = GetCaster())
@@ -306,8 +302,6 @@ public:
 
     class spell_flotsam_getsam_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_flotsam_getsam_damage_SpellScript);
-
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
@@ -337,8 +331,6 @@ public:
 
     class spell_flotsam_yaksam_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_flotsam_yaksam_target_SpellScript);
-
         void HandleHit()
         {
             Unit* caster = GetCaster();
@@ -415,8 +407,6 @@ public:
 
     class spell_flotsam_oozing_bile_aura_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_flotsam_oozing_bile_aura_SpellScript);
-
         void HandleLaunch(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();

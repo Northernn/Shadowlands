@@ -67,17 +67,13 @@ enum VoldunQuestSpells
 // 48887 Cleanse the Mind
 class quest_cleanse_the_mind : public SpellScript
 {
-    PrepareSpellScript(quest_cleanse_the_mind);
-
     void HandleAfterCast() {
 
         if (Player* player = GetCaster()->ToPlayer())
         {
-            if (player->GetQuestStatus(QUEST_CLEANSE_THE_MIND) == QUEST_STATUS_INCOMPLETE)
+            if (player->GetQuestStatus(QUEST_CLEANSE_THE_MIND))
             {
-                if (player->GetQuestObjectiveCounter(QUEST_OBJECTIVE_MEDITATE) == 0)
-                {
-                    player->GetScheduler().Schedule(6s, [this, player](TaskContext /*context*/)
+                    player->GetScheduler().Schedule(6s, [player](TaskContext /*context*/)
                         {
                             if (player->HasAura(SPELL_MEDITATING))
                             {
@@ -92,7 +88,6 @@ class quest_cleanse_the_mind : public SpellScript
                                 }
                             }
                         });
-                }
             }
         }
     }
@@ -103,28 +98,7 @@ class quest_cleanse_the_mind : public SpellScript
     }
 };
 
-// 48988 Memory Breach
-struct quest_memory_breach : public QuestScript
-{
-    quest_memory_breach() : QuestScript("quest_memory_breach") { }
-
-    void OnQuestObjectiveChange(Player* player, Quest const* /*quest*/, QuestObjective const& objective, int32 /*oldAmount*/, int32 /*newAmount*/) override
-    {
-        if (player->HasQuest(QUEST_MEMORY_BREACH))
-            if (objective.ID == QUEST_OBJECTIVE_MEMORY_SEARCHED)
-                switch (player->GetQuestObjectiveCounter(QUEST_OBJECTIVE_MEMORY_SEARCHED))
-                {
-                case 0: player->GetSceneMgr().PlaySceneByPackageId(2189, SceneFlag::None); break;
-                case 2: player->GetSceneMgr().PlaySceneByPackageId(2193, SceneFlag::None); break;
-                case 5: player->GetSceneMgr().PlaySceneByPackageId(2194, SceneFlag::None); break;
-                case 7: player->GetSceneMgr().PlaySceneByPackageId(2199, SceneFlag::None); break;
-                }
-
-    }
-};
-
 void AddSC_zone_voldun()
 {
     RegisterSpellScript(quest_cleanse_the_mind);
-    RegisterQuestScript(quest_memory_breach);
 }

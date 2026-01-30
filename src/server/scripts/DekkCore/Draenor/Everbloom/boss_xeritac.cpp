@@ -584,8 +584,6 @@ class spell_gaseous_volley : public SpellScriptLoader
 
         class spell_gaseous_volley_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_gaseous_volley_SpellScript);
-
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 GetCaster()->CastSpell((Unit*)NULL, SPELL_GASEOUS_VOLLEY_MISSILE, true);
@@ -615,8 +613,6 @@ public:
 
     class spell_toxic_blood_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_toxic_blood_AuraScript);
-
         void HandleTriggerSpell(AuraEffect const* /*aurEff*/)
         {
             if (GetTarget())
@@ -641,53 +637,6 @@ public:
 enum ToxicGasSpells
 {
     SPELL_TOXIC_GAS_DAMAGE = 169223,
-};
-
-class at_toxic_gas : public AreaTriggerAI
-{
-public:
-    at_toxic_gas(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-    /*void OnCreate() override
-    {
-        at->SetCustomRadius(4.0f);
-    }*/
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->GetTypeId() == TYPEID_UNIT)
-        {
-            switch (unit->GetEntry())
-            {
-                case NPC_VENOM_CRAZED:
-                    if (!unit->HasAura(SPELL_TOXIC_GAS))
-                    {
-                        unit->CastSpell(unit, SPELL_TOXIC_GAS);
-                        unit->CastSpell(unit, SPELL_INHALE);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            return;
-        }
-
-        if (unit->IsPlayer())
-        {
-            if (!unit->HasAura(SPELL_TOXIC_GAS_DAMAGE))
-            {
-                if (Creature* xeritac = GetClosestCreatureWithEntry(unit, NPC_XERITAC, 100.0f))
-                    xeritac->CastSpell(unit, SPELL_TOXIC_GAS_DAMAGE);
-            }
-            return;
-        }
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (unit->IsPlayer())
-            unit->RemoveAurasDueToSpell(SPELL_TOXIC_GAS_DAMAGE);
-    }
 };
 
 // Toxic Eggs - 234113
@@ -747,6 +696,5 @@ void AddSC_boss_xeritac()
     new venom_crazed();
     new spell_gaseous_volley();
     new spell_toxic_blood();
-    RegisterAreaTriggerAI(at_toxic_gas);
     new toxic_eggs_go();
 }

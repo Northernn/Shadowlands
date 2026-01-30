@@ -278,8 +278,6 @@ public:
 
     class spell_bramble_patch_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_bramble_patch_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex]);
@@ -296,30 +294,6 @@ public:
         return new spell_bramble_patch_SpellScript;
     }
 };
-
-class at_bramble_patch : public AreaTriggerAI
-{
-public:
-    at_bramble_patch(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnCreate() override
-    {
-        //at->SetCustomRadius(4.5f);
-    }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Unit* caster = at->GetCaster())
-            if (caster->IsHostileTo(unit) && !unit->HasAura(SPELL_BRAMBLE_PATCH_2))
-                caster->CastSpell(unit, SPELL_BRAMBLE_PATCH_2);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        unit->RemoveAurasDueToSpell(SPELL_BRAMBLE_PATCH_2);
-    }
-};
-
 
 enum DulhuEnums
 {
@@ -452,8 +426,6 @@ public:
 
     class spell_grasping_vine_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_grasping_vine_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             GetCaster()->CastSpell(GetHitUnit(), GetSpellValue()->EffectBasePoints[effIndex]);
@@ -478,8 +450,6 @@ public:
 
     class aura_grasping_vine_AuraScript : public AuraScript
     {
-        PrepareAuraScript(aura_grasping_vine_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -505,8 +475,6 @@ public:
 
     class spell_grasping_vine_jump_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_grasping_vine_jump_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             if (Unit* target = GetHitUnit())
@@ -533,7 +501,6 @@ void AddSC_boss_ancient_protectors()
     new boss_earthshaper_telu();
     new npc_bramble_patch();
     new spell_bramble_patch();
-    RegisterAreaTriggerAI(at_bramble_patch);
     new boss_dulhu();
     new spell_grasping_vine();
     new aura_grasping_vine();

@@ -223,8 +223,6 @@ public:
 
     class spell_dt_trash_star_shower_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_dt_trash_star_shower_SpellScript);
-
         void HandleOnCast()
         {
             if (Unit* caster = GetCaster())
@@ -263,8 +261,6 @@ public:
 
     class spell_dt_trash_tormenting_eye_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_dt_trash_tormenting_eye_AuraScript);
-
         void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* caster = GetCaster();
@@ -298,8 +294,6 @@ public:
 
     class spell_dt_trash_hatch_whelpling_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_dt_trash_hatch_whelpling_SpellScript);
-
         void HandleOnCast()
         {
             Unit* caster = GetCaster();

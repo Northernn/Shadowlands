@@ -65,7 +65,7 @@ enum Events
     EVENT_ETERNAL_HUNGER,
     EVENT_MINDGRASP,
     EVENT_CATACLYSMIC_FLAMES,
-    EVENT_STUPEFYING_GLARE, //npc 163950, 
+    EVENT_STUPEFYING_GLARE, //npc 163950,
     EVENT_HARVESTER
 };
 
@@ -74,7 +74,7 @@ enum Misc
     ACHIEVEMENT_MYTHIC_NZOTH_THE_CORRUPTOR = 14055,
     SCENE_DEATH_OF_NZOTH = 2740,
     ACTION_INIT_PHASE_2,
-    ACTION_MINDGATE,    
+    ACTION_MINDGATE,
     NZOTH_ENCOUNTER_ID = 2344,
 };
 
@@ -94,12 +94,14 @@ struct boss_nzoth : public BossAI
         BossAI::Reset();
         me->SetReactState(REACT_DEFENSIVE);
         me->SetPowerType(POWER_ENERGY);
-        me->SetPower(POWER_ENERGY, 0);        
+        me->SetPower(POWER_ENERGY, 0);
         SetCombatMovement(false);
+
         if (me->IsFalling())
-            me->UpdatePosition(me->GetHomePosition()), true;
+            me->UpdatePosition(me->GetHomePosition(), true);
+
         //me->SetUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
-        this->tentacles = 0;
+        tentacles = 0;
     }
 
     void JustSummoned(Creature* summon) override
@@ -112,17 +114,14 @@ struct boss_nzoth : public BossAI
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
             summon->AI()->DoZoneInCombat();
             break;
-
         case NPC_BASHER_TENTACLE:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
             summon->AI()->DoZoneInCombat();
             break;
-
         case NPC_MINDS_EYE:
-            summon->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);            
+            summon->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
             break;
-
-        case NPC_THOUGHT_HARVESTER:            
+        case NPC_THOUGHT_HARVESTER:
             summon->AI()->DoZoneInCombat();
             break;
         }
@@ -132,13 +131,13 @@ struct boss_nzoth : public BossAI
     {
         Talk(SAY_AGGRO);
         _JustEngagedWith(u);
-        this->phase1 = true;
-        me->GetScheduler().Schedule(3s, [this] (TaskContext context)
+        phase1 = true;
+        me->GetScheduler().Schedule(3s, [this](TaskContext)
         {
             me->AddUnitState(UNIT_STAND_STATE_SUBMERGED);
             for (uint8 i = 0; i < 13; i++)
             {
-                auto exposedSynapses = DoSummon(NPC_EXPOSED_SYNAPSE, me->GetRandomPoint(synapses_pos, 40.0f));
+               /* auto exposedSynapses = */DoSummon(NPC_EXPOSED_SYNAPSE, me->GetRandomPoint(synapses_pos, 40.0f));
             }
             me->SummonCreature(NPC_PSYCHUS, psychus_pos, TEMPSUMMON_MANUAL_DESPAWN);
         });
@@ -172,7 +171,7 @@ struct boss_nzoth : public BossAI
                 {
                     DoCast(players, SPELL_MINDGRASP_PULL);
                 }
-            }            
+            }
             break;
         }
     }
@@ -186,27 +185,26 @@ struct boss_nzoth : public BossAI
             events.ScheduleEvent(EVENT_ETERNAL_HUNGER, 3s);
             events.ScheduleEvent(EVENT_MINDGRASP, 8s);
             me->SummonCreature(NPC_BASHER_TENTACLE, basher_tentacle_pos_1, TEMPSUMMON_MANUAL_DESPAWN);
-            auto* corrupted = DoSummon(NPC_CORRUPTOR_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 10.0f));
+            /*auto* corrupted = */DoSummon(NPC_CORRUPTOR_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 10.0f));
             for (uint8 i = 0; i < 3; i++)
             {
-                auto spike = DoSummon(NPC_SPIKE_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 15.0f));
+                /*auto spike = */DoSummon(NPC_SPIKE_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 15.0f));
             }
             this->phase1 = false;
             this->phase2 = true;
             events.ScheduleEvent(EVENT_CATACLYSMIC_FLAMES, 13s);
             break;
-        }        
+        }
         case ACTION_MINDGATE:
         {
             me->SummonCreature(NPC_BASHER_TENTACLE, basher_tentacle_pos_1, TEMPSUMMON_MANUAL_DESPAWN);
-            auto* corrupted_wave_2 = DoSummon(NPC_CORRUPTOR_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 10.0f));
+            /*auto* corrupted_wave_2 = */DoSummon(NPC_CORRUPTOR_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 10.0f));
             for (uint8 i = 0; i < 3; i++)
             {
-                auto spike_2 = DoSummon(NPC_SPIKE_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 15.0f));
+                /*auto spike_2 = */DoSummon(NPC_SPIKE_TENTACLE, me->GetRandomPoint(basher_tentacle_pos_1, 15.0f));
             }
             break;
         }
-
         }
     }
 
@@ -222,7 +220,7 @@ struct boss_nzoth : public BossAI
             if (this->tentacles == 4 && this->phase2)
             {
                 Talk(SAY_MINDGATE);
-                me->AI()->DoAction(ACTION_MINDGATE);               
+                me->AI()->DoAction(ACTION_MINDGATE);
             }
             else if (this->tentacles == 8 && this->phase2)
             {
@@ -240,64 +238,63 @@ struct boss_nzoth : public BossAI
     {
         switch (eventId)
         {
-        case EVENT_MINDGRASP:
-            if (this->phase1 = true)
-            {
-                me->CastSpell(nullptr, SPELL_MINDGRASP_CHANNEL);
-            }
-            else if (this->phase3 = true)
-            {
-                me->CastSpell(nullptr, SPELL_MINDGRASP_CHANNEL);
-            }
-            events.Repeat(30s);
-            break;
-
-        case EVENT_ETERNAL_HUNGER:
-            if (this->phase2 = true)
-            {
-                me->AddAura(SPELL_ETERNAL_TORMENT_AURA_TRIGGER, me);
-            }            
-            events.Repeat(35s);
-            break;
-
-        case EVENT_BERSERK:
-            me->AddAura(SPELL_BERSERK, me);
-          //  me->GetScheduler().Schedule(5s, [this](TaskContext context)
-           // {
-                //instance->DoKillPlayersWithAura(SPELL_TRANDESCENT_POWER);
-           // });
-            break;
-
-        case EVENT_HARVESTER:
-            if (this->phase3 = true)
-            {
-                auto* harvest = DoSummon(NPC_THOUGHT_HARVESTER, me->GetRandomPoint(harvester_pos, 30.0f));
-            }            
-            break;
-
-        case EVENT_CATACLYSMIC_FLAMES:
-        {
-            if (this->phase2 = true)
-            {
-                UnitList tarlist;
-             //   SelectTargetList(tarlist, 10, SELECT_TARGET_RANDOM, 100.0f, true);
-                for (Unit* target : tarlist)
+            case EVENT_MINDGRASP:
+                if (phase1)
                 {
-                    Talk(SAY_CORRUPTING_OF_DEATHWING);
-                    me->CastSpell(target, SPELL_CATACLYSMIC_FLAMES_MISSILE);
+                    me->CastSpell(nullptr, SPELL_MINDGRASP_CHANNEL);
                 }
-            }
-            events.Repeat(20s);
-            break;
-        }
+                else if (phase3)
+                {
+                    me->CastSpell(nullptr, SPELL_MINDGRASP_CHANNEL);
+                }
+                events.Repeat(30s);
+                break;
 
+            case EVENT_ETERNAL_HUNGER:
+                if (phase2)
+                {
+                    me->AddAura(SPELL_ETERNAL_TORMENT_AURA_TRIGGER, me);
+                }
+                events.Repeat(35s);
+                break;
+
+            case EVENT_BERSERK:
+                me->AddAura(SPELL_BERSERK, me);
+              //  me->GetScheduler().Schedule(5s, [this](TaskContext context)
+               // {
+                    //instance->DoKillPlayersWithAura(SPELL_TRANDESCENT_POWER);
+               // });
+                break;
+
+            case EVENT_HARVESTER:
+                if (phase3)
+                {
+                    /*auto* harvest = */DoSummon(NPC_THOUGHT_HARVESTER, me->GetRandomPoint(harvester_pos, 30.0f));
+                }
+                break;
+
+            case EVENT_CATACLYSMIC_FLAMES:
+            {
+                if (phase2)
+                {
+                    UnitList tarlist;
+                 //   SelectTargetList(tarlist, 10, SELECT_TARGET_RANDOM, 100.0f, true);
+                    for (Unit* target : tarlist)
+                    {
+                        Talk(SAY_CORRUPTING_OF_DEATHWING);
+                        me->CastSpell(target, SPELL_CATACLYSMIC_FLAMES_MISSILE);
+                    }
+                }
+                events.Repeat(20s);
+                break;
+            }
         }
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
     {
         Talk(SAY_WIPE);
-        _JustReachedHome();       
+        _JustReachedHome();
         me->DespawnCreaturesInArea(NPC_PSYCHUS, 125.0f);
         me->DespawnCreaturesInArea(NPC_EXPOSED_SYNAPSE, 125.0f);
         me->DespawnCreaturesInArea(NPC_CORRUPTED_NEURON, 125.0f);
@@ -308,14 +305,14 @@ struct boss_nzoth : public BossAI
         _DespawnAtEvade();
     }
 
-    void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HealthBelowPct(3))
         {
             _JustDied();
             me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
             me->RemoveAllAreaTriggers();
-            instance->DoPlayScenePackageIdOnPlayers(SCENE_DEATH_OF_NZOTH);            
+            instance->DoPlayScenePackageIdOnPlayers(SCENE_DEATH_OF_NZOTH);
             instance->SendBossKillCredit(NZOTH_ENCOUNTER_ID);
             me->DespawnCreaturesInArea(NPC_PSYCHUS, 125.0f);
             me->DespawnCreaturesInArea(NPC_EXPOSED_SYNAPSE, 125.0f);
@@ -347,7 +344,7 @@ struct npc_psychus : public ScriptedAI
         me->SetPower(POWER_ENERGY, 0);
     }
 
-    void JustEngagedWith(Unit* unit) override
+    void JustEngagedWith(Unit* /*unit*/) override
     {
         me->AddAura(SPELL_PERIODIC_ENERGY_GAIN, me);
         events.ScheduleEvent(EVENT_MINDWRACK, 3s);
@@ -355,7 +352,7 @@ struct npc_psychus : public ScriptedAI
         events.ScheduleEvent(EVENT_MANIFEST_MADNESS, 101s);
     }
 
-    void ExecuteEvent(uint32 eventId) //override
+    void ExecuteEvent(uint32 eventId) override
     {
         if (me->GetPower(POWER_ENERGY) == 100)
         {
@@ -376,38 +373,40 @@ struct npc_psychus : public ScriptedAI
             events.Repeat(20s);
             break;
 
-        case EVENT_MANIFEST_MADNESS_DUMMY_TICK:    
+        case EVENT_MANIFEST_MADNESS_DUMMY_TICK:
             DoCastAOE(SPELL_MANIFEST_MADNESS_WAVE);
             events.Repeat(2s);
             break;
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         if (Creature* nzoth = instance->GetCreature(NPC_NZOTH))
         {
             nzoth->AI()->Talk(SAY_SHATTERED_EGO);
             nzoth->AddAura(SPELL_SHATTERED_EGO_STUN, nzoth);
+
             if (Creature* synapses = instance->GetCreature(NPC_EXPOSED_SYNAPSE))
             {
                 synapses->AddAura(SPELL_SHATTERED_EGO_STUN, synapses);
             }
-            nzoth->GetScheduler().Schedule(30s, [this, nzoth] (TaskContext context)
+
+            nzoth->GetScheduler().Schedule(30s, [this, nzoth] (TaskContext)
             {
-                me->ClearUnitState(UNIT_STAND_STATE_SUBMERGED);               
+                me->ClearUnitState(UNIT_STAND_STATE_SUBMERGED);
                 nzoth->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
                 nzoth->AI()->DoAction(ACTION_INIT_PHASE_2);
                 for (uint8 i = 0; i < 13; i++)
                 {
-                    auto exposedSynapses = DoSummon(NPC_CORRUPTED_NEURON, me->GetRandomPoint(synapses_pos, 40.0f));
+                    /*auto exposedSynapses = */DoSummon(NPC_CORRUPTED_NEURON, me->GetRandomPoint(synapses_pos, 40.0f));
                 }
             });
         }
     }
+
 private:
-    InstanceScript* instance;
     EventMap events;
 };
 
@@ -424,22 +423,23 @@ struct npc_exposed_synapse : public ScriptedAI
     void Reset() override
     {
         ScriptedAI::Reset();
+        events.Reset();
         me->AddUnitState(UNIT_STATE_ROOT);
     }
 
-    void IsSummonedBy(WorldObject* u) override
+    void IsSummonedBy(WorldObject*) override
     {
         me->SetObjectScale(0.5f);
         //me->SetDisplayId(95373);
         me->SetDisplayId(76612);
     }
 
-    void JustEngagedWith(Unit* u) override
+    void JustEngagedWith(Unit*) override
     {
         events.ScheduleEvent(EVENT_PROBE_MIND, 3s);
     }
 
-    void ExecuteEvent(uint32 eventId) //override
+    void ExecuteEvent(uint32 eventId) override
     {
         switch (eventId)
         {
@@ -450,11 +450,12 @@ struct npc_exposed_synapse : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         if (Creature* psychus = me->FindNearestCreature(NPC_PSYCHUS, 8.0f, true))
         {
             psychus->AddAura(SPELL_SYNAPTIC_SHOCK, psychus);
+
             if (Creature* synapses = instance->GetCreature(NPC_EXPOSED_SYNAPSE))
             {
                 if (synapses->IsAlive())
@@ -464,9 +465,6 @@ struct npc_exposed_synapse : public ScriptedAI
             }
         }
     }
-private:
-    InstanceScript* instance;
-    EventMap events;
 };
 
 enum Basher
@@ -490,13 +488,13 @@ struct npc_basher_tentacle : public ScriptedAI
         me->AddUnitState(UNIT_STATE_ROOT);
     }
 
-    void JustEngagedWith(Unit* u) override
+    void JustEngagedWith(Unit*) override
     {
         events.ScheduleEvent(EVENT_TUMULTUOUS_BURST, 1s);
         events.ScheduleEvent(EVENT_VOID_LASH, 3s);
     }
 
-    void ExecuteEvent(uint32 eventId)// override
+    void ExecuteEvent(uint32 eventId) override
     {
         switch (eventId)
         {
@@ -506,17 +504,17 @@ struct npc_basher_tentacle : public ScriptedAI
                 if (!me->IsWithinMeleeRange(target))
                 {
                     DoCastAOE(SPELL_TUMULTUOUS_BURST);
-                }                
+                }
                 events.Repeat(10s);
-            }            
+            }
             break;
 
         case EVENT_VOID_LASH:
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 10.0F, true))
             {
                 DoCast(target, SPELL_VOID_LASH, false);
-            }            
-            events.Repeat(15s);            
+            }
+            events.Repeat(15s);
             break;
 
         case EVENT_EVOLVING_MIGHT:
@@ -524,13 +522,10 @@ struct npc_basher_tentacle : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
-private:
-    InstanceScript* instance;
-    EventMap events;
 };
 
 enum Spike
@@ -552,12 +547,12 @@ struct npc_spike_tentacle : public ScriptedAI
         me->AddUnitState(UNIT_STATE_ROOT);
     }
 
-    void IsSummonedBy(WorldObject* u) override
+    void IsSummonedBy(WorldObject*) override
     {
-        events.ScheduleEvent(EVENT_PAIN_SPIKE, 3s);    
+        events.ScheduleEvent(EVENT_PAIN_SPIKE, 3s);
     }
 
-    void ExecuteEvent(uint32 eventId) //override
+    void ExecuteEvent(uint32 eventId) override
     {
         switch (eventId)
         {
@@ -568,17 +563,15 @@ struct npc_spike_tentacle : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
-        UnitList tarlist;
-       // SelectTargetList(tarlist, 10, SELECT_TARGET_RANDOM, 100.0f, true);
-        for (Unit* target : tarlist)
-        {
-            me->CastSpell(target, EVENT_CORRUPTED_VISPERA);
-        }
+//        UnitList tarlist;
+//       // SelectTargetList(tarlist, 10, SELECT_TARGET_RANDOM, 100.0f, true);
+//        for (Unit* target : tarlist)
+//        {
+//            me->CastSpell(target, EVENT_CORRUPTED_VISPERA);
+//        }
     }
-private:
-    EventMap events;
 };
 
 enum Corruptor
@@ -598,12 +591,12 @@ struct npc_corruptor_tentacle_158375 : public ScriptedAI
         me->AddUnitState(UNIT_STATE_ROOT);
     }
 
-    void IsSummonedBy(WorldObject* u) override
+    void IsSummonedBy(WorldObject*) override
     {
         events.ScheduleEvent(EVENT_CORRUPTED_MIND, 3s);
     }
 
-    void ExecuteEvent(uint32 eventId) //override
+    void ExecuteEvent(uint32 eventId) override
     {
         switch (eventId)
         {
@@ -613,8 +606,6 @@ struct npc_corruptor_tentacle_158375 : public ScriptedAI
             break;
         }
     }
-private:
-    EventMap events;
 };
 
 //158122
@@ -650,7 +641,7 @@ struct npc_thought_harvester : public ScriptedAI
         events.ScheduleEvent(EVENT_HARVEST_THOUGHTS, 3s);
     }
 
-    void ExecuteEvent(uint32 eventId) //override
+    void ExecuteEvent(uint32 eventId) override
     {
         switch (eventId)
         {
@@ -660,8 +651,6 @@ struct npc_thought_harvester : public ScriptedAI
             break;
         }
     }
-private:
-    EventMap events;
 };
 
 void AddSC_nzoth()

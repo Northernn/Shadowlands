@@ -781,8 +781,6 @@ struct npc_tichonrius_sightless_watcher : ScriptedAI
 //212997
 class spell_tichonrius_carrion_plague_filter : public SpellScript
 {
-    PrepareSpellScript(spell_tichonrius_carrion_plague_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         std::list<WorldObject*> tempList;
@@ -817,8 +815,6 @@ class spell_tichonrius_carrion_plague_filter : public SpellScript
 //206474
 class spell_tichonrius_seeker_swarm : public SpellScript
 {
-    PrepareSpellScript(spell_tichonrius_seeker_swarm);
-
     uint8 corruptedPlayersCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -875,8 +871,6 @@ class spell_tichonrius_seeker_swarm : public SpellScript
 //213740
 class spell_tichonrius_brand_of_argus_filter : public SpellScript
 {
-    PrepareSpellScript(spell_tichonrius_brand_of_argus_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster() || targets.size() < 4)
@@ -902,8 +896,6 @@ class spell_tichonrius_brand_of_argus_filter : public SpellScript
 //212795
 class spell_tichonrius_brand_of_argus_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_tichonrius_brand_of_argus_dmg);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (!GetCaster() || !GetHitUnit())
@@ -926,8 +918,6 @@ class spell_tichonrius_brand_of_argus_dmg : public SpellScript
 //212794
 class spell_tichonrius_brand_of_argus : public AuraScript
 {
-    PrepareAuraScript(spell_tichonrius_brand_of_argus);
-
     void OnApply(AuraEffect const* /*auraEffect*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTarget())
@@ -950,8 +940,6 @@ class spell_tichonrius_brand_of_argus : public AuraScript
 //213531
 class spell_tichonrius_echoes_void : public AuraScript
 {
-    PrepareAuraScript(spell_tichonrius_echoes_void);
-
     void OnTick(AuraEffect const* /*aurEff*/)
     {
         if (Unit* caster = GetCaster())
@@ -974,8 +962,6 @@ class spell_tichonrius_echoes_void : public AuraScript
 //206893
 class spell_tichonrius_vampiric : public AuraScript
 {
-    PrepareAuraScript(spell_tichonrius_vampiric);
-
     void OnProc(AuraEffect * aurEff, ProcEventInfo& eventInfo)
     {
         if (GetCaster() && GetTarget())
@@ -998,8 +984,6 @@ class spell_tichonrius_vampiric : public AuraScript
 //216024
 class spell_tichonrius_nether_zone : public AuraScript
 {
-    PrepareAuraScript(spell_tichonrius_nether_zone);
-
     void OnRemove(AuraEffect const* /*auraEffect*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
@@ -1022,8 +1006,6 @@ class spell_tichonrius_nether_zone : public AuraScript
 //216040
 class spell_tichonrius_burning_soul : public AuraScript
 {
-    PrepareAuraScript(spell_tichonrius_burning_soul);
-
     void OnRemove(AuraEffect const* /*auraEffect*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_ENEMY_SPELL)
@@ -1046,8 +1028,6 @@ class spell_tichonrius_burning_soul : public AuraScript
 //206311
 class spell_tichonrius_illusionary_night : public AuraScript
 {
-    PrepareAuraScript(spell_tichonrius_illusionary_night);
-
     void OnRemove(AuraEffect const* /*auraEffect*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)

@@ -500,8 +500,6 @@ void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageTy
 //194668
 class spell_harbaron_nether_rip : public AuraScript
 {
-    PrepareAuraScript(spell_harbaron_nether_rip);
-
     void PeriodicTick(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -528,26 +526,6 @@ class spell_harbaron_nether_rip : public AuraScript
     }
 };
 
-//29683
-class achievement_helheim_hath_no_fury : public AchievementCriteriaScript
-{
-public:
-    achievement_helheim_hath_no_fury() : AchievementCriteriaScript("achievement_helheim_hath_no_fury") { }
-
-    bool OnCheck(Player* /*player*/, Unit* target) override
-    {
-        if (!target)
-            return false;
-
-        if (auto boss = target->ToCreature())
-            if (boss->GetMap()->IsMythic() || boss->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC_KEYSTONE)
-                if (boss->GetAI()->GetData(DATA_ACHIEVEMENT))
-                    return true;
-
-        return false;
-    }
-};
-
 void AddSC_boss_harbaron_maw()
 {
     RegisterCreatureAI(boss_harbaron);
@@ -557,5 +535,4 @@ void AddSC_boss_harbaron_maw()
     RegisterCreatureAI(npc_harbaron_captured_valkyr);
     RegisterCreatureAI(npc_mos_seacursed_swiftblade);
     RegisterSpellScript(spell_harbaron_nether_rip);
-    new achievement_helheim_hath_no_fury();
 }

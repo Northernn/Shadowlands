@@ -260,8 +260,6 @@ public:
 
     class spell_xakal_bombardment_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_xakal_bombardment_AuraScript);
-
         void OnPeriodic(AuraEffect const* aurEff)
         {
             Creature* caster = GetCaster()->ToCreature();
@@ -303,8 +301,6 @@ public:
 
     class spell_throw_staff_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_throw_staff_SpellScript);
-
         void HandleOnCast()
         {
             if (!GetCaster())

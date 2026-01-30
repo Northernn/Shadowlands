@@ -1473,8 +1473,6 @@ class spell_meljarak_corrosive_resin : public SpellScriptLoader
 
         class spell_meljarak_corrosive_resin_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_meljarak_corrosive_resin_AuraScript);
-
             void PeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 Unit* owner = GetOwner()->ToUnit();
@@ -1519,8 +1517,6 @@ public:
 
     class spell_mending_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_mending_SpellScript);
-
         bool Load() override
         {
             return true;
@@ -1585,8 +1581,6 @@ public:
 
     class spell_whirling_blade_sword_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_whirling_blade_sword_SpellScript);
-
         void BackToMeljarak(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
@@ -1627,8 +1621,6 @@ public:
 
     class spell_whirling_blade_damages_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_whirling_blade_damages_SpellScript);
-
         void SelectTargets(std::list<WorldObject*> &targets)
         {
             targets.clear();

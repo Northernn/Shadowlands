@@ -279,7 +279,7 @@ struct npc_dargrul_molten_charskin : public ScriptedAI
                             {
                                 playerGuid.Clear();
                                 me->AttackStop();
-                                me->CastSpell(pTarget, SPELL_FIXATE_PLR, TriggerCastFlags(TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS));
+                                me->CastSpell(pTarget, SPELL_FIXATE_PLR, TriggerCastFlags(TRIGGERED_IGNORE_CAST_IN_PROGRESS));
                             }
                 }
                 else
@@ -427,7 +427,7 @@ void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageTy
                     {
                         playerGuid.Clear();
                         me->AttackStop();
-                        me->CastSpell(plrTarget, SPELL_FIXATE_PLR, TriggerCastFlags(TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS));
+                        me->CastSpell(plrTarget, SPELL_FIXATE_PLR, TriggerCastFlags(TRIGGERED_IGNORE_CAST_IN_PROGRESS));
                     }
                 }
                 else
@@ -519,8 +519,6 @@ struct npc_emberhusk_dominator : public ScriptedAI
 //201444
 class spell_dargrul_gain_energy : public AuraScript
 {
-    PrepareAuraScript(spell_dargrul_gain_energy);
-
     void OnTick(AuraEffect const* aurEff)
     {
         Creature* caster = GetCaster()->ToCreature();
@@ -550,8 +548,6 @@ class spell_dargrul_gain_energy : public AuraScript
 //209920, 216368
 class spell_dargrul_magma_breaker : public AuraScript
 {
-    PrepareAuraScript(spell_dargrul_magma_breaker);
-
     void OnTick(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -570,8 +566,6 @@ class spell_dargrul_magma_breaker : public AuraScript
 //200404, 217090
 class spell_dargrul_magma_wave_filter : public SpellScript
 {
-    PrepareSpellScript(spell_dargrul_magma_wave_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -612,8 +606,6 @@ private:
 //200721
 class spell_dargrul_landslide_filter : public SpellScript
 {
-    PrepareSpellScript(spell_dargrul_landslide_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (auto caster = GetCaster()->ToCreature())

@@ -24,7 +24,7 @@ class TC_GAME_API ScheduledChangeAI final : public CreatureAI
 {
     public:
         explicit ScheduledChangeAI(Creature* creature, uint32 scriptId = {});
-
+	~ScheduledChangeAI() override { }
         void MoveInLineOfSight(Unit*) override { }
         void AttackStart(Unit*) override { }
         void JustStartedThreateningMe(Unit*) override { }

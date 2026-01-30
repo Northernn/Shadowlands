@@ -611,7 +611,7 @@ public:
                     /// Reset handling - encounter.
                     if (Creature * l_Sadana = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eShadowmoonBurialGroundsDatas::DataBossSadana)))
                     {
-                        me->GetMotionMaster()->MoveFollow(l_Sadana, 0, 0, MovementSlot::MOTION_SLOT_ACTIVE);
+                        me->GetMotionMaster()->MoveFollow(l_Sadana, 0, 0);
                     }
                     break;
                 }
@@ -960,8 +960,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_shadow_burn_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_shadow_burn_SpellScript);
-
         SpellCastResult CheckCaster()
         {
             if (!GetCaster())
@@ -994,8 +992,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_dark_communion_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadowmoon_burial_grounds_dark_communion_AuraScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (!GetTarget())
@@ -1063,8 +1059,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_dark_eclipse_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadowmoon_burial_grounds_dark_eclipse_AuraScript);
-
         bool Load() override
         {
             if (!GetSpellInfo())
@@ -1113,8 +1107,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_dark_eclipse_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_dark_eclipse_SpellScript);
-
         void CorrectTargets(std::list<WorldObject*>& targets)
         {
             if (targets.empty())
@@ -1144,8 +1136,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_dark_eclipse_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_dark_eclipse_damage_SpellScript);
-
         void HandleDamage(SpellEffIndex /*effIndex*/)
         {
             if (!GetCaster() || !GetHitUnit())

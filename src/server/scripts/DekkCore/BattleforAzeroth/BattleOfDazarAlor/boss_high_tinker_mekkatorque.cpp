@@ -83,32 +83,32 @@ struct boss_high_tinker_mekkatorque : public BossAI
 {
     boss_high_tinker_mekkatorque(Creature* creature) : BossAI(creature, DATA_HIGH_TINKER_MEKKATORQUE) { }
 
-private: 
+private:
     bool phase1;
     bool phase2;
-    bool phase3;
 
     void Reset() override
     {
         BossAI::Reset();
         DoCastSelf(SPELL_ELECTROSHOCK_STRIKES_DUMMY);
-        Vehicle* vehicle = me->GetVehicleKit();
         me->SummonCreature(NPC_HIGH_TINKER_MEKKATORQUE_GNOME, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
+
         if (auto* highTinker = me->FindNearestCreature(NPC_HIGH_TINKER_MEKKATORQUE_GNOME, 30.0f, true))
         {
-            highTinker->SetReactState(REACT_PASSIVE);      
+            highTinker->SetReactState(REACT_PASSIVE);
             highTinker->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE));
-            highTinker->EnterVehicle(me);            
+            highTinker->EnterVehicle(me);
         }
+
         me->RemoveNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
+
         if (instance->GetBossState(DATA_JADEFIRE_MASTERS_HORDE) != DONE || instance->GetBossState(DATA_OPULENCE))
-            me->setActive(false); 
+            me->setActive(false);
     }
 
     void JustSummoned(Creature* summon) override
     {
         summons.Summon(summon);
-
     };
 
     void JustEngagedWith(Unit* who) override
@@ -134,12 +134,11 @@ private:
             encounterDoor->SetGoState(GO_STATE_READY);
     }
 
-    void DamageTaken(Unit* unit, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*unit*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HealthBelowPct(41) && phase1)
         {
             phase1 = false;
-
             phase2 = true;
 
             if (phase2)
@@ -172,7 +171,7 @@ private:
             {
                 Talk(SAY_BUSTER_CANNON);
                 me->CastSpell(nullptr, SPELL_BUSTER_CANNON_CAST_DUMMY);
-                me->GetScheduler().Schedule(1s, [this, target] (TaskContext context)
+                me->GetScheduler().Schedule(1s, [this] (TaskContext /*context*/)
                 {
                     me->CastSpell(nullptr, SPELL_BUSTER_CANNON_CREATE_AT, true);
                 });
@@ -183,9 +182,9 @@ private:
         case EVENT_HEAVY_THRUSTERS:
             Talk(SAY_BLAST_OFF);
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-            {                
+            {
                 me->CastSpell(target->GetPosition(), SPELL_BLAST_OFF, false);
-                me->GetScheduler().Schedule(3600ms, [this, target](TaskContext context)
+                me->GetScheduler().Schedule(3600ms, [this, target](TaskContext /*context*/)
                 {
                     me->CastSpell(target->GetPosition(), SPELL_CRASH_DOWN_DAMAGE);
                 });
@@ -246,7 +245,7 @@ private:
             break;
 
         case EVENT_PHASE_TWO:
-            Talk(SAY_STAGE_TWO_BEGINS);            
+            Talk(SAY_STAGE_TWO_BEGINS);
             events.ScheduleEvent(EVENT_SIGNAL_EXPLODING_SHEEP, 3s);
             break;
 
@@ -258,8 +257,8 @@ private:
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
             {
                 me->CastSpell(target, SPELL_WORMHOLE_GENERATOR_VISUAL, true);
-                me->CastSpell(nullptr, SPELL_WORMHOLE_GENERATOR_DUMMY_CAST, false);                
-                me->GetScheduler().Schedule(5s, [this, target] (TaskContext context)
+                me->CastSpell(nullptr, SPELL_WORMHOLE_GENERATOR_DUMMY_CAST, false);
+                me->GetScheduler().Schedule(5s, [this, target] (TaskContext /*context*/)
                 {
                     std::list<Player*> pl_li;
                     me->GetPlayerListInGrid(pl_li, 300.0f);
@@ -272,12 +271,12 @@ private:
             }
             events.Repeat(70s);
             break;
-        }    
+        }
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
     {
-        _JustReachedHome();        
+        _JustReachedHome();
         me->RemoveAllAreaTriggers();
         me->DespawnCreaturesInArea(NPC_SPARK_BOT, 125.0f);
         me->DespawnCreaturesInArea(NPC_GNOMISH_SUPPORT_CLAW, 125.0f);
@@ -330,7 +329,7 @@ struct npc_gnomish_support_claw : public ScriptedAI
         me->SetFlying(true);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SummonCreature(NPC_SPARK_BOT, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
         me->DespawnOrUnsummon(3s);
@@ -354,15 +353,15 @@ struct npc_spark_bot : public ScriptedAI
         me->CastSpell(nullptr, SPELL_GNOMISH_FORCE_SHIELD, true);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
-        me->GetScheduler().Schedule(2s, [this](TaskContext context)
+        me->GetScheduler().Schedule(2s, [this](TaskContext /*context*/)
         {
             me->AI()->DoZoneInCombat(nullptr);
         });
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_SPARK_PULSE, 3s);
     }
@@ -392,7 +391,7 @@ struct npc_explosive_sheep : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->CastSpell(nullptr, SPELL_CRITTER_EXPLOSION, false);
     }
@@ -403,23 +402,6 @@ struct npc_explosive_sheep : public ScriptedAI
         {
             me->CastSpell(me->GetHomePosition(), SPELL_CRITTER_EXPLOSION_CREATE_AT, true);
         }
-    }
-};
-
-//286646 - Gigavolt charge
-class aura_gigavolt_charge : public AuraScript
-{
-    PrepareAuraScript(aura_gigavolt_charge);
-
-    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        if (Unit* caster = GetCaster())
-            caster->CastSpell(GetTarget(), SPELL_GIGAVOLT_BLAST, true);
-    }
-
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(aura_gigavolt_charge::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -476,7 +458,6 @@ void AddSC_boss_high_tinker_mekkatorque()
     RegisterCreatureAI(boss_high_tinker_mekkatorque);
     RegisterCreatureAI(npc_gnomish_support_claw);
     RegisterCreatureAI(npc_spark_bot);
-    RegisterSpellScript(aura_gigavolt_charge);
     RegisterAreaTriggerAI(at_buster_cannon);
     RegisterCreatureAI(npc_explosive_sheep);
     RegisterAreaTriggerAI(at_sheep_shrapnel);

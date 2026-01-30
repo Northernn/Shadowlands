@@ -24,7 +24,7 @@ namespace WorldPackets
 {
     namespace AdventureMap
     {
-        class AdventureMapStartQuest final : public ClientPacket
+        class AdventureMapStartQuest final : public ClientPacket //10.0.7
         {
         public:
             AdventureMapStartQuest(WorldPacket&& packet) : ClientPacket(CMSG_ADVENTURE_MAP_START_QUEST, std::move(packet)) { }

@@ -100,11 +100,11 @@ struct boss_dread_captain_lockwood : public BossAI
 		events.ScheduleEvent(EVENT_GUT_SHOT, 3s);
 		events.ScheduleEvent(EVENT_EVASIVE, 4s);
 		events.ScheduleEvent(EVENT_CLEAR_THE_DECK, 6s);
-		events.ScheduleEvent(EVENT_WITHDRAW, 30s);	
+		events.ScheduleEvent(EVENT_WITHDRAW, 30s);
 	}
 
-	void JustDied(Unit* u) override
-	{		
+	void JustDied(Unit*) override
+	{
 		_JustDied();
 		Talk(SAY_DEATH);
 		me->DespawnCreaturesInArea(NPC_ASHVANE_DECKHAND, 125.0f);
@@ -164,7 +164,7 @@ struct boss_dread_captain_lockwood : public BossAI
 					dread_cannon->CastSpell(nullptr, DREAD_VOLLEY_CHANNEL);
 					if (Creature* lockwoodbunny = me->FindNearestCreature(NPC_DREAD_CANNON_BUNNY, 100.0f, true))
 					{
-						lockwoodbunny->GetScheduler().Schedule(3000ms, [lockwoodbunny](TaskContext context)
+						lockwoodbunny->GetScheduler().Schedule(3000ms, [lockwoodbunny](TaskContext /*context*/)
 						{
 							std::list<Creature*> c_list;
 							lockwoodbunny->GetCreatureListWithEntryInGrid(c_list, NPC_CANNON_BARRAGE, 250.0f);
@@ -172,7 +172,7 @@ struct boss_dread_captain_lockwood : public BossAI
 							lockwoodbunny->AI()->DoCast(controllers, DREAD_VOLLEY_MISSILE);
 						});
 					}
-				}			
+				}
 			}
 			events.Repeat(15s);
 			break;
@@ -186,7 +186,7 @@ struct boss_dread_captain_lockwood : public BossAI
 			me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 			me->NearTeleportTo(662.0f, -245.0f, 11.06f, 3.25f, false);
 			me->AddUnitState(UNIT_STATE_ROOT);
-			events.CancelEvent(EVENT_GUT_SHOT);			
+			events.CancelEvent(EVENT_GUT_SHOT);
 			events.CancelEvent(EVENT_WITHDRAW);
 			events.CancelEvent(EVENT_SHOOT);
 			//Temp option because of line of sight
@@ -212,24 +212,21 @@ struct boss_dread_captain_lockwood : public BossAI
 			 summon->AI()->DoZoneInCombat();
 			 summon->GetMotionMaster()->MoveJump(623.0f, -243.0f, 12.55f, 3.58f, 30.0f, 30.0f, 0, true);
 			 break;
-
 		case NPC_CANNON_BARRAGE:
 			 summon->CastSpell(summon, DREAD_VOLLEY_GROUND_MARK);
 			 break;
-
 		default:
 			break;
 		}
 	}
 
-	void SummonedCreatureDies(Creature* summon, Unit* killer) override
+	void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
 	{
 		switch (summon->GetEntry())
 		{
 		case NPC_ASHVANE_DECKHAND:
-			instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, summon);			
+			instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, summon);
 			break;
-
 		case NPC_ASHAVANE_CANNONNEER:
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, summon);
 			summon->CastSpell(nullptr, UNSTABLE_ORDNACE_SUMMON);
@@ -239,7 +236,7 @@ struct boss_dread_captain_lockwood : public BossAI
 				{
 					lockwood->AI()->Talk(SAY_CLEAR);
 					lockwood->NearTeleportTo(me->GetHomePosition());
-					lockwood->ClearUnitState(UNIT_STATE_ROOT);					
+					lockwood->ClearUnitState(UNIT_STATE_ROOT);
 					lockwood->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 					me->SetReactState(REACT_AGGRESSIVE);
 					events.ScheduleEvent(EVENT_SHOOT, 1s);
@@ -249,12 +246,11 @@ struct boss_dread_captain_lockwood : public BossAI
 				}
 			}
 			break;
-
 		default:
 			break;
 		}
 	}
-	private:	
+	private:
 };
 
 //143618
@@ -264,11 +260,11 @@ struct npc_unstable_ordnace : public ScriptedAI
 
 	void Reset() override
 	{
-		ScriptedAI::Reset();		
+		ScriptedAI::Reset();
 	}
 
-	bool OnGossipHello(Player* player) override 
-	{ 
+	bool OnGossipHello(Player* player) override
+	{
 		me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
 		CloseGossipMenuFor(player);
 		player->CastSpell(player, UNSTABLE_ORDNACE);
@@ -301,39 +297,7 @@ struct npc_dread_cannon : public ScriptedAI
 		}
 	}
 
-	void UpdateAI(uint32 diff)
-	{
-		scheduler.Update(diff);
-	}
-
-private:
-	TaskScheduler scheduler;
-};
-
-//500500
-struct npc_dread_cannon_bunny : public ScriptedAI
-{
-	npc_dread_cannon_bunny(Creature* c) : ScriptedAI(c) { }
-
-	void Reset() override
-	{
-		ScriptedAI::Reset();
-		me->SetReactState(REACT_PASSIVE);
-		me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-		me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-		me->SetDisplayId(16925, 1.0f);
-	}
-
-	void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-	{
-		damage = 0;
-		if (me->HealthBelowPct(99))
-		{
-			me->SetFullHealth();
-		}
-	}
-
-	void UpdateAI(uint32 diff)
+	void UpdateAI(uint32 diff) override
 	{
 		scheduler.Update(diff);
 	}
@@ -347,5 +311,4 @@ void AddSC_boss_dread_captain_lockwood()
 	RegisterCreatureAI(boss_dread_captain_lockwood);
 	RegisterCreatureAI(npc_unstable_ordnace);
 	RegisterCreatureAI(npc_dread_cannon);
-	RegisterCreatureAI(npc_dread_cannon_bunny);
 }

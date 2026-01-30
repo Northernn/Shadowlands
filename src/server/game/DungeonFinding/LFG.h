@@ -48,6 +48,8 @@ enum LfgUpdateType
 {
     LFG_UPDATETYPE_DEFAULT                       = 0,      // Internal Use
     LFG_UPDATETYPE_LEADER_UNK1                   = 1,      // FIXME: At group leave
+    LFG_UPDATETYPE_LEAVE_RAIDBROWSER             = 2,
+    LFG_UPDATETYPE_JOIN_RAIDBROWSER              = 3,
     LFG_UPDATETYPE_ROLECHECK_ABORTED             = 4,
     LFG_UPDATETYPE_JOIN_QUEUE                    = 6,
     LFG_UPDATETYPE_ROLECHECK_FAILED              = 7,
@@ -125,12 +127,15 @@ enum LfgAnswer
 
 struct TC_GAME_API LfgLockInfoData
 {
-    LfgLockInfoData(uint32 _lockStatus = 0, uint16 _requiredItemLevel = 0, float _currentItemLevel = 0) :
-        lockStatus(_lockStatus), requiredItemLevel(_requiredItemLevel), currentItemLevel(_currentItemLevel) { }
+    // Fluxurion >
+    LfgLockInfoData(uint32 _lockStatus = 0, uint16 _requiredItemLevel = 0, float _currentItemLevel = 0, bool _softLock = false) :
+        lockStatus(_lockStatus), requiredItemLevel(_requiredItemLevel), currentItemLevel(_currentItemLevel), softLock(_softLock) { }
+    // < Fluxurion
 
     uint32 lockStatus;
     uint16 requiredItemLevel;
     float currentItemLevel;
+    bool softLock; // < Fluxurion
 };
 
 typedef std::set<uint32> LfgDungeonSet;

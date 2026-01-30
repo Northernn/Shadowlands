@@ -105,7 +105,7 @@ struct boss_ambassador_hellmaw : public EscortAI
             me->RemoveAurasDueToSpell(SPELL_BANISH);
 
         Talk(SAY_INTRO);
-        Start(true, false, ObjectGuid::Empty, nullptr, false, true);
+        Start(true, ObjectGuid::Empty, nullptr, false, true);
     }
 
     void JustEngagedWith(Unit* /*who*/) override

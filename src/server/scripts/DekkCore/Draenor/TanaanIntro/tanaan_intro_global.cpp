@@ -96,22 +96,14 @@ public:
 };
 
 /// Archmage Khadgar - 78558/78559 (Main quest giver/taker)
-class npc_archmage_khadgar : public CreatureScript
+struct npc_archmage_khadgar : public ScriptedAI
 {
-public:
-    npc_archmage_khadgar() : CreatureScript("npc_archmage_khadgar") { }
-
-    CreatureAI* GetAI(Creature* creature) const override
+    npc_archmage_khadgar(Creature* creature) : ScriptedAI(creature)
     {
-        return new npc_archmage_khadgarAI(creature);
+
     }
 
-    struct npc_archmage_khadgarAI : public ScriptedAI
-    {
-        npc_archmage_khadgarAI(Creature* creature) : ScriptedAI(creature) { }
-    };
-
-    bool OnQuestAccept(Player* player, Creature* /*creature*/, Quest const* quest) override
+    void OnQuestAccept(Player* player, Quest const* quest) override
     {
         switch (quest->GetQuestId())
         {
@@ -138,8 +130,6 @@ public:
             default:
                 break;
         }
-
-        return false;
     }
 };
 
@@ -169,7 +159,7 @@ public:
 
 void AddSC_tanaan_intro_global()
 {
-    new npc_archmage_khadgar();
+    RegisterCreatureAI(npc_archmage_khadgar);
     new playerScript_enter_tanaan();
     new go_platform_tanaan();
 }

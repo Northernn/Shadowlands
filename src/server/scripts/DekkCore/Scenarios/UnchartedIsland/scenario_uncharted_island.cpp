@@ -79,5 +79,5 @@ protected:
 
 void AddSC_scenario_uncharted_island_tutorial()
 {
-  //  RegisterInstanceScript(scenario_uncharted_island_tutorial, 1955);
+    RegisterInstanceScript(scenario_uncharted_island_tutorial, 1955);
 }

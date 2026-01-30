@@ -49,16 +49,18 @@ namespace WorldPackets
             ListRequest() { }
 
             Optional<uint32> QuestID;
-            Optional<uint8> CrossFaction;
-            Optional<uint8> MinMyticPlusRating;
-            uint32 ActivityID = 0;
+            int32 ActivityID = 0;
             float ItemLevel = 0.0f;
+            uint32 HonorLevel = 0;
             std::string GroupName;
             std::string Comment;
             std::string VoiceChat;
-            bool AutoAccept = false;
+            bool minChallege = false;
             bool PrivateGroup = false;
-            bool Queued = false;
+            bool HasQuest = false;
+            bool AutoAccept = false;
+            float TypeActivity = 0.0f;
+            uint32 MinMyticPlusRating = 0;
         };
 
         struct MemberInfo
@@ -78,11 +80,11 @@ namespace WorldPackets
             GuidList BNetFriendsGuids;
             GuidList NumCharFriendsGuids;
             GuidList NumGuildMateGuids;
-            ObjectGuid UnkGuid1;
-            ObjectGuid UnkGuid2;
-            ObjectGuid UnkGuid3;
-            ObjectGuid UnkGuid4;
-            ObjectGuid UnkGuid5;
+            ObjectGuid LastTouchedVoiceChat;
+            ObjectGuid PartyGUID;
+            ObjectGuid BNetFriends;
+            ObjectGuid CharacterFriends;
+            ObjectGuid GuildMates;
             uint32 VirtualRealmAddress = 0;
             uint32 CompletedEncounters = 0;
             uint32 Age = 0;
@@ -284,18 +286,6 @@ namespace WorldPackets
             uint8 ApplicationStatus = 0;
         };
 
-        class LFGListInviteApplicantResponse final : public ServerPacket
-        {
-        public:
-            LFGListInviteApplicantResponse() : ServerPacket(SMSG_LFG_LIST_INVITE_APPLICANT_RESPONSE, 28 + 4 + 1) { }
-
-            WorldPacket const* Write() override;
-
-            LFG::RideTicket ApplicationTicket;
-            uint32 Timer = 0;
-            uint8 Status = 0;
-        };
-
         class LFGListJoinResult final : public ServerPacket
         {
         public:
@@ -331,25 +321,10 @@ namespace WorldPackets
             bool UnkBit = false;
         };
 
-        class LFGListGroupInviteResponce final : public ServerPacket
-        {
-        public:
-            LFGListGroupInviteResponce() : ServerPacket(SMSG_LFG_LIST_INVITE_RESPONCE, 28 + 28 + 4 + 4 + 1 + 1) { }
-
-            WorldPacket const* Write() override;
-
-            LFG::RideTicket ApplicantTicket;
-            LFG::RideTicket ApplicationTicket;
-            uint32 InviteExpireTimer = 0;
-            uint8 Status = 0;
-            uint8 Role = 0;
-            uint8 ApplicationStatus = 0;
-        };
-
         class LFGListUpdateBlacklist final : public ServerPacket
         {
         public:
-            LFGListUpdateBlacklist() : ServerPacket(SMSG_LFG_LIST_UPDATE_BLACKLIST, 4) { }
+            LFGListUpdateBlacklist() : ServerPacket(SMSG_LFG_LIST_UPDATE_BLACKLIST) { }
 
             WorldPacket const* Write() override;
 
@@ -364,12 +339,10 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             LFG::RideTicket ApplicationTicket;
+            uint32 RemainingTime = 0;
+            uint8 ResultId = 0;
             ListRequest Request;
-            uint32 ExpirationTime = 0;
-            uint8 Status = 0;
             bool Listed = false;
-            uint32 UNK1;
-            uint8 UNK2;
         };
 
         struct LFGListSearchResult
@@ -394,11 +367,23 @@ namespace WorldPackets
         class LFGListSearchResultUpdate final : public ServerPacket
         {
         public:
-            LFGListSearchResultUpdate() : ServerPacket(SMSG_LFG_LIST_SEARCH_RESULTS_UPDATE, 4) { }
+            LFGListSearchResultUpdate() : ServerPacket(SMSG_LFG_LIST_SEARCH_RESULTS_UPDATE) { }
 
             WorldPacket const* Write() override;
 
             Array<LFGListSearchResult, 50> ResultUpdate;
+        };
+
+        class LfgListUpdateExpiration final : public ServerPacket
+        {
+        public:
+            LfgListUpdateExpiration() : ServerPacket(SMSG_LFG_LIST_UPDATE_EXPIRATION) { }
+
+            WorldPacket const* Write() override;
+
+            LFG::RideTicket ApplicationTicket;
+            uint32 TimeoutTime = 0;
+            uint8 Status = 0;
         };
     }
 }

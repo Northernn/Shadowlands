@@ -351,8 +351,6 @@ public:
 
     class spell_mephistroth_carrion_swarm_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_mephistroth_carrion_swarm_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
@@ -394,8 +392,6 @@ public:
 
     class spell_mephistroth_egida_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_mephistroth_egida_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())
@@ -418,88 +414,10 @@ public:
     }
 };
 
-
-// 15295
-class areatrigger_mephistroth_shadow_blast : public AreaTriggerScript
-{
-public:
-    areatrigger_mephistroth_shadow_blast() : AreaTriggerScript("areatrigger_mephistroth_shadow_blast") { }
-
-    struct areatrigger_mephistroth_shadow_blastAI : AreaTriggerAI
-    {
-        areatrigger_mephistroth_shadow_blastAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-        void OnUpdate(uint32 diff) 
-        {
-            Unit* caster = at->GetCaster();
-            // if (InstanceScript* instance = at->GetInstanceScript())
-                // caster = instance->instance->GetCreature(instance->GetGuidData(BOSS_MEPHISTROTH));
-
-            if (!caster)
-                return;
-
-            std::list<Player*> playerList;
-            at->GetPlayerListInGrid(playerList, 2.4f); // i rly need it, because player + shield > at->GetRadius()
-
-            for (auto itr = playerList.begin(); itr != playerList.end(); ++itr)
-            {
-                Unit* target = *itr;
-                if (!target)
-                    continue;
-
-                if (target->HasAura(SPELL_EGIDA_BUFF) && target->IsPlayer())
-                {
-                    if (target->isInFront(at) && at->isInFront(target, 7 * 3.14f / 6))
-                    {
-                        caster->CastSpell(target, SPELL_SHADOW_HIT_EGIDA);
-                        at->Remove();
-                        return;
-                    }
-                }
-            }
-
-            bool can_delete = false;
-
-            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-            {
-                Unit* target = (*itr);
-                if (!target)
-                    continue;
-
-                if (target->GetEntry() == NPC_ILLIDAN_MEPHISTROTH)
-                {
-                    caster->CastSpell(target, SPELL_SHADOW_HIT_ILLIDAN);
-                    target->SetPower(POWER_ALTERNATE_POWER, 0);
-                    can_delete = true;
-                }
-                else if (target->HasAura(SPELL_EGIDA_BUFF) && target->IsPlayer() && target->isInFront(at) && at->isInFront(target, 7.0f * float(M_PI) / 6.0f))
-                {
-                    caster->CastSpell(target, SPELL_SHADOW_HIT_EGIDA);
-                    can_delete = true;
-                }
-                else if (target->IsPlayer())
-                {
-                    caster->CastSpell(target, SPELL_SHADOW_HIT_PLR, true);
-                    can_delete = true;
-                }
-            }
-            if (can_delete)
-                at->Remove();
-        }
-
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const
-    {
-        return new areatrigger_mephistroth_shadow_blastAI(areatrigger);
-    }
-};
-
 void AddSC_boss_mephistroth()
 {
     new boss_mephistroth();
     new npc_mephistroth_illidan();
     new spell_mephistroth_carrion_swarm();
     new spell_mephistroth_egida();
-    new areatrigger_mephistroth_shadow_blast();
 }

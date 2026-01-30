@@ -38,6 +38,7 @@ enum Quests
     QUEST_WE_HAVE_THEM_CONCERNED     = 54244,
     QUEST_PARTING_MISTS              = 54275,
     QUEST_FLY_OUT_TO_MEET_THEM       = 54280,
+    QUEST_DUBIOUS_OFFERING           = 51129,
 };
 
 enum Creatures
@@ -76,28 +77,29 @@ struct npc_princess_talanji_146921 : public ScriptedAI
         {
             me->AI()->Talk(0);
             player->KilledMonsterCredit(146921);
-            player->GetScheduler().Schedule(5s, [this, player](TaskContext context)
+            player->GetScheduler().Schedule(5s, [this, player](TaskContext /*context*/)
             {
                 me->SummonCreature(NPC_RIDE_ROBOT_VEHICLE, player->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 90s);
             });
         }
+
         if (player->HasQuest(QUEST_PARTING_MISTS) && !player->GetQuestObjectiveProgress(QUEST_PARTING_MISTS, 2))
         {
             player->KilledMonsterCredit(148888);
-            player->GetScheduler().Schedule(5s, [this, player](TaskContext context)
+            player->GetScheduler().Schedule(5s, [player](TaskContext /*context*/)
             {
                 player->GetSceneMgr().PlaySceneByPackageId(SCENE_ZULDAZAR_ATTACK, SceneFlag::None);
             });
         }
 
         return true;
-    } 
+    }
 };
 
 //147318
 struct npc_riding_raptor_147318 : public ScriptedAI
 {
-    npc_riding_raptor_147318(Creature* c) : ScriptedAI(c) { Vehicle* vehicle = me->GetVehicleKit(); }
+    npc_riding_raptor_147318(Creature* c) : ScriptedAI(c) { /*Vehicle* vehicle = me->GetVehicleKit();*/ }
 
     void IsSummonedBy(WorldObject* summoner) override
     {
@@ -144,7 +146,7 @@ struct npc_rokhan_147233 : public ScriptedAI
         {
             player->KilledMonsterCredit(147669);
             player->NearTeleportTo(1884.685f, 1775.752f, -0.199f, false);
-            player->GetScheduler().Schedule(5s, [this, player](TaskContext context)
+            player->GetScheduler().Schedule(5s, [this, player](TaskContext /*context*/)
             {
                 player->SummonCreature(NPC_RIDING_RAPTOR_VEHICLE, me->GetPosition());
             });
@@ -175,7 +177,6 @@ struct npc_pterrodax_143701 : public ScriptedAI
         {
             if (player->HasQuest(QUEST_FLY_OUT_TO_MEET_THEM))
             {
-                Vehicle* vehicle = me->GetVehicleKit();
                 player->EnterVehicle(me);
                 me->GetMotionMaster()->MovePoint(1, -349.566f, 1171.464f, 316.705f, true);
                 player->KilledMonsterCredit(147707);
@@ -196,8 +197,6 @@ struct npc_pterrodax_143701 : public ScriptedAI
 //257255
 class spell_play_chapter_1 : public AuraScript
 {
-    PrepareAuraScript(spell_play_chapter_1);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -252,21 +251,20 @@ public:
 
     }
 
-    void SetGUID(ObjectGuid const& guid, int32 index) override
+    void SetGUID(ObjectGuid const& guid, int32 /*index*/) override
     {
         m_playerGUID = guid;
-        //me->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
+        me->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
 
-
-        me->GetScheduler().Schedule(1s, [this](TaskContext /*context*/)
-            {
-                //player->PlayConversation(ConversationQuestsNazmir::CONVERSATION_ROKHAN_NAZMIR_2);
-               //me->GetMotionMaster()->MovePoint(1, 0f, 0f, 0f);
-            })
-            .Schedule(2s, [this](TaskContext /*context*/)
-                {
-
-                });
+//        me->GetScheduler().Schedule(1s, [](TaskContext /*context*/)
+//            {
+//                //player->PlayConversation(ConversationQuestsNazmir::CONVERSATION_ROKHAN_NAZMIR_2);
+//               //me->GetMotionMaster()->MovePoint(1, 0f, 0f, 0f);
+//            })
+//            .Schedule(2s, [this](TaskContext /*context*/)
+//                {
+//
+//                });
     }
 
 private:
@@ -287,6 +285,46 @@ public:
     //}
 };
 
+//Zalamar Messenger Bat 136457
+class zalamarmessengerbat136457 : public CreatureScript
+{
+public:
+    zalamarmessengerbat136457() : CreatureScript("zalamarmessengerbat136457") { }
+
+    struct zalamarmessengerbat136457AI : public ScriptedAI
+    {
+        zalamarmessengerbat136457AI(Creature* creature) : ScriptedAI(creature) { }
+
+        bool OnGossipHello(Player* player) override
+        {
+            ClearGossipMenuFor(player);
+            AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready to go to Zalamar!", GOSSIP_SENDER_MAIN, 0);
+            SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+        {
+            switch (action)
+            {
+            case 0:
+                if (player->HasQuest(QUEST_DUBIOUS_OFFERING))
+                    player->ForceCompleteQuest(QUEST_DUBIOUS_OFFERING);
+                player->TeleportTo(1642, 1871.943f, 1791.729f, -116.232f, 0.918f);
+
+                CloseGossipMenuFor(player);
+                break;
+            }
+
+            return true;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new zalamarmessengerbat136457AI(creature);
+    }
+};
 
 void AddSC_zone_nazmir()
 {
@@ -298,4 +336,5 @@ void AddSC_zone_nazmir()
     RegisterSpellScript(spell_play_chapter_1);
     RegisterCreatureAI(npc_rokhan_126549);
     RegisterCreatureAI(npc_pakuai_rokota_122689);
+    new zalamarmessengerbat136457();
 }

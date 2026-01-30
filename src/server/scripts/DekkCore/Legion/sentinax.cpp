@@ -13,8 +13,6 @@
 
 class spell_sentinax_call_portal : public SpellScript
 {
-    PrepareSpellScript(spell_sentinax_call_portal);
-
     SpellCastResult CheckRequirement()
     {
         Unit* caster = GetCaster();
@@ -27,11 +25,11 @@ class spell_sentinax_call_portal : public SpellScript
         if (sGameEventMgr->IsActiveEvent(153))
             return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        //if (ZoneScript* zone_script = sOutdoorPvPMgr->GetZoneScript(player->GetCurrentZoneID()))
-        //{
-        //    if (!zone_script->GetData(true)) // limit of portals
-        //        return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-        //}
+        if (ZoneScript* zone_script = sOutdoorPvPMgr->GetZoneScript(player->GetZoneId()))
+        {
+            if (!zone_script->GetData(true)) // limit of portals
+                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        }
 
 
         if (!player->FindNearestGameObject(GO_SENTINAX, DIST_SENTINAX / 2)) // not on area sentinax
@@ -79,10 +77,10 @@ class spell_sentinax_call_portal : public SpellScript
                 }
             }
 
-          //  if (portalsUsed)
-              //  if (Item* item = GetCastItem())
-                 //   player->DestroyItemCount(item->GetEntry(), 1, true);
-          //  return;
+            if (portalsUsed)
+                if (Item* item = GetCastItem())
+                    player->DestroyItemCount(item->GetEntry(), 1, true);
+                    return;
         }
 
         uint8 max_portals = GetMaxPortals(GetSpellInfo()->Id);
@@ -129,8 +127,8 @@ class spell_sentinax_call_portal : public SpellScript
         }
 
         //! delete item after cast
-      //  if (Item* item = GetCastItem())
-          //  player->DestroyItemCount(item->GetEntry(), 1, true, false);
+        if (Item* item = GetCastItem())
+            player->DestroyItemCount(item->GetEntry(), 1, true, false);
 
         // to-do emotions
     }
@@ -173,276 +171,276 @@ class spell_sentinax_call_portal : public SpellScript
         OnCast += SpellCastFn(spell_sentinax_call_portal::HandleOnCast);
     }
 };
-
-// 950010
-struct npc_sentinax_portal_helper : public ScriptedAI
-{
-    npc_sentinax_portal_helper(Creature* creature) : ScriptedAI(creature), summons(me), _action(0), secondAction(0)
-    {
-        me->SetReactState(REACT_PASSIVE);
-        portal_guid.Clear();
-        second_wave = false;
-    }
-
-    ObjectGuid portal_guid;
-    SummonList summons;
-    bool second_wave;
-    int32 _action, secondAction;
-
-    void JustSummoned(Creature* summon) override
-    {
-        summons.Summon(summon);
-        summon->GetMotionMaster()->MovePoint(0, me->GetPositionX() + irand(-5, 5), me->GetPositionY() + irand(-5, 5), me->GetPositionZ());
-    }
-
-    void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
-    {
-        summons.Despawn(summon);
-
-        if (summons.empty())
-        {
-            if (second_wave) // reset state
-            {
-                me->AddDelayedEvent(10000, [this]() -> void {
-                    summons.DespawnAll();
-                    });
-
-                if (GameObject* go = Unit::GetGameObjectOnMap(*me, portal_guid))
-                    go->Delete();
-                portal_guid.Clear();
-                second_wave = false;
-                me->RemoveAura(SPELL_NOT_FREE_PORTAL);
-
-                if (me->GetOwner())
-                    me->GetOwner()->ToCreature()->AI()->DoAction(1); // for remove all portals by group
-
-                secondAction = 0;
-                return;
-            }
-
-            // start second wave
-            second_wave = true;
-
-            for (int32 id : {_action, secondAction})
-                me->AddDelayedEvent(6000, [this, id]() -> void
-                    {
-                        secondWave(id);
-                    });
-        }
-    }
-
-    uint32 GetData(uint32 id) const override
-    {
-        if (id)
-            return _action;
-        else
-            return secondAction;
-    }
-
-    void SetData(uint32 spell, uint32 id) override
-    {
-        secondAction = spell;
-
-        firstWave(secondAction);
-
-        if (second_wave)
-            secondWave(secondAction);
-    }
-
-    void DoAction(int32 const action) override
-    {
-        secondAction = 0;
-        if (action == 1)
-        {
-         //   me->KillAllDelayedEvents();
-            me->AddDelayedEvent(10000, [this]() -> void {
-                summons.DespawnAll();
-                });
-
-            if (GameObject* go = Unit::GetGameObjectOnMap(*me, portal_guid))
-                go->Delete();
-            portal_guid.Clear();
-            second_wave = true;
-            me->RemoveAura(SPELL_NOT_FREE_PORTAL);
-
-        //    if (ZoneScript* zone_script = sOutdoorPvPMgr->GetZoneScript(me->GetCurrentZoneID()))
-              //  zone_script->SetData(0, 1);
-          //  return;
-        }
-
-        _action = action;
-        second_wave = false;
-
-       // if (ZoneScript* zone_script = sOutdoorPvPMgr->GetZoneScript(me->GetCurrentZoneID()))
-        {
-            switch (action)
-            {
-            case BOSS_TORMENT_PORTAl:
-            case BOSS_WARBEAST_PORTAL:
-            case BOSS_CARNAGE_PORTAL:
-            case BOSS_DOMITAION_PORTAL:
-            case BOSS_FIRESTORM_PORTAL:
-            case BOSS_ENGINEERING_PORTAL:
-              //  zone_script->SetData(2, 1);
-                break;
-            default:
-             //   zone_script->SetData(1, 1);
-                break;
-
-            }
-        }
-
-        me->AddDelayedEvent(3000, [this, action]() -> void
-            {
-                firstWave(action);
-                if (GameObject* go = me->SummonGameObject(GOB_PORTAL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), QuaternionData(), 0s))
-                {
-                    go->SetLootState(GO_READY);
-                    go->UseDoorOrButton(10000, false);
-                    portal_guid = go->GetGUID();
-                }
-            });
-    }
-
-    void secondWave(int32 action)
-    {
-        switch (action)
-        {
-        case GREATER_TORMENT_PORTAL:            // uncommon
-            me->SummonCreature(NPC_WARDEN, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case TORMENT_PORTAL:
-            for (uint8 i = 0; i < urand(2, 3); ++i)
-                me->SummonCreature(Npcs[urand(0, 1)], TEMPSUMMON_DEAD_DESPAWN);
-            for (uint8 i = 0; i < urand(1, 2); ++i)
-                me->SummonCreature(Npcs[2], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case GREATER_ENGINEERING_PORTAL:        // uncommon
-            me->SummonCreature(NPC_MOARG, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case ENGINEERING_PORTAL:
-            for (uint8 i = 0; i < urand(2, 3); ++i)
-                me->SummonCreature(Npcs[urand(3, 4)], TEMPSUMMON_DEAD_DESPAWN);
-            for (uint8 i = 0; i < urand(1, 2); ++i)
-                me->SummonCreature(Npcs[5], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case GREATER_WARBEAST_PORTAL:           // uncommon
-            me->SummonCreature(Npcs[urand(20, 21)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case WARBEAST_PORTAL:
-            for (uint8 i = 0; i < urand(4, 7); ++i)
-                me->SummonCreature(Npcs[urand(6, 8)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case GREATER_CARHAGE_PORTAL:            // uncommon
-            me->SummonCreature(NPC_FIRECALLER, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case CARNAGE_PORTAL:
-            for (uint8 i = 0; i < urand(4, 6); ++i)
-                me->SummonCreature(Npcs[urand(9, 11)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case GREATER_FIRESTORM_PORTAL:          // uncommon
-            me->SummonCreature(NPC_VILE_MOTHER, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case FIRESTORM_PORTAL:
-            for (uint8 i = 0; i < urand(6, 8); ++i)
-                me->SummonCreature(Npcs[urand(12, 14)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case GREATER_DOMINATION_PORTAL:         // uncommon
-        case DOMINATION_PORTAL:
-            for (uint8 i = 0; i < urand(6, 8); ++i)
-                me->SummonCreature(Npcs[urand(15, 17)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        }
-
-    };
-
-    void firstWave(int32 action)
-    {
-        switch (action)
-        {
-        case GREATER_TORMENT_PORTAL:            // uncommon
-            for (uint8 i = 0; i < 2; ++i)
-                me->SummonCreature(NPC_WARDEN, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case BOSS_TORMENT_PORTAl:              // boss
-            me->SummonCreature(NPC_IILLISTHYNDRIA, TEMPSUMMON_DEAD_DESPAWN);
-            second_wave = true; // only one wave
-            // no break;
-        case TORMENT_PORTAL:
-            for (uint8 i = 0; i < urand(3, 5); ++i)
-                me->SummonCreature(Npcs[urand(0, 1)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-
-        case GREATER_ENGINEERING_PORTAL:        // uncommon
-            for (uint8 i = 0; i < 2; ++i)
-                me->SummonCreature(NPC_MOARG, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case BOSS_ENGINEERING_PORTAL:           // boss
-            me->SummonCreature(NPC_OBLITERATOR, TEMPSUMMON_DEAD_DESPAWN);
-            second_wave = true;
-            // no break; 
-        case ENGINEERING_PORTAL:
-            for (uint8 i = 0; i < urand(2, 3); ++i)
-                me->SummonCreature(Npcs[urand(3, 4)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-
-
-        case GREATER_WARBEAST_PORTAL:           // uncommon
-            for (uint8 i = 0; i < urand(3, 4); ++i)
-                me->SummonCreature(Npcs[urand(20, 21)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case BOSS_WARBEAST_PORTAL:              // boss
-            me->SummonCreature(NPC_ANTHYNA, TEMPSUMMON_DEAD_DESPAWN);
-            second_wave = true;
-            // no break
-        case WARBEAST_PORTAL:
-            for (uint8 i = 0; i < urand(4, 6); ++i)
-                me->SummonCreature(Npcs[urand(6, 8)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-
-
-        case GREATER_CARHAGE_PORTAL:            // uncommon
-            for (uint8 i = 0; i < 3; ++i)
-                me->SummonCreature(NPC_FIRECALLER, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case BOSS_CARNAGE_PORTAL:               // boss
-            me->SummonCreature(NPC_XILLIOUS, TEMPSUMMON_DEAD_DESPAWN);
-            second_wave = true;   // only one wave
-            // no break;
-        case CARNAGE_PORTAL:
-            for (uint8 i = 0; i < urand(4, 5); ++i)
-                me->SummonCreature(Npcs[urand(9, 11)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-
-        case GREATER_FIRESTORM_PORTAL:            // uncommon
-            for (uint8 i = 0; i < 2; ++i)
-                me->SummonCreature(NPC_INFERNAL, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case BOSS_FIRESTORM_PORTAL:               // boss
-            me->SummonCreature(NPC_SKULGULOTH, TEMPSUMMON_DEAD_DESPAWN);
-            second_wave = true;
-            // no break
-        case FIRESTORM_PORTAL:
-            for (uint8 i = 0; i < urand(5, 7); ++i)
-                me->SummonCreature(Npcs[urand(12, 14)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-
-
-        case GREATER_DOMINATION_PORTAL:          // uncommon
-            me->SummonCreature(NPC_DRAINING_EYE, TEMPSUMMON_DEAD_DESPAWN);
-            break;
-        case BOSS_DOMITAION_PORTAL:              // boss    
-            me->SummonCreature(NPC_THANOTALION, TEMPSUMMON_DEAD_DESPAWN);
-            second_wave = true;   // only one wave
-            // no break
-        case DOMINATION_PORTAL:
-            for (uint8 i = 0; i < urand(4, 6); ++i)
-                me->SummonCreature(Npcs[urand(15, 17)], TEMPSUMMON_DEAD_DESPAWN);
-            break;
-
-        }
-    };
-};
+//
+//// 950010
+//struct npc_sentinax_portal_helper : public ScriptedAI
+//{
+//    npc_sentinax_portal_helper(Creature* creature) : ScriptedAI(creature), summons(me), _action(0), secondAction(0)
+//    {
+//        me->SetReactState(REACT_PASSIVE);
+//        portal_guid.Clear();
+//        second_wave = false;
+//    }
+//
+//    ObjectGuid portal_guid;
+//    SummonList summons;
+//    bool second_wave;
+//    int32 _action, secondAction;
+//
+//    void JustSummoned(Creature* summon) override
+//    {
+//        summons.Summon(summon);
+//        summon->GetMotionMaster()->MovePoint(0, me->GetPositionX() + irand(-5, 5), me->GetPositionY() + irand(-5, 5), me->GetPositionZ());
+//    }
+//
+//    void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
+//    {
+//        summons.Despawn(summon);
+//
+//        if (summons.empty())
+//        {
+//            if (second_wave) // reset state
+//            {
+//                me->AddDelayedEvent(10000, [this]() -> void {
+//                    summons.DespawnAll();
+//                    });
+//
+//                if (GameObject* go = Unit::GetGameObjectOnMap(*me, portal_guid))
+//                    go->Delete();
+//                portal_guid.Clear();
+//                second_wave = false;
+//                me->RemoveAura(SPELL_NOT_FREE_PORTAL);
+//
+//                if (me->GetOwner())
+//                    me->GetOwner()->ToCreature()->AI()->DoAction(1); // for remove all portals by group
+//
+//                secondAction = 0;
+//                return;
+//            }
+//
+//            // start second wave
+//            second_wave = true;
+//
+//            for (int32 id : {_action, secondAction})
+//                me->AddDelayedEvent(6000, [this, id]() -> void
+//                    {
+//                        secondWave(id);
+//                    });
+//        }
+//    }
+//
+//    uint32 GetData(uint32 id) const override
+//    {
+//        if (id)
+//            return _action;
+//        else
+//            return secondAction;
+//    }
+//
+//    void SetData(uint32 spell, uint32 id) override
+//    {
+//        secondAction = spell;
+//
+//        firstWave(secondAction);
+//
+//        if (second_wave)
+//            secondWave(secondAction);
+//    }
+//
+//    void DoAction(int32 const action) override
+//    {
+//        secondAction = 0;
+//        if (action == 1)
+//        {
+//         //   me->KillAllDelayedEvents();
+//            me->AddDelayedEvent(10000, [this]() -> void {
+//                summons.DespawnAll();
+//                });
+//
+//            if (GameObject* go = Unit::GetGameObjectOnMap(*me, portal_guid))
+//                go->Delete();
+//            portal_guid.Clear();
+//            second_wave = true;
+//            me->RemoveAura(SPELL_NOT_FREE_PORTAL);
+//
+//            if (ZoneScript* zone_script = sOutdoorPvPMgr->GetZoneScript(me->GetZoneId()))
+//                zone_script->SetData(0, 1);
+//            return;
+//        }
+//
+//        _action = action;
+//        second_wave = false;
+//
+//        if (ZoneScript* zone_script = sOutdoorPvPMgr->GetZoneScript(me->GetZoneId()))
+//        {
+//            switch (action)
+//            {
+//            case BOSS_TORMENT_PORTAl:
+//            case BOSS_WARBEAST_PORTAL:
+//            case BOSS_CARNAGE_PORTAL:
+//            case BOSS_DOMITAION_PORTAL:
+//            case BOSS_FIRESTORM_PORTAL:
+//            case BOSS_ENGINEERING_PORTAL:
+//                zone_script->SetData(2, 1);
+//                break;
+//            default:
+//                zone_script->SetData(1, 1);
+//                break;
+//
+//            }
+//        }
+//
+//        me->AddDelayedEvent(3000, [this, action]() -> void
+//            {
+//                firstWave(action);
+//                if (GameObject* go = me->SummonGameObject(GOB_PORTAL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), QuaternionData(), 0s))
+//                {
+//                    go->SetLootState(GO_READY);
+//                    go->UseDoorOrButton(10000, false);
+//                    portal_guid = go->GetGUID();
+//                }
+//            });
+//    }
+//
+//    void secondWave(int32 action)
+//    {
+//        switch (action)
+//        {
+//        case GREATER_TORMENT_PORTAL:            // uncommon
+//            me->SummonCreature(NPC_WARDEN, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case TORMENT_PORTAL:
+//            for (uint8 i = 0; i < urand(2, 3); ++i)
+//                me->SummonCreature(Npcs[urand(0, 1)], TEMPSUMMON_DEAD_DESPAWN);
+//            for (uint8 i = 0; i < urand(1, 2); ++i)
+//                me->SummonCreature(Npcs[2], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case GREATER_ENGINEERING_PORTAL:        // uncommon
+//            me->SummonCreature(NPC_MOARG, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case ENGINEERING_PORTAL:
+//            for (uint8 i = 0; i < urand(2, 3); ++i)
+//                me->SummonCreature(Npcs[urand(3, 4)], TEMPSUMMON_DEAD_DESPAWN);
+//            for (uint8 i = 0; i < urand(1, 2); ++i)
+//                me->SummonCreature(Npcs[5], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case GREATER_WARBEAST_PORTAL:           // uncommon
+//            me->SummonCreature(Npcs[urand(20, 21)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case WARBEAST_PORTAL:
+//            for (uint8 i = 0; i < urand(4, 7); ++i)
+//                me->SummonCreature(Npcs[urand(6, 8)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case GREATER_CARHAGE_PORTAL:            // uncommon
+//            me->SummonCreature(NPC_FIRECALLER, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case CARNAGE_PORTAL:
+//            for (uint8 i = 0; i < urand(4, 6); ++i)
+//                me->SummonCreature(Npcs[urand(9, 11)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case GREATER_FIRESTORM_PORTAL:          // uncommon
+//            me->SummonCreature(NPC_VILE_MOTHER, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case FIRESTORM_PORTAL:
+//            for (uint8 i = 0; i < urand(6, 8); ++i)
+//                me->SummonCreature(Npcs[urand(12, 14)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case GREATER_DOMINATION_PORTAL:         // uncommon
+//        case DOMINATION_PORTAL:
+//            for (uint8 i = 0; i < urand(6, 8); ++i)
+//                me->SummonCreature(Npcs[urand(15, 17)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        }
+//
+//    };
+//
+//    void firstWave(int32 action)
+//    {
+//        switch (action)
+//        {
+//        case GREATER_TORMENT_PORTAL:            // uncommon
+//            for (uint8 i = 0; i < 2; ++i)
+//                me->SummonCreature(NPC_WARDEN, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case BOSS_TORMENT_PORTAl:              // boss
+//            me->SummonCreature(NPC_IILLISTHYNDRIA, TEMPSUMMON_DEAD_DESPAWN);
+//            second_wave = true; // only one wave
+//            // no break;
+//        case TORMENT_PORTAL:
+//            for (uint8 i = 0; i < urand(3, 5); ++i)
+//                me->SummonCreature(Npcs[urand(0, 1)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//
+//        case GREATER_ENGINEERING_PORTAL:        // uncommon
+//            for (uint8 i = 0; i < 2; ++i)
+//                me->SummonCreature(NPC_MOARG, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case BOSS_ENGINEERING_PORTAL:           // boss
+//            me->SummonCreature(NPC_OBLITERATOR, TEMPSUMMON_DEAD_DESPAWN);
+//            second_wave = true;
+//            // no break; 
+//        case ENGINEERING_PORTAL:
+//            for (uint8 i = 0; i < urand(2, 3); ++i)
+//                me->SummonCreature(Npcs[urand(3, 4)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//
+//
+//        case GREATER_WARBEAST_PORTAL:           // uncommon
+//            for (uint8 i = 0; i < urand(3, 4); ++i)
+//                me->SummonCreature(Npcs[urand(20, 21)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case BOSS_WARBEAST_PORTAL:              // boss
+//            me->SummonCreature(NPC_ANTHYNA, TEMPSUMMON_DEAD_DESPAWN);
+//            second_wave = true;
+//            // no break
+//        case WARBEAST_PORTAL:
+//            for (uint8 i = 0; i < urand(4, 6); ++i)
+//                me->SummonCreature(Npcs[urand(6, 8)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//
+//
+//        case GREATER_CARHAGE_PORTAL:            // uncommon
+//            for (uint8 i = 0; i < 3; ++i)
+//                me->SummonCreature(NPC_FIRECALLER, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case BOSS_CARNAGE_PORTAL:               // boss
+//            me->SummonCreature(NPC_XILLIOUS, TEMPSUMMON_DEAD_DESPAWN);
+//            second_wave = true;   // only one wave
+//            // no break;
+//        case CARNAGE_PORTAL:
+//            for (uint8 i = 0; i < urand(4, 5); ++i)
+//                me->SummonCreature(Npcs[urand(9, 11)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//
+//        case GREATER_FIRESTORM_PORTAL:            // uncommon
+//            for (uint8 i = 0; i < 2; ++i)
+//                me->SummonCreature(NPC_INFERNAL, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case BOSS_FIRESTORM_PORTAL:               // boss
+//            me->SummonCreature(NPC_SKULGULOTH, TEMPSUMMON_DEAD_DESPAWN);
+//            second_wave = true;
+//            // no break
+//        case FIRESTORM_PORTAL:
+//            for (uint8 i = 0; i < urand(5, 7); ++i)
+//                me->SummonCreature(Npcs[urand(12, 14)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//
+//
+//        case GREATER_DOMINATION_PORTAL:          // uncommon
+//            me->SummonCreature(NPC_DRAINING_EYE, TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//        case BOSS_DOMITAION_PORTAL:              // boss    
+//            me->SummonCreature(NPC_THANOTALION, TEMPSUMMON_DEAD_DESPAWN);
+//            second_wave = true;   // only one wave
+//            // no break
+//        case DOMINATION_PORTAL:
+//            for (uint8 i = 0; i < urand(4, 6); ++i)
+//                me->SummonCreature(Npcs[urand(15, 17)], TEMPSUMMON_DEAD_DESPAWN);
+//            break;
+//
+//        }
+//    };
+//};
 
 // 121084
 struct npc_sentinax_laser : public ScriptedAI
@@ -476,79 +474,6 @@ struct npc_sentinax_laser : public ScriptedAI
     }
 };
 
-//  950011
-struct npc_owner_portal : public ScriptedAI
-{
-    npc_owner_portal(Creature* creature) : ScriptedAI(creature), summons(me)
-    {
-        me->SetReactState(REACT_PASSIVE);
-    }
-
-    SummonList summons;
-
-    void JustSummoned(Creature* summon) override
-    {
-        if (!summon)
-            return;
-
-        summons.Summon(summon);
-      //  summon->SetCharmerGUID(me->GetGUID());
-    }
-
-    void DoAction(int32 const action) override
-    {
-        DummyEntryCheckPredicate pred;
-        summons.DoAction(1, pred);
-        summons.clear();
-        me->DespawnOrUnsummon(3s);
-    }
-
-};
-
-// 950012
-struct npc_sentinax : public ScriptedAI
-{
-    npc_sentinax(Creature* creature) : ScriptedAI(creature)
-    {
-        me->SetReactState(REACT_PASSIVE);
-        events.Reset();
-        events.RescheduleEvent(1, 65s);
-    }
-
-    EventMap events;
-
-
-    void UpdateAI(uint32 diff) override
-    {
-        events.Update(diff);
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            case 1:
-
-                std::list<Creature*> targets;
-                GetCreatureListWithEntryInGrid(targets, me, NPC_TARGET_LASER, DIST_SENTINAX);
-
-                if (targets.empty())
-                {
-                    events.RescheduleEvent(1, 15s);
-                    break;
-                }
-
-                std::list<Creature*>::const_iterator itr = targets.begin();
-                std::advance(itr, urand(0, targets.size() - 1));
-
-                if (*itr)
-                    me->CastSpell(*itr, SPELL_LASER_DMG);
-
-                events.RescheduleEvent(1, 180s);
-            }
-        }
-    }
-};
-
 class OutdoorPvP_Sentinax : public OutdoorPvPScript
 {
     public:
@@ -566,10 +491,8 @@ class OutdoorPvP_Sentinax : public OutdoorPvPScript
 
 void AddSC_sentinax()
 {
-    RegisterCreatureAI(npc_sentinax_portal_helper);
+  //  RegisterCreatureAI(npc_sentinax_portal_helper); need make custom template 
     RegisterCreatureAI(npc_sentinax_laser);
-    RegisterCreatureAI(npc_owner_portal);
-    RegisterCreatureAI(npc_sentinax);
 
     RegisterSpellScript(spell_sentinax_call_portal);
 

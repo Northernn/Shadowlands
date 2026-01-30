@@ -100,7 +100,7 @@ class npc_professor_phizzlethorpe : public CreatureScript
                 if (quest->GetQuestId() == QUEST_SUNKEN_TREASURE)
                 {
                     Talk(SAY_PROGRESS_1, player);
-                    EscortAI::Start(false, false, player->GetGUID(), quest);
+                    EscortAI::Start(false, player->GetGUID(), quest);
                     me->SetFaction(FACTION_ESCORTEE_N_NEUTRAL_PASSIVE);
                 }
             }
@@ -122,7 +122,6 @@ class npc_professor_phizzlethorpe : public CreatureScript
                             break;
                         case EVENT_SAY_6:
                             Talk(SAY_PROGRESS_6, player);
-                            SetRun();
                             break;
                         case EVENT_SAY_8:
                             Talk(EMOTE_PROGRESS_8);

@@ -32,6 +32,7 @@ class LootTemplate;
 class Player;
 struct Loot;
 struct LootItem;
+struct MapDifficultyEntry;
 enum LootType : uint8;
 enum class ItemContext : uint8;
 
@@ -142,7 +143,7 @@ private:
 std::unordered_map<ObjectGuid, std::unique_ptr<Loot>> GenerateDungeonEncounterPersonalLoot(uint32 dungeonEncounterId,
     uint32 lootId, LootStore const& store, LootType type, WorldObject const* lootOwner,
     uint32 minMoney, uint32 maxMoney,
-    uint16 lootMode, ItemContext context,
+    uint16 lootMode, MapDifficultyEntry const* mapDifficulty,
     std::vector<Player*> const& tappers);
 
 //=====================================================
@@ -159,7 +160,9 @@ TC_GAME_API extern LootStore LootTemplates_Skinning;
 TC_GAME_API extern LootStore LootTemplates_Disenchant;
 TC_GAME_API extern LootStore LootTemplates_Prospecting;
 TC_GAME_API extern LootStore LootTemplates_Spell;
-
+//DekkCore
+TC_GAME_API extern LootStore LootTemplates_Scrapping;
+//DekkCore
 TC_GAME_API void LoadLootTemplates_Creature();
 TC_GAME_API void LoadLootTemplates_Fishing();
 TC_GAME_API void LoadLootTemplates_Gameobject();
@@ -176,4 +179,7 @@ TC_GAME_API void LoadLootTemplates_Reference();
 
 TC_GAME_API void LoadLootTables();
 
+//DekkCore
+TC_GAME_API void LoadLootTemplates_Scrapping();
+//DekkCore
 #endif

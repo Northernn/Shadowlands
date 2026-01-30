@@ -32,7 +32,9 @@
 #include "Spell.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
-
+//DekkCore
+#include "Pet.h"
+//dekkCore
 void SummonList::Summon(Creature const* summon)
 {
     _storage.push_back(summon->GetGUID());
@@ -52,7 +54,7 @@ void SummonList::DoZoneInCombat(uint32 entry)
         if (summon && summon->IsAIEnabled()
                 && (!entry || summon->GetEntry() == entry))
         {
-            summon->AI()->DoZoneInCombat(nullptr);
+            summon->AI()->DoZoneInCombat();
         }
     }
 }
@@ -124,10 +126,9 @@ ScriptedAI::ScriptedAI(Creature* creature, uint32 scriptId) : CreatureAI(creatur
     IsFleeing(false),
     summons(creature),
     instance(creature->GetInstanceScript()),
-    _checkHomeTimer(5000), //Dekkcore
-    _isCombatMovementAllowed(true)
+    _isCombatMovementAllowed(true),
+    _checkHomeTimer(5000) //Dekkcor
 {
-    _isHeroic = me->GetMap()->IsHeroic();
     _difficulty = me->GetMap()->GetDifficultyID();
 }
 
@@ -148,13 +149,35 @@ void ScriptedAI::AttackStart(Unit* who)
         AttackStartNoMove(who);
 }
 
-void ScriptedAI::UpdateAI(uint32 /*diff*/)
+void ScriptedAI::JustEngagedWith(Unit* who)
+{
+    ScheduleTasks();
+}
+
+void ScriptedAI::UpdateAI(uint32 diff)
 {
     // Check if we have a current target
     if (!UpdateVictim())
         return;
 
-    DoMeleeAttackIfReady();
+    events.Update(diff);
+
+    if (me->HasUnitState(UNIT_STATE_CASTING) ||
+        me->HasUnitState(UNIT_STATE_CONTROLLED))
+        return;
+
+    while (uint32 eventId = events.ExecuteEvent())
+    {
+        ExecuteEvent(eventId);
+        if (me->HasUnitState(UNIT_STATE_CASTING) ||
+            me->HasUnitState(UNIT_STATE_CONTROLLED))
+            return;
+    }
+
+    if (GetBaseAttackSpell() != 0)
+        DoSpellAttackIfReady(GetBaseAttackSpell());
+    else
+        DoMeleeAttackIfReady();
 }
 
 void ScriptedAI::DoStartMovement(Unit* victim, float distance, float angle)
@@ -193,7 +216,7 @@ void ScriptedAI::DoPlaySoundToSet(WorldObject* source, uint32 soundId)
 
     if (!sSoundKitStore.LookupEntry(soundId))
     {
-        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoPlaySoundToSet: Invalid soundId %u used in DoPlaySoundToSet (Source: %s)", soundId, source->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoPlaySoundToSet: Invalid soundId {} used in DoPlaySoundToSet (Source: {})", soundId, source->GetGUID().ToString());
         return;
     }
 
@@ -255,7 +278,9 @@ void ScriptedAI::ForceCombatStop(Creature* who, bool reset /*= true*/)
     if (reset)
     {
         who->LoadCreaturesAddon();
-        who->SetTappedBy(nullptr);
+        if (!me->IsTapListNotClearedOnEvade())
+            who->SetTappedBy(nullptr);
+
         who->ResetPlayerDamageReq();
         who->SetLastDamagedTime(0);
         who->SetCannotReachTarget(false);
@@ -264,7 +289,7 @@ void ScriptedAI::ForceCombatStop(Creature* who, bool reset /*= true*/)
 
 void ScriptedAI::ForceCombatStopForCreatureEntry(uint32 entry, float maxSearchRange /*= 250.0f*/, bool samePhase /*= true*/, bool reset /*= true*/)
 {
-    TC_LOG_DEBUG("scripts.ai", "ScriptedAI::ForceCombatStopForCreatureEntry: called on '%s'. Debug info: %s", me->GetGUID().ToString().c_str(), me->GetDebugInfo().c_str());
+    TC_LOG_DEBUG("scripts.ai", "ScriptedAI::ForceCombatStopForCreatureEntry: called on '{}'. Debug info: {}", me->GetGUID().ToString(), me->GetDebugInfo());
 
     std::list<Creature*> creatures;
     Trinity::AllCreaturesOfEntryInRange check(me, entry, maxSearchRange);
@@ -303,6 +328,41 @@ bool ScriptedAI::HealthAbovePct(uint32 pct) const
     return me->HealthAbovePct(pct);
 }
 
+bool ScriptedAI::IsLFR() const
+{
+    return me->GetMap()->IsLFR();
+}
+
+bool ScriptedAI::IsNormal() const
+{
+    return me->GetMap()->IsNormal();
+}
+
+bool ScriptedAI::IsHeroic() const
+{
+    return me->GetMap()->IsHeroic();
+}
+
+bool ScriptedAI::IsMythic() const
+{
+    return me->GetMap()->IsMythic();
+}
+
+bool ScriptedAI::IsMythicPlus() const
+{
+    return me->GetMap()->IsMythicPlus();
+}
+
+bool ScriptedAI::IsHeroicOrHigher() const
+{
+    return me->GetMap()->IsHeroicOrHigher();
+}
+
+bool ScriptedAI::IsTimewalking() const
+{
+    return me->GetMap()->IsTimewalking();
+}
+
 SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, float rangeMin, float rangeMax, SelectEffect effect)
 {
     // No target so we can't cast
@@ -310,7 +370,7 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
         return nullptr;
 
     // Silenced so we can't cast
-    if (me->HasUnitFlag(UNIT_FLAG_SILENCED))
+    if (me->IsSilenced(school ? SpellSchoolMask(school) : SPELL_SCHOOL_MASK_MAGIC))
         return nullptr;
 
     // Using the extended script system we first create a list of viable spells
@@ -405,8 +465,8 @@ void ScriptedAI::DoTeleportPlayer(Unit* unit, float x, float y, float z, float o
     if (Player* player = unit->ToPlayer())
         player->TeleportTo(unit->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
     else
-        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoTeleportPlayer: Creature %s Tried to teleport non-player unit (%s) to x: %f y:%f z: %f o: %f. Aborted.",
-            me->GetGUID().ToString().c_str(), unit->GetGUID().ToString().c_str(), x, y, z, o);
+        TC_LOG_ERROR("scripts.ai", "ScriptedAI::DoTeleportPlayer: Creature {} Tried to teleport non-player unit ({}) to x: {} y:{} z: {} o: {}. Aborted.",
+            me->GetGUID().ToString(), unit->GetGUID().ToString(), x, y, z, o);
 }
 
 void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
@@ -523,15 +583,18 @@ void BossAI::_Reset()
 
 void BossAI::_JustDied()
 {
+    Talk(TALK_DEFAULT_BOSS_DEATH);
     events.Reset();
     summons.DespawnAll();
     scheduler.CancelAll();
     if (instance)
         instance->SetBossState(_bossId, DONE);
+
 }
 
 void BossAI::_JustReachedHome()
 {
+    Talk(TALK_DEFAULT_BOSS_WIPE);
     me->setActive(false);
 }
 
@@ -548,6 +611,7 @@ void BossAI::_JustEngagedWith(Unit* who)
         instance->SetBossState(_bossId, IN_PROGRESS);
     }
 
+    Talk(TALK_DEFAULT_BOSS_AGGRO);
     me->SetCombatPulseDelay(5);
     me->setActive(true);
     DoZoneInCombat();
@@ -586,13 +650,15 @@ void BossAI::UpdateAI(uint32 diff)
 
     events.Update(diff);
 
-    if (me->HasUnitState(UNIT_STATE_CASTING))
+    if (me->HasUnitState(UNIT_STATE_CASTING) ||
+        me->HasUnitState(UNIT_STATE_CONTROLLED))
         return;
 
     while (uint32 eventId = events.ExecuteEvent())
     {
         ExecuteEvent(eventId);
-        if (me->HasUnitState(UNIT_STATE_CASTING))
+        if (me->HasUnitState(UNIT_STATE_CASTING) ||
+            me->HasUnitState(UNIT_STATE_CONTROLLED))
             return;
     }
 
@@ -611,7 +677,7 @@ void BossAI::_DespawnAtEvade(Seconds delayToRespawn /*= 30s*/, Creature* who /*=
 {
     if (delayToRespawn < 2s)
     {
-        TC_LOG_ERROR("scripts.ai", "BossAI::_DespawnAtEvade: called with delay of " SI64FMTD " seconds, defaulting to 2 (me: %s)", delayToRespawn.count(), me->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("scripts.ai", "BossAI::_DespawnAtEvade: called with delay of {} seconds, defaulting to 2 (me: {})", delayToRespawn.count(), me->GetGUID().ToString());
         delayToRespawn = 2s;
     }
 
@@ -620,7 +686,7 @@ void BossAI::_DespawnAtEvade(Seconds delayToRespawn /*= 30s*/, Creature* who /*=
 
     if (TempSummon* whoSummon = who->ToTempSummon())
     {
-        TC_LOG_WARN("scripts.ai", "BossAI::_DespawnAtEvade: called on a temporary summon (who: %s)", who->GetGUID().ToString().c_str());
+        TC_LOG_WARN("scripts.ai", "BossAI::_DespawnAtEvade: called on a temporary summon (who: {})", who->GetGUID().ToString());
         whoSummon->UnSummon();
         return;
     }
@@ -629,6 +695,12 @@ void BossAI::_DespawnAtEvade(Seconds delayToRespawn /*= 30s*/, Creature* who /*=
 
     if (instance && who == me)
         instance->SetBossState(_bossId, FAIL);
+}
+
+void BossAI::_KilledUnit(Unit* victim)
+{
+    if (victim->IsPlayer())
+        Talk(TALK_DEFAULT_BOSS_KILLED);
 }
 
 // WorldBossAI - for non-instanced bosses
@@ -715,15 +787,35 @@ void GetPositionWithDistInFront(Position* centerPos, float dist, Position& moveP
     GetPositionWithDistInOrientation(centerPos, dist, centerPos->GetOrientation(), movePosition);
 }
 
-void ScriptedAI::ApplyDefaultBossImmuneMask()
+void ScriptedAI::ApplyDefaultBossImmuneMask(uint32 except)
 {
     static uint32 const placeholderSpellId = std::numeric_limits<uint32>::max();
 
     for (uint32 i = MECHANIC_NONE + 1; i < MAX_MECHANIC; ++i)
-    {
-        if (IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK & (1 << (i - 1)))
-            me->ApplySpellImmune(placeholderSpellId, IMMUNITY_MECHANIC, i, true);
-    }
+        if (i != except)
+            if (IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK & (1 << (i - 1)))
+                me->ApplySpellImmune(placeholderSpellId, IMMUNITY_MECHANIC, i, true);
+}
+
+void ScriptedAI::ApplyAllImmunities(bool apply)
+{
+    me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, apply);
+    me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SNARE, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_BANISH, apply);
+    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, apply);
+    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, apply);
 }
 
 bool ScriptedAI::CheckHomeDistToEvade(uint32 diff, float dist, float x, float y, float z, bool onlyZ)
@@ -762,5 +854,190 @@ bool ScriptedAI::CheckHomeDistToEvade(uint32 diff, float dist, float x, float y,
     }
 
     return false;
+}
+
+void ScriptedAI::GetInViewBotPlayers(std::list<Player*>& outPlayers, float range)
+{
+    Map::PlayerList const& players = me->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+    {
+        Player* player = i->GetSource();
+        if (!player || !player->IsAlive() || !player->IsPlayerBot())
+            continue;
+        if (!me->InSamePhase(player->GetPhaseShift()))
+            continue;
+        if (me->GetDistance(player->GetPosition()) > range)
+            continue;
+        if (!me->IsWithinLOSInMap(player))
+            continue;
+        outPlayers.push_back(player);
+    }
+}
+
+void ScriptedAI::SearchTargetPlayerAllGroup(std::list<Player*>& players, float range)
+{
+    if (range < 3.0f)
+        return;
+    ObjectGuid targetGUID = me->GetTarget();
+    Player* targetPlayer = NULL;
+    if (targetGUID == ObjectGuid::Empty)
+    {
+        std::list<Player*> playersNearby;
+        me->GetPlayerListInGrid(playersNearby, range);
+        if (playersNearby.empty())
+            return;
+        for (Player* p : playersNearby)
+        {
+            if (p->IsAlive() && p->GetMap() == me->GetMap())
+            {
+                targetPlayer = p;
+                targetGUID = p->GetGUID();
+                break;
+            }
+        }
+    }
+    if (!targetPlayer)
+        targetPlayer = ObjectAccessor::FindPlayer(targetGUID);
+    if (!targetPlayer || targetPlayer->GetMap() != me->GetMap())
+        return;
+    players.clear();
+    players.push_back(targetPlayer);
+
+    Group* pGroup = targetPlayer->GetGroup();
+    if (!pGroup || pGroup->isBFGroup())
+        return;
+    Group::MemberSlotList const& memList = pGroup->GetMemberSlots();
+    for (Group::MemberSlot const& slot : memList)
+    {
+        Player* player = ObjectAccessor::FindPlayer(slot.guid);
+        if (!player || !player->IsAlive() || targetPlayer->GetMap() != player->GetMap() ||
+            !player->IsInWorld() || player == targetPlayer || !player->IsPlayerBot())
+            continue;
+        if (me->GetDistance(player->GetPosition()) > range)
+            continue;
+        players.push_back(player);
+    }
+}
+
+bool ScriptedAI::ExistPlayerBotByRange(float range)
+{
+    std::list<Player*> targets;
+    SearchTargetPlayerAllGroup(targets, range);
+    return targets.size() > 0;
+}
+
+bool NeedBotAttackCreature::UpdateProcess(std::list<ObjectGuid>& freeBots)
+{
+    Creature* pCreature = atMap->GetCreature(needCreature);
+    if (!pCreature || !pCreature->IsAlive())
+    {
+        allUsedBots.clear();
+        return false;
+    }
+    if (pCreature && !pCreature->IsVisible())
+    {
+        allUsedBots.clear();
+        return true;
+    }
+
+    while (int32(allUsedBots.size()) < needCount)
+    {
+        if (freeBots.empty())
+            break;
+        allUsedBots.push_back(*freeBots.begin());
+        freeBots.erase(freeBots.begin());
+    }
+    std::list<std::list<ObjectGuid>::iterator > needClearBot;
+    for (std::list<ObjectGuid>::iterator itBot = allUsedBots.begin(); itBot != allUsedBots.end(); itBot++)
+    {
+        ObjectGuid& guid = *itBot;
+        Player* player = ObjectAccessor::FindPlayer(guid);
+        if (!player || !player->IsAlive() || player->GetMap() != atMap)
+            needClearBot.push_back(itBot);
+        else if (player->GetDistance(pCreature->GetPosition()) < 120)
+            player->SetSelection(needCreature);
+    }
+    for (std::list<ObjectGuid>::iterator itClear : needClearBot)
+    {
+        allUsedBots.erase(itClear);
+    }
+    return true;
+}
+
+void BotAttackCreature::UpdateNeedAttackCreatures(uint32 diff, ScriptedAI* affiliateAI, bool attackMain)
+{
+    currentTick -= int32(diff);
+    if (currentTick >= 0)
+        return;
+    currentTick = updateGap;
+    if (!mainCreature)
+        return;
+
+    if (!affiliateAI)
+        return;
+    if (allNeedCreatures.empty())
+        return;
+    std::list<Player*> allBots;
+    affiliateAI->SearchTargetPlayerAllGroup(allBots, 120);
+    std::list<ObjectGuid> allBotGUIDs;
+    for (Player* player : allBots)
+    {
+        ObjectGuid guid = player->GetGUID();
+        bool canPush = true;
+        for (NeedBotAttackCreature* pNeed : allNeedCreatures)
+        {
+            if (pNeed->IsThisUsedBot(guid))
+            {
+                canPush = false;
+                break;
+            }
+        }
+        if (canPush)
+            allBotGUIDs.push_back(guid);
+    }
+    std::list<std::list<NeedBotAttackCreature*>::iterator > needClears;
+    for (std::list<NeedBotAttackCreature*>::iterator itNeed = allNeedCreatures.begin(); itNeed != allNeedCreatures.end(); itNeed++)
+    {
+        NeedBotAttackCreature* pNeed = *itNeed;
+        bool ing = pNeed->UpdateProcess(allBotGUIDs);
+        if (!ing)
+            needClears.push_back(itNeed);
+    }
+    for (std::list<NeedBotAttackCreature*>::iterator itClear : needClears)
+    {
+        NeedBotAttackCreature* pNeed = *itClear;
+        delete pNeed;
+        allNeedCreatures.erase(itClear);
+    }
+    if (attackMain && mainCreature && mainCreature->IsAlive())
+    {
+        for (ObjectGuid guid : allBotGUIDs)
+        {
+            Player* player = ObjectAccessor::FindPlayer(guid);
+            if (player && player->IsAlive() && player->GetMap() == mainCreature->GetMap())
+                player->SetSelection(mainCreature->GetGUID());
+        }
+    }
+    else if (attackMain)
+    {
+        mainCreature = NULL;
+    }
+}
+
+void BotAttackCreature::AddNewCreatureNeedAttack(Creature* pCreature, int32 needBotCount)
+{
+    if (!pCreature || !pCreature->IsAlive() || needBotCount < 0 || pCreature == mainCreature)
+        return;
+    Map* atMap = pCreature->GetMap();
+    if (!atMap)
+        return;
+    ObjectGuid guid = pCreature->GetGUID();
+    for (NeedBotAttackCreature* pNeed : allNeedCreatures)
+    {
+        if (pNeed->IsThisCreature(guid))
+            return;
+    }
+    NeedBotAttackCreature* pNeedCreature = new NeedBotAttackCreature(atMap, needBotCount, guid);
+    allNeedCreatures.push_back(pNeedCreature);
 }
 // < DekkCore

@@ -119,28 +119,6 @@ namespace WorldPackets
             std::vector<PetSpellHistory> SpellHistory;
         };
 
-        struct PetStableInfo
-        {
-            uint32 PetSlot = 0;
-            uint32 PetNumber = 0;
-            uint32 CreatureID = 0;
-            uint32 DisplayID = 0;
-            uint32 ExperienceLevel = 0;
-            uint8 PetFlags = 0;
-            std::string PetName;
-        };
-
-        class PetStableList final : public ServerPacket
-        {
-        public:
-            PetStableList() : ServerPacket(SMSG_PET_STABLE_LIST, 18 + 2) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid StableMaster;
-            std::vector<PetStableInfo> Pets;
-        };
-
         class PetStableResult final : public ServerPacket
         {
         public:
@@ -280,33 +258,17 @@ namespace WorldPackets
             uint8 Result = 0;
         };
 
-        class PetSlotUpdated final : public ServerPacket
+        class PetMode final : public ServerPacket
         {
         public:
-            PetSlotUpdated() : ServerPacket(SMSG_PET_SLOT_UPDATED, 4 + 4 + 4 + 4) { }
-
-            WorldPacket const* Write() override;
-
-            int32 PetNumberA;
-            int32 PetSlotA;
-            int32 PetNumberB;
-            int32 PetSlotB;
-        };
-
-        class Mode final : public ServerPacket
-        {
-        public:
-            Mode() : ServerPacket(SMSG_PET_MODE, 16 + 4) { }
+            PetMode() : ServerPacket(SMSG_PET_MODE, 16 + 2 + 1) { }
 
             WorldPacket const* Write() override;
 
             ObjectGuid PetGUID;
-            uint32 PetModeFlag = 0;
-
-            //! not in jam data
-            uint8 _reactState = 0;
-            uint8 _commandState = 0;
-            uint16 _flag = 0;
+            ReactStates ReactState = REACT_PASSIVE;
+            CommandStates CommandState = COMMAND_STAY;
+            uint8 Flag = 0;
         };
 
         class Guids final : public ServerPacket

@@ -795,8 +795,6 @@ public:
 
     class spell_anomaly_passage_of_time_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_anomaly_passage_of_time_AuraScript);
-
         uint32 tempData = 0;
 
         void OnTick(AuraEffect * aurEff)
@@ -843,8 +841,6 @@ public:
 
     class spell_anomaly_burst_of_time_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_anomaly_burst_of_time_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (!GetCaster())
@@ -884,8 +880,6 @@ public:
 
     class spell_anomaly_chronometric_particles_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_anomaly_chronometric_particles_AuraScript);
-
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (!GetCaster() || !GetTarget())
@@ -916,8 +910,6 @@ public:
 
     class spell_anomaly_time_release_filter_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_anomaly_time_release_filter_SpellScript);
-
         uint8 count;
 
         void FilterTargets(std::list<WorldObject*>& targets)
@@ -957,8 +949,6 @@ public:
 
     class spell_anomaly_time_release_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_anomaly_time_release_AuraScript);
-
         uint32 absorb = 0;
 
         void Absorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
@@ -1044,8 +1034,6 @@ public:
 
     class spell_anomaly_time_bomb_filter_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_anomaly_time_bomb_filter_SpellScript);
-
         uint8 count;
 
         void FilterTargets(std::list<WorldObject*>& targets)
@@ -1085,8 +1073,6 @@ public:
 
     class spell_anomaly_time_bomb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_anomaly_time_bomb_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
@@ -1114,8 +1100,6 @@ public:
 
     class spell_anomaly_time_bomb_dmg_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_anomaly_time_bomb_dmg_SpellScript);
-
         void HandleDamage(SpellEffIndex /*effIndex*/)
         {
             if (!GetCaster() || !GetHitUnit())
@@ -1151,8 +1135,6 @@ public:
 
     class spell_anomaly_temporal_orb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_anomaly_temporal_orb_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();
@@ -1204,8 +1186,6 @@ public:
 
     class spell_anomaly_temporal_smash_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_anomaly_temporal_smash_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             Unit* target = GetExplTargetUnit();
@@ -1236,8 +1216,6 @@ public:
 //226845
 class spell_anomaly_temporal_charge_remove : public AuraScript
 {
-    PrepareAuraScript(spell_anomaly_temporal_charge_remove);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (!GetTarget() || GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)

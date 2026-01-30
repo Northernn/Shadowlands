@@ -976,8 +976,6 @@ struct npc_xavius_event_conroller : public ScriptedAI
 //226184
 class spell_xavius_periodic_energize : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_periodic_energize);
-
     uint8 castCount = 0;
     bool hightTick = false;
 
@@ -1041,8 +1039,6 @@ class spell_xavius_periodic_energize : public AuraScript
 //206005
 class spell_xavius_dream_simulacrum : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_dream_simulacrum);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (auto player = GetTarget()->ToPlayer())
@@ -1086,8 +1082,6 @@ class spell_xavius_dream_simulacrum : public AuraScript
 //189960
 class spell_xavius_nightmare_torment_alt_power : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_nightmare_torment_alt_power);
-
     bool madnes = false;
 
     void OnTick(AuraEffect const* aurEff)
@@ -1141,8 +1135,6 @@ class spell_xavius_nightmare_torment_alt_power : public AuraScript
 //208860
 class spell_xavius_crushing_shadows : public SpellScript
 {
-    PrepareSpellScript(spell_xavius_crushing_shadows);
-
     void DealDamage()
     {
         if (!GetCaster() || !GetHitUnit())
@@ -1165,8 +1157,6 @@ class spell_xavius_crushing_shadows : public SpellScript
 //207160
 class spell_xavius_unfathomable_reality : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_unfathomable_reality);
-
         void OnPereodic(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -1186,8 +1176,6 @@ class spell_xavius_unfathomable_reality : public AuraScript
 //208431
 class spell_xavius_descent_into_madness : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_descent_into_madness);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (auto player = GetTarget()->ToPlayer())
@@ -1216,8 +1204,6 @@ class spell_xavius_descent_into_madness : public AuraScript
 //206651, 209158
 class spell_xavius_darkening_soul : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_darkening_soul);
-
     bool remove = false;
     bool dispel = false;
 
@@ -1265,8 +1251,6 @@ class spell_xavius_darkening_soul : public AuraScript
 //211802
 class spell_xavius_nightmare_blades : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_nightmare_blades);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (!GetCaster() || !GetTarget())
@@ -1285,8 +1269,6 @@ class spell_xavius_nightmare_blades : public AuraScript
 //206656
 class spell_xavius_nightmare_blades_dmg_filter : public SpellScript
 {
-    PrepareSpellScript(spell_xavius_nightmare_blades_dmg_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -1311,8 +1293,6 @@ class spell_xavius_nightmare_blades_dmg_filter : public SpellScript
 //210451
 class spell_xavius_bonds_of_terror : public AuraScript
 {
-    PrepareAuraScript(spell_xavius_bonds_of_terror);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (GetCaster() && GetCaster()->HasAura(SPELL_BONDS_OF_TERROR_AURA))
@@ -1328,8 +1308,6 @@ class spell_xavius_bonds_of_terror : public AuraScript
 //226194
 class spell_xavius_writhing_deep : public SpellScript
 {
-    PrepareSpellScript(spell_xavius_writhing_deep);
-
     void HandleScript(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
@@ -1356,8 +1334,6 @@ class spell_xavius_writhing_deep : public SpellScript
 //207830
 class spell_xavius_corrupting_nova : public SpellScript
 {
-    PrepareSpellScript(spell_xavius_corrupting_nova);
-
     void HandleScriptEffect(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(EFFECT_1);
@@ -1379,8 +1355,6 @@ class spell_xavius_corrupting_nova : public SpellScript
 //206369, 207849
 class spell_xavius_corruption_meteor : public SpellScript
 {
-    PrepareSpellScript(spell_xavius_corruption_meteor);
-
     uint8 targetCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -1416,8 +1390,6 @@ class spell_xavius_corruption_meteor : public SpellScript
 //223216
 class spell_teleport_to_rift : public AuraScript
 {
-    PrepareAuraScript(spell_teleport_to_rift);
-
     void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (GetTarget() && GetTarget()->IsPlayer())

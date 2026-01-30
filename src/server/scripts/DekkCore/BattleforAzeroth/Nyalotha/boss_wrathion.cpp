@@ -181,16 +181,16 @@ private:
         {
             if (Creature* nzothTalk = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 100.0f, true))
             {
-                AddTimedDelayedOperation(100, [this, nzothTalk]() -> void
+                AddTimedDelayedOperation(100, [nzothTalk]() -> void
                 {
                     nzothTalk->AI()->Talk(0);
                 });
-                AddTimedDelayedOperation(10000, [this, nzothTalk]() -> void
+                AddTimedDelayedOperation(10000, [nzothTalk]() -> void
                 {
                     nzothTalk->AI()->Talk(1);
                 });
                 AddTimedDelayedOperation(16000, [this]() -> void
-                {     
+                {
                     me->AI()->DoAction(ACTION_WRATHION_TALK);
                 });
             }
@@ -225,7 +225,7 @@ private:
     {
         Talk(SAY_SMOKE_AND_MIRRORS);
         me->CastSpell(me, SPELL_BEGIN_OF_PHASE_2_CONVERSATION, true);
-        me->CastSpell(me, SPELL_SMOKE_AND_MIRRORS, true);        
+        me->CastSpell(me, SPELL_SMOKE_AND_MIRRORS, true);
 
         events.ScheduleEvent(SPELL_SCALES_OF_WRATHION_MISSILE,      3s,     PHASE_2);
         events.ScheduleEvent(SPELL_CRACKLING_SHARD_SUMMON_TARGETS,  3s,     PHASE_2);
@@ -279,7 +279,7 @@ private:
                 me->CastSpell(wrathion_burning_cataclysm_positions[_cataclysmPosition], SPELL_BURNING_CATACLYSM_TELEPORT_VISUAL, false);
                 break;
             case SPELL_CREEPING_MADNESS_TARGETS:
-                me->CastSpell(me, SPELL_CREEPING_MADNESS_TARGETS, false);                
+                me->CastSpell(me, SPELL_CREEPING_MADNESS_TARGETS, false);
                 break;
             // Phase 2
             case SPELL_SCALES_OF_WRATHION_MISSILE:
@@ -346,13 +346,13 @@ private:
 
             case SPELL_CREEPING_MADNESS_TARGETS:
             {
-                std::list<Player*> pl_List; 
+                std::list<Player*> pl_List;
                 me->GetPlayerListInGrid(pl_List, 150.0f);
                 for (auto& targets : pl_List)
                 {
                     if (!targets->HasAura(SPELL_CREEPING_MADNESS))
                         me->AddAura(SPELL_CREEPING_MADNESS, targets);
-                }               
+                }
             }
             break;
 
@@ -566,9 +566,7 @@ struct npc_ashwalker_assasin : public CombatAI
 //313973 - Searing Breath
 class spell_wrathion_searing_breath_targets : public SpellScript
 {
-    PrepareSpellScript(spell_wrathion_searing_breath_targets);
-
-    void HandleHitTarget(SpellEffIndex effIndex)
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
         {
@@ -586,8 +584,6 @@ class spell_wrathion_searing_breath_targets : public SpellScript
 //306111 - Incineration targets
 class spell_wrathion_incineration_targets : public SpellScript
 {
-    PrepareSpellScript(spell_wrathion_incineration_targets);
-
     void FilterTargets(std::list<WorldObject*>& targetsList)
     {
         std::list<WorldObject*> tempTargets;
@@ -601,7 +597,7 @@ class spell_wrathion_incineration_targets : public SpellScript
         targetsList = tempTargets;
     }
 
-    void HandleHitTarget(SpellEffIndex effIndex)
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
             GetCaster()->CastSpell(target, SPELL_INCINERATION, true);
@@ -617,8 +613,6 @@ class spell_wrathion_incineration_targets : public SpellScript
 //306163 - Incineration
 class aura_wrathion_incineration : public AuraScript
 {
-    PrepareAuraScript(aura_wrathion_incineration);
-
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetTarget())
@@ -634,8 +628,6 @@ class aura_wrathion_incineration : public AuraScript
 //306735 - Burning Cataclysm
 class aura_wrathion_burning_cataclysm : public AuraScript
 {
-    PrepareAuraScript(aura_wrathion_burning_cataclysm);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
@@ -652,9 +644,7 @@ class aura_wrathion_burning_cataclysm : public AuraScript
 // 306949 - Burning Cataclysm
 class spell_wrathion_burning_cataclysm_teleport : public SpellScript
 {
-    PrepareSpellScript(spell_wrathion_burning_cataclysm_teleport);
-
-    void HandleHitTarget(SpellEffIndex effIndex)
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
 
@@ -681,8 +671,6 @@ class spell_wrathion_burning_cataclysm_teleport : public SpellScript
 //306995 - Smoke and Mirrors
 class aura_wrathion_smoke_and_mirrors : public AuraScript
 {
-    PrepareAuraScript(aura_wrathion_smoke_and_mirrors);
-
 
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -693,7 +681,7 @@ class aura_wrathion_smoke_and_mirrors : public AuraScript
     }
 
     void Register() override
-    {        
+    {
         AfterEffectRemove += AuraEffectRemoveFn(aura_wrathion_smoke_and_mirrors::OnRemove, EFFECT_0, SPELL_AURA_AREA_TRIGGER, AURA_EFFECT_HANDLE_REAL);
     }
 };
@@ -701,8 +689,6 @@ class aura_wrathion_smoke_and_mirrors : public AuraScript
 //313253 - Creeping Madness targets
 class spell_wrathion_creeping_madness_targets : public SpellScript
 {
-    PrepareSpellScript(spell_wrathion_creeping_madness_targets);
-
     void FilterTargets(std::list<WorldObject*>& targetsList)
     {
         std::list<WorldObject*> tempTargets;
@@ -712,11 +698,10 @@ class spell_wrathion_creeping_madness_targets : public SpellScript
                     tempTargets.push_back(playerTarget);
 
         Trinity::Containers::RandomResize(tempTargets, 3);
-
         targetsList = tempTargets;
     }
 
-    void HandleHitTarget(SpellEffIndex effIndex)
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
             GetCaster()->CastSpell(target, SPELL_CREEPING_MADNESS, true);
@@ -732,8 +717,6 @@ class spell_wrathion_creeping_madness_targets : public SpellScript
 //313250 - Creeping Madness
 class aura_wrathion_creeping_madness : public AuraScript
 {
-    PrepareAuraScript(aura_wrathion_creeping_madness);
-
     void PeriodicTick(AuraEffect const* /*aurEff*/)
     {
         Unit* target = GetTarget();
@@ -853,13 +836,13 @@ struct at_wrathion_smoke_and_mirrors : public AreaTriggerAI
         if (unit->GetEntry() != NPC_WRATHION)
             return;
 
-        unit->GetScheduler().Schedule(1s, [this, unit](TaskContext context)
+        unit->GetScheduler().Schedule(1s, [unit](TaskContext /*context*/)
         {
             if (!unit->HasUnitFlag(UNIT_FLAG_UNINTERACTIBLE) /*|| !unit->HasUnitFlag2(UNIT_FLAG2_SELECTION_DISABLED)*/)
             {
                 unit->SetUnitFlag(UnitFlags(UNIT_FLAG_UNINTERACTIBLE));
           //      unit->SetUnitFlag2(UnitFlags2(UNIT_FLAG2_SELECTION_DISABLED));
-            }    
+            }
         });
     }
 };

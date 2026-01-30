@@ -49,6 +49,16 @@ namespace WorldPackets
             void Read() override { }
         };
 
+        class QuestGiverStatusTrackedQuery final : public ClientPacket
+        {
+        public:
+            QuestGiverStatusTrackedQuery(WorldPacket&& packet) : ClientPacket(CMSG_QUEST_GIVER_STATUS_TRACKED_QUERY, std::move(packet)) { }
+
+            void Read() override;
+
+            GuidUnorderedSet QuestGiverGUIDs;
+        };
+
         struct QuestGiverInfo
         {
             QuestGiverInfo() { }
@@ -96,8 +106,8 @@ namespace WorldPackets
 
             void Read() override;
 
-            ObjectGuid QuestGiver;
             int32 QuestID = 0;
+            ObjectGuid QuestGiver;
         };
 
         struct QuestInfoChoiceItem
@@ -111,6 +121,14 @@ namespace WorldPackets
         {
             int32 SpellID = 0;
             int32 PlayerConditionID = 0;
+            int32 Type = 0;
+        };
+
+        struct ConditionalQuestText
+        {
+            int32 PlayerConditionID = 0;
+            int32 QuestGiverCreatureID = 0;
+            std::string_view Text;
         };
 
         struct QuestInfo
@@ -166,12 +184,15 @@ namespace WorldPackets
             int32 AcceptedSoundKitID        = 0;
             int32 CompleteSoundKitID        = 0;
             int32 AreaGroupID               = 0;
-            int32 TimeAllowed               = 0;
+            int64 TimeAllowed               = 0;
             int32 TreasurePickerID          = 0;
             int32 Expansion                 = 0;
             int32 ManagedWorldStateID       = 0;
             int32 QuestSessionBonus         = 0;
+            int32 QuestGiverCreatureID      = 0; // used to select ConditionalQuestText
             std::vector<QuestObjective> Objectives;
+            std::vector<ConditionalQuestText> ConditionalQuestDescription;
+            std::vector<ConditionalQuestText> ConditionalQuestCompletionLog;
             int32 RewardItems[QUEST_REWARD_ITEM_COUNT] = { };
             int32 RewardAmount[QUEST_REWARD_ITEM_COUNT] = { };
             int32 ItemDrop[QUEST_ITEM_DROP_COUNT] = { };
@@ -194,8 +215,8 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             bool Allow = false;
-            QuestInfo Info;
             uint32 QuestID = 0;
+            QuestInfo Info;
         };
 
         class QuestUpdateAddCredit final : public ServerPacket
@@ -287,7 +308,7 @@ namespace WorldPackets
             int32 SuggestedPartyMembers     = 0;
             QuestRewards Rewards;
             std::vector<QuestDescEmote> Emotes;
-            int32 QuestFlags[2]             = { }; // Flags and FlagsEx
+            int32 QuestFlags[3]             = { }; // Flags and FlagsEx
         };
 
         class QuestGiverOfferRewardMessage final : public ServerPacket
@@ -301,12 +322,14 @@ namespace WorldPackets
             int32 PortraitGiver = 0;
             int32 PortraitGiverMount = 0;
             int32 PortraitGiverModelSceneID = 0;
+            int32 QuestGiverCreatureID = 0;
             std::string QuestTitle;
             std::string RewardText;
             std::string PortraitGiverText;
             std::string PortraitGiverName;
             std::string PortraitTurnInText;
             std::string PortraitTurnInName;
+            std::vector<ConditionalQuestText> ConditionalRewardText;
             QuestGiverOfferReward QuestData;
             int32 QuestPackageID = 0;
         };
@@ -383,7 +406,7 @@ namespace WorldPackets
             ObjectGuid InformUnit;
             int32 QuestID           = 0;
             int32 QuestPackageID    = 0;
-            uint32 QuestFlags[2]    = { };
+            uint32 QuestFlags[3]    = { };
             int32 SuggestedPartyMembers = 0;
             QuestRewards Rewards;
             std::vector<QuestObjectiveSimple> Objectives;
@@ -395,6 +418,7 @@ namespace WorldPackets
             int32 PortraitGiverModelSceneID = 0;
             int32 QuestStartItemID = 0;
             int32 QuestSessionBonus = 0;
+            int32 QuestGiverCreatureID = 0;
             std::string PortraitGiverText;
             std::string PortraitGiverName;
             std::string PortraitTurnInText;
@@ -402,6 +426,7 @@ namespace WorldPackets
             std::string QuestTitle;
             std::string LogDescription;
             std::string DescriptionText;
+            std::vector<ConditionalQuestText> ConditionalDescriptionText;
             bool DisplayPopup = false;
             bool StartCheat = false;
             bool AutoLaunched = false;
@@ -440,9 +465,10 @@ namespace WorldPackets
             std::vector<QuestObjectiveCollect> Collect;
             std::vector<QuestCurrency> Currency;
             int32 StatusFlags           = 0;
-            uint32 QuestFlags[2]        = { };
+            uint32 QuestFlags[3]        = { };
             std::string QuestTitle;
             std::string CompletionText;
+            std::vector<ConditionalQuestText> ConditionalCompletionText;
         };
 
         class QuestGiverRequestReward final : public ClientPacket
@@ -632,12 +658,10 @@ namespace WorldPackets
 
         struct WorldQuestUpdateInfo
         {
-            WorldQuestUpdateInfo(time_t lastUpdate, uint32 questID, uint32 timer, int32 variableID, int32 value) :
-                LastUpdate(lastUpdate), QuestID(questID), Timer(timer), VariableID(variableID), Value(value) { }
-
             Timestamp<> LastUpdate;
             uint32 QuestID = 0;
             uint32 Timer = 0;
+            //int32 WorldState = 0;
             int32 VariableID = 0;
             int32 Value = 0;
         };
@@ -708,7 +732,7 @@ namespace WorldPackets
             Optional<PlayerChoiceResponseMawPower> MawPower;
         };
 
-        class DisplayPlayerChoice final : public ServerPacket
+        class TC_GAME_API DisplayPlayerChoice final : public ServerPacket
         {
         public:
             DisplayPlayerChoice() : ServerPacket(SMSG_DISPLAY_PLAYER_CHOICE) { }
@@ -750,6 +774,7 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             int32 UiMapID = 0;
+
             std::vector<uint32> QuestLineXQuestIDs;
         };
 
@@ -764,17 +789,24 @@ namespace WorldPackets
             {
                 uint32 CurrencyID = 0;
                 uint32 Amount = 0;
+                uint32 CurrencyCount = 0;
             };
 
             struct ItemReward
             {
                 WorldPackets::Item::ItemInstance Item;
-                uint32 ItemCount = 0;
+                bool HasItemBonus = false;
+                uint32 ContentTuningID = 0;
+                uint32 Contex = 0;
             };
 
             uint32 QuestID = 0;
-            uint32 QuestRewardID = 0;
-            uint64 Money = 0;
+            uint32 TreasurePickerID = 0;
+            uint32 ItemCount = 0;
+            uint32 CurrencyCount = 0;
+            uint64 MoneyReward = 0;
+            uint64 BonusCount = 0;
+            uint32 Flags = 0;
             std::vector<CurrencyReward> CurrencyRewards;
             std::vector<ItemReward> ItemRewards;
         };
@@ -790,14 +822,24 @@ namespace WorldPackets
             bool Complete = false;
         };
 
+        struct AreaPoiData
+        {
+            Timestamp<> StartTime;
+            int32 Flag = 0;
+            int32 AreaPoiID = 0;
+            int32 DurationSec = 0;
+            uint32 WorldStateVariableID = 0;
+            uint32 WorldStateValue = 0;
+        };
+
         class AreaPoiUpdate final : public ServerPacket
         {
         public:
-            AreaPoiUpdate() : ServerPacket(SMSG_AREA_POI_UPDATE_RESPONSE, 4) { }
+            AreaPoiUpdate() : ServerPacket(SMSG_AREA_POI_UPDATE_RESPONSE) { }
 
             WorldPacket const* Write() override;
 
-            std::vector<WorldPackets::Quest::WorldQuestUpdateInfo> Pois;
+            std::vector<AreaPoiData> AreaPois;
         };
 
         class QueryAdventureMapPOI final : public ClientPacket
@@ -818,7 +860,18 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             uint32 AdventureMapPOIID = 0;
-            bool Result = false;
+            bool Result = true;
+        };
+
+        class ShowAdventureMap final : public ServerPacket
+        {
+        public:
+            ShowAdventureMap(ObjectGuid guid, uint32 uiMapID) : ServerPacket(SMSG_PLAYER_IS_ADVENTURE_MAP_POI_VALID, 20), UnitGUID(guid), UiMapID(uiMapID) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid UnitGUID;
+            uint32 UiMapID;
         };
 
         class UiMapQuestLinesRequest final : public ClientPacket
@@ -839,16 +892,7 @@ namespace WorldPackets
             void Read() override;
 
             uint32 QuestID = 0;
-            uint32 QuestRewardID = 0;
-        };
-
-        // Empty packet, server replies with quest choice
-        class CloseQuestChoice final : public ClientPacket
-        {
-        public:
-            CloseQuestChoice(WorldPacket&& packet) : ClientPacket(CMSG_CLOSE_QUEST_CHOICE, std::move(packet)) { }
-
-            void Read() override { }
+            uint32 TreasurePickerID = 0;
         };
 
         class DisplayQuestPopup final : public ServerPacket
@@ -883,8 +927,11 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int32 SpawnTrackingID;
-            int32 QuestObjectID;
+            int32 SpawnTrackingID = 0;
+            int32 QuestObjectID = 0;
+            int32 PhaseID = 0;
+            int32 Unk2 = 0;//need find out
+            int32 Unk3 = 0;//can be flag saw 1
 
             bool Visible;
         };
@@ -899,6 +946,35 @@ namespace WorldPackets
             uint32 QuestID = 0;
         };
 
+        class ShowQuestCompletionText final : public ServerPacket
+        {
+        public:
+            ShowQuestCompletionText() : ServerPacket(SMSG_SHOW_QUEST_COMPLETION_TEXT, 4) { }
+
+            WorldPacket const* Write() override;
+
+            bool ShowQuestComplete = false;
+        };
+
+        class QueryQuestItemUsability final : public ClientPacket
+        {
+        public:
+            QueryQuestItemUsability(WorldPacket&& packet) : ClientPacket(CMSG_QUERY_QUEST_ITEM_USABILITY, std::move(packet)) { }
+
+            void Read() override;
+
+            ObjectGuid Guid;// idk
+            int32 Questid = 0; // maybe quest
+        };
+
+        // Empty packet, server replies with quest choice
+        class CloseQuestChoice final : public ClientPacket
+        {
+        public:
+            CloseQuestChoice(WorldPacket&& packet) : ClientPacket(CMSG_CLOSE_QUEST_CHOICE, std::move(packet)) { }
+
+            void Read() override { }
+        };
     }
 }
 

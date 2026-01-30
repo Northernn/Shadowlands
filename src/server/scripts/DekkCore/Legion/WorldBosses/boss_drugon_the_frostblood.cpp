@@ -191,8 +191,6 @@ public:
 
     class spell_gen_snow_crash_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_gen_snow_crash_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();

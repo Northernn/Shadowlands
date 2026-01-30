@@ -31,7 +31,7 @@ class Unit;
 class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
 {
     public:
-        explicit ChaseMovementGenerator(Unit* target, Optional<ChaseRange> range = {}, Optional<ChaseAngle> angle = {});
+        explicit ChaseMovementGenerator(Unit* target, Optional<ChaseRange> range = {}, Optional<ChaseAngle> angle = {}, Optional<uint32> spell = {});
         ~ChaseMovementGenerator();
 
         void Initialize(Unit*) override;
@@ -48,6 +48,7 @@ class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
 
         Optional<ChaseRange> const _range;
         Optional<ChaseAngle> const _angle;
+        Optional<uint32> const _spell;
 
         std::unique_ptr<PathGenerator> _path;
         Optional<Position> _lastTargetPosition;

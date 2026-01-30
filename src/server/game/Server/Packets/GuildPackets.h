@@ -1188,6 +1188,29 @@ namespace WorldPackets
             ObjectGuid GuildGUID;
             std::string GuildName;
         };
+
+        //DekkCore
+        class GuildChangeNameResult final : public ServerPacket
+        {
+        public:
+            GuildChangeNameResult() : ServerPacket(SMSG_GUILD_CHANGE_NAME_RESULT, 1) { }
+
+            WorldPacket const* Write() override;
+
+            bool Success = true;
+        };
+
+        class QueryPlayerNameByCommunityId final : public ClientPacket
+        {
+        public:
+            QueryPlayerNameByCommunityId(WorldPacket&& packet) : ClientPacket(CMSG_QUERY_PLAYER_NAME_BY_COMMUNITY_ID, std::move(packet)) { }
+
+            void Read() override;
+
+            ObjectGuid BNetAccountGUID;
+            uint64 CommunityDbID;
+        };
+        //DEkkCore 
     }
 }
 

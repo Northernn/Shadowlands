@@ -141,8 +141,6 @@ public:
 
     class spell_mana_devourer_energize_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_mana_devourer_energize_AuraScript);
-
         void OnTick(AuraEffect const* aurEff)
         {
             Creature* caster = GetCaster()->ToCreature();
@@ -180,8 +178,6 @@ public:
 
     class spell_mana_energy_void_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_mana_energy_void_AuraScript);
-
         void OnTick(AuraEffect const* aurEff)
         {
             if (GetTarget())
@@ -216,8 +212,6 @@ public:
 
     class spell_mana_coalesce_power_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_mana_coalesce_power_AuraScript);
-
         uint32 mana = 0;
 
         void OnTick(AuraEffect const* aurEff)
@@ -253,8 +247,6 @@ public:
 
     class spell_rtk_mana_teleport_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_rtk_mana_teleport_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (Player* player = GetTarget()->ToPlayer())

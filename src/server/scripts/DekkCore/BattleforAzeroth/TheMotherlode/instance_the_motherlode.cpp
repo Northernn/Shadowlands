@@ -40,7 +40,6 @@ public:
         {
             SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
-            // InstanceMap->GetInstanceScript();		
         }
 
         void OnCreatureCreate(Creature* creature) override

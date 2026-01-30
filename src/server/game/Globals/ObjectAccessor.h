@@ -79,6 +79,7 @@ namespace ObjectAccessor
     // DekkCore
     TC_GAME_API Unit* FindUnit(ObjectGuid const& g);
     TC_GAME_API GameObject* FindGameObject(ObjectGuid const& guid);
+    TC_GAME_API Creature* FindCreature(ObjectGuid const& guid);
     TC_GAME_API Player* GetObjectInWorld(ObjectGuid guid, Player* /*typeSpecifier*/);
     template<class T> static T* GetObjectInOrOutOfWorld(ObjectGuid guid, T* /*typeSpecifier*/)
     {
@@ -109,14 +110,14 @@ namespace ObjectAccessor
         CellCoord p = Trinity::ComputeCellCoord(x, y);
         if (!p.IsCoordValid())
         {
-            //TC_LOG_ERROR("LOG_FILTER_GENERAL", "ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+            //TC_LOG_ERROR("LOG_FILTER_GENERAL", "ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:{} Y:{} grid cell [{}:{}]", x, y, p.x_coord, p.y_coord);
             return nullptr;
         }
 
         CellCoord q = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
         if (!q.IsCoordValid())
         {
-            //TC_LOG_ERROR("LOG_FILTER_GENERAL", "ObjectAccessor::GetObjecInWorld: object (GUID: %u TypeId: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+            //TC_LOG_ERROR("LOG_FILTER_GENERAL", "ObjectAccessor::GetObjecInWorld: object (GUID: {} TypeId: {}) has invalid coordinates X:{} Y:{} grid cell [{}:{}]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
             return nullptr;
         }
 

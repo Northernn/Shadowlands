@@ -1256,8 +1256,6 @@ class spell_petrification : public SpellScriptLoader
 
         class spell_petrification_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_petrification_AuraScript);
-
             void HandleTriggerSpell(AuraEffect const* /*p_AurEff*/)
             {
                 PreventDefaultAction();
@@ -1275,7 +1273,7 @@ class spell_petrification : public SpellScriptLoader
                     if (target->HasAura(SPELL_TOTALY_PETRIFIED))
                         continue;
 
-                    uint32 triggeredSpell;// = GetSpellInfo()->GetEffect(0)->TriggerSpell;
+                    uint32 triggeredSpell = GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
 
                     if (!target->HasAura(triggeredSpell))
                         caster->AddAura(triggeredSpell, target);
@@ -1316,9 +1314,7 @@ class spell_jasper_chains : public SpellScriptLoader
         spell_jasper_chains() : SpellScriptLoader("spell_jasper_chains") { }
 
         class spell_jasper_chains_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_jasper_chains_AuraScript);
-            ObjectGuid playerLinkedGuid;
+        {            ObjectGuid playerLinkedGuid;
 
             bool Load() override
             {
@@ -1382,8 +1378,6 @@ class spell_jasper_chains_damage : public SpellScriptLoader
 
         class spell_jasper_chains_damage_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_jasper_chains_damage_SpellScript);
-
             void DealDamage()
             {
                 if (Unit* target = GetHitUnit())
@@ -1419,8 +1413,6 @@ class spell_energized_tiles : public SpellScriptLoader
 
         class spell_energized_tiles_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_energized_tiles_SpellScript);
-
             SpellCastResult Check()
             {
                 Unit* l_Caster = GetCaster();
@@ -1451,8 +1443,6 @@ class spell_energized_tiles : public SpellScriptLoader
 
         class spell_energized_tiles_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_energized_tiles_AuraScript);
-
             void CheckAura(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
             {
                 Unit* l_Owner = GetUnitOwner();

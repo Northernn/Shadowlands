@@ -260,7 +260,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int32 MapID = 0;
+            uint32 MapID = 0;
             uint8 Arg = 0;
             int32 MapDifficultyXConditionID = 0;
             uint32 TransfertAbort = 0;
@@ -653,6 +653,30 @@ namespace WorldPackets
             uint32 Reason = 1;
         };
 
+        class SetAdvFlyingSpeed final : public ServerPacket
+        {
+        public:
+            SetAdvFlyingSpeed(OpcodeServer opcode) : ServerPacket(opcode, 4 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 SequenceIndex = 1;
+            float speed = .0f;
+            Optional<float> maxSpeed;
+        };
+
+        class MoveAddImpulse final : public ServerPacket
+        {
+        public:
+            MoveAddImpulse() : ServerPacket(SMSG_MOVE_ADD_IMPULSE, 4 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 SequenceIndex = 1;
+            TaggedPosition<Position::XYZ> Direction;
+        };
+
         class MoveSetCompoundState final : public ServerPacket
         {
         public:
@@ -670,6 +694,12 @@ namespace WorldPackets
                 float InitVertSpeed = 0.0f;
             };
 
+            struct SpeedRange
+            {
+                float Min = 0.0f;
+                float Max = 0.0f;
+            };
+
             struct MoveStateChange
             {
                 MoveStateChange(OpcodeServer messageId, uint32 sequenceIndex) : MessageID(messageId), SequenceIndex(sequenceIndex) { }
@@ -677,12 +707,13 @@ namespace WorldPackets
                 uint16 MessageID = 0;
                 uint32 SequenceIndex = 0;
                 Optional<float> Speed;
+                Optional<MoveSetCompoundState::SpeedRange> SpeedRange;
                 Optional<KnockBackInfo> KnockBack;
                 Optional<int32> VehicleRecID;
                 Optional<CollisionHeightInfo> CollisionHeight;
                 Optional<MovementForce> MovementForce_;
                 Optional<ObjectGuid> MovementForceGUID;
-                Optional<ObjectGuid> MovementInertiaGUID;
+                Optional<int32> MovementInertiaID;
                 Optional<uint32> MovementInertiaLifetimeMs;
             };
 
@@ -722,6 +753,102 @@ namespace WorldPackets
             ObjectGuid Unit;
             float Scale = 0.0f;
         };
+
+        class MoveSetCanAdvFly final : public ServerPacket
+        {
+        public:
+            MoveSetCanAdvFly() : ServerPacket(SMSG_MOVE_SET_CAN_ADV_FLY) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 SequenceIndex;
+        };
+
+        class MoveUnsetCanAdvFly final : public ServerPacket
+        {
+        public:
+            MoveUnsetCanAdvFly() : ServerPacket(SMSG_MOVE_UNSET_CAN_ADV_FLY) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 SequenceIndex;
+        };
+
+        class MoveSetAdvFlyingAirFriction final : public ServerPacket
+        {
+        public:
+            MoveSetAdvFlyingAirFriction() : ServerPacket(SMSG_MOVE_SET_ADV_FLYING_AIR_FRICTION) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 unk1;
+            uint32 unk2;
+        };
+
+        class MoveSetAdvFlyingMaxVel final : public ServerPacket
+        {
+        public:
+            MoveSetAdvFlyingMaxVel() : ServerPacket(SMSG_MOVE_SET_ADV_FLYING_MAX_VEL) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 unk1;
+            uint32 unk2;
+        };
+
+        class MoveSetAdvFlyingLiftCoefficient final : public ServerPacket
+        {
+        public:
+            MoveSetAdvFlyingLiftCoefficient() : ServerPacket(SMSG_MOVE_SET_ADV_FLYING_LIFT_COEFFICIENT) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 unk1;
+            uint32 unk2;
+        };
+
+        class MoveSetAdvFlyingDoubleJumpVelMod final : public ServerPacket
+        {
+        public:
+            MoveSetAdvFlyingDoubleJumpVelMod() : ServerPacket(SMSG_MOVE_SET_ADV_FLYING_DOUBLE_JUMP_VEL_MOD) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 unk1;
+            uint32 unk2;
+        };
+
+        class MoveSetAdvFlyingBankingRate final : public ServerPacket
+        {
+        public:
+            MoveSetAdvFlyingBankingRate() : ServerPacket(SMSG_MOVE_SET_ADV_FLYING_BANKING_RATE) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 unk1;
+            uint32 unk2;
+            uint32 unk3;
+        };
+
+        class MoveSetAdvFlyingAddImpulseMaxSpeed final : public ServerPacket
+        {
+        public:
+            MoveSetAdvFlyingAddImpulseMaxSpeed() : ServerPacket(SMSG_MOVE_SET_ADV_FLYING_ADD_IMPULSE_MAX_SPEED) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid MoverGUID;
+            uint32 unk1;
+            uint32 unk2;
+        };
+        
         //DekkCore
     }
 

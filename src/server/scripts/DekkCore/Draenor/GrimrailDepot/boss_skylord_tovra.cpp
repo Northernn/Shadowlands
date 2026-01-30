@@ -548,8 +548,6 @@ class grimrail_depot_skylord_tovra_spell_diffused_lightning : public SpellScript
 
     class grimrail_depot_skylord_tovra_spell_diffused_lightning_SpellScript : public SpellScript
     {
-        PrepareSpellScript(grimrail_depot_skylord_tovra_spell_diffused_lightning_SpellScript);
-
         enum eSkylordTorvaSpells
         {
             SpellDiffusedEnergyDummy = 161558,
@@ -604,8 +602,6 @@ class grimrail_depot_skylord_tovra_spell_thunder_zone : public SpellScriptLoader
 
     class grimrail_depot_skylord_tovra_spell_thunder_zone_SpellScript : public SpellScript
     {
-        PrepareSpellScript(grimrail_depot_skylord_tovra_spell_thunder_zone_SpellScript);
-
         enum eThunderZoneSpells
         {
             SpellThunderZoneAura = 166340

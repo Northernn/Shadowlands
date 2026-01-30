@@ -69,7 +69,7 @@ std::string Ticket::GetAssignedToName() const
 
 void Ticket::TeleportTo(Player* player) const
 {
-    player->TeleportTo(_mapId, _pos.GetPositionX(), _pos.GetPositionY(), _pos.GetPositionZ(), 0.0f, 0);
+    player->TeleportTo(_mapId, _pos.GetPositionX(), _pos.GetPositionY(), _pos.GetPositionZ(), 0.0f);
 }
 
 std::string Ticket::FormatViewMessageString(ChatHandler& handler, char const* closedName, char const* assignedToName, char const* unassignedName, char const* deletedName) const
@@ -100,17 +100,17 @@ BugTicket::~BugTicket() { }
 void BugTicket::LoadFromDB(Field* fields)
 {
     uint8 idx = 0;
-    _id                 = fields[  idx].GetUInt32();
-    _playerGuid         = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
-    _note               = fields[++idx].GetString();
-    _createTime         = fields[++idx].GetInt64();
-    _mapId              = fields[++idx].GetUInt16();
-    _pos.m_positionX    = fields[++idx].GetFloat();
-    _pos.m_positionY    = fields[++idx].GetFloat();
-    _pos.m_positionZ    = fields[++idx].GetFloat();
+    _id = fields[idx].GetUInt32();
+    _playerGuid = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
+    _note = fields[++idx].GetString();
+    _createTime = fields[++idx].GetInt64();
+    _mapId = fields[++idx].GetUInt16();
+    _pos.m_positionX = fields[++idx].GetFloat();
+    _pos.m_positionY = fields[++idx].GetFloat();
+    _pos.m_positionZ = fields[++idx].GetFloat();
     _pos.SetOrientation(fields[++idx].GetFloat());
 
-    int64 closedBy      = fields[++idx].GetInt64();
+    int64 closedBy = fields[++idx].GetInt64();
     if (closedBy == 0)
         _closedBy = ObjectGuid::Empty;
     else if (closedBy < 0)
@@ -118,13 +118,13 @@ void BugTicket::LoadFromDB(Field* fields)
     else
         _closedBy = ObjectGuid::Create<HighGuid::Player>(uint64(closedBy));
 
-    uint64 assignedTo   = fields[++idx].GetUInt64();
+    uint64 assignedTo = fields[++idx].GetUInt64();
     if (assignedTo == 0)
         _assignedTo = ObjectGuid::Empty;
     else
         _assignedTo = ObjectGuid::Create<HighGuid::Player>(assignedTo);
 
-    _comment            = fields[++idx].GetString();
+    _comment = fields[++idx].GetString();
 }
 
 void BugTicket::SaveToDB() const
@@ -176,12 +176,12 @@ std::string BugTicket::FormatViewMessageString(ChatHandler& handler, bool detail
 }
 
 ComplaintTicket::ComplaintTicket() : _reportType(ReportType::Chat), _majorCategory(ReportMajorCategory::InappropriateCommunication),
-    _minorCategoryFlags(ReportMinorCategory::TextChat)
+_minorCategoryFlags(ReportMinorCategory::TextChat)
 {
 }
 
 ComplaintTicket::ComplaintTicket(Player* player) : Ticket(player), _reportType(ReportType::Chat), _majorCategory(ReportMajorCategory::InappropriateCommunication),
-    _minorCategoryFlags(ReportMinorCategory::TextChat)
+_minorCategoryFlags(ReportMinorCategory::TextChat)
 {
     _id = sSupportMgr->GenerateComplaintId();
 }
@@ -191,19 +191,19 @@ ComplaintTicket::~ComplaintTicket() = default;
 void ComplaintTicket::LoadFromDB(Field* fields)
 {
     uint8 idx = 0;
-    _id                     = fields[  idx].GetUInt32();
-    _playerGuid             = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
-    _note                   = fields[++idx].GetString();
-    _createTime             = fields[++idx].GetInt64();
-    _mapId                  = fields[++idx].GetUInt16();
-    _pos.m_positionX        = fields[++idx].GetFloat();
-    _pos.m_positionY        = fields[++idx].GetFloat();
-    _pos.m_positionZ        = fields[++idx].GetFloat();
+    _id = fields[idx].GetUInt32();
+    _playerGuid = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
+    _note = fields[++idx].GetString();
+    _createTime = fields[++idx].GetInt64();
+    _mapId = fields[++idx].GetUInt16();
+    _pos.m_positionX = fields[++idx].GetFloat();
+    _pos.m_positionY = fields[++idx].GetFloat();
+    _pos.m_positionZ = fields[++idx].GetFloat();
     _pos.SetOrientation(fields[++idx].GetFloat());
-    _targetCharacterGuid    = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
-    _reportType             = ReportType(fields[++idx].GetInt32());
-    _majorCategory          = ReportMajorCategory(fields[++idx].GetInt32());
-    _minorCategoryFlags     = ReportMinorCategory(fields[++idx].GetInt32());
+    _targetCharacterGuid = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
+    _reportType = ReportType(fields[++idx].GetInt32());
+    _majorCategory = ReportMajorCategory(fields[++idx].GetInt32());
+    _minorCategoryFlags = ReportMinorCategory(fields[++idx].GetInt32());
     int32 reportLineIndex = fields[++idx].GetInt32();
     if (reportLineIndex != -1)
         _chatLog.ReportLineIndex = reportLineIndex;
@@ -216,13 +216,13 @@ void ComplaintTicket::LoadFromDB(Field* fields)
     else
         _closedBy = ObjectGuid::Create<HighGuid::Player>(uint64(closedBy));
 
-    uint64 assignedTo       = fields[++idx].GetUInt64();
+    uint64 assignedTo = fields[++idx].GetUInt64();
     if (assignedTo == 0)
         _assignedTo = ObjectGuid::Empty;
     else
         _assignedTo = ObjectGuid::Create<HighGuid::Player>(assignedTo);
 
-    _comment                = fields[++idx].GetString();
+    _comment = fields[++idx].GetString();
 }
 
 void ComplaintTicket::LoadChatLineFromDB(Field* fields)
@@ -319,14 +319,14 @@ SuggestionTicket::~SuggestionTicket() { }
 void SuggestionTicket::LoadFromDB(Field* fields)
 {
     uint8 idx = 0;
-    _id                 = fields[  idx].GetUInt32();
-    _playerGuid         = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
-    _note               = fields[++idx].GetString();
-    _createTime         = fields[++idx].GetInt64();
-    _mapId              = fields[++idx].GetUInt16();
-    _pos.m_positionX    = fields[++idx].GetFloat();
-    _pos.m_positionY    = fields[++idx].GetFloat();
-    _pos.m_positionZ    = fields[++idx].GetFloat();
+    _id = fields[idx].GetUInt32();
+    _playerGuid = ObjectGuid::Create<HighGuid::Player>(fields[++idx].GetUInt64());
+    _note = fields[++idx].GetString();
+    _createTime = fields[++idx].GetInt64();
+    _mapId = fields[++idx].GetUInt16();
+    _pos.m_positionX = fields[++idx].GetFloat();
+    _pos.m_positionY = fields[++idx].GetFloat();
+    _pos.m_positionZ = fields[++idx].GetFloat();
     _pos.SetOrientation(fields[++idx].GetFloat());
 
     int64 closedBy = fields[++idx].GetInt64();
@@ -337,13 +337,13 @@ void SuggestionTicket::LoadFromDB(Field* fields)
     else
         _closedBy = ObjectGuid::Create<HighGuid::Player>(uint64(closedBy));
 
-    uint64 assignedTo   = fields[++idx].GetUInt64();
+    uint64 assignedTo = fields[++idx].GetUInt64();
     if (assignedTo == 0)
         _assignedTo = ObjectGuid::Empty;
     else
         _assignedTo = ObjectGuid::Create<HighGuid::Player>(assignedTo);
 
-    _comment            = fields[++idx].GetString();
+    _comment = fields[++idx].GetString();
 }
 
 void SuggestionTicket::SaveToDB() const
@@ -513,7 +513,7 @@ void SupportMgr::LoadBugTickets()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u GM bugs in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} GM bugs in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SupportMgr::LoadComplaintTickets()
@@ -568,7 +568,7 @@ void SupportMgr::LoadComplaintTickets()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u GM complaints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} GM complaints in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SupportMgr::LoadSuggestionTickets()
@@ -608,7 +608,7 @@ void SupportMgr::LoadSuggestionTickets()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u GM suggestions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} GM suggestions in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SupportMgr::AddTicket(BugTicket* ticket)

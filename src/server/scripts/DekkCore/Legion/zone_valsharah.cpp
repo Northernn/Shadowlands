@@ -252,8 +252,6 @@ public:
 
     class spell_return_valshara_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_return_valshara_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())

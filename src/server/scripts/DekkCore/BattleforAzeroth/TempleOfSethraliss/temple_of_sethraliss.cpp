@@ -37,29 +37,29 @@ struct npc_loose_spark : public ScriptedAI
 {
     npc_loose_spark(Creature* creature) : ScriptedAI(creature) { }
 
-    void Reset() override
-    {
-        Position const spawnPosition = me->GetPosition();
-        float circularAddition = float(M_PI) / 2;
-        for (int32 i = 0; i < 4; ++i)
-        {
-            float angle = -circularAddition + i*circularAddition;
-            // Clockwise
-            for (int32 j = 0; j < 3; ++j)
-            {
-                float radius = 10.0f - j * 4;
-             //   AreaTrigger::CreateAreaTrigger(AT_SPELL_MISC_ID, me, SPELL_LOOSE_SPARKS, spawnPosition, -1, radius, angle, 12000, true, false);
-            }
-            // Counterclockwise
-            for (int32 j = 0; j < 2; ++j)
-            {
-                float radius = 8.0f - j * 4;
-              //  AreaTrigger::CreateAreaTrigger(AT_SPELL_MISC_ID, me, SPELL_LOOSE_SPARKS, spawnPosition, -1, radius, angle, 12000, true, true);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 /*diff*/) override { }
+//    void Reset() override
+//    {
+//        Position const spawnPosition = me->GetPosition();
+//        float circularAddition = float(M_PI) / 2;
+//        for (int32 i = 0; i < 4; ++i)
+//        {
+//            float angle = -circularAddition + i*circularAddition;
+//            // Clockwise
+//            for (int32 j = 0; j < 3; ++j)
+//            {
+//                float radius = 10.0f - j * 4;
+//             //   AreaTrigger::CreateAreaTrigger(AT_SPELL_MISC_ID, me, SPELL_LOOSE_SPARKS, spawnPosition, -1, radius, angle, 12000, true, false);
+//            }
+//            // Counterclockwise
+//            for (int32 j = 0; j < 2; ++j)
+//            {
+//                float radius = 8.0f - j * 4;
+//              //  AreaTrigger::CreateAreaTrigger(AT_SPELL_MISC_ID, me, SPELL_LOOSE_SPARKS, spawnPosition, -1, radius, angle, 12000, true, true);
+//            }
+//        }
+//    }
+//
+//    void UpdateAI(uint32 /*diff*/) override { }
 };
 
 // 17715

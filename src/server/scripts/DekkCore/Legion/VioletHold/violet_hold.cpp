@@ -1021,8 +1021,6 @@ public:
 
     class spell_shadow_bomb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadow_bomb_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();

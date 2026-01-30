@@ -61,7 +61,7 @@ struct instance_scenario_zuldazar : public InstanceScript
             {
                 player->GetScheduler().Schedule(10s, [=](TaskContext /*context*/)
                 {
-                  //  player->CompletedCriteriaTreeId(CRITERIA_TREE_SECURE_THE_BRIDGE_TO_DAZAR_ALOR);
+                    player->AchieveCriteriaCredit(CRITERIA_TREE_SECURE_THE_BRIDGE_TO_DAZAR_ALOR);
                 });
             });
             break;
@@ -140,7 +140,7 @@ struct instance_scenario_zuldazar : public InstanceScript
         case NPC_BLOOD_TROLL_WARMOTHER:
             for (uint8 i = 1; i <= 10; ++i)
             {
-              //  DoSendScenarioEventByType(CRITERIA_TYPE_KILL_CREATURE, SCENARIO_EVENT_BLOOD_TROLL_ARMY_SLAIN, 1);
+                DoSendScenarioEvent(SCENARIO_EVENT_BLOOD_TROLL_ARMY_SLAIN);
 
                 SecondCount++;
             }
@@ -154,7 +154,7 @@ struct instance_scenario_zuldazar : public InstanceScript
             {
                 DoOnPlayers([](Player* player)
                 {
-                 //   player->CompletedCriteriaTreeId(CRITERIA_TREE_DESTROY_THE_NAZMANI_INVADERS_IN_THE_SLIVER);
+                   player->AchieveCriteriaCredit(CRITERIA_TREE_DESTROY_THE_NAZMANI_INVADERS_IN_THE_SLIVER);
                 });
             }
             break;
@@ -162,12 +162,12 @@ struct instance_scenario_zuldazar : public InstanceScript
         case NPC_BLADESWORN_DIAMONDBACK:
         case NPC_DIAMONDBACK_WARBRINGER:
             FiveCount2++;
-          //  DoSendScenarioEventByType(CRITERIA_TYPE_KILL_CREATURE, SCENARIO_EVENT_SETHRAK_SLAIN, 1);
+            DoSendScenarioEvent(SCENARIO_EVENT_SETHRAK_SLAIN);
             if (FiveCount1 >= 10 && FiveCount2 >= 10)
             {
                 DoOnPlayers([](Player* player)
                 {
-               //     player->CompletedCriteriaTreeId(CRITERIA_TREE_RESCUE_THE_CIVILIANS_OF_THE_ZOCALO_AND_SLAY_THE_SETHRAK_ARMY_THERE);
+                   player->AchieveCriteriaCredit(CRITERIA_TREE_RESCUE_THE_CIVILIANS_OF_THE_ZOCALO_AND_SLAY_THE_SETHRAK_ARMY_THERE);
                 });
             }
             break;
@@ -179,12 +179,12 @@ struct instance_scenario_zuldazar : public InstanceScript
         if (type == SCENARIO_EVENT_CIVILIANS_RESCUED)
         {
             FiveCount1++;
-           // DoSendScenarioEventByType(CRITERIA_TYPE_KILL_CREATURE, SCENARIO_EVENT_CIVILIANS_RESCUED, 1);
+            DoSendScenarioEvent(SCENARIO_EVENT_CIVILIANS_RESCUED);
             if (FiveCount1 >= 10 && FiveCount2 >= 10)
             {
                 DoOnPlayers([](Player* player)
                 {
-                //    player->CompletedCriteriaTreeId(CRITERIA_TREE_RESCUE_THE_CIVILIANS_OF_THE_ZOCALO_AND_SLAY_THE_SETHRAK_ARMY_THERE);
+                    player->AchieveCriteriaCredit(CRITERIA_TREE_RESCUE_THE_CIVILIANS_OF_THE_ZOCALO_AND_SLAY_THE_SETHRAK_ARMY_THERE);
                 });
             }
         }
@@ -195,5 +195,5 @@ struct instance_scenario_zuldazar : public InstanceScript
 
 void AddSC_instance_scenario_zuldazar()
 {
-   // RegisterInstanceScript(instance_scenario_zuldazar, 1906);
+    RegisterInstanceScript(instance_scenario_zuldazar, 1906);
 }

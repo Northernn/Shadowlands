@@ -305,8 +305,6 @@ public:
 
     class spell_betrug_mighty_smash_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_betrug_mighty_smash_SpellScript);
-
         uint8 bPos, pPos;
         uint8 targetHit = 0;
         uint8 targetHitCount = 0;
@@ -397,8 +395,6 @@ public:
 
     class spell_betrug_seed_of_destruction_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_betrug_seed_of_destruction_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();

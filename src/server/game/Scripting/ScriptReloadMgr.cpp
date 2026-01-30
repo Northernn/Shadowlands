@@ -20,11 +20,11 @@
 
 #ifndef TRINITY_API_USE_DYNAMIC_LINKING
 
-// This method should never be called
+ // This method should never be called
 std::shared_ptr<ModuleReference>
-    ScriptReloadMgr::AcquireModuleReferenceOfContext(std::string const& /*context*/)
+ScriptReloadMgr::AcquireModuleReferenceOfContext(std::string const& /*context*/)
 {
-    WPAbort();
+    ABORT();
 }
 
 // Returns the empty implemented ScriptReloadMgr
@@ -69,9 +69,9 @@ ScriptReloadMgr* ScriptReloadMgr::instance()
 namespace fs = boost::filesystem;
 
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
-    #include <windows.h>
+#include <windows.h>
 #else // Posix and Apple
-    #include <dlfcn.h>
+#include <dlfcn.h>
 #endif
 
 // Promote the sScriptReloadMgr to a HotSwapScriptReloadMgr
@@ -131,8 +131,8 @@ public:
 
         if (!success)
         {
-            TC_LOG_ERROR("scripts.hotswap", "Failed to unload (syscall) the shared library \"%s\".",
-                path_.generic_string().c_str());
+            TC_LOG_ERROR("scripts.hotswap", "Failed to unload (syscall) the shared library \"{}\".",
+                path_.generic_string());
 
             return;
         }
@@ -143,20 +143,20 @@ public:
             boost::system::error_code error;
             if (!fs::remove(*cache_path_, error))
             {
-                TC_LOG_ERROR("scripts.hotswap", "Failed to delete the cached shared library \"%s\" (%s).",
-                    cache_path_->generic_string().c_str(), error.message().c_str());
+                TC_LOG_ERROR("scripts.hotswap", "Failed to delete the cached shared library \"{}\" ({}).",
+                    cache_path_->generic_string(), error.message());
 
                 return;
             }
 
-            TC_LOG_TRACE("scripts.hotswap", "Lazy unloaded the shared library \"%s\" "
-                         "and deleted it's cached version at \"%s\"",
-                         path_.generic_string().c_str(), cache_path_->generic_string().c_str());
+            TC_LOG_TRACE("scripts.hotswap", "Lazy unloaded the shared library \"{}\" "
+                "and deleted it's cached version at \"{}\"",
+                path_.generic_string(), cache_path_->generic_string());
         }
         else
         {
-            TC_LOG_TRACE("scripts.hotswap", "Lazy unloaded the shared library \"%s\".",
-                path_.generic_string().c_str());
+            TC_LOG_TRACE("scripts.hotswap", "Lazy unloaded the shared library \"{}\".",
+                path_.generic_string());
         }
     }
 
@@ -177,11 +177,11 @@ class ScriptModule
 {
 public:
     explicit ScriptModule(HandleHolder handle, GetScriptModuleRevisionHashType getScriptModuleRevisionHash,
-                 AddScriptsType addScripts, GetScriptModuleType getScriptModule,
-                 GetBuildDirectiveType getBuildDirective, fs::path const& path)
+        AddScriptsType addScripts, GetScriptModuleType getScriptModule,
+        GetBuildDirectiveType getBuildDirective, fs::path const& path)
         : _handle(std::forward<HandleHolder>(handle)), _getScriptModuleRevisionHash(getScriptModuleRevisionHash),
-          _addScripts(addScripts), _getScriptModule(getScriptModule),
-          _getBuildDirective(getBuildDirective), _path(path) { }
+        _addScripts(addScripts), _getScriptModule(getScriptModule),
+        _getBuildDirective(getBuildDirective), _path(path) { }
 
     ScriptModule(ScriptModule const&) = delete;
     ScriptModule(ScriptModule&& right) = delete;
@@ -243,9 +243,9 @@ static bool GetFunctionFromSharedLibrary(HandleType handle, std::string const& n
 
 // Load a shared library from the given path.
 Optional<std::shared_ptr<ScriptModule>>
-    ScriptModule::CreateFromPath(fs::path const& path, Optional<fs::path> cache_path)
+ScriptModule::CreateFromPath(fs::path const& path, Optional<fs::path> cache_path)
 {
-    auto const load_path = [&] () -> fs::path {
+    auto const load_path = [&]() -> fs::path {
         if (cache_path)
             return *cache_path;
         else
@@ -262,14 +262,14 @@ Optional<std::shared_ptr<ScriptModule>>
     {
         if (cache_path)
         {
-            TC_LOG_ERROR("scripts.hotswap", "Could not dynamic load the shared library \"%s\" "
-                         "(the library is cached at %s)",
-                         path.generic_string().c_str(), cache_path->generic_string().c_str());
+            TC_LOG_ERROR("scripts.hotswap", "Could not dynamic load the shared library \"{}\" "
+                "(the library is cached at {})",
+                path.generic_string(), cache_path->generic_string());
         }
         else
         {
-            TC_LOG_ERROR("scripts.hotswap", "Could not dynamic load the shared library \"%s\".",
-                         path.generic_string().c_str());
+            TC_LOG_ERROR("scripts.hotswap", "Could not dynamic load the shared library \"{}\".",
+                path.generic_string());
         }
 
         return {};
@@ -296,8 +296,8 @@ Optional<std::shared_ptr<ScriptModule>>
     }
     else
     {
-        TC_LOG_ERROR("scripts.hotswap", "Could not extract all required functions from the shared library \"%s\"!",
-            path.generic_string().c_str());
+        TC_LOG_ERROR("scripts.hotswap", "Could not extract all required functions from the shared library \"{}\"!",
+            path.generic_string());
 
         return {};
     }
@@ -307,7 +307,7 @@ static bool HasValidScriptModuleName(std::string const& name)
 {
     // Detects scripts_NAME.dll's / .so's
     static Trinity::regex const regex(
-        Trinity::StringFormat("^%s[sS]cripts_[a-zA-Z0-9_]+\\.%s$",
+        Trinity::StringFormat("^{}[sS]cripts_[a-zA-Z0-9_]+\\.{}$",
             GetSharedLibraryPrefix(),
             GetSharedLibraryExtension()));
 
@@ -366,7 +366,7 @@ static int InvokeCMakeCommand(T&&... args)
     auto const executable = BuiltInConfig::GetCMakeCommand();
     return Trinity::StartProcess(executable, {
         std::forward<T>(args)...
-    }, "scripts.hotswap");
+        }, "scripts.hotswap");
 }
 
 /// Invokes an asynchronous CMake process with the given arguments
@@ -376,7 +376,7 @@ static std::shared_ptr<Trinity::AsyncProcessResult> InvokeAsyncCMakeCommand(T&&.
     auto const executable = BuiltInConfig::GetCMakeCommand();
     return Trinity::StartAsyncProcess(executable, {
         std::forward<T>(args)...
-    }, "scripts.hotswap");
+        }, "scripts.hotswap");
 }
 
 /// Calculates the C++ project name of the given module which is
@@ -384,8 +384,7 @@ static std::shared_ptr<Trinity::AsyncProcessResult> InvokeAsyncCMakeCommand(T&&.
 static std::string CalculateScriptModuleProjectName(std::string const& module)
 {
     std::string module_project = "scripts_" + module;
-    std::transform(module_project.begin(), module_project.end(),
-                   module_project.begin(), ::tolower);
+    strToLower(module_project);
 
     return module_project;
 }
@@ -458,11 +457,11 @@ class HotSwapScriptReloadMgr final
 
     public:
         explicit BuildJob(std::string script_module_name, std::string script_module_project_name,
-                 std::string script_module_build_directive)
+            std::string script_module_build_directive)
             : script_module_name_(std::move(script_module_name)),
-              script_module_project_name_(std::move(script_module_project_name)),
-              script_module_build_directive_(std::move(script_module_build_directive)),
-              start_time_(getMSTime()), type_(BuildJobType::BUILD_JOB_NONE) { }
+            script_module_project_name_(std::move(script_module_project_name)),
+            script_module_build_directive_(std::move(script_module_build_directive)),
+            start_time_(getMSTime()), type_(BuildJobType::BUILD_JOB_NONE) { }
 
         bool IsValid() const
         {
@@ -487,7 +486,7 @@ class HotSwapScriptReloadMgr final
 
         /// Updates the current running job with the given type and async result
         void UpdateCurrentJob(BuildJobType type,
-                              std::shared_ptr<Trinity::AsyncProcessResult> async_result)
+            std::shared_ptr<Trinity::AsyncProcessResult> async_result)
         {
             ASSERT(type != BuildJobType::BUILD_JOB_NONE, "None isn't allowed here!");
             ASSERT(async_result, "The async result must not be empty!");
@@ -538,8 +537,8 @@ class HotSwapScriptReloadMgr final
 public:
     HotSwapScriptReloadMgr()
         : _libraryWatcher(-1), _unique_library_name_counter(0),
-          _last_time_library_changed(0), _last_time_sources_changed(0),
-          _last_time_user_informed(0), terminate_early(false) { }
+        _last_time_library_changed(0), _last_time_sources_changed(0),
+        _last_time_user_informed(0), terminate_early(false) { }
 
     virtual ~HotSwapScriptReloadMgr()
     {
@@ -580,11 +579,11 @@ public:
 
         if (BuiltInConfig::GetBuildDirectory().find(" ") != std::string::npos)
         {
-            TC_LOG_ERROR("scripts.hotswap", "Your build directory path \"%s\" "
+            TC_LOG_ERROR("scripts.hotswap", "Your build directory path \"{}\" "
                 "contains spaces, which isn't allowed for compatibility reasons! "
                 "You need to create a build directory which doesn't contain any space character "
                 "in it's path!",
-                BuiltInConfig::GetBuildDirectory().c_str());
+                BuiltInConfig::GetBuildDirectory());
 
             return;
         }
@@ -593,8 +592,8 @@ public:
             auto const library_directory = GetLibraryDirectory();
             if (!fs::exists(library_directory) || !fs::is_directory(library_directory))
             {
-                TC_LOG_ERROR("scripts.hotswap", "Library directory \"%s\" doesn't exist!.",
-                    library_directory.generic_string().c_str());
+                TC_LOG_ERROR("scripts.hotswap", "Library directory \"{}\" doesn't exist!.",
+                    library_directory.generic_string());
                 return;
             }
         }
@@ -605,11 +604,11 @@ public:
         // an error code to prevent it from throwing exceptions.
         boost::system::error_code code;
         if ((!fs::exists(temporary_cache_path_, code)
-             || (fs::remove_all(temporary_cache_path_, code) > 0)) &&
-             !fs::create_directories(temporary_cache_path_, code))
+            || (fs::remove_all(temporary_cache_path_, code) > 0)) &&
+            !fs::create_directories(temporary_cache_path_, code))
         {
-            TC_LOG_ERROR("scripts.hotswap", "Couldn't create the cache directory at \"%s\".",
-                temporary_cache_path_.generic_string().c_str());
+            TC_LOG_ERROR("scripts.hotswap", "Couldn't create the cache directory at \"{}\".",
+                temporary_cache_path_.generic_string());
 
             return;
         }
@@ -671,7 +670,7 @@ public:
     template<typename T>
     void QueueMessage(T&& message)
     {
-       _messages.Enqueue(MakeMessage(std::forward<T>(message)));
+        _messages.Enqueue(MakeMessage(std::forward<T>(message)));
     }
 
     /// Queues an action which marks the given shared library as changed
@@ -679,8 +678,8 @@ public:
     /// This method is thread safe.
     void QueueSharedLibraryChanged(fs::path const& path)
     {
-         _last_time_library_changed = getMSTime();
-         _libraries_changed.insert(path);
+        _last_time_library_changed = getMSTime();
+        _libraries_changed.insert(path);
     }
 
     /// Queues a notification that a source file was added
@@ -715,18 +714,18 @@ private:
         uint32 count = 0;
 
         // Iterate through all shared libraries in the script directory and load it
-        for (fs::directory_iterator dir_itr(libraryDirectory); dir_itr != dir_end ; ++dir_itr)
+        for (fs::directory_iterator dir_itr(libraryDirectory); dir_itr != dir_end; ++dir_itr)
             if (fs::is_regular_file(dir_itr->path()) && HasValidScriptModuleName(dir_itr->path().filename().generic_string()))
             {
-                TC_LOG_INFO("scripts.hotswap", "Loading script module \"%s\"...",
-                    dir_itr->path().filename().generic_string().c_str());
+                TC_LOG_INFO("scripts.hotswap", "Loading script module \"{}\"...",
+                    dir_itr->path().filename().generic_string());
 
                 // Don't swap the script context to do bulk loading
                 ProcessLoadScriptModule(dir_itr->path(), false);
                 ++count;
             }
 
-        TC_LOG_INFO("scripts.hotswap", ">> Loaded %u script modules.", count);
+        TC_LOG_INFO("scripts.hotswap", ">> Loaded {} script modules.", count);
     }
 
     // Initialize all enabled file watchers.
@@ -736,13 +735,13 @@ private:
         _libraryWatcher = _fileWatcher.addWatch(GetLibraryDirectory().generic_string(), &libraryUpdateListener, false);
         if (_libraryWatcher >= 0)
         {
-            TC_LOG_INFO("scripts.hotswap", ">> Library reloader is listening on \"%s\".",
-                GetLibraryDirectory().generic_string().c_str());
+            TC_LOG_INFO("scripts.hotswap", ">> Library reloader is listening on \"{}\".",
+                GetLibraryDirectory().generic_string());
         }
         else
         {
-            TC_LOG_ERROR("scripts.hotswap", "Failed to initialize the library reloader on \"%s\".",
-                GetLibraryDirectory().generic_string().c_str());
+            TC_LOG_ERROR("scripts.hotswap", "Failed to initialize the library reloader on \"{}\".",
+                GetLibraryDirectory().generic_string());
         }
 
         _fileWatcher.watch();
@@ -751,9 +750,9 @@ private:
     static fs::path CalculateTemporaryCachePath()
     {
         auto path = fs::temp_directory_path();
-        path /= Trinity::StringFormat("tc_script_cache_%s_%s",
+        path /= Trinity::StringFormat("tc_script_cache_{}_{}",
             GitRevision::GetBranch(),
-            ByteArrayToHexStr(Trinity::Crypto::SHA1::GetDigestOf(sConfigMgr->GetFilename())).c_str());
+            ByteArrayToHexStr(Trinity::Crypto::SHA1::GetDigestOf(sConfigMgr->GetFilename())));
 
         return path;
     }
@@ -761,22 +760,22 @@ private:
     fs::path GenerateUniquePathForLibraryInCache(fs::path path)
     {
         ASSERT(!temporary_cache_path_.empty(),
-               "The temporary cache path wasn't set!");
+            "The temporary cache path wasn't set!");
 
         // Create the cache path and increment the library counter to use an unique name for each library
         auto cache_path = temporary_cache_path_;
-        cache_path /= Trinity::StringFormat("%s.%u%s",
-            path.stem().generic_string().c_str(),
+        cache_path /= Trinity::StringFormat("{}.{}{}",
+            path.stem().generic_string(),
             _unique_library_name_counter++,
-            path.extension().generic_string().c_str());
+            path.extension().generic_string());
 
         return cache_path;
     }
 
     /// Updates the current state of the given source path
     void UpdateSourceChangeRequest(std::string const& module_name,
-                                   fs::path const& path,
-                                   ChangeStateRequest state)
+        fs::path const& path,
+        ChangeStateRequest state)
     {
         _last_time_sources_changed = getMSTime();
 
@@ -802,15 +801,15 @@ private:
         }
 
         ASSERT((itr->second == ChangeStateRequest::CHANGE_REQUEST_ADDED)
-               || (itr->second == ChangeStateRequest::CHANGE_REQUEST_REMOVED),
-               "Stored value is invalid!");
+            || (itr->second == ChangeStateRequest::CHANGE_REQUEST_REMOVED),
+            "Stored value is invalid!");
 
         ASSERT((state == ChangeStateRequest::CHANGE_REQUEST_ADDED)
-               || (state == ChangeStateRequest::CHANGE_REQUEST_REMOVED),
-               "The given state is invalid!");
+            || (state == ChangeStateRequest::CHANGE_REQUEST_REMOVED),
+            "The given state is invalid!");
 
         ASSERT(state != itr->second,
-               "Tried to apply a state which is stored already!");
+            "Tried to apply a state which is stored already!");
 
         module_itr->second.erase(itr);
     }
@@ -851,7 +850,7 @@ private:
     void ProcessLoadScriptModule(fs::path const& path, bool swap_context = true)
     {
         ASSERT(_running_script_module_names.find(path) == _running_script_module_names.end(),
-               "Can't load a module which is running already!");
+            "Can't load a module which is running already!");
 
         // Copy the shared library into a cache
         auto cache_path = GenerateUniquePathForLibraryInCache(path);
@@ -862,9 +861,9 @@ private:
             if (code)
             {
                 TC_LOG_FATAL("scripts.hotswap", ">> Failed to create cache entry for module "
-                    "\"%s\" at \"%s\" with reason (\"%s\")!",
-                    path.filename().generic_string().c_str(), cache_path.generic_string().c_str(),
-                    code.message().c_str());
+                    "\"{}\" at \"{}\" with reason (\"{}\")!",
+                    path.filename().generic_string(), cache_path.generic_string(),
+                    code.message());
 
                 // Find a better solution for this but it's much better
                 // to start the core without scripts
@@ -873,15 +872,15 @@ private:
                 return;
             }
 
-            TC_LOG_TRACE("scripts.hotswap", ">> Copied the shared library \"%s\" to \"%s\" for caching.",
-                path.filename().generic_string().c_str(), cache_path.generic_string().c_str());
+            TC_LOG_TRACE("scripts.hotswap", ">> Copied the shared library \"{}\" to \"{}\" for caching.",
+                path.filename().generic_string(), cache_path.generic_string());
         }
 
         auto module = ScriptModule::CreateFromPath(path, cache_path);
         if (!module)
         {
-            TC_LOG_FATAL("scripts.hotswap", ">> Failed to load script module \"%s\"!",
-                path.filename().generic_string().c_str());
+            TC_LOG_FATAL("scripts.hotswap", ">> Failed to load script module \"{}\"!",
+                path.filename().generic_string());
 
             // Find a better solution for this but it's much better
             // to start the core without scripts
@@ -896,13 +895,13 @@ private:
             module_revision = module_revision.substr(0, 7);
 
         std::string const module_name = (*module)->GetScriptModule();
-        TC_LOG_INFO("scripts.hotswap", ">> Loaded script module \"%s\" (\"%s\" - %s).",
-            path.filename().generic_string().c_str(), module_name.c_str(), module_revision.c_str());
+        TC_LOG_INFO("scripts.hotswap", ">> Loaded script module \"{}\" (\"{}\" - {}).",
+            path.filename().generic_string(), module_name, module_revision);
 
         if (module_revision.empty())
         {
-            TC_LOG_WARN("scripts.hotswap", ">> Script module \"%s\" has an empty revision hash!",
-                path.filename().generic_string().c_str());
+            TC_LOG_WARN("scripts.hotswap", ">> Script module \"{}\" has an empty revision hash!",
+                path.filename().generic_string());
         }
         else
         {
@@ -914,8 +913,8 @@ private:
 
             if (my_revision_hash != module_revision)
             {
-                TC_LOG_WARN("scripts.hotswap", ">> Script module \"%s\" has a different revision hash! "
-                    "Binary incompatibility could lead to unknown behaviour!", path.filename().generic_string().c_str());
+                TC_LOG_WARN("scripts.hotswap", ">> Script module \"{}\" has a different revision hash! "
+                    "Binary incompatibility could lead to unknown behaviour!", path.filename().generic_string());
             }
         }
 
@@ -923,8 +922,8 @@ private:
             auto const itr = _running_script_modules.find(module_name);
             if (itr != _running_script_modules.end())
             {
-                TC_LOG_ERROR("scripts.hotswap", ">> Attempt to load a module twice \"%s\" (loaded module is at %s)!",
-                    path.generic_string().c_str(), itr->second.first->GetModulePath().generic_string().c_str());
+                TC_LOG_ERROR("scripts.hotswap", ">> Attempt to load a module twice \"{}\" (loaded module is at {})!",
+                    path.generic_string(), itr->second.first->GetModulePath().generic_string());
 
                 return;
             }
@@ -944,7 +943,7 @@ private:
         // Process the script loading after the module was registered correctly (#17557).
         sScriptMgr->SetScriptContext(module_name);
         (*module)->AddScripts();
-        TC_LOG_TRACE("scripts.hotswap", ">> Registered all scripts of module %s.", module_name.c_str());
+        TC_LOG_TRACE("scripts.hotswap", ">> Registered all scripts of module {}.", module_name);
 
         if (swap_context)
             sScriptMgr->SwapScriptContext();
@@ -961,7 +960,7 @@ private:
         auto const itr = _running_script_module_names.find(path);
 
         ASSERT(itr != _running_script_module_names.end(),
-               "Can't unload a module which isn't running!");
+            "Can't unload a module which isn't running!");
 
         // Unload the script context
         sScriptMgr->ReleaseScriptContext(itr->second);
@@ -969,22 +968,22 @@ private:
         if (finish)
             sScriptMgr->SwapScriptContext();
 
-        TC_LOG_INFO("scripts.hotswap", "Released script module \"%s\" (\"%s\")...",
-            path.filename().generic_string().c_str(), itr->second.c_str());
+        TC_LOG_INFO("scripts.hotswap", "Released script module \"{}\" (\"{}\")...",
+            path.filename().generic_string(), itr->second);
 
         // Unload the script module
         auto ref = _running_script_modules.find(itr->second);
         ASSERT(ref != _running_script_modules.end() &&
-               "Expected the script reference to be present!");
+            "Expected the script reference to be present!");
 
         // Yield a message when there are other owning references to
         // the module which prevents it from unloading.
         // The module will be unloaded once all scripts provided from the module
         // are destroyed.
-        if (!ref->second.first.unique())
+        if (ref->second.first.use_count() != 1)
         {
             TC_LOG_INFO("scripts.hotswap",
-                "Script module %s is still used by %lu spell, aura or instance scripts. "
+                "Script module {} is still used by {} spell, aura or instance scripts. "
                 "Will lazy unload the module once all scripts stopped using it, "
                 "to use the latest version of an edited script unbind yourself from "
                 "the instance or re-cast the spell.",
@@ -1010,8 +1009,8 @@ private:
                 {
                     /*
                     FIXME: Currently crashes the server
-                    TC_LOG_INFO("scripts.hotswap", "Terminating the running build of module \"%s\"...",
-                                _build_job->GetModuleName().c_str());
+                    TC_LOG_INFO("scripts.hotswap", "Terminating the running build of module \"{}\"...",
+                                _build_job->GetModuleName());
 
                     _build_job->GetProcess()->Terminate();
                     _build_job.reset();
@@ -1029,7 +1028,7 @@ private:
             // Wait for the current build job to finish, if the job finishes in time
             // evaluate it and continue with the next one.
             if (_build_job->GetProcess()->GetFutureResult().
-                    wait_for(0s) == std::future_status::ready)
+                wait_for(0s) == std::future_status::ready)
                 ProcessReadyBuildJob();
             else
                 return; // Return when the job didn't finish in time
@@ -1076,8 +1075,8 @@ private:
             if (sLog->ShouldLog("scripts.hotswap", LogLevel::LOG_LEVEL_TRACE))
                 for (auto const& entry : itr->second)
                 {
-                    TC_LOG_TRACE("scripts.hotswap", "Source file %s was %s.",
-                        entry.first.generic_string().c_str(),
+                    TC_LOG_TRACE("scripts.hotswap", "Source file {} was {}.",
+                        entry.first.generic_string(),
                         ((entry.second == ChangeStateRequest::CHANGE_REQUEST_ADDED) ?
                             "added" : "removed"));
                 }
@@ -1096,16 +1095,16 @@ private:
         }
 
         ASSERT(!module_name.empty(),
-               "The current module name is invalid!");
+            "The current module name is invalid!");
 
-        TC_LOG_INFO("scripts.hotswap", "Recompiling Module \"%s\"...",
-            module_name.c_str());
+        TC_LOG_INFO("scripts.hotswap", "Recompiling Module \"{}\"...",
+            module_name);
 
         // Calculate the project name of the script module
         auto project_name = CalculateScriptModuleProjectName(module_name);
 
         // Find the best build directive for the module
-        auto build_directive = [&] () -> std::string
+        auto build_directive = [&]() -> std::string
         {
             auto directive = sConfigMgr->GetStringDefault("HotSwap.ReCompilerBuildType", "");
             if (!directive.empty())
@@ -1146,71 +1145,71 @@ private:
 
         switch (_build_job->GetType())
         {
-            case BuildJobType::BUILD_JOB_RERUN_CMAKE:
+        case BuildJobType::BUILD_JOB_RERUN_CMAKE:
+        {
+            if (!error)
             {
-                if (!error)
-                {
-                    TC_LOG_INFO("scripts.hotswap", ">> Successfully updated the build files!");
-                }
-                else
-                {
-                    TC_LOG_INFO("scripts.hotswap", ">> Failed to update the build files at \"%s\", "
-                                "it's possible that recently added sources are not included "
-                                "in your next builds, rerun CMake manually.",
-                                BuiltInConfig::GetBuildDirectory().c_str());
-                }
-                // Continue with building the changes sources
-                DoCompileCurrentProcessedModule();
-                return;
+                TC_LOG_INFO("scripts.hotswap", ">> Successfully updated the build files!");
             }
-            case BuildJobType::BUILD_JOB_COMPILE:
+            else
             {
-                if (!error) // Build was successful
+                TC_LOG_INFO("scripts.hotswap", ">> Failed to update the build files at \"{}\", "
+                    "it's possible that recently added sources are not included "
+                    "in your next builds, rerun CMake manually.",
+                    BuiltInConfig::GetBuildDirectory());
+            }
+            // Continue with building the changes sources
+            DoCompileCurrentProcessedModule();
+            return;
+        }
+        case BuildJobType::BUILD_JOB_COMPILE:
+        {
+            if (!error) // Build was successful
+            {
+                if (sWorld->getBoolConfig(CONFIG_HOTSWAP_INSTALL_ENABLED))
                 {
-                    if (sWorld->getBoolConfig(CONFIG_HOTSWAP_INSTALL_ENABLED))
-                    {
-                        // Continue with the installation when it's enabled
-                        TC_LOG_INFO("scripts.hotswap",
-                                    ">> Successfully build module %s, continue with installing...",
-                                    _build_job->GetModuleName().c_str());
-
-                        DoInstallCurrentProcessedModule();
-                        return;
-                    }
-
-                    // Skip the installation because it's disabled in config
+                    // Continue with the installation when it's enabled
                     TC_LOG_INFO("scripts.hotswap",
-                        ">> Successfully build module %s, skipped the installation.",
-                        _build_job->GetModuleName().c_str());
+                        ">> Successfully build module {}, continue with installing...",
+                        _build_job->GetModuleName());
+
+                    DoInstallCurrentProcessedModule();
+                    return;
                 }
-                else // Build wasn't successful
-                {
-                    TC_LOG_ERROR("scripts.hotswap",
-                        ">> The build of module %s failed! See the log for details.",
-                        _build_job->GetModuleName().c_str());
-                }
-                break;
+
+                // Skip the installation because it's disabled in config
+                TC_LOG_INFO("scripts.hotswap",
+                    ">> Successfully build module {}, skipped the installation.",
+                    _build_job->GetModuleName());
             }
-            case BuildJobType::BUILD_JOB_INSTALL:
+            else // Build wasn't successful
             {
-                if (!error)
-                {
-                    // Installation was successful
-                    TC_LOG_INFO("scripts.hotswap", ">> Successfully installed module %s in %us",
-                        _build_job->GetModuleName().c_str(),
-                        _build_job->GetTimeFromStart() / IN_MILLISECONDS);
-                }
-                else
-                {
-                    // Installation wasn't successful
-                    TC_LOG_INFO("scripts.hotswap",
-                        ">> The installation of module %s failed! See the log for details.",
-                        _build_job->GetModuleName().c_str());
-                }
-                break;
+                TC_LOG_ERROR("scripts.hotswap",
+                    ">> The build of module {} failed! See the log for details.",
+                    _build_job->GetModuleName());
             }
-            default:
-                break;
+            break;
+        }
+        case BuildJobType::BUILD_JOB_INSTALL:
+        {
+            if (!error)
+            {
+                // Installation was successful
+                TC_LOG_INFO("scripts.hotswap", ">> Successfully installed module {} in {}s",
+                    _build_job->GetModuleName(),
+                    _build_job->GetTimeFromStart() / IN_MILLISECONDS);
+            }
+            else
+            {
+                // Installation wasn't successful
+                TC_LOG_INFO("scripts.hotswap",
+                    ">> The installation of module {} failed! See the log for details.",
+                    _build_job->GetModuleName());
+            }
+            break;
+        }
+        default:
+            break;
         }
 
         // Clear the current job
@@ -1233,8 +1232,8 @@ private:
     {
         ASSERT(_build_job, "There isn't any active build job!");
 
-        TC_LOG_INFO("scripts.hotswap", "Starting asynchronous build job for module %s...",
-                    _build_job->GetModuleName().c_str());
+        TC_LOG_INFO("scripts.hotswap", "Starting asynchronous build job for module {}...",
+            _build_job->GetModuleName());
 
         _build_job->UpdateCurrentJob(BuildJobType::BUILD_JOB_COMPILE,
             InvokeAsyncCMakeCommand(
@@ -1248,8 +1247,8 @@ private:
     {
         ASSERT(_build_job, "There isn't any active build job!");
 
-        TC_LOG_INFO("scripts.hotswap", "Starting asynchronous install job for module %s...",
-                    _build_job->GetModuleName().c_str());
+        TC_LOG_INFO("scripts.hotswap", "Starting asynchronous install job for module {}...",
+            _build_job->GetModuleName());
 
         _build_job->UpdateCurrentJob(BuildJobType::BUILD_JOB_INSTALL,
             InvokeAsyncCMakeCommand(
@@ -1264,122 +1263,122 @@ private:
     /// since most users will forget this.
     void DoCMakePrefixCorrectionIfNeeded()
     {
-        TC_LOG_INFO("scripts.hotswap", "Correcting your CMAKE_INSTALL_PREFIX in \"%s\"...",
-                    BuiltInConfig::GetBuildDirectory().c_str());
+        TC_LOG_INFO("scripts.hotswap", "Correcting your CMAKE_INSTALL_PREFIX in \"{}\"...",
+            BuiltInConfig::GetBuildDirectory());
 
         auto const cmake_cache_path = fs::absolute("CMakeCache.txt",
             BuiltInConfig::GetBuildDirectory());
 
         // Stop when the CMakeCache wasn't found
         if (![&]
-        {
-            boost::system::error_code error;
-            if (!fs::exists(cmake_cache_path, error))
             {
-                TC_LOG_ERROR("scripts.hotswap", ">> CMake cache \"%s\" doesn't exist, "
-                    "set the \"BuildDirectory\" option in your worldserver.conf to point"
-                    "to your build directory!",
-                    cmake_cache_path.generic_string().c_str());
+                boost::system::error_code error;
+                    if (!fs::exists(cmake_cache_path, error))
+                    {
+                        TC_LOG_ERROR("scripts.hotswap", ">> CMake cache \"{}\" doesn't exist, "
+                            "set the \"BuildDirectory\" option in your worldserver.conf to point"
+                            "to your build directory!",
+                            cmake_cache_path.generic_string());
 
-                return false;
-            }
-            else
-                return true;
-        }())
+                            return false;
+                    }
+                    else
+                        return true;
+            }())
             return;
 
-        TC_LOG_TRACE("scripts.hotswap", "Checking CMake cache (\"%s\") "
-                     "for the correct CMAKE_INSTALL_PREFIX location...",
-                     cmake_cache_path.generic_string().c_str());
+            TC_LOG_TRACE("scripts.hotswap", "Checking CMake cache (\"{}\") "
+                "for the correct CMAKE_INSTALL_PREFIX location...",
+                cmake_cache_path.generic_string());
 
-        std::string cmake_cache_content;
-        {
-            std::ifstream in(cmake_cache_path.generic_string());
-            if (!in.is_open())
+            std::string cmake_cache_content;
             {
-                TC_LOG_ERROR("scripts.hotswap", ">> Failed to read the CMake cache at \"%s\"!",
-                    cmake_cache_path.generic_string().c_str());
-
-                return;
-            }
-
-            std::ostringstream ss;
-            ss << in.rdbuf();
-            cmake_cache_content = ss.str();
-
-            in.close();
-        }
-
-        static std::string const prefix_key = "CMAKE_INSTALL_PREFIX:PATH=";
-
-        // Extract the value of CMAKE_INSTALL_PREFIX
-        auto begin = cmake_cache_content.find(prefix_key);
-        if (begin != std::string::npos)
-        {
-            begin += prefix_key.length();
-            auto const end = cmake_cache_content.find("\n", begin);
-            if (end != std::string::npos)
-            {
-                fs::path value = cmake_cache_content.substr(begin, end - begin);
-
-                auto current_path = fs::current_path();
-
-            #if TRINITY_PLATFORM != TRINITY_PLATFORM_WINDOWS
-                // The worldserver location is ${CMAKE_INSTALL_PREFIX}/bin
-                // on all other platforms then windows
-                current_path = current_path.parent_path();
-            #endif
-
-                if (value != current_path)
+                std::ifstream in(cmake_cache_path.generic_string());
+                if (!in.is_open())
                 {
-                    // Prevent correction of the install prefix
-                    // when we are starting the core from inside the build tree
-                    bool const is_in_path = [&]
-                    {
-                        fs::path base = BuiltInConfig::GetBuildDirectory();
-                        fs::path branch = value;
-                        while (!branch.empty())
-                        {
-                            if (base == branch)
-                                return true;
+                    TC_LOG_ERROR("scripts.hotswap", ">> Failed to read the CMake cache at \"{}\"!",
+                        cmake_cache_path.generic_string());
 
-                            branch = branch.parent_path();
-                        }
-
-                        return false;
-                    }();
-
-                    if (is_in_path)
-                        return;
-
-                    TC_LOG_INFO("scripts.hotswap", ">> Found outdated CMAKE_INSTALL_PREFIX (\"%s\"), "
-                        "worldserver is currently installed at %s",
-                        value.generic_string().c_str(), current_path.generic_string().c_str());
-                }
-                else
-                {
-                    TC_LOG_INFO("scripts.hotswap", ">> CMAKE_INSTALL_PREFIX is equal to the current path of execution.");
                     return;
                 }
+
+                std::ostringstream ss;
+                ss << in.rdbuf();
+                cmake_cache_content = ss.str();
+
+                in.close();
             }
-        }
 
-        TC_LOG_INFO("scripts.hotswap", "Invoking CMake cache correction...");
+            static std::string const prefix_key = "CMAKE_INSTALL_PREFIX:PATH=";
 
-        auto const error = InvokeCMakeCommand(
-            "-DCMAKE_INSTALL_PREFIX:PATH=" + fs::current_path().generic_string(),
-            BuiltInConfig::GetBuildDirectory());
+            // Extract the value of CMAKE_INSTALL_PREFIX
+            auto begin = cmake_cache_content.find(prefix_key);
+            if (begin != std::string::npos)
+            {
+                begin += prefix_key.length();
+                auto const end = cmake_cache_content.find("\n", begin);
+                if (end != std::string::npos)
+                {
+                    fs::path value = cmake_cache_content.substr(begin, end - begin);
 
-        if (error)
-        {
-            TC_LOG_ERROR("scripts.hotswap", ">> Failed to update the CMAKE_INSTALL_PREFIX! "
-                "This could lead to unexpected behaviour!");
-        }
-        else
-        {
-            TC_LOG_ERROR("scripts.hotswap", ">> Successfully corrected your CMAKE_INSTALL_PREFIX variable"
-                         "to point at your current path of execution.");
-        }
+                    auto current_path = fs::current_path();
+
+#if TRINITY_PLATFORM != TRINITY_PLATFORM_WINDOWS
+                    // The worldserver location is ${CMAKE_INSTALL_PREFIX}/bin
+                    // on all other platforms then windows
+                    current_path = current_path.parent_path();
+#endif
+
+                    if (value != current_path)
+                    {
+                        // Prevent correction of the install prefix
+                        // when we are starting the core from inside the build tree
+                        bool const is_in_path = [&]
+                        {
+                            fs::path base = BuiltInConfig::GetBuildDirectory();
+                            fs::path branch = value;
+                            while (!branch.empty())
+                            {
+                                if (base == branch)
+                                    return true;
+
+                                branch = branch.parent_path();
+                            }
+
+                            return false;
+                        }();
+
+                        if (is_in_path)
+                            return;
+
+                        TC_LOG_INFO("scripts.hotswap", ">> Found outdated CMAKE_INSTALL_PREFIX (\"{}\"), "
+                            "worldserver is currently installed at {}",
+                            value.generic_string(), current_path.generic_string());
+                    }
+                    else
+                    {
+                        TC_LOG_INFO("scripts.hotswap", ">> CMAKE_INSTALL_PREFIX is equal to the current path of execution.");
+                        return;
+                    }
+                }
+            }
+
+            TC_LOG_INFO("scripts.hotswap", "Invoking CMake cache correction...");
+
+            auto const error = InvokeCMakeCommand(
+                "-DCMAKE_INSTALL_PREFIX:PATH=" + fs::current_path().generic_string(),
+                BuiltInConfig::GetBuildDirectory());
+
+            if (error)
+            {
+                TC_LOG_ERROR("scripts.hotswap", ">> Failed to update the CMAKE_INSTALL_PREFIX! "
+                    "This could lead to unexpected behaviour!");
+            }
+            else
+            {
+                TC_LOG_ERROR("scripts.hotswap", ">> Successfully corrected your CMAKE_INSTALL_PREFIX variable"
+                    "to point at your current path of execution.");
+            }
     }
 
     // File watcher instance and watcher ID's
@@ -1454,21 +1453,21 @@ static char const* ActionToString(efsw::Action action)
 {
     switch (action)
     {
-        case efsw::Action::Add:
-            return "added";
-        case efsw::Action::Delete:
-            return "deleted";
-        case efsw::Action::Moved:
-            return "moved";
-        default:
-            return "modified";
+    case efsw::Action::Add:
+        return "added";
+    case efsw::Action::Delete:
+        return "deleted";
+    case efsw::Action::Moved:
+        return "moved";
+    default:
+        return "modified";
     }
 }
 
 void LibraryUpdateListener::handleFileAction(efsw::WatchID watchid, std::string const& dir,
     std::string const& filename, efsw::Action action, std::string oldFilename)
 {
-    // TC_LOG_TRACE("scripts.hotswap", "Library listener detected change on possible module \"%s\ (%s)".", filename.c_str(), ActionToString(action));
+    // TC_LOG_TRACE("scripts.hotswap", "Library listener detected change on possible module \"{}\ ({})".", filename, ActionToString(action));
 
     // Split moved actions into a delete and an add action
     if (action == efsw::Action::Moved)
@@ -1480,36 +1479,36 @@ void LibraryUpdateListener::handleFileAction(efsw::WatchID watchid, std::string 
     }
 
     sScriptReloadMgr->QueueMessage([=](HotSwapScriptReloadMgr* reloader) mutable
-    {
-        auto const path = fs::absolute(
-            filename,
-            sScriptReloadMgr->GetLibraryDirectory());
-
-        if (!HasValidScriptModuleName(filename))
-            return;
-
-        switch (action)
         {
-            case efsw::Actions::Add:
-                TC_LOG_TRACE("scripts.hotswap", ">> Loading \"%s\" (%s)...",
-                    path.generic_string().c_str(), ActionToString(action));
-                reloader->QueueSharedLibraryChanged(path);
-                break;
-            case efsw::Actions::Delete:
-                TC_LOG_TRACE("scripts.hotswap", ">> Unloading \"%s\" (%s)...",
-                    path.generic_string().c_str(), ActionToString(action));
-                reloader->QueueSharedLibraryChanged(path);
-                break;
-            case efsw::Actions::Modified:
-                TC_LOG_TRACE("scripts.hotswap", ">> Reloading \"%s\" (%s)...",
-                    path.generic_string().c_str(), ActionToString(action));
-                reloader->QueueSharedLibraryChanged(path);
-                break;
-            default:
-                WPAbort();
-                break;
-        }
-    });
+            auto const path = fs::absolute(
+                filename,
+                sScriptReloadMgr->GetLibraryDirectory());
+
+    if (!HasValidScriptModuleName(filename))
+        return;
+
+    switch (action)
+    {
+    case efsw::Actions::Add:
+        TC_LOG_TRACE("scripts.hotswap", ">> Loading \"{}\" ({})...",
+            path.generic_string(), ActionToString(action));
+        reloader->QueueSharedLibraryChanged(path);
+        break;
+    case efsw::Actions::Delete:
+        TC_LOG_TRACE("scripts.hotswap", ">> Unloading \"{}\" ({})...",
+            path.generic_string(), ActionToString(action));
+        reloader->QueueSharedLibraryChanged(path);
+        break;
+    case efsw::Actions::Modified:
+        TC_LOG_TRACE("scripts.hotswap", ">> Reloading \"{}\" ({})...",
+            path.generic_string(), ActionToString(action));
+        reloader->QueueSharedLibraryChanged(path);
+        break;
+    default:
+        ABORT();
+        break;
+    }
+        });
 }
 
 /// Returns true when the given path has a known C++ file extension
@@ -1521,17 +1520,17 @@ static bool HasCXXSourceFileExtension(fs::path const& path)
 
 SourceUpdateListener::SourceUpdateListener(fs::path path, std::string script_module_name)
     : path_(std::move(path)), script_module_name_(std::move(script_module_name)),
-      watcher_id_(sScriptReloadMgr->_fileWatcher.addWatch(path_.generic_string(), this, true))
+    watcher_id_(sScriptReloadMgr->_fileWatcher.addWatch(path_.generic_string(), this, true))
 {
     if (watcher_id_ >= 0)
     {
-        TC_LOG_TRACE("scripts.hotswap", ">> Attached the source recompiler to \"%s\".",
-            path_.generic_string().c_str());
+        TC_LOG_TRACE("scripts.hotswap", ">> Attached the source recompiler to \"{}\".",
+            path_.generic_string());
     }
     else
     {
-        TC_LOG_ERROR("scripts.hotswap", "Failed to initialize thesource recompiler on \"%s\".",
-            path_.generic_string().c_str());
+        TC_LOG_ERROR("scripts.hotswap", "Failed to initialize thesource recompiler on \"{}\".",
+            path_.generic_string());
     }
 }
 
@@ -1541,15 +1540,15 @@ SourceUpdateListener::~SourceUpdateListener()
     {
         sScriptReloadMgr->_fileWatcher.removeWatch(watcher_id_);
 
-        TC_LOG_TRACE("scripts.hotswap", ">> Detached the source recompiler from \"%s\".",
-            path_.generic_string().c_str());
+        TC_LOG_TRACE("scripts.hotswap", ">> Detached the source recompiler from \"{}\".",
+            path_.generic_string());
     }
 }
 
 void SourceUpdateListener::handleFileAction(efsw::WatchID watchid, std::string const& dir,
     std::string const& filename, efsw::Action action, std::string oldFilename)
 {
-    // TC_LOG_TRACE("scripts.hotswap", "Source listener detected change on possible file \"%s/%s\" (%s).", dir.c_str(), filename.c_str(), ActionToString(action));
+    // TC_LOG_TRACE("scripts.hotswap", "Source listener detected change on possible file \"{}/{}\" ({}).", dir, filename, ActionToString(action));
 
     // Skip the file change notification if the recompiler is disabled
     if (!sWorld->getBoolConfig(CONFIG_HOTSWAP_RECOMPILER_ENABLED))
@@ -1564,7 +1563,7 @@ void SourceUpdateListener::handleFileAction(efsw::WatchID watchid, std::string c
         return;
     }
 
-    auto const path = fs::absolute(
+    fs::path path = fs::absolute(
         filename,
         dir);
 
@@ -1573,38 +1572,38 @@ void SourceUpdateListener::handleFileAction(efsw::WatchID watchid, std::string c
         return;
 
     /// Thread safe part
-    sScriptReloadMgr->QueueMessage([=](HotSwapScriptReloadMgr* reloader)
-    {
-        TC_LOG_TRACE("scripts.hotswap", "Detected source change on module \"%s\", "
-            "queued for recompilation...", script_module_name_.c_str());
-
-        switch (action)
+    sScriptReloadMgr->QueueMessage([=, this, path = std::move(path)](HotSwapScriptReloadMgr* reloader)
         {
-            case efsw::Actions::Add:
-                TC_LOG_TRACE("scripts.hotswap", "Source file %s of module %s was added.",
-                    path.generic_string().c_str(), script_module_name_.c_str());
-                reloader->QueueAddSourceFile(script_module_name_, path);
-                break;
-            case efsw::Actions::Delete:
-                TC_LOG_TRACE("scripts.hotswap", "Source file %s of module %s was deleted.",
-                    path.generic_string().c_str(), script_module_name_.c_str());
-                reloader->QueueRemoveSourceFile(script_module_name_, path);
-                break;
-            case efsw::Actions::Modified:
-                TC_LOG_TRACE("scripts.hotswap", "Source file %s of module %s was modified.",
-                    path.generic_string().c_str(), script_module_name_.c_str());
-                reloader->QueueModifySourceFile(script_module_name_, path);
-                break;
-            default:
-                WPAbort();
-                break;
-        }
-    });
+            TC_LOG_TRACE("scripts.hotswap", "Detected source change on module \"{}\", "
+            "queued for recompilation...", script_module_name_);
+
+    switch (action)
+    {
+    case efsw::Actions::Add:
+        TC_LOG_TRACE("scripts.hotswap", "Source file {} of module {} was added.",
+            path.generic_string(), script_module_name_);
+        reloader->QueueAddSourceFile(script_module_name_, path);
+        break;
+    case efsw::Actions::Delete:
+        TC_LOG_TRACE("scripts.hotswap", "Source file {} of module {} was deleted.",
+            path.generic_string(), script_module_name_);
+        reloader->QueueRemoveSourceFile(script_module_name_, path);
+        break;
+    case efsw::Actions::Modified:
+        TC_LOG_TRACE("scripts.hotswap", "Source file {} of module {} was modified.",
+            path.generic_string(), script_module_name_);
+        reloader->QueueModifySourceFile(script_module_name_, path);
+        break;
+    default:
+        ABORT();
+        break;
+    }
+        });
 }
 
 // Returns the module reference of the given context
 std::shared_ptr<ModuleReference>
-    ScriptReloadMgr::AcquireModuleReferenceOfContext(std::string const& context)
+ScriptReloadMgr::AcquireModuleReferenceOfContext(std::string const& context)
 {
     // Return empty references for the static context exported by the worldserver
     if (context == ScriptMgr::GetNameOfStaticContext())
@@ -1612,7 +1611,7 @@ std::shared_ptr<ModuleReference>
 
     auto const itr = sScriptReloadMgr->_running_script_modules.find(context);
     ASSERT(itr != sScriptReloadMgr->_running_script_modules.end()
-           && "Requested a reference to a non existent script context!");
+        && "Requested a reference to a non existent script context!");
 
     return itr->second.first;
 }

@@ -1,4 +1,4 @@
-/*######
+﻿/*######
 ## DekkCore
 ## The Broken Islands Scenario
 ######*/
@@ -13,9 +13,13 @@
 #include "MiscPackets.h"
 #include "TemporarySummon.h"
 #include "GameObjectAI.h"
+#include "GameObject.h"
 #include "CreatureGroups.h"
 #include "Transport.h"
 #include "Group.h"
+#include "InstanceScript.h"
+#include "Map.h"
+#include "MotionMaster.h"
 
 //! 227058 Leave for Broken Shore Queue
 class spell_broken_shore_queue : public SpellScriptLoader
@@ -25,8 +29,6 @@ public:
 
     class spell_broken_shore_queue_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_broken_shore_queue_SpellScript);
-
         enum data
         {
             QUEST = 42740,
@@ -69,8 +71,6 @@ public:
 
     class spell_bi_enter_stage1_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_bi_enter_stage1_AuraScript);
-
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
@@ -80,30 +80,19 @@ public:
                 if (!player)
                     return;
 
-
-                Map* m = player->FindMap();
-                if (!m)
-                    return;
                 InstanceScript *script = player->GetInstanceScript();
-                if (!script)
-                    return;
+   
 
                 ObjectGuid guid = script->GetGuidData(player->GetTeam() == HORDE ? GO_HORDE_SHIP : GO_ALLIANCE_SHIP);
-                if (!guid)
-                    return;
-
 
                 //scenation ID 1189 step 0
-            //    player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 54140);
+                player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 54140);
 
                 //scenation ID 786 step 0
-             //   player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 44060);
+                player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 44060);
 
 
                 Map::PlayerList const &PlList = player->GetMap()->GetPlayers();
-
-                if (PlList.isEmpty())
-                    return;
 
                 for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
                     if (Player* plr = i->GetSource())
@@ -141,8 +130,6 @@ public:
 
     class spell_scenarion_bi_step_6_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_scenarion_bi_step_6_SpellScript);
-
         enum data
         {
             CRITERIA_VALUE = 53062,
@@ -152,15 +139,11 @@ public:
         void HandleScriptEffect(SpellEffIndex effIndex)
         {
             Unit* p = GetOriginalCaster();
-            if (!p)
-                return;
 
             Player *player = p->ToPlayer();
-            if (!player)
-                return;
 
             //criteria 31029. rew. 2
-          //  player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, CRITERIA_VALUE);
+            player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, CRITERIA_VALUE);
         }
 
         void Register() override
@@ -175,110 +158,6 @@ public:
     }
 };
 
-struct scenarion_bi_heroesl_baseAI : ScriptedAI
-{
-    scenarion_bi_heroesl_baseAI(Creature* creature) : ScriptedAI(creature)
-    {
-        me->setActive(true);
-    }
-
-    FormationInfo* group{};
-    std::vector<uint32> npcForSearch{};
-
-    void GetNPCAroundAndDoAction(std::function<void(Creature*)>&& function, uint8 groupai = 0)
-    {
-        if (!group)
-        {
-            group = sFormationMgr->CreateCustomFormation(me);
-            if (groupai)
-                group->GroupAI = groupai;
-
-            std::list<Creature*> guards{};
-            me->GetCreatureListInGrid(guards, 150.0f);
-
-            guards.remove_if([this](Creature* creature)
-                {
-                    if (!creature)
-                        return true;
-
-                    if (creature->HasUnitFlag2(UNIT_FLAG2_FEIGN_DEATH))
-                        return true;
-
-                    if (creature->GetEntry() == me->GetEntry())
-                        return true;
-
-                    for (uint32 entry : npcForSearch)
-                        if (creature->GetEntry() == entry)
-                            return false;
-
-                    return true;
-                });
-
-            std::vector<uint32> specailNps{};
-            switch (me->GetEntry())
-            {
-            case NPC_VARIAN:
-                specailNps.push_back(90717);
-                // no break
-            case 90717:
-                specailNps.push_back(NPC_JAINA);
-                break;
-            case NPC_SYLVANA:
-                specailNps.push_back(90708);
-                // no break;
-            case 90708:
-                specailNps.push_back(90711);
-                break;
-            }
-
-            for (auto id : specailNps)
-                if (auto script = me->GetInstanceScript())
-                    if (Creature* cre = script->instance->GetCreature(script->GetGuidData(id)))
-                        guards.push_back(cre);
-
-            for (std::list<Creature*>::iterator itr = guards.begin(); itr != guards.end(); ++itr)
-            {
-                if (CreatureGroup* f = me->GetFormation())
-                {
-                    bool needAdd = true;
-                    if (auto targetF = (*itr)->GetFormation())
-                    {
-                        if (targetF->GetLeader() && targetF->GetLeader() == f->GetLeader())
-                            needAdd = false;
-                        else
-                            sFormationMgr->RemoveCreatureFromGroup(targetF, (*itr));
-                    }
-
-                    if (needAdd)
-                    {
-                        auto newF = new FormationInfo(*group);
-                        newF->FollowAngle = urand((180 - 60) / 4, (180 + 60) / 4) * 4 * M_PI / 180;
-
-                        if (urand(1, 2) == 1)
-                            newF->FollowAngle += M_PI;
-
-                        newF->FollowDist = abs(float(urand(1, 2) * 3) / cos(newF->FollowAngle));
-
-                        f->AddMember((*itr));
-                    }
-                }
-                function((*itr));
-            }
-        }
-        else if (CreatureGroup* f = me->GetFormation())
-        {
-            for (auto& pair : f->GetMembers())
-            {
-                function(pair.first);
-
-                if (groupai)
-                    pair.second->GroupAI = groupai;
-            }
-        }
-    }
-};
-
-
 class scenarion_bi_heroes : public CreatureScript
 {
 public:
@@ -291,7 +170,7 @@ public:
 
     struct scenarion_bi_heroeslAI : public ScriptedAI
     {
-        scenarion_bi_heroeslAI(Creature* creature) : ScriptedAI(creature) 
+        scenarion_bi_heroeslAI(Creature* creature) : ScriptedAI(creature)
         {
             if (me->GetEntry() == 90717 || me->GetEntry() == 90714)
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -313,12 +192,15 @@ public:
             events.Reset();
         }
 
-        void MovementInform(uint32 moveType, uint32 pointId) override
+        void MovementInform(uint32 type, uint32 pointId) override
         {
+            if (type != WAYPOINT_MOTION_TYPE)
+                return;
+
             switch (me->GetEntry())
             {
             case NPC_VARIAN:
-                if (moveType == WAYPOINT_MOTION_TYPE && currentWP == 439145 && pointId == 5)
+                if (currentWP == 439145 && pointId == 5)
                 {
                     currentWP = 0;
 
@@ -328,12 +210,6 @@ public:
                                 targ->AI()->Talk(0);
 
                             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-
-                          /*  GetNPCAroundAndDoAction([](Creature* cre)
-                                {
-                                    cre->SetReactState(REACT_AGGRESSIVE);
-                                    cre->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                                });*/
 
                             if (auto script = me->GetInstanceScript())
                                 if (Creature* cre = script->instance->GetCreature(script->GetGuidData(NPC_JAINA)))
@@ -346,7 +222,7 @@ public:
                                             cre->AddDelayedEvent(6000, [cre]() -> void
                                                 {
                                                     cre->RemoveAura(220571);
-                                                  //  cre->SummonGameObject(242549, 1420.85f, 2107.47f, 21.659f, 1.8675f, 0.0f, 0.0f, 0.0f, 0.0f, DAY);
+                                                    cre->SummonGameObject(242549, 1420.85f, 2107.47f, 21.659f, 1.8675f, QuaternionData(0.f, 0.f, 0.f, 0.f), 1h, GO_SUMMON_TIMED_DESPAWN);
                                                 });
                                         });
                                 }
@@ -357,7 +233,7 @@ public:
                                     pair.second->FollowDist = abs(float(urand(2, 3) * 3) / cos(pair.second->FollowAngle));
                                 }
 
-                          /*  me->AddDelayedEvent(3000, [this]() -> void
+                           /*  me->AddDelayedEvent(3000, [this]() -> void
                                 {
                                     GetNPCAroundAndDoAction([](Creature* cre) {cre->GetMotionMaster()->Clear();  cre->GetMotionMaster()->MovePath(439146, false, irand(-1, 1), irand(-1, 1)); }, 3);
                                 });*/
@@ -365,16 +241,16 @@ public:
                         });
                 }
 
-                if (moveType == WAYPOINT_MOTION_TYPE && currentWP == 439146 && pointId == 10)
+                if (currentWP == 439146 && pointId == 10)
                 {
                     currentWP = 0;
-                   /* me->AddDelayedEvent(2000, [this]() -> void
+                 /*   me->AddDelayedEvent(2000, [this]() -> void
                         {
                             GetNPCAroundAndDoAction([](Creature* cre) {cre->GetMotionMaster()->Clear(); cre->SetReactState(REACT_AGGRESSIVE); }, 3);
                         });*/
                 }
 
-                if (moveType == POINT_MOTION_TYPE || moveType == EFFECT_MOTION_TYPE || moveType == WAYPOINT_MOTION_TYPE)
+                if (type == POINT_MOTION_TYPE || type == EFFECT_MOTION_TYPE || type == WAYPOINT_MOTION_TYPE)
                 {
                     //intro 9
                     InstanceScript* script = me->GetInstanceScript();
@@ -383,8 +259,8 @@ public:
 
                     me->SetHomePosition(me->GetPosition());
 
-                //    if (script->getScenarionStep() != SCENARION_STEP_9)
-                   //     return;
+                    if (script->getScenarionStep() != SCENARION_STEP_9)
+                        return;
 
                     Map* m = script->instance;
                     if (!m)
@@ -403,7 +279,7 @@ public:
                 }
                 break;
             case 90717:
-                if (moveType != WAYPOINT_MOTION_TYPE || currentWP == 0)
+                if (currentWP == 0)
                     return;
 
                 switch (currentWP)
@@ -455,11 +331,11 @@ public:
                 introEvent = true;
                 Talk(0);
 
-                if (auto script = me->GetInstanceScript())
-                    if (auto commander = script->instance->GetCreature(script->GetGuidData(90705)))
-                        commander->AI()->DoAction(true);
+               // if (auto script = me->GetInstanceScript())
+                   // if (auto commander = script->instance->GetCreature(script->GetGuidData(90705)))
+                    //    commander->AI()->DoAction(true);
 
-                me->AddDelayedEvent(8000, [this]() -> void
+               /* me->AddDelayedEvent(8000, [this]() -> void
                     {
                         std::list<Creature*> targets;
                         me->GetCreatureListInGrid(targets, 150.0f);
@@ -470,41 +346,41 @@ public:
 
 
                                 return !target || !target->IsAlive() || target->IsTrigger() || !target->IsVisible() || me->IsFriendlyTo(target) || target->GetFaction() == 1819 || target->GetEntry() == 90705;
-                            });
-
-                      /*  GetNPCAroundAndDoAction([this, targets](Creature* creature) -> void
-                            {
-                                creature->SetReactState(REACT_AGGRESSIVE);
-                                if (targets.empty())
-                                    return;
-
-                                auto itr = targets.begin();
-                                std::advance(itr, urand(0, targets.size() - 1));
-                                creature->AI()->AttackStart(*itr);
-                                creature->SetHomePosition((*itr)->GetPosition());
                             });*/
+
+                        ////GetNPCAroundAndDoAction([this, targets](Creature* creature) -> void
+                        //    {
+                        //        creature->SetReactState(REACT_AGGRESSIVE);
+                        //        if (targets.empty())
+                        //            return;
+
+                        //        auto itr = targets.begin();
+                        //        std::advance(itr, urand(0, targets.size() - 1));
+                        //        creature->AI()->AttackStart(*itr);
+                        //        creature->SetHomePosition((*itr)->GetPosition());
+                        //    });
 
                         me->SetReactState(REACT_AGGRESSIVE);
 
                         Talk(1);
 
                         for (auto& plr : me->GetMap()->GetPlayers())
-                            me->CastSpell(plr.GetSource(), 185265, true);
+                            me->CastSpell(plr.GetSource(), 185265, true); // works here
 
                         DoCast(199256);
                         me->GetMotionMaster()->MovePoint(1, 538.84f, 2107.58f, 3.0f);
-                        me->SetHomePosition({ 538.84f, 2107.58f, 3.0f });
+                      //  me->SetHomePosition({ 538.84f, 2107.58f, 3.0f });
 
 
                         me->AddDelayedEvent(11000, [this]() -> void
                             {
                                 DoCast(183988);
-                             //   GetNPCAroundAndDoAction([](Creature*) {}, 3);
+                                //GetNPCAroundAndDoAction([](Creature*) {}, 3);
                             });
 
-                        for (auto* target : targets)
-                            targetList.push_back(target->GetGUID());
-                    });
+                      //  for (auto* target : targets)
+                        //    targetList.push_back(target->GetGUID());
+                 //   });
             }
 
             if (me->GetEntry() == NPC_VARIAN)
@@ -514,14 +390,14 @@ public:
                     return;
 
                 if (InstanceScript* script = me->GetInstanceScript())
-                  //  if (script->getScenarionStep() == 3)
+                    if (script->getScenarionStep() == 3)
                         if (auto script = me->GetInstanceScript())
                             if (Creature* cre = script->instance->GetCreature(script->GetGuidData(90714)))
                                 if (me->GetDistance(cre) <= 30.0f)
                                 {
                                     introEvent = true;
 
-                               //     script->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 45228);
+                                    script->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 45228);
                                     DoCast(199399);
 
                                 /*    GetNPCAroundAndDoAction([](Creature* creature) -> void
@@ -556,24 +432,31 @@ public:
                 switch (action)
                 {
                 case 5:
-                   /* GetNPCAroundAndDoAction([](Creature* creature)
+                {
+                    bool alliance = true;
+                    if (auto script = me->GetInstanceScript())
+                        if (script->GetData(DATA_SCENARIO_TEAM) != ALLIANCE)
+                            alliance = false;
+
+                 /* GetNPCAroundAndDoAction([alliance](Creature* creature)
                         {
                             creature->AI()->EnterEvadeMode();
                             creature->GetMotionMaster()->Clear();
-                            creature->SetReactState(REACT_AGGRESSIVE);
+                            creature->SetReactState(alliance ? REACT_AGGRESSIVE : REACT_PASSIVE);
                         }, 5);*/
                     me->GetMotionMaster()->Clear();
                     me->GetMotionMaster()->MovePath(439144, false); //4 9 14 21
                     me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-                    if (auto script = me->GetInstanceScript())
-                        if (script->GetData(DATA_SCENARIO_TEAM) != ALLIANCE)
-                          /*  GetNPCAroundAndDoAction([](Creature* creature)
-                                {
-                                    creature->SetReactState(REACT_PASSIVE);
-                                }, 5);*/
+                    me->ClearUnitState(UNIT_STATE_EVADE);
+                    if (alliance)
+                    {
+                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                    }
+                }
                     break;
                 case 6:
-                   /* GetNPCAroundAndDoAction([](Creature* creature)
+              /*      GetNPCAroundAndDoAction([](Creature* creature)
                         {
                             creature->AI()->EnterEvadeMode();
 
@@ -586,7 +469,7 @@ public:
                     me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                     break;
                 case 7:
-                   // GetNPCAroundAndDoAction([](Creature* cre) {cre->SetReactState(REACT_AGGRESSIVE); }, 5);
+                    //GetNPCAroundAndDoAction([](Creature* cre) {cre->SetReactState(REACT_AGGRESSIVE); }, 5);
                     break;
                 case 8:
                     if (auto script = me->GetInstanceScript())
@@ -598,7 +481,7 @@ public:
                          //   group = nullptr;
                         }
 
-                 //   GetNPCAroundAndDoAction([](Creature* creature) {}, 5);
+                    //GetNPCAroundAndDoAction([](Creature* creature) {}, 5);
                     me->GetMotionMaster()->Clear();
 
                     me->AddDelayedEvent(5000, [this]() -> void
@@ -613,10 +496,10 @@ public:
             }
         }
 
-     /*   void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType dmgType) override
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             damage = 0;
-        }*/
+        }
 
         void JustEngagedWith(Unit* who) override
         {
@@ -644,7 +527,7 @@ public:
                         return;
 
                     if (me->GetEntry() == NPC_VARIAN)
-                      //  if (me->GetInstanceScript()->getScenarionStep() == 4)
+                        if (me->GetInstanceScript()->getScenarionStep() == 4)
                             if (auto target = me->FindNearestCreature(90525, 120.0f, true))
                             {
                                 me->ClearUnitState(UNIT_STATE_EVADE);
@@ -670,7 +553,7 @@ public:
                         return;
 
                     if (auto script = me->GetInstanceScript())
-                    //    if (script->getScenarionStep() > 2)
+                        if (script->getScenarionStep() > 2)
                             return;
 
                     me->ClearUnitState(UNIT_STATE_EVADE);
@@ -765,7 +648,6 @@ public:
                     return true;
                 }*/
 
-                //dynObj->SetUInt32Value(DYNAMICOBJECT_FIELD_BYTES, 536903323);
                 dynObj->SetDuration(60000);
 
                 player->SetViewpoint(dynObj, true);
@@ -796,20 +678,17 @@ public:
             if (!script)
                 return true;
 
-            //if (script->getScenarionStep() != 0)
-            //    return true;
+            if (script->getScenarionStep() != 0)
+                return true;
 
             //scenation ID 1189 step 0
-          //  player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 54140);
+            player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 54140);
 
             //scenation ID 786 step 0
-         //   player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 44060);
+            player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 44060);
 
             if (WorldObject* obj = player->GetViewpoint())
                 player->SetViewpoint(obj, false);
-
-          //  player->SetUInt32Value(UNIT_FIELD_CHANNEL_SPELL, 0);
-          //  player->SetUInt32Value(UNIT_FIELD_CHANNEL_SPELL_XSPELL_VISUAL, 0);
 
             if (TransportBase* transport = player->GetTransport())
             {
@@ -830,30 +709,340 @@ public:
         if (type == "complete")
         {
             //scenation ID 1189 step 0
-          //  player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 54140);
+            player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 54140);
 
             //scenation ID 786 step 0
-           // player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 44060);
+            player->UpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 44060);
 
-            /*if (player->GetDistance(461.8785f, 2032.679f, 0.1627506f) > 300.0f)
+            if (player->GetDistance(461.8785f, 2032.679f, 0.1627506f) > 300.0f)
             {
                 if (WorldObject* obj = player->GetViewpoint())
                     player->SetViewpoint(obj, false);
 
-                if (Transport* transport = player->GetTransport())
-                {
-                    transport->RemovePassenger(player);
-                    player->setTransport(NULL);
-                    player->m_movementInfo.transport.Reset();
-                }
+                //if (Transport* transport = player->GetTransport())
+                //{
+                //    transport->RemovePassenger(player);
+                //    player->setTransport(NULL);
+                //    player->m_movementInfo.transport.Reset();
+                //}
 
                 player->CastSpell(player, player->GetTeam() == ALLIANCE ? 199358 : 225152, false);
-            }*/
+            }
         }
         return true;
     }
 };
 
+//! 90705 Dread Commander Arganoth slain
+class npc_bi_dread_commander : public CreatureScript
+{
+public:
+    npc_bi_dread_commander() : CreatureScript("npc_bi_dread_commander") { }
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_bi_dread_commanderAI(creature);
+    }
+
+    struct npc_bi_dread_commanderAI : public EscortAI
+    {
+        npc_bi_dread_commanderAI(Creature* creature) : EscortAI(creature), summons(me)
+        {
+            onFinish = false;
+            firstcheck = false;
+            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+        }
+
+        bool PlayerOn;
+        bool onFinish;
+        bool firstcast;
+        bool firstcheck;
+        bool below_1;
+        EventMap events;
+        SummonList summons;
+
+        void Reset() override
+        {
+            firstcast = true;
+            PlayerOn = false;
+            below_1 = false;
+            SetDespawnAtEnd(false);
+            events.Reset();
+            summons.DespawnAll();
+
+            if (!me->IsAlive() || onFinish)
+                return;
+
+            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+
+
+            if (InstanceScript* script = me->GetInstanceScript())
+            {
+                if (script->getScenarionStep() < 3)
+                {
+                    Start(false);
+                }
+            }
+        }
+
+        void JustSummoned(Creature* summon) override
+        {
+            summons.Summon(summon);
+        }
+
+        void DoAction(int32 const action)
+        {
+            Reset();
+        }
+
+        void JustEngagedWith(Unit* who) override
+        {
+            firstcast = true;
+            below_1 = false;
+            events.ScheduleEvent(1, 8s); // 200465
+            events.ScheduleEvent(2, 13s); // 183956
+            events.ScheduleEvent(3, 9s); // conv
+            who->CastSpell(who, 199677);
+        }
+
+        void JustDied(Unit* who) override
+        {
+            summons.DespawnAll();
+        }
+
+        void MoveInLineOfSight(Unit* who) override
+        {
+            if (who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (onFinish || firstcheck)
+                return;
+
+            if (!me->IsAlive())
+                return;
+
+            firstcheck = true;
+            if (InstanceScript* script = me->GetInstanceScript())
+            {
+                if (script->getScenarionStep() < 3)
+                {
+                    Start(false);
+                }
+                else
+                {
+                    if (onFinish)
+                        return;
+
+                    if (script->getScenarionStep() == 2)
+                    {
+                        DoCast(218619);
+                        onFinish = true;
+                      //  SetNextWaypoint(9, false, false);
+                    }
+
+                }
+            }
+        }
+
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        {
+            if (!below_1 && me->HealthBelowPctDamaged(3, damage))
+            {
+                me->CastSpell(me, 182647, true);
+                below_1 = true;
+                damage = 0;
+                // me->Kill(me);
+            }
+        }
+
+        void WaypointReached(uint32 pointId, uint32 pathId) override
+        {
+            switch (pointId)
+            {
+            case 8:
+            //    SetNextWaypoint(1, false, false);
+                break;
+            case 9:
+                DoCast(199676);
+                break;
+            case 11:
+                me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+                SetEscortPaused(true);
+                me->SetInCombatWithZone();
+
+                if (InstanceScript* script = me->GetInstanceScript())
+                    if (Map* m = script->instance)
+                        if (Creature* sayer = m->GetCreature(script->GetGuidData(90717)))
+                            sayer->AI()->AttackStart(me);
+                break;
+            default:
+            {
+                if (onFinish)
+                    break;
+
+                if (InstanceScript* script = me->GetInstanceScript())
+                {
+                    if (script->getScenarionStep() == 2)
+                    {
+                        DoCast(218619);
+                        onFinish = true;
+                     //   SetNextWaypoint(9, false, false);
+                    }
+                }
+                break;
+            }
+            }
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            EscortAI::UpdateAI(diff);
+
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case 1:
+                    DoCast(200465);
+                    events.ScheduleEvent(1, 8s);
+                    break;
+                case 2:
+                    if (firstcast)
+                    {
+                        DoCast(182441);
+                        firstcast = false;
+                    }
+                    DoCast(183956);
+                    events.ScheduleEvent(2, 13s);
+                    break;
+                case 3:
+                    DoCast(185271);
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+};
+
+//! 93719 fel-commander-azgalor
+class npc_bi_felcommander_azgalor : public CreatureScript
+{
+public:
+    npc_bi_felcommander_azgalor() : CreatureScript("npc_bi_felcommander_azgalor") { }
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_bi_felcommander_azgalorAI(creature);
+    }
+
+    struct npc_bi_felcommander_azgalorAI : ScriptedAI
+    {
+        npc_bi_felcommander_azgalorAI(Creature* creature) : ScriptedAI(creature)
+        {
+            below_1 = false;
+            checkconv = false;
+        }
+
+        EventMap events;
+        bool below_1;
+        bool checkconv;
+
+        void Reset() override
+        {
+            checkconv = false;
+            if (!me->IsAlive())
+                return;
+
+            events.Reset();
+
+            if (InstanceScript* script = me->GetInstanceScript())
+            {
+                if (script->getScenarionStep() == 2)
+                {
+                    me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+                    return;
+                }
+            }
+            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+        }
+
+        void DoAction(int32 const action) override
+        {
+            me->GetMotionMaster()->MovePoint(1, 667.1615f, 1929.12f, 5.4915f);
+            DoCast(224906);
+        }
+
+        void JustEngagedWith(Unit* who) override
+        {
+            DoCast(224910);
+            events.ScheduleEvent(1, 7s); // 224907
+            events.ScheduleEvent(2, 23s); // 224908
+        }
+
+        void MovementInform(uint32 moveType, uint32 pointId) override
+        {
+            if (moveType != POINT_MOTION_TYPE)
+                return;
+
+            me->SetHomePosition(667.1615f, 1929.12f, 5.4915f, me->GetOrientation());
+            me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+            me->SetInCombatWithZone();
+        }
+
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        {
+            if (!below_1 && me->HealthBelowPctDamaged(3, damage))
+            {
+                me->CastSpell(me, 224911, true);
+                below_1 = true;
+                damage = 0;
+                // me->Kill(me);
+            }
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case 1:
+                    DoCast(224907);
+                    events.ScheduleEvent(1, 7s); // 224907
+                    break;
+
+                case 2:
+                    DoCast(224908);
+                    events.ScheduleEvent(2, 23s); // 224908 + пњљпњљпњљпњљ
+                    if (!checkconv)
+                    {
+                        DoCast(224909);
+                        checkconv = true;
+                    }
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+};
 
 void AddSC_brokenIslands()
 {
@@ -862,4 +1051,6 @@ void AddSC_brokenIslands()
     new spell_scenarion_bi_step_6();
     new scenarion_bi_heroes();
     new sceneTrigger_part1();
+    new npc_bi_dread_commander();
+    new npc_bi_felcommander_azgalor();
 }

@@ -22,6 +22,7 @@
 #include "GameTime.h"
 #include "Group.h"
 #include "Item.h"
+#include "ItemBonusMgr.h"
 #include "ItemTemplate.h"
 #include "Log.h"
 #include "LootMgr.h"
@@ -93,6 +94,7 @@ bool LootItem::AllowedForPlayer(Player const* player, Loot const* loot, uint32 i
 
     // Master looter can see all items even if the character can't loot them
     if (loot && loot->GetLootMethod() == MASTER_LOOT && follow_loot_rules && loot->GetLootMasterGUID() == player->GetGUID())
+        return true;
 
     // Don't allow loot for players without profession or those who already know the recipe
     if (pProto->HasFlag(ITEM_FLAG_HIDE_UNUSABLE_RECIPE))
@@ -234,6 +236,7 @@ void LootRoll::SendStartRoll()
 
         FillPacket(startLootRoll.Item);
         startLootRoll.Item.UIType = LOOT_SLOT_TYPE_ROLL_ONGOING;
+        startLootRoll.DungeonEncounterID = m_loot->GetDungeonEncounterId();
 
         player->SendDirectMessage(startLootRoll.Write());
     }
@@ -255,6 +258,7 @@ void LootRoll::SendAllPassed()
     lootAllPassed.LootObj = m_loot->GetGUID();
     FillPacket(lootAllPassed.Item);
     lootAllPassed.Item.UIType = LOOT_SLOT_TYPE_ALLOW_LOOT;
+    lootAllPassed.DungeonEncounterID = m_loot->GetDungeonEncounterId();
     lootAllPassed.Write();
 
     for (auto const& [playerGuid, roll] : m_rollVoteMap)
@@ -281,6 +285,7 @@ void LootRoll::SendRoll(ObjectGuid const& targetGuid, int32 rollNumber, RollVote
     lootRoll.Autopassed = false;
     FillPacket(lootRoll.Item);
     lootRoll.Item.UIType = LOOT_SLOT_TYPE_ROLL_ONGOING;
+    lootRoll.DungeonEncounterID = m_loot->GetDungeonEncounterId();
     lootRoll.Write();
 
     for (auto const& [playerGuid, roll] : m_rollVoteMap)
@@ -336,6 +341,7 @@ void LootRoll::SendLootRollWon(ObjectGuid const& targetGuid, int32 rollNumber, R
     lootRollWon.RollType = AsUnderlyingType(rollType);
     FillPacket(lootRollWon.Item);
     lootRollWon.Item.UIType = LOOT_SLOT_TYPE_LOCKED;
+    lootRollWon.DungeonEncounterID = m_loot->GetDungeonEncounterId();
     lootRollWon.MainSpec = true;    // offspec rolls not implemented
     lootRollWon.Write();
 
@@ -617,7 +623,7 @@ void LootRoll::Finish(RollVoteMap::const_iterator winnerItr)
 Loot::Loot(Map* map, ObjectGuid owner, LootType type, Group const* group) : gold(0), unlootedCount(0), loot_type(type),
 _guid(map ? ObjectGuid::Create<HighGuid::LootObject>(map->GetId(), 0, map->GenerateLowGuid<HighGuid::LootObject>()) : ObjectGuid::Empty),
 _owner(owner), _itemContext(ItemContext::NONE), _lootMethod(group ? group->GetLootMethod() : FREE_FOR_ALL),
-_lootMaster(group ? group->GetMasterLooterGuid() : ObjectGuid::Empty), _wasOpened(false), _dungeonEncounterId(0)
+_lootMaster(group ? group->GetMasterLooterGuid() : ObjectGuid::Empty), _wasOpened(false), _changed(false), _dungeonEncounterId(0)
 {
 }
 
@@ -711,6 +717,9 @@ void Loot::OnLootOpened(Map * map, ObjectGuid looter)
                 if (!itr->second.TryToStart(map, *this, lootListId, maxEnchantingSkill))
                     _rolls.erase(itr);
             }
+			
+			if (!_rolls.empty())
+                _changed = true;
         }
         else if (_lootMethod == MASTER_LOOT)
         {
@@ -758,7 +767,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player * lootOwner, b
     if (!tab)
     {
         if (!noEmptyError)
-            TC_LOG_ERROR("sql.sql", "Table '%s' loot id #%u used but it doesn't have records.", store.GetName(), lootId);
+            TC_LOG_ERROR("sql.sql", "Table '{}' loot id #{} used but it doesn't have records.", store.GetName(), lootId);
         return false;
     }
 
@@ -830,11 +839,7 @@ void Loot::AddItem(LootStoreItem const& item)
         generatedLoot.context = _itemContext;
         generatedLoot.count = std::min(count, proto->GetMaxStackSize());
         generatedLoot.LootListId = items.size();
-        if (_itemContext != ItemContext::NONE)
-        {
-            std::set<uint32> bonusListIDs = sDB2Manager.GetDefaultItemBonusTree(generatedLoot.itemid, _itemContext);
-            generatedLoot.BonusListIDs.insert(generatedLoot.BonusListIDs.end(), bonusListIDs.begin(), bonusListIDs.end());
-        }
+        generatedLoot.BonusListIDs = ItemBonusMgr::GetBonusListsForItem(generatedLoot.itemid, _itemContext);
 
         items.push_back(generatedLoot);
         count -= proto->GetMaxStackSize();
@@ -883,12 +888,18 @@ bool Loot::AutoStore(Player * player, uint8 bag, uint8 slot, bool broadcast, boo
 
         --unlootedCount;
 
-        Item* pItem = player->StoreNewItem(dest, lootItem->itemid, true, lootItem->randomBonusListId, GuidSet(), lootItem->context, lootItem->BonusListIDs);
+        Item* pItem = player->StoreNewItem(dest, lootItem->itemid, true, lootItem->randomBonusListId, GuidSet(), lootItem->context, &lootItem->BonusListIDs);
         player->SendNewItem(pItem, lootItem->count, false, createdByPlayer, broadcast);
         player->ApplyItemLootedSpell(pItem, true);
     }
 
     return allLooted;
+}
+
+void Loot::LootMoney()
+{
+    gold = 0;
+    _changed = true;
 }
 
 LootItem const* Loot::GetItemInSlot(uint32 lootListId) const
@@ -899,8 +910,11 @@ LootItem const* Loot::GetItemInSlot(uint32 lootListId) const
     return nullptr;
 }
 
-LootItem* Loot::LootItemInSlot(uint32 lootListId, Player const* player, NotNormalLootItem * *ffaItem)
+LootItem* Loot::LootItemInSlot(uint32 lootListId, Player const* player, NotNormalLootItem** ffaItem)
 {
+    if (lootListId >= items.size())
+        return nullptr;
+
     LootItem* item = &items[lootListId];
     bool is_looted = item->is_looted;
 
@@ -926,6 +940,7 @@ LootItem* Loot::LootItemInSlot(uint32 lootListId, Player const* player, NotNorma
     if (is_looted)
         return nullptr;
 
+    _changed = true;
     return item;
 }
 

@@ -174,13 +174,13 @@ struct checkSpec //: public std::unary_function<Unit*, bool>
 	bool operator() (const Unit* pTarget)
 	{
 		Player* player = const_cast<Player*>(pTarget->ToPlayer());
-		uint32 specialization = player->GetSpecializationId();
-		return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-			|| (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-			|| (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-			|| (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-			|| (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+		uint32 specialization = player->GetPrimarySpecialization();
+		return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidBalance)
+			|| (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+			|| (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+			|| (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+			|| (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
 	}
 };
 
@@ -201,7 +201,7 @@ public:
 		}
 
 		EventMap events;
-		InstanceScript* instance;
+		InstanceScript* instance = nullptr;
 		SummonList summons;
 
 		bool firstRelic;
@@ -249,7 +249,7 @@ public:
 		{
 			if (at->HasAura(SPELL_CUSTODY_OF_THE_DEEP))
 			{
-				int32 damageToRune = damage / 0.75f;
+//				int32 damageToRune = damage / 0.75f;
 				//if (Creature* rune = GetOceanRune())
 				//	me->DealDamage(rune, damageToRune);
 			}
@@ -405,7 +405,7 @@ public:
 			return me->FindNearestCreature(BOSS_FATHUUL_THE_FEARED, 500.0f, true);
 		}
 
-		void EnterEvadeMode(EvadeReason why) override
+		void EnterEvadeMode(EvadeReason /*why*/) override
 		{
 			_DespawnAtEvade(15s);
 		}
@@ -427,7 +427,7 @@ public:
 			summons.DespawnAll();
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 			if (Creature* fathuul = GetFathuul())
@@ -457,10 +457,12 @@ public:
 				{
 				case EVENT_APHOTIC_BLAST:
 					if (Unit* target = me->GetVictim())
-						if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-							me->CastSpell(target, SPELL_APHOTIC_BLAST_HC);
-						else
-							me->CastSpell(target, SPELL_APHOTIC_BLAST);
+                    {
+                        if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
+                            me->CastSpell(target, SPELL_APHOTIC_BLAST_HC);
+                        else
+                            me->CastSpell(target, SPELL_APHOTIC_BLAST);
+                    }
 
 					//events.ScheduleEvent(EVENT_APHOTIC_BLAST, TIMER_APHOTIC_BLAST);
 					break;
@@ -583,7 +585,7 @@ public:
 		{
 			if (at->HasAura(SPELL_CUSTODY_OF_THE_DEEP))
 			{
-				int32 damageToRune = damage / 0.75f;
+//				int32 damageToRune = damage / 0.75f;
 			//	if (Creature* rune = GetOceanRune())
 //					me->DealDamage(rune, damageToRune);
 			}
@@ -764,7 +766,7 @@ public:
 			return me->FindNearestCreature(BOSS_ZAXASJ_THE_SPEAKER, 500.0f, true);
 		}
 
-		void EnterEvadeMode(EvadeReason why) override
+		void EnterEvadeMode(EvadeReason /*why*/) override
 		{
 			DespawnCreature(NPC_VOID_STONE_RELIC);
 			DespawnCreature(NPC_TEMPEST_CALLER_RELIC);
@@ -793,7 +795,7 @@ public:
 			}
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			SpawnRelics();
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
@@ -915,8 +917,6 @@ public:
 
 	class bfa_spell_void_crash_damage_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_void_crash_damage_SpellScript);
-
 		void OnSpellHit(SpellEffIndex)
 		{
 			Unit* caster = GetCaster();
@@ -964,9 +964,7 @@ public:
 	class bfa_spell_promises_of_power_AuraScript : public AuraScript
 	{
 	public:
-		PrepareAuraScript(bfa_spell_promises_of_power_AuraScript);
-
-		void HandleEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+		void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 		{
 			if (!GetUnitOwner())
 				return;
@@ -1001,8 +999,6 @@ public:
 
 	class bfa_spell_crushing_doubt_AuraScript : public AuraScript
 	{
-		PrepareAuraScript(bfa_spell_crushing_doubt_AuraScript);
-
 		void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 		{
 			Unit* caster = GetCaster();
@@ -1033,8 +1029,6 @@ public:
 
 	class bfa_spell_aphotic_blast_AuraScript : public AuraScript
 	{
-		PrepareAuraScript(bfa_spell_aphotic_blast_AuraScript);
-
 		void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 		{
 			Unit* caster = GetCaster();
@@ -1065,8 +1059,6 @@ public:
 
 	class bfa_spell_crushing_doubt_damage_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_crushing_doubt_damage_SpellScript);
-
 		void HandleEffectHitTarget(SpellEffIndex /*eff_idx*/)
 		{
 			if (Unit* caster = GetCaster())
@@ -1078,16 +1070,18 @@ public:
 
 					switch (caster->GetMap()->GetDifficultyID())
 					{
-					case DIFFICULTY_10_N:
-					case DIFFICULTY_25_N:
-						mindmg = 300000;
-						maxdmg = 400000;
-						break;
-					case DIFFICULTY_10_HC:
-					case DIFFICULTY_25_HC:
-						mindmg = 400000;
-						maxdmg = 500000;
-						break;
+                        case DIFFICULTY_10_N:
+                        case DIFFICULTY_25_N:
+                            mindmg = 300000;
+                            maxdmg = 400000;
+                            break;
+                        case DIFFICULTY_10_HC:
+                        case DIFFICULTY_25_HC:
+                            mindmg = 400000;
+                            maxdmg = 500000;
+                            break;
+                        default:
+                            break;
 					}
 
 					if (distance > SAFE_DISTANCE)
@@ -1131,7 +1125,7 @@ public:
 			events.Reset();
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			events.ScheduleEvent(EVENT_WITNESS_THE_END, 1s);
 			if (me->GetMap()->IsMythic())
@@ -1198,7 +1192,7 @@ public:
 			events.Reset();
 		}
 
-		void DamageTaken(Unit* a, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+		void DamageTaken(Unit*, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 		{
 			if (damage >= me->GetHealth() && !canCoalesce)
 			{
@@ -1209,7 +1203,7 @@ public:
 			}
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
@@ -1293,23 +1287,23 @@ public:
 			events.Reset();
 		}
 
-		void DoAction(int32 action)
+		void DoAction(int32 action) override
 		{
 			switch (action)
 			{
-			case ACTION_RELIC_ACTIVATED:
-			{
-				if (me->GetMap()->IsMythic())
-				{
-					me->RemoveAreaTrigger(SPELL_VOID_ESSENCE);
-					events.ScheduleEvent(EVENT_VOID_ESSENCE, 2s);
-				}
+                case ACTION_RELIC_ACTIVATED:
+                {
+                    if (me->GetMap()->IsMythic())
+                    {
+                        me->RemoveAreaTrigger(SPELL_VOID_ESSENCE);
+                        events.ScheduleEvent(EVENT_VOID_ESSENCE, 2s);
+                    }
 
-				break;
-			}
+                    break;
+                }
 			}
 		}
-		
+
 		void UpdateAI(uint32 diff) override
 		{
 			events.Update(diff);
@@ -1376,7 +1370,7 @@ public:
 	struct bfa_npc_tempest_caller_AI : public ScriptedAI
 	{
 		bfa_npc_tempest_caller_AI(Creature* creature) : ScriptedAI(creature)
-		{	
+		{
 			me->SetCanFly(true);
 			me->AddAura(SPELL_TEMPEST_CALLER, me);
 			me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
@@ -1390,19 +1384,20 @@ public:
 			events.Reset();
 		}
 
-		void DoAction(int32 action)
+		void DoAction(int32 action) override
 		{
 			switch (action)
 			{
-			case ACTION_RELIC_ACTIVATED:
-			{
-				if (me->GetMap()->IsMythic())
-				{
-					events.ScheduleEvent(EVENT_STORM_ESSENCE, 20s);
-				}
-				TempestPlayers();
-				break;
-			}
+                case ACTION_RELIC_ACTIVATED:
+                {
+                    if (me->GetMap()->IsMythic())
+                    {
+                        events.ScheduleEvent(EVENT_STORM_ESSENCE, 20s);
+                    }
+
+                    TempestPlayers();
+                    break;
+                }
 			}
 		}
 
@@ -1471,7 +1466,7 @@ public:
 	struct bfa_npc_oceanic_essence_AI : public ScriptedAI
 	{
 		bfa_npc_oceanic_essence_AI(Creature* creature) : ScriptedAI(creature)
-		{		
+		{
 		}
 
 		EventMap events;
@@ -1522,7 +1517,7 @@ public:
 	struct bfa_npc_trident_of_deep_ocean_AI : public ScriptedAI
 	{
 		bfa_npc_trident_of_deep_ocean_AI(Creature* creature) : ScriptedAI(creature)
-		{	
+		{
 			me->AddAura(SPELL_TRIDENT_OF_DEEP_OCEAN, me);
 			me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 			me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
@@ -1539,7 +1534,7 @@ public:
 			events.Reset();
 		}
 
-		void DoAction(int32 action)
+		void DoAction(int32 action) override
 		{
 			switch (action)
 			{
@@ -1551,7 +1546,7 @@ public:
 					me->RemoveAreaTrigger(SPELL_OCEANIC_ESSENCE_AT);
 					events.ScheduleEvent(EVENT_OCEANIC_ESSENCE, 6s);
 				}
-				
+
 				events.ScheduleEvent(EVENT_CUSTODY_OF_THE_DEEP, 20s);
 				if (Creature* ocean = me->SummonCreature(NPC_OCEAN_RUNE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), TEMPSUMMON_MANUAL_DESPAWN))
 				{
@@ -1661,7 +1656,7 @@ public:
 				}
 		}
 
-		void UpdateAI(uint32 diff) override
+		void UpdateAI(uint32 /*diff*/) override
 		{
 			CheckNearbyPlayers();
 		}
@@ -1681,8 +1676,6 @@ public:
 
 	class bfa_spell_storm_of_annihilation_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_storm_of_annihilation_SpellScript);
-
 		void DealDamage()
 		{
 			if (Unit* caster = GetCaster())
@@ -1715,8 +1708,6 @@ public:
 
 	class bfa_spell_storm_essence_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_storm_essence_SpellScript);
-
 		void DealDamage()
 		{
 			if (Unit* caster = GetCaster())

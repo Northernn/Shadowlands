@@ -93,37 +93,6 @@ private:
     Position _positon;
 };
 
-// Quest39746
-class npc_portal_1970193 : public CreatureScript
-{
-public:
-    npc_portal_1970193() : CreatureScript("npc_portal_1970193") { }
-     struct npc_portal_1970193AI : public ScriptedAI
-     {
-         npc_portal_1970193AI(Creature* creature) : ScriptedAI(creature) { }
-         void MoveInLineOfSight(Unit* who) override
-         {
-            if (Player* player = who->ToPlayer())
-            {
-                if (player->GetQuestStatus(39746) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (player->IsInDist(me, 65.0f))
-     {
-                       if (!me->FindNearestCreature(104681, 70.0f))
-                        {
-                           player->SummonCreature(104681, Position(-826.172f, 4260.53f, 746.251f, 1.75139f), TEMPSUMMON_MANUAL_DESPAWN);
-                        }
-     }
-                }
-            }
-         }
-     };
-     CreatureAI* GetAI(Creature* creature) const override
-          {
-          return new npc_portal_1970193AI(creature);
-          }
-};
-
 struct npc_stormbeak_104681 : public ScriptedAI
 {
     npc_stormbeak_104681(Creature* creature) : ScriptedAI(creature) { me->SetAIAnimKitId(0); }
@@ -188,72 +157,6 @@ struct npc_sturmschnabel_98383 : public ScriptedAI
             }
         }
     }
-};
-
-struct npc_sturmschnabel_983830 : public ScriptedAI
-{
-    npc_sturmschnabel_983830(Creature* creature) : ScriptedAI(creature) { me->SetAIAnimKitId(0); }
-
-    void OnSpellClick(Unit* clicker, bool /*spellClickHandled*/) override
-    {
-        if (Player* player = clicker->ToPlayer())
-        {
-
-   {
-                me->SetAIAnimKitId(4061);
-               // player->AddConversationDelayedTeleport(1800, 1325, 1469, Position(813.921f, 1039.71f, 48.4425f, 5.8136f));
-            }
-
-            if (player->GetQuestStatus(40224) == QUEST_STATUS_INCOMPLETE)
-            {
-                me->SetAIAnimKitId(4061);
-                player->KilledMonsterCredit(99069);
-              //  player->AddConversationDelayedTeleport(1800, 1325, 1469, Position(813.921f, 1039.71f, 48.4425f, 5.8136f));
-            }
-        }
-    }
-
- void MoveInLineOfSight(Unit* who) override
-    {
-        if (Player* player = who->ToPlayer())
-        {
-            if (me->IsWithinDist(player, 15.0f, false))
-            {
-              me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
-            }
-        }
-    }
-};
-
-// Quest40224
-class npc_portal_1970191 : public CreatureScript
-{
-public:
-    npc_portal_1970191() : CreatureScript("npc_portal_1970191") { }
-     struct npc_portal_1970191AI : public ScriptedAI
-     {
-        npc_portal_1970191AI(Creature* creature) : ScriptedAI(creature) { }
-         void MoveInLineOfSight(Unit* who) override
-         {
-            if (Player* player = who->ToPlayer())
-            {
-                if (player->GetQuestStatus(40224) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (player->IsInDist(me, 54.0f))
-     {
-                       if (!me->FindNearestGameObject(251961, 70.0f))
-                        {
-                         player->SummonGameObject(251961, 2371.68f, 179.208f, 181.966f, 0.0188644f, QuaternionData(), 0s);
-                        }
-     }
-                }
-            }
-         }
-     };
-     CreatureAI* GetAI(Creature* creature) const override
-          {
-          return new npc_portal_1970191AI(creature);
-          }
 };
 
 enum Spells
@@ -460,54 +363,6 @@ struct npc_milra_113709 : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_milra_113709AI(creature);
-        }
-};
-
-struct npc_thrall_965271 : public CreatureScript
-{
-    public:
-        npc_thrall_965271() : CreatureScript("npc_thrall_965271") { }
-
-        struct npc_thrall_965271AI : public ScriptedAI
-        {
-            npc_thrall_965271AI(Creature* creature) : ScriptedAI(creature)
-            {
-                instance = creature->GetInstanceScript();
-            }
-
-        InstanceScript* instance;
-
-    void Reset()
-    {
-        say = false;
-    }
-
-  void MoveInLineOfSight(Unit* who) override
-    {
-        if (Creature* Thralls = me->FindNearestCreature(NPC_THRALL_RINGS, 30.0f, true))
-        {
-            if(!say)
-            {
-                say=true;
-                Thralls->GetScheduler().Schedule(2s, [Thralls](TaskContext context)
-                    {
-                    Thralls->AI()->Talk(0);
-                    });
-                Thralls->GetScheduler().Schedule(6s, [Thralls](TaskContext context)
-                    {
-                    Thralls->AI()->Talk(1);
-                    });
-                return;
-            }
-        }
-    }
-    private:
-    bool say;
-
-        };
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_thrall_965271AI(creature);
         }
 };
 
@@ -783,67 +638,6 @@ struct npc_eranak_1028267 : public CreatureScript
         }
 };
 
-struct npc_bubble_1121423 : public ScriptedAI
-{
-    npc_bubble_1121423(Creature* creature) : ScriptedAI(creature) { me->SetAIAnimKitId(0); }
-
-      void OnSpellClick(Unit* clicker, bool /*spellClickHandled*/) override
-    {
-        if (Player* player = clicker->ToPlayer())
-        {
-            if (player->GetQuestStatus(40341) == QUEST_STATUS_INCOMPLETE)
-            {
-                me->SetAIAnimKitId(4061);
-              //  player->AddConversationDelayedTeleport(1800, 1325, 1600, Position(-184.989f, 802.404f, 796.645f, 6.25583f));
-                player->CastSpell(player, SPELL_CAST_GOB, true);
-            }
-        }
-    }
-
-    void MoveInLineOfSight(Unit* who) override
-    {
-        if (Player* player = who->ToPlayer())
-        {
-            if (me->IsWithinDist(player, 15.0f, false))
-            {
-                me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
-            }
-        }
-    }
-};
-
-struct npc_bubble_222143 : public ScriptedAI
-{
-    npc_bubble_222143(Creature* creature) : ScriptedAI(creature) { me->SetAIAnimKitId(0); }
-
-      void OnSpellClick(Unit* clicker, bool /*spellClickHandled*/) override
-    {
-        if (Player* player = clicker->ToPlayer())
-        {
-            if (player->GetQuestStatus(40341) == QUEST_STATUS_INCOMPLETE)
-            {
-                me->SetAIAnimKitId(4061);
-    player->CastSpell(player, SPELL_CAST_ART, true);
-    player->CastSpell(player, SPELL_CAST_ARTY, true);
-                player->KilledMonsterCredit(105806);
-            //    player->AddConversationDelayedTeleport(1800, 1325, 1469, Position(824.465f, 1036.18f, 48.26f, 1.46014f));
-                player->RemoveSpell(SPELL_CAST_GOB, true);
-            }
-        }
-    }
-
- void MoveInLineOfSight(Unit* who) override
-    {
-        if (Player* player = who->ToPlayer())
-        {
-            if (me->IsWithinDist(player, 15.0f, false))
-            {
-              me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
-            }
-        }
-    }
-};
-
 struct npc_graddoc_113354 : public ScriptedAI
 {
     npc_graddoc_113354(Creature* creature) : ScriptedAI(creature) { me->SetAIAnimKitId(0); }
@@ -872,62 +666,6 @@ struct npc_graddoc_113354 : public ScriptedAI
             }
         }
     }
-};
-
-// Quest43338
-class npc_quest_1970194 : public CreatureScript
-{
-public:
-    npc_quest_1970194() : CreatureScript("npc_quest_1970194") { }
-     struct npc_quest_1970194AI : public ScriptedAI
-     {
-         npc_quest_1970194AI(Creature* creature) : ScriptedAI(creature) { }
-         void MoveInLineOfSight(Unit* who) override
-         {
-            if (Player* player = who->ToPlayer())
-            {
-                if (player->GetQuestStatus(43338) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (player->IsInDist(me, 15.0f))
-                        {
-                           player->KilledMonsterCredit(110802);
-                        }
-                }
-            }
-         }
-     };
-     CreatureAI* GetAI(Creature* creature) const override
-          {
-          return new npc_quest_1970194AI(creature);
-          }
-};
-
-// Quest39771
-class npc_quest_1970195 : public CreatureScript
-{
-public:
-    npc_quest_1970195() : CreatureScript("npc_quest_1970195") { }
-     struct npc_quest_1970195AI : public ScriptedAI
-     {
-         npc_quest_1970195AI(Creature* creature) : ScriptedAI(creature) { }
-         void MoveInLineOfSight(Unit* who) override
-         {
-            if (Player* player = who->ToPlayer())
-            {
-                if (player->GetQuestStatus(39771) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (player->IsInDist(me, 35.0f))
-                        {
-                           player->KilledMonsterCredit(97131);
-                        }
-                }
-            }
-         }
-     };
-     CreatureAI* GetAI(Creature* creature) const override
-          {
-          return new npc_quest_1970195AI(creature);
-          }
 };
 
 struct npc_regar_966541 : public CreatureScript
@@ -1068,12 +806,8 @@ void AddSC_class_hall_shaman()
  RegisterCreatureAI(npc_stormbeak_104681);
  RegisterCreatureAI(npc_sturmschnabel_98383);
  RegisterCreatureAI(npc_trall_91731);
-    new npc_portal_1970193();
- new npc_portal_1970191();
-    new npc_thrall_965270();
- new npc_thrall_965271();
+ new npc_thrall_965270();
  new npc_milra_113709();
- RegisterCreatureAI(npc_sturmschnabel_983830);
  new npc_gethzun_98379();
   //  new go_sharas_dal_249342();
  RegisterCreatureAI(npc_bubble_112142);
@@ -1084,11 +818,7 @@ void AddSC_class_hall_shaman()
  new npc_tele_40341();
  new npc_quesr_40341();
  new npc_eranak_1028267();
-    RegisterCreatureAI(npc_bubble_1121423);
- RegisterCreatureAI(npc_bubble_222143);
  RegisterCreatureAI(npc_graddoc_113354);
- new npc_quest_1970194();
- new npc_quest_1970195();
  new npc_regar_966541();
-    new lord_kravos105183();
+ new lord_kravos105183();
 }

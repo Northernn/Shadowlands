@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * This file is part of DekkCore Team
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -543,45 +543,60 @@ public:
     }
 };
 
-// npc_deathguard_saltain_1740
-class npc_deathguard_saltain_1740 : public CreatureScript
+enum etargetnpc
 {
-public:
-    npc_deathguard_saltain_1740() : CreatureScript("npc_deathguard_saltain_49340") { }
-
-    struct npc_deathguard_saltain_1740AI : public ScriptedAI
-    {
-        npc_deathguard_saltain_1740AI(Creature* creature) : ScriptedAI(creature)
-        {
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        void OnQuestReward(Player* player, Quest const* quest, LootItemType type, uint32 opt) override
-        {
-            if (quest->GetQuestId() == 26800)
-            {
-                if (Creature* darnell = player->FindNearestCreature(49337, 10.0f, true))
-                {
-                    darnell->DespawnOrUnsummon(100ms);
-                    for (uint8 i = 1; i < 4; ++i)
-                    {
-                        if (auto pass = darnell->GetVehicleKit()->GetPassenger(i))
-                            pass->ExitVehicle();
-                    }
-                }
-            }
-        }
-
-    };
-
-    CreatureAI* GetAI(Creature* creature) const  override
-    {
-        return new npc_deathguard_saltain_1740AI(creature);
-    }
+    NPC_CAPTURED_PUDDLEJUMPER = 38923,
+    NPC_CAPTURED_ORACLE = 39078,
+    NPC_PUDDLEJUMPER = 1543,
+    NPC_MINOR_ORACLE = 1544,
 };
 
+class spell_murloc_leash : public SpellScript
+{
+    SpellCastResult CheckRequirement()
+    {
+        std::list<uint32>targets;
+        targets.push_back(NPC_CAPTURED_PUDDLEJUMPER);
+        targets.push_back(NPC_CAPTURED_ORACLE);
 
+        if (Player* player = GetCaster()->ToPlayer())
+        {
+            std::list<Creature*>npcs = player->FindNearestCreatures(targets, 10.0f);
 
+            if (npcs.size() > 0)
+                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        }
+
+        if (Unit* unit = GetExplTargetUnit())
+        {
+            if (unit->GetEntry() == NPC_PUDDLEJUMPER || unit->GetEntry() == NPC_MINOR_ORACLE)
+            {
+                if (unit->GetHealthPct() < 80.0f)
+                    return SPELL_CAST_OK;
+            }
+            else
+                return SPELL_FAILED_BAD_TARGETS;
+        }
+
+        return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+    }
+
+    void CheckTarget(WorldObject*& target)
+    {
+        if (Creature* npc = target->ToCreature())
+            if (npc->GetEntry() == NPC_PUDDLEJUMPER || npc->GetEntry() == NPC_MINOR_ORACLE)
+                if (npc->GetHealthPct() < 80.0f)
+                    return;
+
+        target = NULL;
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_murloc_leash::CheckRequirement);
+        OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_murloc_leash::CheckTarget, EFFECT_0, TARGET_UNIT_TARGET_ANY);
+    }
+};
 
 void AddSC_DekkCore_tirisfal_glades()
 {
@@ -591,5 +606,5 @@ void AddSC_DekkCore_tirisfal_glades()
     new npc_darnell_49141();
     new npc_darnell_49337();
     new npc_scarlet_corpse_49340();
-    new npc_deathguard_saltain_1740();
+    RegisterSpellScript(spell_murloc_leash); 
 }

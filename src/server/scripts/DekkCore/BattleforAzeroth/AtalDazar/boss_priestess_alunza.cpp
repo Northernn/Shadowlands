@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -168,7 +168,7 @@ struct boss_priestess_alunza : public BossAI
         BossAI::EnterEvadeMode(why);
     }
 
-    void JustDied(Unit* killer) override
+    void JustDied(Unit* /*killer*/) override
     {
         Talk(TALK_DEATH);
         _JustDied();
@@ -205,8 +205,8 @@ struct boss_priestess_alunza : public BossAI
         if (me->HasUnitState(UNIT_STATE_CASTING))
             return;
 
-     //   if (me->GetPower(POWER_MANA) >= 100 && !events.HasEvent(EVENT_TRANSFUSION))
-        //    events.ScheduleEvent(EVENT_TRANSFUSION, 5s);
+        if (me->GetPower(POWER_MANA) >= 100)
+            events.ScheduleEvent(EVENT_TRANSFUSION, 5s);
 
         while (uint32 eventId = events.ExecuteEvent())
         {
@@ -380,10 +380,8 @@ struct npc_spirit_of_gold : public ScriptedAI
         ScriptedAI::Reset();
     }
 
-    void JustDied(Unit* killer) override
+    void JustDied(Unit* /*killer*/) override
     {
-        InstanceScript* instance;
-
         if (taintedblood >= 8)
         {
             Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_PRIESTESS_ALUNZA));
@@ -409,7 +407,7 @@ struct npc_spirit_of_gold : public ScriptedAI
             if (Player* player = me->SelectNearestPlayer(100.0f))
             {
                 me->SetReactState(REACT_AGGRESSIVE);
-              //  me->GetThreatManager().addThreat(player, 1000000.0f);
+                me->GetThreatManager().AddThreat(player, 1000000.0f);
                 me->GetMotionMaster()->MoveChase(player);
                 me->Attack(player, true);
             }
@@ -422,8 +420,6 @@ private:
 //260665
 class spell_priestess_transfusion_cast : public SpellScript
 {
-    PrepareSpellScript(spell_priestess_transfusion_cast);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -439,8 +435,6 @@ class spell_priestess_transfusion_cast : public SpellScript
 // 255575 - Tranfusion Damage
 class spell_priestess_tranfusion_damage : public SpellScript
 {
-    PrepareSpellScript(spell_priestess_tranfusion_damage);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* hitUnit = GetHitUnit())
@@ -472,8 +466,6 @@ class spell_priestess_tranfusion_damage : public SpellScript
 
 class spell_priestess_transfusion_heal : public SpellScript
 {
-    PrepareSpellScript(spell_priestess_transfusion_heal);
-
     void HandleHeal(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
@@ -497,13 +489,12 @@ class spell_priestess_transfusion_heal : public SpellScript
 // 255577 - Transfusion
 class spell_priestess_transfusion : public AuraScript
 {
-    PrepareAuraScript(spell_priestess_transfusion);
-
-    void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* target = GetTarget())
             target->SetPower(POWER_MANA, 0);
     }
+
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(spell_priestess_transfusion::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
@@ -513,8 +504,6 @@ class spell_priestess_transfusion : public AuraScript
 // 258681 - Boss Energy Regen
 class spell_priestess_energy_regen : public AuraScript
 {
-    PrepareAuraScript(spell_priestess_energy_regen);
-
     void OnPeriodic(AuraEffect const* aurEff)
     {
         if (Unit* target = GetTarget())
@@ -535,8 +524,6 @@ class spell_priestess_energy_regen : public AuraScript
 // 260658 - Cauldron Purify
 class spell_npc_cauldron_purify : public AuraScript
 {
-    PrepareAuraScript(spell_npc_cauldron_purify);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* target = GetTarget())
@@ -553,15 +540,13 @@ class spell_npc_cauldron_purify : public AuraScript
 // 255592 - Pool Pre Tainted Selector
 class spell_priestess_pool_tainted_selector : public SpellScript
 {
-    PrepareSpellScript(spell_priestess_pool_tainted_selector);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.remove_if([](WorldObject* obj) { return obj->GetEntry() != NPC_BLOOD_TAINTED_CAULDRON; });
         Trinity::Containers::RandomResize(targets, 1);
     }
 
-    void DoEffectHitTarget(SpellEffIndex effIndex)
+    void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* hitUnit = GetHitUnit())
             if (UnitAI* ai = GetCaster()->GetAI()) //@HACK TODO
@@ -579,8 +564,6 @@ class spell_priestess_pool_tainted_selector : public SpellScript
 // 255615 - Pool Pre Selector
 class spell_priestess_pool_pre_selector : public SpellScript
 {
-    PrepareSpellScript(spell_priestess_pool_pre_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* hitUnit = GetHitUnit())
@@ -603,8 +586,6 @@ class spell_priestess_pool_pre_selector : public SpellScript
 // 255584 - Molten Gold Target Selector
 class spell_priestess_alunza_molten_gold : public SpellScript
 {
-    PrepareSpellScript(spell_priestess_alunza_molten_gold);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         std::list<WorldObject*> originalTargets = targets;

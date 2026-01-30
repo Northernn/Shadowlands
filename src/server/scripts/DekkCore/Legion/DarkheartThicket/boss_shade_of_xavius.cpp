@@ -186,69 +186,6 @@ public:
     }
 };
 
-//100652
-class npc_xavius_malfurion_stormrage : public CreatureScript
-{
-public:
-    npc_xavius_malfurion_stormrage() : CreatureScript("npc_xavius_malfurion_stormrage") { }
-
-    struct npc_xavius_malfurion_stormrageAI : public ScriptedAI
-    {
-        npc_xavius_malfurion_stormrageAI(Creature* creature) : ScriptedAI(creature)
-        {
-            instance = me->GetInstanceScript();
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        InstanceScript* instance;
-        EventMap events;
-
-        void Reset() override {}
-
-        void DoAction(int32 const action) override
-        {
-            if (action == ACTION_1)
-                me->GetMotionMaster()->MoveCharge(1302.77f, 128.36f, me->GetPositionZ(), 10.0f);
-        }
-
-        void MovementInform(uint32 type, uint32 id) override
-        {
-            if (type != EFFECT_MOTION_TYPE)
-                return;
-
-            events.RescheduleEvent(EVENT_1, 3s);
-        }
-
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-        {
-            player->TeleportTo(1466, 3248.16f, 1829.34f, 236.84f, 0.1f);
-
-            return true;
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_1:
-                    Talk(SAY_END);
-                    me->GetMotionMaster()->MovePoint(1, 2711.70f, 1322.85f, 128.36f);
-                    break;
-                }
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_xavius_malfurion_stormrageAI(creature);
-    }
-};
-
 //200243
 class spell_xavius_waking_nightmare : public SpellScriptLoader
 {
@@ -257,8 +194,6 @@ public:
 
     class spell_xavius_waking_nightmare_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_xavius_waking_nightmare_AuraScript);
-
         uint16 m_checkTimer = 1000;
 
         void OnUpdate(AuraEffect const* aurEff)
@@ -296,29 +231,8 @@ public:
     }
 };
 
-class achievement_burning_down_the_house : public AchievementCriteriaScript
-{
-public:
-    achievement_burning_down_the_house() : AchievementCriteriaScript("achievement_burning_down_the_house") { }
-
-    bool OnCheck(Player* /*player*/, Unit* target) override
-    {
-        if (!target)
-            return false;
-
-        if (Creature* Xav = target->ToCreature())
-            if (Xav->IsAIEnabled() && (Xav->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC || Xav->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC_KEYSTONE))
-                if (Xav->AI()->GetData(DATA_STACKS))
-                    return true;
-
-        return false;
-    }
-};
-
 void AddSC_boss_shade_of_xavius()
 {
     new boss_shade_of_xavius();
-    new npc_xavius_malfurion_stormrage();
     new spell_xavius_waking_nightmare();
-    new achievement_burning_down_the_house();
 }

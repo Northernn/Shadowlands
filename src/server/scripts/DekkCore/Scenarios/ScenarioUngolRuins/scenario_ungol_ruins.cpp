@@ -156,8 +156,6 @@ protected:
 class spell_azerite_residue_260738 : public AuraScript
 {
 public:
-    PrepareAuraScript(spell_azerite_residue_260738);
-
     void HandlePeriodic(AuraEffect const* /**/)
     {
         if (!GetCaster())

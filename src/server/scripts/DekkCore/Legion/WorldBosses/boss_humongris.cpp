@@ -131,8 +131,6 @@ public:
 
     class spell_humongris_fire_boom_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_humongris_fire_boom_target_SpellScript);
-
         void HandleHitTarget(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
@@ -164,7 +162,7 @@ public:
     {
         at_humongris_make_the_snowAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
-        void OnCreate() override
+        void OnCreate(Spell const* /*creatingSpell*/) override
         {
             Unit* caster = at->GetCaster();
 
@@ -230,8 +228,6 @@ public:
 
     class spell_humongris_you_go_bang_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_humongris_you_go_bang_AuraScript);
-
         void HandleHitDamage(AuraEffect const* /*aurEff*/)
         {
             PreventDefaultAction();

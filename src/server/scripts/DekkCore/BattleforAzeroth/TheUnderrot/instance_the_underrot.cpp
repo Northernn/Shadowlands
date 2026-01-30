@@ -24,93 +24,88 @@
 
 BossBoundaryData const boundaries =
 {
-    { DATA_ELDER_LEAXA,             new ZRangeBoundary(44.181206f, 63.479584f)                                  },
+    { DATA_ELDER_LEAXA, new CircleBoundary(Position(869.502014f, 1230.199951f), 58.0f) },
     { DATA_CRAGMAW_THE_INFESTED,    new CircleBoundary(Position(862.497009f, 982.315979f, 39.231701f), 90.f)    },
     { DATA_SPORECALLER_ZANCHA,      new ZRangeBoundary(20.f, 40.f)                                              },
     { DATA_UNBOUND_ABOMINATION,     new ZRangeBoundary(-200.f, -150.f)                                          },
 };
 
-class instance_the_underrot : public InstanceMapScript
+ObjectData const creatureData[] =
+{
+    { BOSS_ELDER_LEAXA,             DATA_ELDER_LEAXA            },
+    { BOSS_SPORECALLER_ZANCHA,      DATA_SPORECALLER_ZANCHA     },
+    { BOSS_CRAGMAW_THE_INFESTED,    DATA_CRAGMAW_THE_INFESTED   },
+    { BOSS_UNBOUND_ABOMINATION,     DATA_UNBOUND_ABOMINATION    },
+    { 0,                            0                           }  // END
+};
+
+DoorData const doorData[] =
+{
+    { GO_WALL_DOOR_SHORTCUT_ENTRANCE,        DATA_SPORECALLER_ZANCHA,  DOOR_TYPE_PASSAGE },
+    { 0,                                     0,                        DOOR_TYPE_ROOM    }  // END
+};
+
+DungeonEncounterData const encounters[] =
+{
+    { DATA_ELDER_LEAXA,             {{ 2111 }} },
+    { DATA_CRAGMAW_THE_INFESTED,    {{ 2112 }} },
+    { DATA_SPORECALLER_ZANCHA,      {{ 2118 }} },
+    { DATA_UNBOUND_ABOMINATION,     {{ 2123 }} },
+};
+class instance_underrot : public InstanceMapScript
 {
 public:
-    instance_the_underrot() : InstanceMapScript("instance_the_underrot", 1841) {}
+    instance_underrot() : InstanceMapScript(UnderrotScriptName, 1841) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const override
+    struct instance_underrot_InstanceMapScript : public InstanceScript
     {
-        return new instance_the_underrot_InstanceMapScript(map);
-    }
-
-    struct instance_the_underrot_InstanceMapScript : public InstanceScript
-    {
-        instance_the_underrot_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_underrot_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
-
-
             SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
+            LoadObjectData(creatureData, nullptr);
+            LoadDoorData(doorData);
             LoadBossBoundaries(boundaries);
+            LoadDungeonEncounterData(encounters);
 
-            instance->SummonCreatureGroup(SUMMON_GROUP_BLOODSWORN_DEFILER);
+            _cragmawCrawgEating = false;
         }
 
-        void OnCreatureCreate(Creature* creature) override
+        uint32 GetData(uint32 dataId) const override
         {
-            InstanceScript::OnCreatureCreate(creature);
-
-            switch (creature->GetEntry())
+            switch (dataId)
             {
-            case NPC_TITAN_KEEPER_HEZREL:
-            {
-                if (creature->GetPositionZ() < -100.f)
-                    AddObject(creature, DATA_BOSS_HERZEL, true);
-                else
-                    AddObject(creature, DATA_EVENT_HERZEL, true);
-
+            case DATA_CRAGMAW_CRAWG_EATING:
+                return _cragmawCrawgEating ? 1 : 0;
+            default:
                 break;
             }
+            return 0;
+        }
+
+        void SetData(uint32 dataId, uint32 /*value*/) override
+        {
+            switch (dataId)
+            {
+            case DATA_CRAGMAW_CRAWG_EATING:
+                _cragmawCrawgEating = true;
+                break;
             default:
                 break;
             }
         }
 
-        void SetData(uint32 type, uint32 data) override
-        {
-            switch (type)
-            {
-            case DATA_EVENT_HERZEL:
-            {
-                if (data == DONE)
-                {
-                    if (GameObject* web = GetGameObject(GOB_PYRAMID_WEB))
-                        web->RemoveFromWorld();
-                    HandleGameObject(ObjectGuid::Empty, true, GetGameObject(GOB_PYRAMID_DOOR));
-                }
-                break;
-            }
-            case DATA_FACELESS_CORRUPTOR_1:
-            {
-                if (Creature* hezrel = GetCreature(DATA_EVENT_HERZEL))
-                    hezrel->AI()->SetData(DATA_EVENT_HERZEL, 1);
-
-                break;
-            }
-            case DATA_FACELESS_CORRUPTOR_2:
-            {
-                if (GetData(DATA_FACELESS_CORRUPTOR_2) > 0)
-                    if (Creature* hezrel = GetCreature(DATA_EVENT_HERZEL))
-                        hezrel->AI()->SetData(DATA_EVENT_HERZEL, 2);
-
-                break;
-            }
-            }
-
-            InstanceScript::SetData(type, data);
-        }
+    private:
+        bool _cragmawCrawgEating; 
     };
-}; 
 
+    InstanceScript* GetInstanceScript(InstanceMap* map) const override
+    {
+        return new instance_underrot_InstanceMapScript(map);
+    }
+};
 
 void AddSC_instance_underrot()
 {
-    new instance_the_underrot();
+    new instance_underrot();
 }

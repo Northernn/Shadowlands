@@ -52,7 +52,7 @@ void ArchaeologyMgr::LoadDigsites()
 
         if (!sResearchSiteStore.LookupEntry(digid))
         {
-            TC_LOG_INFO("server.loading", "ArchaeologyMgr: Digsite (id: %u) found in table `archaeology_digsites` but does not exist in DBC, skipped!.", digid);
+            TC_LOG_INFO("server.loading", "ArchaeologyMgr: Digsite (id: {}) found in table `archaeology_digsites` but does not exist in DBC, skipped!.", digid);
             continue;
         }
 
@@ -71,13 +71,11 @@ void ArchaeologyMgr::LoadDigsites()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u Archaeology Digsites in %u ms", digCount, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} Archaeology Digsites in {} ms", digCount, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ArchaeologyMgr::InitBranch(Player* player, uint32 currencyId)
 {
-    // TODO MERGE
-
     if (!player->HasSkill(SKILL_ARCHAEOLOGY))
         return;
 
@@ -85,35 +83,26 @@ void ArchaeologyMgr::InitBranch(Player* player, uint32 currencyId)
         return;
 
     uint16 selectProject = 0;
-    uint32 count = 0;
     std::vector<uint16> BranchProjects;
 
-   for (uint32 i = 0; i < 9; ++i)
-    {
-        if (player->m_activePlayerData->Research.size() > 0)
-            count = i + 1;
-    }
-
-    for(uint32 i = 0; i < sResearchBranchStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sResearchBranchStore.GetNumRows(); ++i)
     {
         ResearchBranchEntry const* ab = sResearchBranchStore.LookupEntry(i);
         if (!ab || ab->CurrencyId != currencyId)
             continue;
 
-        for(uint32 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
+        for (auto const rs : sResearchProjectStore)
         {
-            ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(i);
-
             if (!rs || rs->ResearchBranchId != ab->Id || GetArtifactSkillReqLevel(uint32(rs->SpellId)) > player->GetBaseSkillValue(SKILL_ARCHAEOLOGY))
                 continue;
 
-            BranchProjects.push_back(rs->Id);
+            BranchProjects.emplace_back(rs->Id);
         }
 
         selectProject = BranchProjects[urand(0, BranchProjects.size()-1)];
 
         player->SetResearchValue(selectProject);
-        
+
         BranchProjects.clear();
     }
 }
@@ -134,8 +123,8 @@ void ArchaeologyMgr::ChangeDigsite(Player* player, uint8 memId)
 
         for (uint8 i = 0; i < 24; ++i)
         {
-            if (DigsiteInfo.id != *digsites[i].data())
-                continue;
+         //   if (DigsiteInfo.id != *digsites[i].data())
+               // continue;
 
             isActiveDigsite = true;
         }
@@ -148,7 +137,7 @@ void ArchaeologyMgr::ChangeDigsite(Player* player, uint8 memId)
 
     uint16 selectDigsite = SitesInMap[urand(0, SitesInMap.size()-1)];
 
- //   player->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, memId, selectDigsite);
+    //player->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, memId, selectDigsite);
     player->GetArchaeologyMgr().SetDigsiteId(memId, selectDigsite);
 
     std::vector<uint32> tempContainer;
@@ -179,20 +168,20 @@ void ArchaeologyMgr::AddDigsitesToMap(Player* player, uint32 mapId)
         return;
 
     std::vector<uint16> SitesInMap;
-    uint8 count;
+//    uint8 count;
+//
+//    switch(mapId)
+//    {
+//        case 0:   count = 0; break;
+//        case 1:   count = 4; break;
+//        case 530: count = 8; break;
+//        case 571: count = 12; break;
+//        default:  return;
+//    }
 
-    switch(mapId)
+    for (auto& itr : mResearchDigsitesMap)
     {
-        case 0:   count = 0; break;
-        case 1:   count = 4; break;
-        case 530: count = 8; break;
-        case 571: count = 12; break;
-        default:  return;
-    }
-
-    for(DigsitesMap::iterator itr = mResearchDigsitesMap.begin(); itr != mResearchDigsitesMap.end(); ++itr)
-    {
-        ArchaeologyMgr::ResearchDigsitesEntry DigsiteInfo = itr->second;
+        ArchaeologyMgr::ResearchDigsitesEntry DigsiteInfo = itr.second;
 
         if (DigsiteInfo.mapId != mapId || DigsiteInfo.minLevel > player->GetLevel() || DigsiteInfo.minSkillLevel > player->GetSkillValue(SKILL_ARCHAEOLOGY))
             continue;
@@ -200,40 +189,40 @@ void ArchaeologyMgr::AddDigsitesToMap(Player* player, uint32 mapId)
         SitesInMap.push_back(DigsiteInfo.id);
     }
 
-    if (!SitesInMap.size())
+    if (SitesInMap.empty())
         return;
 
-    for(uint32 addedsites = 0; addedsites < 4; ++addedsites)
-    {
-        bool isActiveDigsite = false;
-        uint16 selectDigsite = 0;
-
-        do
-        {
-            isActiveDigsite = false;
-            selectDigsite = SitesInMap[urand(0, SitesInMap.size()-1)];
-           // std::vector<uint32> const& site_now = player->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
-            //uint32 offset = std::find(site_now.begin(), site_now.end(), selectDigsite) - site_now.begin();
-
-            for(uint32 i = 0; i < 16; ++i)
-            {
-               // if (offset != selectDigsite)
-                    continue;
-
-                isActiveDigsite = true;
-            }
-        }
-        while (isActiveDigsite);
-
-      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, selectDigsite);
-      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESEARCH_SITE_PROGRESS, 0);
-        ++count;
-    }
+//    for(uint32 addedsites = 0; addedsites < 4; ++addedsites)
+//    {
+//        bool isActiveDigsite = false;
+//        uint16 selectDigsite = 0;
+//
+//        do
+//        {
+//            isActiveDigsite = false;
+//            selectDigsite = SitesInMap[urand(0, SitesInMap.size()-1)];
+//           // std::vector<uint32> const& site_now = player->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
+//            //uint32 offset = std::find(site_now.begin(), site_now.end(), selectDigsite) - site_now.begin();
+//
+//            for(uint32 i = 0; i < 16; ++i)
+//            {
+//               // if (offset != selectDigsite)
+//                    continue;
+//
+//                isActiveDigsite = true;
+//            }
+//        }
+//        while (isActiveDigsite);
+//
+//      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, selectDigsite);
+//      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESEARCH_SITE_PROGRESS, 0);
+//        ++count;
+//    }
 
     SitesInMap.clear();
 }
 
-bool ArchaeologyMgr::IsActiveBranch(Player* player, uint32 currencyId)
+bool ArchaeologyMgr::IsActiveBranch(Player* /*player*/, uint32 currencyId)
 {
     for(uint32 i=0; i < 9; ++i)
     {

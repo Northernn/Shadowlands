@@ -213,8 +213,6 @@ class spell_occuthar_focused_fire : public SpellScriptLoader
 
         class spell_occuthar_focused_fire_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_occuthar_focused_fire_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 if (targets.size() < 2)
@@ -249,8 +247,6 @@ class spell_occuthar_eyes_of_occuthar : public SpellScriptLoader
 
         class spell_occuthar_eyes_of_occuthar_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_occuthar_eyes_of_occuthar_SpellScript);
-
             bool Validate(SpellInfo const* spellInfo) override
             {
                 return !spellInfo->GetEffects().empty() && ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()) });
@@ -295,8 +291,6 @@ class spell_occuthar_eyes_of_occuthar_vehicle : public SpellScriptLoader
 
         class spell_occuthar_eyes_of_occuthar_vehicle_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_occuthar_eyes_of_occuthar_vehicle_SpellScript);
-
             bool Load() override
             {
                 return InstanceHasScript(GetCaster(), BHScriptName);
@@ -333,8 +327,6 @@ class spell_occuthar_occuthars_destruction : public SpellScriptLoader
 
         class spell_occuthar_occuthars_destruction_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_occuthar_occuthars_destruction_AuraScript);
-
             bool Load() override
             {
                 return GetCaster() && GetCaster()->GetTypeId() == TYPEID_UNIT;

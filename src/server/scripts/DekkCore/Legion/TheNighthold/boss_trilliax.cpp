@@ -898,8 +898,6 @@ public:
 
     class spell_trilliax_annihilation_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_trilliax_annihilation_AuraScript);
-
         float curr_o;
         bool leftOrient = (urand(0, 1));
         uint32 timer = 0;
@@ -946,8 +944,6 @@ public:
 
     class spell_trilliax_arcing_bonds_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_trilliax_arcing_bonds_AuraScript);
-
             void OnPeriodic(AuraEffect const* aurEff)
         {
             if (!GetCaster() || !GetTarget())
@@ -991,8 +987,6 @@ public:
 
     class spell_trilliax_energy_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_trilliax_energy_aura_AuraScript);
-
         void OnTick(AuraEffect const* aurEff)
         {
             if (Creature* caster = GetCaster()->ToCreature())

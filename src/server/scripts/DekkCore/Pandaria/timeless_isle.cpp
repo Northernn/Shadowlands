@@ -220,8 +220,6 @@ public:
 
     class spell_jadefire_bolt_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_jadefire_bolt_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             Trinity::Containers::RandomResize(targets, 4);
@@ -247,8 +245,6 @@ public:
 
     class spell_crackling_lightning_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_crackling_lightning_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             Trinity::Containers::RandomResize(targets, 1);
@@ -274,8 +270,6 @@ public:
 
     class spell_chi_barrage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_chi_barrage_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             Trinity::Containers::RandomResize(targets, 6);

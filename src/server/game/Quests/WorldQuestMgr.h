@@ -1,4 +1,5 @@
 /*
+ * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,7 +20,6 @@
 
 #define WORLD_QUEST_MAX_FILL 154
 #define WORLD_QUEST_EMISSARY 3
-#define WORLD_QUEST_MAX_LEGION_INVASION 5
 
 #include "QuestDef.h"
 #include "ObjectMgr.h"
@@ -37,21 +37,15 @@ struct WorldQuestReward;
 
 typedef std::unordered_map<uint8 /*expansion*/, std::unordered_map<uint8 /*teamId*/, std::unordered_map<uint32 /*questId*/, WorldQuestTemplate*>>> WorldQuestTemplateMap;
 typedef std::unordered_map<uint8 /*expansion*/, std::unordered_map<uint8 /*teamId*/, std::unordered_map<uint32 /*questId*/, ActiveWorldQuest*>>> ActiveWorldQuestMap;
-typedef std::pair<uint16, int16> WorldQuestState;
-
-typedef std::unordered_map<uint8 /*expansion*/, std::unordered_map<uint8 /*zoneId*/, std::unordered_map<uint32 /*questId*/, WorldQuestTemplate*>>> WorldQuestTemplateByZoneMap;
-typedef std::unordered_map<uint8 /*expansion*/, std::unordered_map<uint8 /*zoneId*/, std::unordered_map<uint32 /*questId*/, ActiveWorldQuest*>>> ActiveWorldQuestByZoneMap;
 typedef std::unordered_map<uint32, std::set<Quest const*>> QuestAreaTaskMap;
 typedef std::unordered_map<uint32 /*RewardId*/, std::vector<WorldQuestReward>> WorldQuestRewardMap;
 typedef std::unordered_map<uint32 /*QuestInfo*/, std::vector<uint32 /*RewardId*/>> WorldQuestRewardByQuestInfoMap;
 
 enum WorldQuestRewardType
 {
-    WORLD_QUEST_REWARD_ITEM     = 0,
+    WORLD_QUEST_REWARD_ITEM = 0,
     WORLD_QUEST_REWARD_CURRENCY = 1,
-    WORLD_QUEST_REWARD_GOLD     = 2,
-    WORLD_QUEST_REWARD_ARTIFACT_POWER   = 3,
-    WORLD_QUEST_REWARD_AZERITE_POWER    = 4,
+    WORLD_QUEST_REWARD_GOLD = 2,
 };
 
 class TC_GAME_API WorldQuestMgr
@@ -61,7 +55,7 @@ public:
     ~WorldQuestMgr();
 
     static WorldQuestMgr* instance();
-    const std::vector<uint8> WorldQuestsExpansions = { EXPANSION_LEGION, EXPANSION_BATTLE_FOR_AZEROTH, EXPANSION_SHADOWLANDS };
+    const std::vector<uint8> WorldQuestsExpansions = { EXPANSION_LEGION, EXPANSION_BATTLE_FOR_AZEROTH, EXPANSION_SHADOWLANDS, EXPANSION_DRAGONFLIGHT };
     const std::vector<uint8> WorldQuestsTeams = { TEAM_ALLIANCE, TEAM_HORDE };
 
     void LoadWorldQuestTemplates();
@@ -72,32 +66,32 @@ public:
 
     void CleanWorldQuestTemplates();
 
+    void AddWorldQuestTask(Quest const* quest);
+    void RemoveWorldQuestTask(Quest const* quest);
+    std::set<Quest const*> const* GetWorldQuestTask(uint32 areaId) const;
+
     void ActivateQuest(WorldQuestTemplate* worldQuestTemplate);
-    void DisableQuest(ActiveWorldQuest* activeWorldQuest);
+    void DisableQuest(ActiveWorldQuest* activeWorldQuest, bool deleteFromMap/* = true*/);
+    void GetAreaPoiID(ActiveWorldQuestMap activeWorldQuests, AreaPOIEntry areaPoi);
 
     bool IsQuestActive(uint32 questId);
-    bool CanBeActivate(uint32 questId);
 
     void RewardQuestForPlayer(Player* player, uint32 questId);
 
-    WorldQuestTemplate* GetWorldQuestTemplate(uint32 expansion, uint32 questId);
+    WorldQuestTemplate* GetWorldQuestTemplate(uint32 questId);
     ActiveWorldQuest* GetActiveWorldQuest(uint32 questId);
 
     uint8 GetActiveEmissaryQuestsCount(uint8 expansion, uint8 teamId);
-    uint32 GetActiveQuestsCount(uint32 expansion, uint8 teamId);
-    uint32 GetActiveQuestsByZoneCount(uint32 expansion, uint16 zoneId);
+    uint32 GetActiveQuestsCount(uint8 expansion, uint8 teamId);
 
     uint32 GetRandomRewardForQuestType(uint32 questType);
     std::vector<WorldQuestReward const*> GetRewardsForPlayerById(Player* player, uint32 rewardId);
 
     void BuildPacket(Player* player, WorldPackets::Quest::WorldQuestUpdateResponse& packet);
     void BuildRewardPacket(Player* player, uint32 questId, WorldPackets::Quest::QueryQuestRewardResponse& packet);
-    void FillInitWorldStates(WorldPackets::WorldState::InitWorldStates& initWorldStates, Map const* map, uint32 playerAreaId) const;
-    
+    void FillInitWorldStates(WorldPackets::WorldState::InitWorldStates& packet);
+
     std::vector<CriteriaEntry const*> GetCriteriasForQuest(uint32 quest_id);
-    std::set<Quest const*> const* GetWorldQuestTask(uint32 areaId) const;
-    std::set<Quest const*> const* GetQuestTask(uint32 areaId) const;
-    WorldQuestTemplate const* GetWorldQuest(Quest const* quest);
 
     void RefreshEmissaryQuests();
     void AddEmissaryQuestsOnPlayerIfNeeded(Player* player);
@@ -105,23 +99,18 @@ public:
     uint32 GetTimerForQuest(uint32 questId);
     TeamId GetQuestTeamId(Quest const* quest);
 
-    bool IsBlackListedInConfig(uint32 questId);
-
-    uint32 WorldLegionInvasionZoneID = 0;
-    uint32 Legionzonequestid = 0;
 private:
     WorldQuestTemplateMap _worldQuestTemplates;
     WorldQuestTemplateMap _emissaryWorldQuestTemplates;
-    WorldQuestTemplateByZoneMap _worldQuestTemplateByZone;
-    WorldQuestTemplateMap _worldQuestTemplate;
+    WorldQuestTemplateMap _callingsWorldQuestTemplates;
+    QuestAreaTaskMap _worldQuestAreaTaskStore;
+    QuestAreaTaskMap _questAreaTaskStore;
 
     WorldQuestRewardMap _worldQuestRewards;
     WorldQuestRewardByQuestInfoMap _worldQuestRewardByQuestInfos;
 
     ActiveWorldQuestMap _activeWorldQuests;
-    ActiveWorldQuestByZoneMap _activeWorldByZoneQuests;
-    QuestAreaTaskMap _worldQuestAreaTaskStore;
-    QuestAreaTaskMap _questAreaTaskStore;
+    //std::vector<uint32, ActiveWorldQuestMap> _activeWorldQuests;
 };
 
 #define sWorldQuestMgr WorldQuestMgr::instance()
@@ -131,14 +120,14 @@ struct WorldQuestTemplate
     WorldQuestTemplate(uint32 questId, uint32 duration, uint32 variableId, uint8 value) :
         QuestId(questId), Duration(duration), VariableId(variableId), Value(value) { }
 
-    uint32 QuestId;
-    uint32 Duration;
-    uint32 VariableId;
-    uint8 Value;
-    uint16 ZoneID;
-    uint32 Timer = 0;
-    uint32 StartTime = 0;
-    std::set<WorldQuestState> State;
+    std::vector<uint32> AreaIDs;
+    WorldQuestTemplate const* worldQuest = nullptr;
+    Quest const* quest = nullptr;
+    int32 AreaID = 0;
+    uint32 QuestId = 0;
+    uint32 Duration = 0;
+    uint32 VariableId = 0;
+    uint8 Value = 0;
 
     Quest const* GetQuest() const { return sObjectMgr->GetQuestTemplate(QuestId); }
 };
@@ -159,14 +148,13 @@ struct WorldQuestReward
 struct ActiveWorldQuest
 {
     ActiveWorldQuest(uint32 questId, uint32 rewardId, int32 startTime) :
-        QuestId(questId), RewardId(rewardId), StartTime(startTime), expansion(expansion){ }
+        QuestId(questId), RewardId(rewardId), StartTime(startTime) { }
 
     uint32 QuestId;
     uint32 RewardId;
     int32 StartTime;
-    int32 expansion;
 
-    WorldQuestTemplate const* GetTemplate() const { return sWorldQuestMgr->GetWorldQuestTemplate(expansion, QuestId); }
+    WorldQuestTemplate const* GetTemplate() const { return sWorldQuestMgr->GetWorldQuestTemplate(QuestId); }
 
     int32 GetRemainingTime() const
     {
@@ -181,6 +169,15 @@ struct ActiveWorldQuest
         if (WorldQuestTemplate const* worldQuestTemplate = GetTemplate())
             if (Quest const* quest = worldQuestTemplate->GetQuest())
                 return quest->IsEmissaryQuest();
+
+        return false;
+    }
+
+    bool IsCallingQuest()const
+    {
+        if (WorldQuestTemplate const* worldQuestTemplate = GetTemplate())
+            if (Quest const* quest = worldQuestTemplate->GetQuest())
+                return quest->IsCallingQuest();
 
         return false;
     }

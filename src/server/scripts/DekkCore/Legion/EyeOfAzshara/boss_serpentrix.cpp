@@ -491,8 +491,6 @@ public:
 	class bfa_spell_poison_spit_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_poison_spit_SpellScript);
-
 		void HandleAreaTargets(std::list<WorldObject*>& targets)
 		{
 			if (targets.empty())
@@ -540,8 +538,6 @@ public:
 	class bfa_spell_poison_spit_dmg_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_poison_spit_dmg_SpellScript);
-
 		void HandleDmg()
 		{
 			if (!GetCaster() || !GetHitUnit())
@@ -571,8 +567,6 @@ public:
 	class bfa_spell_rampage_dmg_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_rampage_dmg_SpellScript);
-
 		void HandleDummy(SpellEffIndex /**/)
 		{
 			if (!GetHitUnit())
@@ -602,8 +596,6 @@ public:
     class spell_serpentrix_rampage_dmg_SpellScript : public SpellScript
     {
     public:
-        PrepareSpellScript(spell_serpentrix_rampage_dmg_SpellScript);
-
         void HandleDummy(SpellEffIndex /**/)
         {
             if (!GetHitUnit())

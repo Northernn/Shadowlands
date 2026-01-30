@@ -11,7 +11,13 @@
 #include "Player.h"
 #include "RBAC.h"
 #include "WarCampaign.h"
+#include "CovenantMgr.h"
 
+#if TRINITY_COMPILER == TRINITY_COMPILER_GNU
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+using namespace Trinity::ChatCommands;
 
 class covenant_commandscript : public CommandScript
 {
@@ -49,44 +55,32 @@ public:
                 if (param == "kyrian")
                 {
                     handler->PSendSysMessage("Preview Kyrian Covenant command initiated.");
-
-                        WorldPackets::Misc::CovenantPreviewOpenNpc send;
-                        send.ObjGUID = player->GetGUID();
-                        send.CovenantId = 1; // covenant entry
-                        player->GetSession()->SendPacket(send.Write());
-
+                    player->GetSession()->SendCovenantPreview(player->GetGUID(), 1);
                 }
 
                 if (param == "venthyr")
                 {
                     handler->PSendSysMessage("Preview Venthyr Covenant command initiated.");
-
-                        WorldPackets::Misc::CovenantPreviewOpenNpc send;
-                        send.ObjGUID = player->GetGUID();
-                        send.CovenantId = 2; // covenant entry
-                        player->GetSession()->SendPacket(send.Write());
-
+                    player->GetSession()->SendCovenantPreview(player->GetGUID(), 2);
                 }
 
                 if (param == "nightfae")
                 {
                     handler->PSendSysMessage("Preview Night Fae Covenant command initiated.");
-
-                        WorldPackets::Misc::CovenantPreviewOpenNpc send;
-                        send.ObjGUID = player->GetGUID();
-                        send.CovenantId = 3; // covenant entry
-                        player->GetSession()->SendPacket(send.Write());
-
+                    player->GetSession()->SendCovenantPreview(player->GetGUID(), 3);
                 }
 
                 if (param == "necrolord")
                 {
                     handler->PSendSysMessage("Preview Necrolord Covenant command initiated.");
+                    player->GetSession()->SendCovenantPreview(player->GetGUID(), 4);
+                }
 
-                        WorldPackets::Misc::CovenantPreviewOpenNpc send;
-                        send.ObjGUID = player->GetGUID();
-                        send.CovenantId = 4; // covenant entry
-                        player->GetSession()->SendPacket(send.Write());
+                if (param == "choose")
+                {
+                    handler->PSendSysMessage("Choose your covenant UI command initiated.");
+
+                    player->SendPlayerChoice(player->GetGUID(), 644);
 
                 }
 
@@ -95,34 +89,15 @@ public:
                     if (param == "callavre")
                     {
                         handler->PSendSysMessage("Covenant Calling Availability Response command initiated.");
-
-                        WorldPackets::Misc::CovenantCallingAvailibilityResponse send;
-                        send.Availability = true;
-                        send.Index = 1;
-                        send.Data = 208;//data is correct? 
-
-                        player->GetSession()->SendPacket(send.Write());
-
+                        player->GetSession()->SendCovenantCallingAvailibilityResponse(true, 1, 208);
                     }
 
                     if (param == "renown")
                     {
                         handler->PSendSysMessage("Covenant Renown Npc UI command initiated.");
 
-                        WorldPackets::Misc::CovenantRenowOpenNpc send;
-                        send.ObjGUID = player->GetGUID(); // it should be an npc guid
-                        send.CatchupState = 0;
-                        player->GetSession()->SendPacket(send.Write());
-
                     }
-
-                    if (param == "choose")
-                    {
-                        handler->PSendSysMessage("Choose your covenant UI command initiated.");
-
-                        player->SendPlayerChoice(player->GetGUID(), 644);
-
-                    }
+                 
                 }
             }
 
@@ -131,63 +106,15 @@ public:
         return true;
     }
 
-
-    std::vector<ChatCommand> GetCommands() const override
+    ChatCommandTable GetCommands() const override
     {
-        static std::vector<ChatCommand> CovenantTestCommandTable =
+        static ChatCommandTable CovenantTestCommandTable =
         {
             { "covenant",          rbac::RBAC_PERM_COMMAND_GM,         true,   &HandleCovenantCommand,        "" },
         };
+
         return CovenantTestCommandTable;
     }
-
-};
-
-class playspellvisual_commandscript : public CommandScript
-{
-public:
-    playspellvisual_commandscript() : CommandScript("playspellvisual_commandscript") { }
-
-    static bool HandlePlaySpellVisualCommand(ChatHandler* handler, const char* args)
-    {
-        if (WorldSession* session = handler->GetSession())
-        {
-            if (Player* player = session->GetPlayer())
-            {
-                if (!*args)
-                {
-                    handler->PSendSysMessage("You can initiate playspellvisual function with command. .psv #spellvisualid or .playspellvisual #spellvisualid");
-                    return true;
-                }
-
-                std::string param = (char*)args;
-
-                if (param != "")
-                {
-                    handler->PSendSysMessage("Playing spell visual: %s", param);
-                    if (player->GetSelectedUnit())
-					    player->SendPlaySpellVisual(player->GetSelectedUnit(), stoi(param), 0, 0, 60, false);
-                    else
-                        player->SendPlaySpellVisual(player, stoi(param), 0, 0, 60, false);
-                }
-            }
-
-        }
-
-        return true;
-    }
-
-
-    std::vector<ChatCommand> GetCommands() const override
-    {
-        static std::vector<ChatCommand> PSVCommandTable =
-        {
-            { "playspellvisual",          rbac::RBAC_PERM_COMMAND_GM,         true,   &HandlePlaySpellVisualCommand,        "" },
-            { "psv",                      rbac::RBAC_PERM_COMMAND_GM,         true,   &HandlePlaySpellVisualCommand,        "" },
-        };
-        return PSVCommandTable;
-    }
-
 };
 
 class transmog_commandscript : public CommandScript
@@ -211,20 +138,20 @@ public:
                 }
             }
         }
+
         return true;
     }
 
-
-    std::vector<ChatCommand> GetCommands() const override
+    ChatCommandTable GetCommands() const override
     {
-        static std::vector<ChatCommand> TMOGCommandTable =
+        static ChatCommandTable TMOGCommandTable =
         {
             { "transmog",          rbac::RBAC_PERM_COMMAND_GM,          true,   &HandleTransmogCommand,        "" },
             { "tmog",          	   rbac::RBAC_PERM_COMMAND_GM,         	true,   &HandleTransmogCommand,        "" },
         };
+
         return TMOGCommandTable;
     }
-
 };
 
 class garrison_commandscript : public CommandScript
@@ -232,27 +159,31 @@ class garrison_commandscript : public CommandScript
 public:
     garrison_commandscript() : CommandScript("garrison_commandscript") { }
 
-    std::vector<ChatCommand> GetCommands() const override
+    ChatCommandTable GetCommands() const override
     {
-        static std::vector<ChatCommand> garrisonFollowerCommandTable =
+        static ChatCommandTable garrisonFollowerCommandTable =
         {
             { "add", rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,       false, &HandleGarrisonFollowerAddCommand,   "" },
         };
-        static std::vector<ChatCommand> garrisonMissionCommandTable =
+
+        static ChatCommandTable garrisonMissionCommandTable =
         {
             { "add", rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,       false, &HandleGarrisonMissionAddCommand,    "" },
             { "generate", rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,       false, &HandleGarrisonGenerateMissionsCommand,    "" },
         };
-        static std::vector<ChatCommand> garrisonCommandTable =
+
+        static ChatCommandTable garrisonCommandTable =
         {
             { "follower", rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,      false, NULL, "", garrisonFollowerCommandTable },
             { "mission",  rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,      false, NULL, "", garrisonMissionCommandTable },
             { "create", rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,       false, &HandleGarrisonCreateCommand,    "" },
         };
-        static std::vector<ChatCommand> commandTable =
+
+        static ChatCommandTable commandTable =
         {
             { "garrison", rbac::RBAC_PERM_COMMAND_ACHIEVEMENT_ADD,      false, NULL, "", garrisonCommandTable },
         };
+
         return commandTable;
     }
 
@@ -309,7 +240,7 @@ public:
         target->CreateGarrison(garrId);
         return true;
     }
-    
+
     static bool HandleGarrisonGenerateMissionsCommand(ChatHandler* handler, char const* args)
     {
         Player* target = handler->getSelectedPlayerOrSelf();
@@ -330,6 +261,7 @@ public:
         case EXPANSION_SHADOWLANDS:             garType = GARRISON_TYPE_COVENANT;       break;
         default:                                garType = GARRISON_TYPE_COVENANT;       break;
         }
+
         target->SetCurrentGarrison(garType);
 
         if (Garrison* garrison = target->GetGarrison((GarrisonType)garType))
@@ -341,137 +273,9 @@ public:
     }
 };
 
-class gear_commandscript : public CommandScript
-{
-public:
-    gear_commandscript() : CommandScript("gear_commandscript") { }
-
-    static bool HandleGearCommand(ChatHandler* handler, const char* args)
-    {
-        if (WorldSession* session = handler->GetSession())
-        {
-            if (Player* player = session->GetPlayer())
-            {
-                if (!*args)
-                {
-                    handler->PSendSysMessage("Command .gear - Multiple gearing up options!");
-                    handler->PSendSysMessage("Example usage: .gear loadout");
-                    handler->PSendSysMessage("Subcommands: loadout, bis");
-                    return true;
-                }
-
-                std::string param = (char*)args;
-
-                if (param == "loadout")
-                {
-                    if (player->GetLevel() >= 45)
-                    {
-                        handler->PSendSysMessage("Gearing up with loadout items..");
-                        player->GearUpByLoadout(1, { 0 }); // no bonus
-                    }
-                    else
-                    {
-                        handler->PSendSysMessage("Gearing up with scaled for level loadout items..");
-                        player->GearUpByLoadout(1, { 6771 }); // scaled with level
-                    }
-                }
-
-                if (param == "bis")
-                {
-                    if (player->GetLevel() >= 60)
-                    {
-                        handler->PSendSysMessage("Gearing up with Best in Slot items..");
-                        player->GearUpByBiS({ 6807, 1498 }); // mythic + ilvl
-                    }
-                    else
-                    {
-                        handler->PSendSysMessage("Gearing up with scaled for level Best in Slot items..");
-                        player->GearUpByBiS({ 6771 }); // scaled with level
-                    }
-                }
-            }
-
-        }
-
-        return true;
-    }
-
-
-    std::vector<ChatCommand> GetCommands() const override
-    {
-        static std::vector<ChatCommand> GearCommandTable =
-        {
-            { "gear",          rbac::RBAC_PERM_COMMAND_GM,         true,   &HandleGearCommand,        "" },
-        };
-        return GearCommandTable;
-    }
-
-};
-
-class chromie_time_commandscript : public CommandScript
-{
-public:
-    chromie_time_commandscript() : CommandScript("chromie_time_commandscript") { }
-
-    std::vector<ChatCommand> GetCommands() const override
-    {
-        static std::vector<ChatCommand> chromieTimeSet_CommandTable =
-        {
-            { "set",          rbac::RBAC_PERM_COMMAND_GM,         true,   &HandleChromieTimeSetCommand,        ""},
-            { "info",          rbac::RBAC_PERM_COMMAND_GM,         true,   &HandleChromieTimeInfoCommand,        ""},
-        };
-        static std::vector<ChatCommand> chromieTime_CommandTable =
-        {
-            { "chromietime", rbac::RBAC_PERM_COMMAND_GM,      false, NULL, "", chromieTimeSet_CommandTable },
-        };
-        return chromieTime_CommandTable;
-    }
-
-    static bool HandleChromieTimeInfoCommand(ChatHandler* handler, char const* args)
-    {
-        Player* target = handler->getSelectedPlayerOrSelf();
-        if (!target)
-        {
-            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        uint16 chromieTime = target->GetChromieTime();
-        std::string chromieTimeName = target->GetChromieTimeName();
-
-        handler->PSendSysMessage("Your selected chromie time is %u (%s).", chromieTime, chromieTimeName);
-
-        return true;
-    }
-
-    static bool HandleChromieTimeSetCommand(ChatHandler* handler, char const* args)
-    {
-        if (!*args)
-            return false;
-
-        Player* target = handler->getSelectedPlayerOrSelf();
-        if (!target)
-        {
-            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        uint16 chromieTime = atoi((char*)args);
-        target->SetChromieTime(chromieTime);
-
-        return true;
-    }
-
-};
-
 void AddSC_Custom_Commands()
 {
     new covenant_commandscript();
-    new playspellvisual_commandscript();
     new transmog_commandscript();
     new garrison_commandscript();
-    new gear_commandscript();
-    new chromie_time_commandscript();
 }

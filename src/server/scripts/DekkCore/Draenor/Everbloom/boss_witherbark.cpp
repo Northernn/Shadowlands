@@ -354,8 +354,6 @@ public:
 
     class spell_unchecked_growth_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_unchecked_growth_SpellScript);
-
         void OnHit(SpellEffIndex /*effIndex*/)
         {
             if (GetHitUnit())
@@ -372,29 +370,6 @@ public:
     {
         return new spell_unchecked_growth_SpellScript;
     }
-};
-
-class at_unchecked_growth : public AreaTriggerAI
-{
-    public:
-        at_unchecked_growth(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-        /*void OnCreate() override
-        {
-            at->SetCustomRadius(5.0f);
-        }*/
-
-        void OnUnitEnter(Unit* unit) override
-        {
-            if (Unit* caster = at->GetCaster())
-                if (caster->IsHostileTo(unit) && !unit->HasAura(164294))
-                    caster->CastSpell(unit, 164294);
-        }
-
-        void OnUnitExit(Unit* unit) override
-        {
-            unit->RemoveAurasDueToSpell(164294);
-        }
 };
 
 enum AqueousGlobuleEnums
@@ -481,6 +456,5 @@ void AddSC_boss_witherbark()
     new npc_aqueous_globule_witherbark();
     new npc_unchecked_growth();
     new spell_unchecked_growth();
-    RegisterAreaTriggerAI(at_unchecked_growth);
     new npc_aqueous_globule();
 }

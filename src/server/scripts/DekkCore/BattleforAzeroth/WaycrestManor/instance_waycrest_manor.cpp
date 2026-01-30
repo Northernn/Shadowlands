@@ -20,6 +20,12 @@
 #include "InstanceScript.h"
 #include "waycrest_manor.h"
 
+// ObjectData const creatureData[] =
+// {
+//     { NPC_LADY_WAYCREST_INTRO, DATA_INTRO     },
+//     { 0,                          0                      } // END
+// };
+
 class instance_waycrest_manor : public InstanceMapScript
 {
 public:
@@ -31,6 +37,7 @@ public:
         {
             SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
+            LoadObjectData(nullptr, nullptr); // TO BE ADDED (by someone that is not hoff please)
         }
     };
 

@@ -103,7 +103,7 @@ enum Events
 };
 
 enum Misc
-{	
+{
 	ACTION_THRASHING_GROWTH = 1,
 	ACTION_SYNTHESIS,
 	ACTION_REACTIVE_MASS
@@ -129,7 +129,6 @@ private:
 		me->SetPowerType(POWER_ENERGY);
 		me->SetMaxPower(POWER_ENERGY, 100);
 		me->SetPower(POWER_ENERGY, 0);
-		me->AddAura(AURA_OVERRIDE_POWER_COLOR_PURPLE, me);		
 		if (Creature* nzoth = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
 			nzoth->EnterVehicle(me);
 	}
@@ -252,55 +251,64 @@ private:
 		}
 	}
 
-void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 	{
-		if (this->phase == 1 && me->HealthBelowPct(50))
+		if (phase == 1 && me->HealthBelowPct(50))
 		{
-			this->phase = 2;
+			phase = 2;
 			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
 				controller->AI()->Talk(SAY_STAGE_TWO);
-			events.Reset();			
+
+            events.Reset();
 			me->SetPower(POWER_ENERGY, 0);
 			me->SetReactState(REACT_PASSIVE);
 			me->GetMotionMaster()->MovePoint(1, -11332.596f, 9317.054f, 98.155f, true);
-			if (Creature* wrathion = instance->GetCreature(NPC_WRATHION_CARAPACE))
+
+            if (Creature* wrathion = instance->GetCreature(NPC_WRATHION_CARAPACE))
 			{
 				wrathion->RemoveAllAuras();
 				wrathion->GetMotionMaster()->MovePoint(0, -11472.110f, 9315.943f, 110.878f);
 			}
-			std::list<Creature*> cystList;
+
+            std::list<Creature*> cystList;
 			me->GetCreatureListWithEntryInGrid(cystList, NPC_SYNTHESIS_GROWTH, 300.0f);
-			for (auto& cysts : cystList)
+
+            for (auto& cysts : cystList)
 			{
 				cysts->AI()->DoAction(ACTION_SYNTHESIS);
 			}
-			//Because of current bugs in MotionMaster
+
+            //Because of current bugs in MotionMaster
 			AddTimedDelayedOperation(30000, [this]()
 			{
 				me->SetFacingTo(3.143f, true);
 				me->AddUnitState(UNIT_STATE_ROOT);
 				events.ScheduleEvent(EVENT_CARAPACE_GAIN_ENERGY, 100ms);
 				events.ScheduleEvent(EVENT_MENTAL_DECAY, 9s);
-				events.ScheduleEvent(EVENT_MADNESS_BOMB, 12s);				
+				events.ScheduleEvent(EVENT_MADNESS_BOMB, 12s);
 				events.ScheduleEvent(EVENT_ADAPTIVE_MEMBRANE, 18s);
 				events.ScheduleEvent(EVENT_ETERNAL_DARKNESS, 20s);
 			});
 		}
-		if (this->phase == 2 && me->HealthBelowPct(40))
-		{			
+		if (phase == 2 && me->HealthBelowPct(40))
+		{
 			std::list<Creature*> synthesisList;
 			synthesisList.clear();
 			me->GetCreatureListWithEntryInGrid(synthesisList, NPC_SYNTHESIS_GROWTH, 300.0f);
-			if (synthesisList.empty())
+
+            if (synthesisList.empty())
 			{
-				this->phase = 3;
-				if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+				phase = 3;
+
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
 					controller->AI()->Talk(SAY_STAGE_THREE);
-				events.Reset();				
+
+                events.Reset();
 				me->SetPower(POWER_ENERGY, 0);
 				me->SetReactState(REACT_PASSIVE);
 				me->GetMotionMaster()->MovePoint(2, -11210.179f, 9315.246f, 126.866f, true);
-				AddTimedDelayedOperation(10000, [this]()
+
+                AddTimedDelayedOperation(10000, [this]()
 				{
 					events.ScheduleEvent(EVENT_CARAPACE_GAIN_ENERGY, 100ms);
 					events.ScheduleEvent(EVENT_MANDIBLE_SLAM, 3s);
@@ -321,112 +329,113 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
 			me->SetPower(POWER_ENERGY, 0);
 			events.ScheduleEvent(EVENT_MANDIBLE_SLAM, 100ms);
 		}
-		switch (eventId)
-		{
-		case EVENT_SPAWN_NIGHTMARE_ANTIGEN:
-		{
-			for (uint8 i = 0; i < 15; i++)
-			{
-				me->SummonCreature(NPC_NIGHTMARE_ANTIGEN, me->GetRandomNearPosition(30.0f), TEMPSUMMON_MANUAL_DESPAWN);
-			}
-			break;
-		}
-		case EVENT_MANDIBLE_SLAM:
-		{
-            if (Unit* target = SelectTarget(SelectTargetMethod::MaxDistance, 0, 100.0f, false))
-				me->CastSpell(target, SPELL_MANDIBLE_SLAM, false);
-			break;
-		}
-		case EVENT_CARAPACE_GAIN_ENERGY:
-		{
-			me->ModifyPower(POWER_ENERGY, +6);
-			events.Repeat(1s);
-			break;
-		}
-		case EVENT_MADNESS_BOMB:
-		{
-			me->CastSpell(nullptr, SPELL_MADNESS_BOMB_CAST, false);
-			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
-				controller->AI()->Talk(SAY_MADNESS_BOMB);
-			events.Repeat(25s);
-			break;
-		}
-		case EVENT_MENTAL_DECAY:
-		{
-			me->CastSpell(nullptr, SPELL_MENTAL_DECAY_CAST, false);
-			events.Repeat(30s);
-			break;
-		}
-		case EVENT_ADAPTIVE_MEMBRANE:	
-		{
-			me->CastSpell(nullptr, SPELL_ADAPTIVE_MEMBRANE_CAST, false);
-			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
-				controller->AI()->Talk(SAY_ADAPTIVE_MEMBRANE);
-			events.Repeat(35s);
-			break;
-		}
-		case EVENT_GROWTH_COVERED_TENTACLE:
-		{
-			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
-				controller->AI()->Talk(SAY_GROWTH_TENTACLE);
-			ChooseThrasingPosition();
-			events.Repeat(45s);
-			break;
-		}
-		case EVENT_GAZE_OF_MADNESS:
-		{
-			me->SummonCreature(NPC_GAZE_OF_MADNESS, gaze_of_madness_exit_pos, TEMPSUMMON_MANUAL_DESPAWN);
-			events.Repeat(22s);
-			break;
-		}
-		case EVENT_ETERNAL_DARKNESS:
-		{
-			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
-				controller->AI()->Talk(SAY_ETERNAL_DARKNESS);
-			me->CastSpell(nullptr, SPELL_ETERNAL_DARKNESS, false);
-			events.Repeat(55s);
-			break;
-		}
-		case EVENT_OCCIPITAL_BLAST:
-		{
-			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
-				controller->AI()->Talk(SAY_OCCUPITAL_BLAST);
-            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
-			{
-				me->SetFacingToObject(target, true);
-				me->CastSpell(target, SPELL_OCCIPITAL_BLAST, false);
-				me->CastSpell(target, SPELL_OCCIPITAL_BLAST_DAMAGE, true);
-			}
-			events.Repeat(60s);
-			break;
-		}
-		case EVENT_INSANITY_BOMB:
-		{
-			if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
-				controller->AI()->Talk(SAY_INSANITY_BOMB);
-			std::list<Player*> playerList;
-			me->GetPlayerListInGrid(playerList, 180.0f);
-			for (auto& players : playerList)
-			{				
-				me->CastSpell(players, SPELL_INSANITY_BOMB_MOD_SIZE, true);
-			}
-			events.Repeat(25s);
-			break;
-		}
 
-		case EVENT_INFINITE_DARKNESS:
+        switch (eventId)
 		{
-            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
-			{
-				me->CastSpell(nullptr, SPELL_INFINITE_DARKNESS_CAST);
-			}			
-			break;
-		}
-		case EVENT_BERSERK:
-		{
-			me->AddAura(SPELL_BERSERK, me);
-			break;
-		}
+            case EVENT_SPAWN_NIGHTMARE_ANTIGEN:
+            {
+                for (uint8 i = 0; i < 15; i++)
+                {
+                    me->SummonCreature(NPC_NIGHTMARE_ANTIGEN, me->GetRandomNearPosition(30.0f), TEMPSUMMON_MANUAL_DESPAWN);
+                }
+                break;
+            }
+            case EVENT_MANDIBLE_SLAM:
+            {
+                if (Unit* target = SelectTarget(SelectTargetMethod::MaxDistance, 0, 100.0f, false))
+                    me->CastSpell(target, SPELL_MANDIBLE_SLAM, false);
+                break;
+            }
+            case EVENT_CARAPACE_GAIN_ENERGY:
+            {
+                me->ModifyPower(POWER_ENERGY, +6);
+                events.Repeat(1s);
+                break;
+            }
+            case EVENT_MADNESS_BOMB:
+            {
+                me->CastSpell(nullptr, SPELL_MADNESS_BOMB_CAST, false);
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+                    controller->AI()->Talk(SAY_MADNESS_BOMB);
+                events.Repeat(25s);
+                break;
+            }
+            case EVENT_MENTAL_DECAY:
+            {
+                me->CastSpell(nullptr, SPELL_MENTAL_DECAY_CAST, false);
+                events.Repeat(30s);
+                break;
+            }
+            case EVENT_ADAPTIVE_MEMBRANE:
+            {
+                me->CastSpell(nullptr, SPELL_ADAPTIVE_MEMBRANE_CAST, false);
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+                    controller->AI()->Talk(SAY_ADAPTIVE_MEMBRANE);
+                events.Repeat(35s);
+                break;
+            }
+            case EVENT_GROWTH_COVERED_TENTACLE:
+            {
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+                    controller->AI()->Talk(SAY_GROWTH_TENTACLE);
+                ChooseThrasingPosition();
+                events.Repeat(45s);
+                break;
+            }
+            case EVENT_GAZE_OF_MADNESS:
+            {
+                me->SummonCreature(NPC_GAZE_OF_MADNESS, gaze_of_madness_exit_pos, TEMPSUMMON_MANUAL_DESPAWN);
+                events.Repeat(22s);
+                break;
+            }
+            case EVENT_ETERNAL_DARKNESS:
+            {
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+                    controller->AI()->Talk(SAY_ETERNAL_DARKNESS);
+                me->CastSpell(nullptr, SPELL_ETERNAL_DARKNESS, false);
+                events.Repeat(55s);
+                break;
+            }
+            case EVENT_OCCIPITAL_BLAST:
+            {
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+                    controller->AI()->Talk(SAY_OCCUPITAL_BLAST);
+                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
+                {
+                    me->SetFacingToObject(target, true);
+                    me->CastSpell(target, SPELL_OCCIPITAL_BLAST, false);
+                    me->CastSpell(target, SPELL_OCCIPITAL_BLAST_DAMAGE, true);
+                }
+                events.Repeat(60s);
+                break;
+            }
+            case EVENT_INSANITY_BOMB:
+            {
+                if (Creature* controller = me->FindNearestCreature(NPC_NZOTH_CONTROLLER, 25.0f, true))
+                    controller->AI()->Talk(SAY_INSANITY_BOMB);
+                std::list<Player*> playerList;
+                me->GetPlayerListInGrid(playerList, 180.0f);
+                for (auto& players : playerList)
+                {
+                    me->CastSpell(players, SPELL_INSANITY_BOMB_MOD_SIZE, true);
+                }
+                events.Repeat(25s);
+                break;
+            }
+
+            case EVENT_INFINITE_DARKNESS:
+            {
+                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
+                {
+                    me->CastSpell(nullptr, SPELL_INFINITE_DARKNESS_CAST);
+                }
+                break;
+            }
+            case EVENT_BERSERK:
+            {
+                me->AddAura(SPELL_BERSERK, me);
+                break;
+            }
 		}
 	}
 
@@ -480,24 +489,22 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
 	}
 };
 
-//306973 
+//306973
 class aura_madness_bomb : public AuraScript
 {
-	PrepareAuraScript(aura_madness_bomb);
-
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
 		if (!caster || !target)
 			return;
 
-		if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)	
+		if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
 			caster->CastSpell(target, SPELL_MADNESS_BOMB_DAMAGE, true);
 	}
 
 	void Register() override
-	{		
+	{
 		OnEffectRemove += AuraEffectRemoveFn(aura_madness_bomb::OnRemove, EFFECT_0, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
 	}
 };
@@ -505,9 +512,7 @@ class aura_madness_bomb : public AuraScript
 //306984
 class aura_insanity_bomb : public AuraScript
 {
-	PrepareAuraScript(aura_insanity_bomb);
-
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
@@ -543,7 +548,7 @@ struct npc_thrashing_tentacle : public ScriptedAI
 			AddTimedDelayedOperation(1000, [this]()
 			{
 				me->CastSpell(nullptr, SPELL_THRASHING_TENTACLE_SHADOW, false);
-			});			
+			});
 		}
 	}
 };
@@ -553,9 +558,9 @@ struct npc_nightmare_antigen : public ScriptedAI
 {
 	npc_nightmare_antigen(Creature* c) : ScriptedAI(c) { }
 
-	void IsSummonedBy(WorldObject* summoner) override
+	void IsSummonedBy(WorldObject* /*summoner*/) override
 	{
-		if (me->GetMapId() == MAP_NYALOTHA)
+		//if (me->GetMapId() == MAP_NYALOTHA)
 			me->AI()->DoZoneInCombat(nullptr);
 	}
 };
@@ -625,8 +630,6 @@ struct npc_nzoth_controller : public ScriptedAI
 //307071
 class aura_synthesis : public AuraScript
 {
-	PrepareAuraScript(aura_synthesis);
-
 	void OnTick(AuraEffect const* /*aurEff*/)
 	{
 		if (Unit* target = GetTarget())
@@ -658,43 +661,41 @@ private:
 		ScriptedAI::Reset();
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit*) override
 	{
 		events.ScheduleEvent(EVENT_BREED_MADNESS, 3s);
 	}
 
     void OnSpellCast(SpellInfo const* spell) override
     {
-
-		switch (spell->Id)
-		{
-		case SPELL_BREED_MADNESS:
-			me->CastSpell(nullptr, SPELL_MADDENING_ERUPTION, true);
-			break;
-		}
+        if (spell->Id == SPELL_BREED_MADNESS)
+            me->CastSpell(nullptr, SPELL_MADDENING_ERUPTION, true);
 	}
 
-    void ExecuteEvent(uint32 eventId)// override
+    void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{
-		case EVENT_BREED_MADNESS:
-            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
-         {
-				this->ticks = 0;
-				me->CastSpell(target, SPELL_BREED_MADNESS, false);
-				me->GetScheduler().Schedule(100ms, [this, target](TaskContext context)
-				{
-					if (!target)
-						return;
-					me->CastSpell(target, SPELL_BREED_MADNESS_SINGLE_DAMAGE, true);
-					ticks++;
-					if (this->ticks != 9)
-						context.Repeat(1s);
-					if (this->ticks == 9)
-						me->CastSpell(target, SPELL_MADDENING_ERUPTION, true);
-				});
-			}
+		    case EVENT_BREED_MADNESS:
+                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
+                {
+                    this->ticks = 0;
+                    me->CastSpell(target, SPELL_BREED_MADNESS, false);
+                    me->GetScheduler().Schedule(100ms, [this, target](TaskContext context)
+                    {
+                        if (!target)
+                            return;
+
+                        me->CastSpell(target, SPELL_BREED_MADNESS_SINGLE_DAMAGE, true);
+                        ticks++;
+
+                        if (ticks != 9)
+                            context.Repeat(1s);
+
+                        if (ticks == 9)
+                            me->CastSpell(target, SPELL_MADDENING_ERUPTION, true);
+                    });
+                }
 			break;
 		}
 	}
@@ -703,7 +704,8 @@ private:
 	{
 		if (instance)
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-		if (summoner->ToUnit()->IsInCombat())
+
+        if (summoner->ToUnit()->IsInCombat())
 			me->SetInCombatWithZone();
 	}
 
@@ -720,7 +722,7 @@ struct npc_wrathion_carapace : public ScriptedAI
 	npc_wrathion_carapace(Creature* c) : ScriptedAI(c) { }
 
 	void Reset() override
-	{ 
+	{
 		wrathion_carapace_guid = me->GetGUID();
 	}
 

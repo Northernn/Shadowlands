@@ -87,7 +87,7 @@ enum Events
 {
     EVENT_SHADOW_BARRAGE,
     EVENT_DARK_REVELATION,
-    EVENT_CALL_OF_BLOOD,    
+    EVENT_CALL_OF_BLOOD,
     EVENT_LOCUS_OF_CORRUPTION,
     EVENT_DEATHWISH,
     EVENT_RUPTURING_BLOOD,
@@ -113,7 +113,6 @@ private:
         me->SetPowerType(POWER_ENERGY);
         me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE, me);
         CleanEncounter(instance, me);
         me->CanFly();
         me->SetFlying(true);
@@ -126,7 +125,7 @@ private:
         this->phase = 1;
         events.ScheduleEvent(EVENT_SHADOW_BARRAGE, 3s);
         events.ScheduleEvent(EVENT_CALL_OF_BLOOD, 15s);
-        events.ScheduleEvent(EVENT_DARK_REVELATION, 29s);        
+        events.ScheduleEvent(EVENT_DARK_REVELATION, 29s);
         if (IsHeroic() || (IsMythic()))
             events.ScheduleEvent(EVENT_POOL_OF_DARKNESS, 20s);
         DoCastSelf(SPELL_PERIODIC_ENERGY_GAIN);
@@ -185,7 +184,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             }
             events.Repeat(20s);
             break;
-        }            
+        }
         case EVENT_CALL_OF_BLOOD:
         {
             Talk(SAY_CALL_OF_BLOOD);
@@ -245,13 +244,13 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
         case EVENT_POOL_OF_DARKNESS:
         {
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-            {                
+            {
                 me->CastSpell(target, SPELL_POOL_OF_DARKNESS, true);
             }
             events.Repeat(50s);
             break;
         }
-        } 
+        }
     }
 
     void EnterEvadeMode(EvadeReason /*why*/) override
@@ -295,8 +294,6 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
 //273365
 class aura_dark_revelation : public AuraScript
 {
-    PrepareAuraScript(aura_dark_revelation);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
@@ -321,14 +318,12 @@ const Position jump_of_cliff_pos = { 280.195f, -304.824f, 624.548f, 5.06f };
 //274271
 class aura_deathwish : public AuraScript
 {
-    PrepareAuraScript(aura_deathwish);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
         {
             if (caster->GetEntry() == NPC_ZUL)
-            {                
+            {
                 GetTarget()->GetMotionMaster()->MovePoint(1, jump_of_cliff_pos, true);
             }
         }
@@ -378,7 +373,6 @@ struct npc_generic_zul_minion : public ScriptedAI
             me->SetPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
             me->SetMaxPower(POWER_ENERGY, 100);
-            me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE, me);
             DoCastSelf(SPELL_PERIODIC_ENERGY_GAIN);
             events.ScheduleEvent(EVENT_BLOODY_CLEAVE, 3s);
             break;
@@ -491,7 +485,11 @@ struct go_zul_trapdoor : public GameObjectAI
         {
             if (InstanceScript* instance = me->GetInstanceScript())
             {
-                if (instance->GetBossState(DATA_TALOC == DONE) && instance->GetBossState(DATA_MOTHER == DONE) && instance->GetBossState(DATA_DEVOURER == DONE) && instance->GetBossState(DATA_VECTIS == DONE) && instance->GetBossState(DATA_ZEKVOZ == DONE)) /*&& instance->GetBossState(DATA_ZUL == DONE)*/
+                if (instance->GetBossState(DATA_TALOC) == DONE &&
+                    instance->GetBossState(DATA_MOTHER) == DONE &&
+                    instance->GetBossState(DATA_DEVOURER) == DONE &&
+                    instance->GetBossState(DATA_VECTIS) == DONE &&
+                    instance->GetBossState(DATA_ZEKVOZ) == DONE) /*&& instance->GetBossState(DATA_ZUL == DONE)*/
                     me->SetGoState(GO_STATE_ACTIVE);
                 else
                     context.Repeat(15s);
@@ -501,11 +499,8 @@ struct go_zul_trapdoor : public GameObjectAI
 
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
+        me->GetScheduler().Update(diff);
     }
-
-private:
-    TaskScheduler scheduler;
 };
 
 //139195
@@ -556,8 +551,6 @@ private:
 //276434
 class aura_decaying_flesh : public AuraScript
 {
-    PrepareAuraScript(aura_decaying_flesh);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
     }

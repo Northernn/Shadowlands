@@ -360,8 +360,6 @@ public:
 
     class spell_firebloom_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_firebloom_target_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* target = GetHitUnit())
@@ -397,8 +395,6 @@ public:
 
     class aura_archmage_barrier_AuraScript : public AuraScript
     {
-        PrepareAuraScript(aura_archmage_barrier_AuraScript);
-
         void HandlePeriodic(AuraEffect const* /*aurEff*/)
         {
             PreventDefaultAction();
@@ -418,38 +414,10 @@ public:
     }
 };
 
-/*######
-## at_frozen_rain
-######*/
-
-enum FrozenATEnums
-{
-    SPELL_FROZEN_RAIN_DAMAGE            = 166726,
-};
-
-class at_frozen_rain : public AreaTriggerAI
-{
-public:
-    at_frozen_rain(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Creature* archmage = GetClosestCreatureWithEntry(unit, NPC_ARCHMAGE_SOL, 100.0f))
-            if (unit->IsPlayer() && !unit->HasAura(SPELL_FROZEN_RAIN_DAMAGE))
-                archmage->CastSpell(unit, SPELL_FROZEN_RAIN_DAMAGE, true);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        unit->RemoveAurasDueToSpell(SPELL_FROZEN_RAIN_DAMAGE);
-    }
-};
-
 void AddSC_boss_sol()
 {
     new boss_archmage_sol();
     new npc_frozen_rain();
     new spell_firebloom_target();
     new aura_archmage_barrier();
-    RegisterAreaTriggerAI(at_frozen_rain);
 }

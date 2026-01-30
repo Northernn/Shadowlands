@@ -16,6 +16,8 @@
  */
 
 #include "BattlegroundTP.h"
+#include "Player.h"
+#include "WorldStatePackets.h"
 
 BattlegroundTP::BattlegroundTP(BattlegroundTemplate const* battlegroundTemplate) : Battleground(battlegroundTemplate)
 {

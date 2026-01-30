@@ -268,8 +268,6 @@ public:
 
     class spell_thunderstrike_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_thunderstrike_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())

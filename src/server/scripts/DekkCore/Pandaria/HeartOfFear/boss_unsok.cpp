@@ -1130,8 +1130,6 @@ class spell_amber_scalpel : public SpellScriptLoader
 
         class spell_amber_scalpel_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_amber_scalpel_SpellScript);
-
             void Summon()
             {
                 if (Creature* l_Caster = GetCaster()->ToCreature())
@@ -1167,8 +1165,6 @@ class spell_struggle_for_control : public SpellScriptLoader
 
         class spell_struggle_for_control_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_struggle_for_control_SpellScript);
-
             void WillConsumption()
             {
                 if (Unit* caster = GetCaster())
@@ -1196,8 +1192,6 @@ class spell_consume_amber : public SpellScriptLoader
 
         class spell_consume_amber_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_consume_amber_SpellScript);
-
             SpellCastResult CanConsume()
             {
                 if (Unit* caster = GetCaster())
@@ -1237,8 +1231,6 @@ class spell_break_free : SpellScriptLoader
 
         class spell_break_free_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_break_free_SpellScript);
-
             void FreePlayer(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* player = GetCaster())
@@ -1265,8 +1257,6 @@ class spell_grab : public SpellScriptLoader
 
         class spell_grab_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_grab_SpellScript);
-
          /*   void Handle(SpellEffIndex effIndex)
             {
                 if (Unit* caster = GetCaster())
@@ -1294,8 +1284,6 @@ class spell_fling : public SpellScriptLoader
 
         class spell_fling_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_fling_SpellScript);
-
             void Handle(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1351,8 +1339,6 @@ class spell_fling_thrown : public SpellScriptLoader
 
         class spell_fling_thrown_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_fling_thrown_SpellScript);
-
             void Land(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1379,8 +1365,6 @@ public:
 
     class spell_unsok_draw_power_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_unsok_draw_power_SpellScript);
-
         void ChangePhase()
         {
             if (Unit* caster = GetCaster())
@@ -1407,8 +1391,6 @@ public:
 
     class spell_volatile_amber_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_volatile_amber_SpellScript);
-
         void CancelDmg(SpellEffIndex /*effIndex*/)
         {
             if (Player* target = GetHitPlayer())

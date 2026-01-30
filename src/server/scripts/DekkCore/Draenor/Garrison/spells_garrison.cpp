@@ -23,8 +23,6 @@
  // 171253 - Garrison hearthstone
 class spell_garrison_hearthstone : public SpellScript
 {
-    PrepareSpellScript(spell_garrison_hearthstone);
-
     SpellCastResult CheckCast()
     {
         if (Player* caster = GetCaster()->ToPlayer())

@@ -196,6 +196,40 @@ namespace WorldPackets
             uint8 TargetFramePriority = 0; // used to update the position of the unit's current frame
         };
 
+        struct AuraInfo
+        {
+            ObjectGuid CasterGuid;
+            uint32 SpellID;
+        };
+
+        struct ArtifactPowerInfo
+        {
+            uint32 ArtifactPowerID;
+            uint16 Rank;
+        };
+
+        struct EncounterItemInfo
+        {
+            uint32 ItemID;
+            uint32 ItemLevel;
+            std::vector<uint32> EnchantmentIDs;
+            std::vector<uint32> ItemBonusListIDs;
+            std::vector<EncounterItemInfo> Encounters;
+        };
+
+        struct InstancePlayerData
+        {
+            ObjectGuid PlayerGuid;
+            std::vector<uint32> Stats;
+            std::vector<uint32> CombatRatings;
+            std::vector<AuraInfo> AuraInfos;
+            uint32 SpecID;
+            std::vector<uint32> Talents;
+            std::array<uint32, MAX_PVP_TALENT_SLOTS> PvpTalents;
+            std::vector<ArtifactPowerInfo> ArtifactPowerInfos;
+            std::vector<EncounterItemInfo> EncounterItemInfos;
+        };
+
         class InstanceEncounterStart final : public ServerPacket
         {
         public:
@@ -260,26 +294,27 @@ namespace WorldPackets
         class EncounterStart final : public ServerPacket
         {
         public:
-            EncounterStart() : ServerPacket(SMSG_ENCOUNTER_START, 4) { }
+            EncounterStart() : ServerPacket(SMSG_ENCOUNTER_START, 500) { }
 
             WorldPacket const* Write() override;
 
-            uint32 EncounterID = 0;
-            uint32 DifficultyID = 0;
-            uint32 GroupSize = 0;
-            uint32 UnkEncounterDataSize = 0;
+            uint32 EncounterID;
+            uint32 DifficultyID;
+            uint32 GroupSize;
+            std::vector<InstancePlayerData> PlayerDatas;
         };
 
         class EncounterEnd final : public ServerPacket
         {
         public:
-            EncounterEnd() : ServerPacket(SMSG_ENCOUNTER_END, 13) { }
+            EncounterEnd() : ServerPacket(SMSG_ENCOUNTER_END, 4 + 4 + 4 + 1) { }
 
             WorldPacket const* Write() override;
 
             uint32 EncounterID = 0;
             uint32 DifficultyID = 0;
             uint32 GroupSize = 0;
+            uint32 Unk = 0;
             bool Success = false;
         };
 
@@ -318,8 +353,20 @@ namespace WorldPackets
 
             bool ReleaseDisabled = false;
         };
+
+        class InstanceEncounterUpdateAllowingRelease final : public ServerPacket
+        {
+        public:
+            InstanceEncounterUpdateAllowingRelease() : ServerPacket(SMSG_INSTANCE_ENCOUNTER_UPDATE_ALLOW_RELEASE_IN_PROGRESS, 1) { }
+
+            WorldPacket const* Write() override;
+
+            bool ReleaseAllowed = false;
+        };
+
 //DekkCore
     }
 }
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Instance::InstancePlayerData const& instancePlayerData);
 
 #endif // InstancePackets_h__

@@ -18,7 +18,7 @@ enum Spells
     SPELL_FRACKING_TOTEM_CAST = 257480,
     SPELL_FRACKING_TOTEM_STUN = 257481,
     SPELL_FRACKING_TOTEM_SUMMON = 268204,
-   
+
 };
 
 enum Events
@@ -123,12 +123,12 @@ public:
             events.Reset();
         }
 
-        void KilledUnit(Unit* a) override
+        void KilledUnit(Unit* /*a*/) override
         {
             SelectSoundAndText(me, 3);
         }
 
-        void SelectSoundAndText(Creature* me, uint32  selectedTextSound = 0)
+        void SelectSoundAndText(Creature* me, uint32 selectedTextSound = 0)
         {
             if (!me)
                 return;
@@ -176,7 +176,7 @@ public:
             SelectSoundAndText(me, 2);
         }
 
-        void EnterEvadeMode(EvadeReason why) override
+        void EnterEvadeMode(EvadeReason /*why*/) override
         {
             summons.DespawnAll();
             _DespawnAtEvade(15s);
@@ -191,12 +191,12 @@ public:
             for (uint8 i = 0; i < 2; ++i)
                 me->SummonCreature(NPC_FRACKING_TOTEM_PRE, frackingPos[i], TEMPSUMMON_MANUAL_DESPAWN);
 
-           /* if (me->GetMap()->IsMythic() || me->GetMap()->IsHeroic())
-                events.ScheduleEvent(EVENT_TECTONIC_SMASH, TIMER_TECTONIC_SMASH);
+            if (me->GetMap()->IsMythic() || me->GetMap()->IsHeroic())
+                events.ScheduleEvent(EVENT_TECTONIC_SMASH, 40s);
 
-            events.ScheduleEvent(EVENT_CALL_EARTHRAGER, TIMER_CALL_EARTHRAGER);
-            events.ScheduleEvent(EVENT_AZERITE_INFUSION, TIMER_AZERITE_INFUSION);
-            events.ScheduleEvent(EVENT_RESONANT_PULSE, TIMER_RESONANT_PULSE);*/
+            events.ScheduleEvent(EVENT_CALL_EARTHRAGER, 15s);
+            events.ScheduleEvent(EVENT_AZERITE_INFUSION, 28s);
+            events.ScheduleEvent(EVENT_RESONANT_PULSE, 20s);
         }
 
         void OnSpellCast(SpellInfo const* spell) override
@@ -235,7 +235,7 @@ public:
                 case EVENT_RESONANT_PULSE:
                     SelectSoundAndText(me, 7);
                     me->CastSpell(me, SPELL_RESONANT_PULSE);
-                  //  events.ScheduleEvent(EVENT_RESONANT_PULSE, TIMER_RESONANT_PULSE);
+                    events.ScheduleEvent(EVENT_RESONANT_PULSE, 20s);
                     break;
                 case EVENT_AZERITE_INFUSION:
                 {
@@ -251,18 +251,18 @@ public:
                             me->CastSpell(earthrager, SPELL_AZERITE_INFUSION_MISSILE);
                     }
 
-                   // events.ScheduleEvent(EVENT_AZERITE_INFUSION, TIMER_AZERITE_INFUSION);
+                    events.ScheduleEvent(EVENT_AZERITE_INFUSION, 15s);
                     break;
                 }
                 case EVENT_TECTONIC_SMASH:
                     SelectSoundAndText(me, 6);
                     me->CastSpell(me->GetVictim(), SPELL_TECTONIC_SMASH);
-                  //  events.ScheduleEvent(EVENT_TECTONIC_SMASH, TIMER_TECTONIC_SMASH);
+                    events.ScheduleEvent(EVENT_TECTONIC_SMASH, 14s);
                     break;
                 case EVENT_CALL_EARTHRAGER:
                     SelectSoundAndText(me, 5);
                     me->CastSpell(me, SPELL_CALL_EARTHRAGER);
-                   // events.ScheduleEvent(EVENT_CALL_EARTHRAGER, TIMER_CALL_EARTHRAGER);
+                    events.ScheduleEvent(EVENT_CALL_EARTHRAGER, 15s);
                     break;
                 }
             }
@@ -320,7 +320,6 @@ public:
                     {
                         me->CastSpell(target, SPELL_RAGING_GAZE_BEAM, true);
                         me->Attack(target, true);
-                      //  me->AddThreat(target, 999999.9f);
                     }
                     break;
                 case EVENT_JAGGED_CUT:
@@ -384,7 +383,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 diff) override
+        void UpdateAI(uint32 /*diff*/) override
         {
             StunRager();
         }
@@ -401,11 +400,24 @@ class bfa_npc_fracking_totem_selector : public CreatureScript
 public:
     bfa_npc_fracking_totem_selector() : CreatureScript("bfa_npc_fracking_totem_selector") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    struct bfa_npc_fracking_totem_selector_AI : public ScriptedAI
+    {
+        bfa_npc_fracking_totem_selector_AI(Creature* creature) : ScriptedAI(creature)
+        {
+        }
+
+    bool OnGossipHello(Player* player) override
     {
         player->CastSpell(player, SPELL_FRACKING_TOTEM_BUTTON);
-        creature->DespawnOrUnsummon(500ms);
+        me->DespawnOrUnsummon(500ms);
         return true;
+    }
+
+ };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new bfa_npc_fracking_totem_selector_AI(creature);
     }
 };
 
@@ -417,8 +429,6 @@ public:
 
     class bfa_spell_fracking_totem_summon_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_fracking_totem_summon_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -445,7 +455,7 @@ void AddSC_boss_azerokk()
 
     new bfa_npc_earthrager();
     new bfa_npc_fracking_totem();
-//    new bfa_npc_fracking_totem_selector();
+    new bfa_npc_fracking_totem_selector();
 
     new bfa_spell_fracking_totem_summon();
 }

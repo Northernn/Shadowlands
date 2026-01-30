@@ -262,53 +262,6 @@ public:
     }
 };
 
-// achievement egg
-class npc_dresaron_emerald_dragon_egg : public CreatureScript
-{
-public:
-    npc_dresaron_emerald_dragon_egg() : CreatureScript("npc_dresaron_emerald_dragon_egg") {}
-
-    struct npc_dresaron_emerald_dragon_eggAI : public ScriptedAI
-    {
-        npc_dresaron_emerald_dragon_eggAI(Creature* creature) : ScriptedAI(creature)
-        {
-            instance = me->GetInstanceScript();
-            me->SetUnitFlag(UNIT_FLAG_STUNNED);
-        }
-
-        InstanceScript* instance;
-        bool destroed;
-
-        void Reset() override
-        {
-            destroed = false;
-        }
-
-        void MoveInLineOfSight(Unit* who) override
-        {
-            if (who->GetTypeId() != TYPEID_PLAYER || who->ToPlayer()->IsGameMaster())
-                return;
-
-            if (instance->GetBossState(DATA_DRESARON) != IN_PROGRESS)
-                return;
-
-            if ((me->GetDistance(who) < 2.0f) && !destroed)
-            {
-                destroed = true;
-                DoCast(me, SPELL_HATESPAWN_ABOMINATION, true);
-                me->KillSelf();
-            }
-        }
-
-        void UpdateAI(uint32 diff) override {}
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_dresaron_emerald_dragon_eggAI(creature);
-    }
-};
-
 //111008 achievement add
 class npc_dresaron_hatespawn_abomination : public CreatureScript
 {
@@ -348,31 +301,11 @@ public:
     }
 };
 
-class achievement_egg_cellent : public AchievementCriteriaScript
-{
-public:
-    achievement_egg_cellent() : AchievementCriteriaScript("achievement_egg_cellent") { }
-
-    bool OnCheck(Player* /*player*/, Unit* target) override
-    {
-        if (!target)
-            return false;
-
-        if (Creature* boss = target->ToCreature())
-            if (boss->AI()->GetData(ABOMINATION_KILLED))
-                return true;
-
-        return false;
-    }
-};
-
 void AddSC_boss_dresaron()
 {
     new boss_dresaron();
     new npc_dresaron_corrupted_dragon_egg();
     new npc_dresaron_acid_breath_stalker();
     new npc_dresaron_hatespawn_whelpling();
-    new npc_dresaron_emerald_dragon_egg();
     new npc_dresaron_hatespawn_abomination();
-    new achievement_egg_cellent();
 }

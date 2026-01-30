@@ -339,8 +339,6 @@ public:
 
     class spell_ashgolm_frozen_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ashgolm_frozen_AuraScript);
-
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (Creature* caster = GetCaster()->ToCreature())
@@ -374,8 +372,6 @@ public:
 
     class spell_brittle_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_brittle_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (Creature* caster = GetCaster()->ToCreature())

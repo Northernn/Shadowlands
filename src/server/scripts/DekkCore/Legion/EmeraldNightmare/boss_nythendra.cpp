@@ -444,8 +444,6 @@ struct npc_nythendra_corrupted_vermin : public ScriptedAI
 //203095
 class spell_nythendra_rot : public SpellScript
 {
-    PrepareSpellScript(spell_nythendra_rot);
-
     uint8 swarmCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -477,8 +475,6 @@ class spell_nythendra_rot : public SpellScript
 //204463, 203096
 class spell_nythendra_volatile_rot : public AuraScript
 {
-    PrepareAuraScript(spell_nythendra_volatile_rot);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         AuraRemoveMode mode = GetTargetApplication()->GetRemoveMode();
@@ -505,8 +501,6 @@ class spell_nythendra_volatile_rot : public AuraScript
 //204470
 class spell_nythendra_volatile_rot_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_nythendra_volatile_rot_dmg);
-
     void DealDamage()
     {
         if (!GetCaster() || !GetHitUnit())
@@ -533,8 +527,6 @@ class spell_nythendra_volatile_rot_dmg : public SpellScript
 //203536, 203537
 class spell_nythendra_infested_ground_rot : public SpellScript
 {
-    PrepareSpellScript(spell_nythendra_infested_ground_rot);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (!GetCaster())
@@ -566,8 +558,6 @@ class spell_nythendra_infested_ground_rot : public SpellScript
 //203045,202978,203097,204470,203646,205070
 class spell_nythendra_infested : public SpellScript
 {
-    PrepareSpellScript(spell_nythendra_infested);
-
     void HandleOnHit()
     {
         if (!GetCaster() || !GetHitUnit() || GetHitUnit()->HasAura(SPELL_INFESTED_MIND))
@@ -588,8 +578,6 @@ class spell_nythendra_infested : public SpellScript
 //205043
 class spell_nythendra_infested_mind : public AuraScript
 {
-    PrepareAuraScript(spell_nythendra_infested_mind);
-
         void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
     {
         absorbAmount = 1;
@@ -617,8 +605,6 @@ class spell_nythendra_infested_mind : public AuraScript
 //222760
 class spell_en_befoulment : public SpellScript
 {
-    PrepareSpellScript(spell_en_befoulment);
-
     uint8 targetCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)

@@ -1,6 +1,5 @@
 /*
- * Copyright (C) DekkCore
- * Copyright (C) 2016 Firestorm Servers <https://firestorm-servers.com>
+ * Copyright (C) DekkCore Team Devs 
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -219,11 +218,11 @@ class boss_tayak : public CreatureScript
 
                         Position pos = { me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f };
 
-                      /*  for (Player* player : playerList)
+                        for (Player* player : playerList)
                         {
-                            if (player->IsAlive() && !player->HasMovementForce(me->GetGUID()))
-                                player->ApplyMovementForce(me->GetGUID(), pos, 3.f, 0);
-                        }*/
+                            if (player->IsAlive())
+                                player->ApplyMovementForce(me->GetGUID(), pos, 3.f, MovementForceType::Gravity);
+                        }
 
                         // Won't reach the event until 6-7 secs as Ta'yak has UNIT_STATE_CASTING
                         events.ScheduleEvent(EVENT_TAYAK_BT_END, 1s);
@@ -439,14 +438,6 @@ class boss_tayak : public CreatureScript
                     if (Player* l_Player = l_Itr->GetSource())
                         me->CastSpell(l_Player, SPELL_LORD_TAYAK_BONUS, true);
                 }
-
-                /*if (me->GetMap()->IsLFR())
-                {
-                    me->ResetLootRecipients();
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->GetSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                }*/
             }
 
             void JustSummoned(Creature* summon) override
@@ -530,13 +521,6 @@ class boss_tayak : public CreatureScript
 
             void UpdateAI(const uint32 diff) override
             {
-                /*if (me->EvadeModeIsDisable() && pInstance && pInstance->IsWipe())
-                {
-                    me->ReenableEvadeMode();
-                    me->ReenableHealthRegen();
-                    EnterEvadeMode(EVADE_REASON_OTHER);
-                    return;
-                }*/
 
                 if ((!UpdateVictim() && !unseenReturn) || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -1070,8 +1054,6 @@ class spell_wind_step : public SpellScriptLoader
 
         class spell_wind_stepSpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_wind_stepSpellScript);
-
             void Apply()
             {
                 if (Unit* caster = GetCaster())
@@ -1106,8 +1088,6 @@ class spell_tayak_wind_step: public SpellScriptLoader
 
         class spell_tayak_wind_stepAuraScript: public AuraScript
         {
-            PrepareAuraScript(spell_tayak_wind_stepAuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1134,8 +1114,6 @@ class spell_unseen_strike_aura : public SpellScriptLoader
 
         class spell_unseen_strike_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_unseen_strike_SpellScript);
-
             void HandleHit(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1163,8 +1141,6 @@ class spell_unseen_strike_dmg : public SpellScriptLoader
 
         class spell_unseen_strike_dmgSpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_unseen_strike_dmgSpellScript);
-
             int32 numTargets;
 
             void CountTargets(std::list<WorldObject*>& targets)
@@ -1199,8 +1175,6 @@ class spell_tayak_storms_vehicle: public SpellScriptLoader
 
         class spell_tayak_storms_vehicleSpellScript: public SpellScript
         {
-            PrepareSpellScript(spell_tayak_storms_vehicleSpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 if (targets.empty())
@@ -1244,8 +1218,6 @@ class spell_tayak_storm_unleashed_dmg: public SpellScriptLoader
 
         class spell_tayak_storm_unleashed_dmgSpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_tayak_storm_unleashed_dmgSpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -1281,8 +1253,6 @@ class spell_tempest_slash : public SpellScriptLoader
 
         class spell_tempest_slash_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_tempest_slash_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1309,8 +1279,6 @@ class spell_tayak_su_visual : public SpellScriptLoader
 
         class spell_tayak_su_visualAuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_tayak_su_visualAuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1337,8 +1305,6 @@ class spell_su_dummy_visual : public SpellScriptLoader
 
         class spell_su_dummy_visualAuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_su_dummy_visualAuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1365,8 +1331,6 @@ class spell_gale_winds : public SpellScriptLoader
 
         class spell_gale_windsAuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_gale_windsAuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1393,8 +1357,6 @@ class spell_su_dummy : public SpellScriptLoader
 
         class spell_su_dummy_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_su_dummy_SpellScript);
-
             void HandleHit(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1426,8 +1388,6 @@ class spell_su_dumaura : public SpellScriptLoader
 
         class spell_su_dumaura_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_su_dumaura_SpellScript);
-
             void HandleHit(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1460,8 +1420,6 @@ class spell_blade_tempest : public SpellScriptLoader
 
         class spell_blade_tempest_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_blade_tempest_SpellScript);
-
             void PullRaid()
             {
                 if (Unit* Tayak = GetCaster())

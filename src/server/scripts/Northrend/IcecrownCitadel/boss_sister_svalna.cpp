@@ -746,7 +746,7 @@ struct npc_crok_scourgebane : public EscortAI
                     Talk(SAY_CROK_INTRO_3);
                     break;
                 case EVENT_START_PATHING:
-                    Start(true, true);
+                    Start(true);
                     break;
                 case EVENT_SCOURGE_STRIKE:
                     DoCastVictim(SPELL_SCOURGE_STRIKE);
@@ -833,7 +833,7 @@ public:
                 me->SetReactState(REACT_DEFENSIVE);
                 FollowAngle = me->GetAbsoluteAngle(crok) + me->GetOrientation();
                 FollowDist = me->GetDistance2d(crok);
-                me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, MOTION_SLOT_DEFAULT);
+                me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, {}, MOTION_SLOT_DEFAULT);
             }
 
             me->setActive(true);
@@ -874,7 +874,7 @@ public:
         {
             me->GetMotionMaster()->Clear();
             if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
-                me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, MOTION_SLOT_DEFAULT);
+                me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, {}, MOTION_SLOT_DEFAULT);
         }
 
         Reset();
@@ -960,7 +960,8 @@ struct npc_captain_arnath : public npc_argent_captainAI
                 case EVENT_ARNATH_PW_SHIELD:
                 {
                     std::list<Creature*> targets = DoFindFriendlyMissingBuff(40.0f, SPELL_POWER_WORD_SHIELD);
-                    DoCast(Trinity::Containers::SelectRandomContainerElement(targets), SPELL_POWER_WORD_SHIELD);
+                    if (!targets.empty())
+                        DoCast(Trinity::Containers::SelectRandomContainerElement(targets), SPELL_POWER_WORD_SHIELD);
                     Events.ScheduleEvent(EVENT_ARNATH_PW_SHIELD, 15s, 20s);
                     break;
                 }
@@ -1419,8 +1420,6 @@ public:
 // 70053 - Revive Champion
 class spell_svalna_revive_champion : public SpellScript
 {
-    PrepareSpellScript(spell_svalna_revive_champion);
-
     void RemoveAliveTarget(std::list<WorldObject*>& targets)
     {
         targets.remove_if(ICCSvalnaAliveCheck());
@@ -1450,8 +1449,6 @@ class spell_svalna_revive_champion : public SpellScript
 // 71462 - Remove Spear
 class spell_svalna_remove_spear : public SpellScript
 {
-    PrepareSpellScript(spell_svalna_remove_spear);
-
     void HandleScript(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);

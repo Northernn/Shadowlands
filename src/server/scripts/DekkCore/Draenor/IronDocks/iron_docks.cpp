@@ -917,128 +917,6 @@ public:
     }
 };
 
-/// Iron Star - 812477
-class iron_docks_mob_iron_star : public CreatureScript
-{
-public:
-
-    iron_docks_mob_iron_star() : CreatureScript("iron_docks_mob_iron_star") { }
-
-    struct iron_docks_mob_iron_starAI : public ScriptedAI
-    {
-        iron_docks_mob_iron_starAI(Creature* p_Creature) : ScriptedAI(p_Creature)
-        {
-            m_Instance = me->GetInstanceScript();
-            m_Activated = false;
-            m_Event = false;
-        }
-
-        enum eIronStarSpells
-        {
-            /// Iron Star - Object
-            SpellQuietSuicide = 163832,
-            SpellAlert = 149814,
-            SpellCrushed = 167847
-        };
-
-        enum eIronStarSpellVisualKit
-        {
-            SpellVisualKitAlert = 47409
-        };
-
-        InstanceScript* m_Instance;
-        bool m_Activated;
-        bool m_Event;
-
-        void Reset() override
-        {
-            events.Reset();
-            m_Activated = true;
-            ClearDelayedOperations();
-            me->SetFaction(FriendlyFaction);
-            me->SetReactState(ReactStates::REACT_PASSIVE);
-
-            AddTimedDelayedOperation(6 * TimeConstants::IN_MILLISECONDS, [this]() -> void
-            {
-                m_Activated = false;
-                me->CastSpell(me, eIronStarSpells::SpellQuietSuicide, true);
-
-                AddTimedDelayedOperation(8 * TimeConstants::IN_MILLISECONDS, [this]() -> void
-                {
-                    me->DespawnOrUnsummon(2s);
-                });
-            });
-
-            /// Takes iron star orientation
-            if (TempSummon* l_TempSummon = me->ToTempSummon())
-            {
-                if (WorldObject* l_Summoner = l_TempSummon->GetSummoner())
-                {
-                    float l_X = l_Summoner->m_positionX + 220 * cos(l_Summoner->GetOrientation());
-                    float l_Y = l_Summoner->m_positionY + 220 * sin(l_Summoner->GetOrientation());
-
-                    me->GetMotionMaster()->MoveCharge(l_X, l_Y, me->GetPositionZ(), 42.0f, eMovementInformed::MovementInformedIronStarWallContact);
-                }
-            }
-
-            me->SetUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
-        }
-
-        void UpdateAI(uint32 const p_Diff) override
-        {
-
-            if (m_Instance != nullptr)
-            {
-                if (m_Activated)
-                {
-                    std::list<Unit*> unfriendlyList;
-                    Trinity::AnyUnfriendlyUnitInObjectRangeCheck checker(me, me, 4.0f);
-                    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, unfriendlyList, checker);
-                    Cell::VisitAllObjects(me, searcher, 3.4f);
-
-                    for (Unit* unit : unfriendlyList)
-                    {
-                        if (unit->GetTypeId() == TypeID::TYPEID_PLAYER)
-                            continue;
-
-                        if (unit->ToCreature()->GetEntry() == eIronDocksCreatures::CreatureIronStar)
-                            continue;
-
-                        if (unit->ToCreature()->GetEntry() == eIronDocksCreatures::CreatureArcheryTarget)
-                            continue;
-
-                        unit->SetFacingToObject(me);
-                        unit->SendPlaySpellVisualKit(eIronStarSpellVisualKit::SpellVisualKitAlert, 0, 0);
-                        unit->CastSpell(unit, eIronStarSpells::SpellCrushed);
-                        unit->KillSelf(unit);
-                    }
-                }
-
-                if (!m_Event)
-                {
-                    if (Player* l_Player = me->SelectNearestPlayer(2.0f))
-                    {
-                        if (Creature* l_Skulloc = m_Instance->instance->GetCreature(m_Instance->GetGuidData(eIronDocksDatas::DataSkulloc)))
-                        {
-                            if (l_Skulloc->IsAIEnabled())
-                            {
-                                m_Event = true;
-                                l_Skulloc->GetAI()->DoAction(eIronDocksActions::ActionActivateBridgeBombardmement);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* p_Creature) const override
-    {
-        return new iron_docks_mob_iron_starAI(p_Creature);
-    }
-};
-
-
 /// Ogron Laborer - 83578
 class iron_docks_mob_laborer_ogron : public CreatureScript
 {
@@ -1717,8 +1595,6 @@ public:
 
     class iron_docks_auras : public AuraScript
     {
-        PrepareAuraScript(iron_docks_auras);
-
         enum eOrgonSpells
         {
             SpellFlurryDamage = 178414
@@ -1764,8 +1640,6 @@ public:
 
     class iron_docks_spell_charge_forward_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_spell_charge_forward_SpellScript);
-
         enum eIronStarSpellChargeForwardNpc
         {
             CreatureIronStarNpc = 812477
@@ -1805,8 +1679,6 @@ public:
 
     class iron_docks_spell_lava_blast_AuraScript : public AuraScript
     {
-        PrepareAuraScript(iron_docks_spell_lava_blast_AuraScript);
-
         enum eLavaBlastSpells
         {
             SpellLavaBlastTriggerMissile = 173516
@@ -1847,8 +1719,6 @@ public:
 
     class iron_docks_auraScript : public AuraScript
     {
-        PrepareAuraScript(iron_docks_auraScript);
-
         enum eBarbedarrowSpells
         {
             SpellBarbedArrowAreaTrigger = 164278
@@ -1889,8 +1759,6 @@ public:
 
     class iron_docks_spell_barbed_arrow_dummy_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_spell_barbed_arrow_dummy_SpellScript);
-
         enum eBarbedArrowSpells
         {
             SpellBarbedArrowAura = 164370
@@ -1923,8 +1791,6 @@ public:
 
     class iron_docks_spell_trampling_stampede_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_spell_trampling_stampede_SpellScript);
-
         enum eTramplingStampedeSpells
         {
             SpellClefthoofStampedeVisualMovement = 173350,
@@ -1976,8 +1842,6 @@ public:
 
     class iron_docks_Spells : public AuraScript
     {
-        PrepareAuraScript(iron_docks_Spells);
-
         enum eBurningArrowSpells
         {
             SpellBurningArrowDummy = 172810,
@@ -2020,8 +1884,6 @@ public:
 
     class spells_iron_docks_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spells_iron_docks_SpellScript);
-
         enum eChargingSlashSpells
         {
             SpellChargingSlash = 172889,
@@ -2058,8 +1920,6 @@ public:
 
     class iron_docks_spells : public SpellScript
     {
-        PrepareSpellScript(iron_docks_spells);
-
         enum eLavaBarrageSpells
         {
             SpellLavaBarrageDummy = 176356,
@@ -2337,49 +2197,6 @@ public:
     }
 };
 
-/// Lava Blast - 173518 
-class iron_docks_area_trigger_lava_blast : public AreaTriggerEntityScript
-{
-public:
-
-    iron_docks_area_trigger_lava_blast() : AreaTriggerEntityScript("iron_docks_area_trigger_lava_blast") { }
-
-    enum eCaltTrapsSpells
-    {
-        SpellLavaBlastDot = 173517
-    };
-
-    struct iron_docks_area_trigger_lava_blast_AI : public AreaTriggerAI
-    {
-        explicit iron_docks_area_trigger_lava_blast_AI(AreaTrigger* at) : AreaTriggerAI(at) {    }
-
-        void OnRemove() override
-        {
-            for (auto & it : at->GetInsideUnits())
-                if (Unit* ptr = ObjectAccessor::GetUnit(*at, it))
-                    if (ptr && ptr->HasAura(eCaltTrapsSpells::SpellLavaBlastDot))
-                        ptr->RemoveAura(eCaltTrapsSpells::SpellLavaBlastDot);
-        }
-
-        void OnUnitEnter(Unit* target) override
-        {
-            if (target && at->GetCaster()->IsValidAttackTarget(target))
-                at->GetCaster()->CastSpell(target, eCaltTrapsSpells::SpellLavaBlastDot, true);
-        }
-
-        void OnUnitExit(Unit* target) override
-        {
-            if (target && target->HasAura(eCaltTrapsSpells::SpellLavaBlastDot))
-                target->RemoveAurasDueToSpell(eCaltTrapsSpells::SpellLavaBlastDot);
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* at) const override
-    {
-        return new iron_docks_area_trigger_lava_blast_AI(at);
-    }
-};
-
 void AddSC_iron_docks()
 {
     new iron_docks_mob_gromkar_battlemaster(); /// 83025
@@ -2390,7 +2207,6 @@ void AddSC_iron_docks()
     new iron_docks_mob_siege_master_olugar(); /// 83026
     new iron_docks_mob_champion_darona(); /// 81603
     new iron_docks_mob_gwarnok(); /// 84520
-    new iron_docks_mob_iron_star(); /// 812477
     new iron_docks_mob_iron_star_vehicle(); /// 81247
     new iron_docks_mob_laborer_ogron(); /// 83578
     new iron_docks_mob_gromkar_deck_hand(); /// 83762
@@ -2413,5 +2229,4 @@ void AddSC_iron_docks()
     new iron_docks_area_trigger_barbed_arrow(); ///164278 
     new iron_docks_area_trigger_oil_effect();///172629
     new iron_docks_area_trigger_jagged_caltrops();///173325 
-    new iron_docks_area_trigger_lava_blast();///173518
 }

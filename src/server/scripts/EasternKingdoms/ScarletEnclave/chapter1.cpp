@@ -224,7 +224,7 @@ public:
                     else
                     {
                         me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
-                        //TC_LOG_DEBUG("scripts", "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
+                        //TC_LOG_DEBUG("scripts", "npc_unworthy_initiateAI: move to {} {} {}", anchorX, anchorY, me->GetPositionZ());
                         phase = PHASE_EQUIPING;
                         wait_timer = 0;
                     }
@@ -355,8 +355,6 @@ class go_acherus_soul_prison : public GameObjectScript
 // 51519 - Death Knight Initiate Visual
 class spell_death_knight_initiate_visual : public SpellScript
 {
-    PrepareSpellScript(spell_death_knight_initiate_visual);
-
     void HandleScriptEffect(SpellEffIndex /* effIndex */)
     {
         Creature* target = GetHitCreature();
@@ -477,7 +475,7 @@ struct npc_eye_of_acherus : public ScriptedAI
                     break;
                 case EVENT_LAUNCH_TOWARDS_DESTINATION:
                 {
-                    std::function<void(Movement::MoveSplineInit&)> initializer = [=](Movement::MoveSplineInit& init)
+                    std::function<void(Movement::MoveSplineInit&)> initializer = [=, me = me](Movement::MoveSplineInit& init)
                     {
                         Movement::PointsArray path(EyeOfAcherusPath, EyeOfAcherusPath + EyeOfAcherusPathSize);
                         init.MovebyPath(path);
@@ -520,185 +518,6 @@ struct npc_eye_of_acherus : public ScriptedAI
 
 private:
     EventMap _events;
-};
-
-/*######
-## npc_death_knight_initiate
-######*/
-
-enum Spells_DKI
-{
-    SPELL_DUEL                  = 52996,
-    //SPELL_DUEL_TRIGGERED        = 52990,
-    SPELL_DUEL_VICTORY          = 52994,
-    SPELL_DUEL_FLAG             = 52991,
-    SPELL_GROVEL                = 7267,
-};
-
-enum Says_VBM
-{
-    SAY_DUEL                    = 0,
-};
-
-enum Misc_VBN
-{
-    QUEST_DEATH_CHALLENGE = 12733
-};
-
-class npc_death_knight_initiate : public CreatureScript
-{
-public:
-    npc_death_knight_initiate() : CreatureScript("npc_death_knight_initiate") { }
-
-    struct npc_death_knight_initiateAI : public CombatAI
-    {
-        npc_death_knight_initiateAI(Creature* creature) : CombatAI(creature)
-        {
-            Initialize();
-        }
-
-        void Initialize()
-        {
-            m_uiDuelerGUID.Clear();
-            m_uiDuelTimer = 5000;
-            m_bIsDuelInProgress = false;
-            lose = false;
-        }
-
-        bool lose;
-        ObjectGuid m_uiDuelerGUID;
-        uint32 m_uiDuelTimer;
-        bool m_bIsDuelInProgress;
-
-        void Reset() override
-        {
-            Initialize();
-
-            me->RestoreFaction();
-            CombatAI::Reset();
-            me->SetUnitFlag(UNIT_FLAG_CAN_SWIM);
-        }
-
-        void SpellHit(WorldObject* caster, SpellInfo const* spellInfo) override
-        {
-            if (!m_bIsDuelInProgress && spellInfo->Id == SPELL_DUEL)
-            {
-                m_uiDuelerGUID = caster->GetGUID();
-                Talk(SAY_DUEL, caster);
-                m_bIsDuelInProgress = true;
-            }
-        }
-
-       void DamageTaken(Unit* pDoneBy, uint32 &uiDamage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-        {
-            if (m_bIsDuelInProgress && pDoneBy && pDoneBy->IsControlledByPlayer())
-            {
-                if (pDoneBy->GetGUID() != m_uiDuelerGUID && pDoneBy->GetOwnerGUID() != m_uiDuelerGUID) // other players cannot help
-                    uiDamage = 0;
-                else if (uiDamage >= me->GetHealth())
-                {
-                    uiDamage = 0;
-
-                    if (!lose)
-                    {
-                        pDoneBy->RemoveGameObject(SPELL_DUEL_FLAG, true);
-                        pDoneBy->AttackStop();
-                        me->CastSpell(pDoneBy, SPELL_DUEL_VICTORY, true);
-                        lose = true;
-                        me->CastSpell(me, SPELL_GROVEL, true);
-                        me->RestoreFaction();
-                    }
-                }
-            }
-        }
-
-        void UpdateAI(uint32 uiDiff) override
-        {
-            if (!UpdateVictim())
-            {
-                if (m_bIsDuelInProgress)
-                {
-                    if (m_uiDuelTimer <= uiDiff)
-                    {
-                        me->SetFaction(FACTION_UNDEAD_SCOURGE_2);
-
-                        if (Unit* unit = ObjectAccessor::GetUnit(*me, m_uiDuelerGUID))
-                            AttackStart(unit);
-                    }
-                    else
-                        m_uiDuelTimer -= uiDiff;
-                }
-                return;
-            }
-
-            if (m_bIsDuelInProgress)
-            {
-                if (lose)
-                {
-                    if (!me->HasAura(SPELL_GROVEL))
-                        EnterEvadeMode();
-                    return;
-                }
-                else if (me->GetVictim() && me->EnsureVictim()->GetTypeId() == TYPEID_PLAYER && me->EnsureVictim()->HealthBelowPct(10))
-                {
-                    me->EnsureVictim()->CastSpell(me->GetVictim(), SPELL_GROVEL, true); // beg
-                    me->EnsureVictim()->RemoveGameObject(SPELL_DUEL_FLAG, true);
-                    EnterEvadeMode();
-                    return;
-                }
-            }
-
-            /// @todo spells
-
-            CombatAI::UpdateAI(uiDiff);
-        }
-
-        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
-        {
-            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
-            ClearGossipMenuFor(player);
-            if (action == GOSSIP_ACTION_INFO_DEF)
-            {
-                CloseGossipMenuFor(player);
-
-                if (player->IsInCombat() || me->IsInCombat())
-                    return true;
-
-                if (m_bIsDuelInProgress)
-                    return true;
-
-                me->SetImmuneToPC(false);
-                me->RemoveUnitFlag(UNIT_FLAG_CAN_SWIM);
-
-                player->CastSpell(me, SPELL_DUEL, false);
-                player->CastSpell(player, SPELL_DUEL_FLAG, true);
-            }
-            return true;
-        }
-
-        bool OnGossipHello(Player* player) override
-        {
-            uint32 gossipMenuId = Player::GetDefaultGossipMenuForSource(me);
-            InitGossipMenuFor(player, gossipMenuId);
-            if (player->GetQuestStatus(QUEST_DEATH_CHALLENGE) == QUEST_STATUS_INCOMPLETE && me->IsFullHealth())
-            {
-                if (player->HealthBelowPct(10))
-                    return true;
-
-                if (player->IsInCombat() || me->IsInCombat())
-                    return true;
-
-                AddGossipItemFor(player, gossipMenuId, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-                SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
-            }
-            return true;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_death_knight_initiateAI(creature);
-    }
 };
 
 /*######
@@ -841,8 +660,6 @@ enum HorseSeats
 // 52265 - Repo
 class spell_stable_master_repo : public AuraScript
 {
-    PrepareAuraScript(spell_stable_master_repo);
-
     void AfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Creature* creature = GetTarget()->ToCreature();
@@ -865,8 +682,6 @@ class spell_stable_master_repo : public AuraScript
 // 52264 - Deliver Stolen Horse
 class spell_deliver_stolen_horse : public SpellScript
 {
-    PrepareSpellScript(spell_deliver_stolen_horse);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DELIVER_STOLEN_HORSE, SPELL_EFFECT_STOLEN_HORSE });
@@ -1079,8 +894,6 @@ enum GiftOfTheHarvester
 // 52479 - Gift of the Harvester
 class spell_gift_of_the_harvester : public SpellScript
 {
-    PrepareSpellScript(spell_gift_of_the_harvester);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo(
@@ -1125,8 +938,6 @@ enum Runeforging
    327082 - Rune of the Apocalypse */
 class spell_chapter1_runeforging_credit : public SpellScript
 {
-    PrepareSpellScript(spell_chapter1_runeforging_credit);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_RUNEFORGING_CREDIT }) &&
@@ -1136,8 +947,8 @@ class spell_chapter1_runeforging_credit : public SpellScript
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Player* caster = GetCaster()->ToPlayer())
-            if (caster->GetQuestStatus(QUEST_RUNEFORGING) == QUEST_STATUS_INCOMPLETE)
-                caster->CastSpell(caster, SPELL_RUNEFORGING_CREDIT);
+            if (caster->HasQuest(QUEST_RUNEFORGING))
+                caster->CastSpell(caster, SPELL_RUNEFORGING_CREDIT, true);
     }
 
     void Register() override
@@ -1153,7 +964,6 @@ void AddSC_the_scarlet_enclave_c1()
     new go_acherus_soul_prison();
     RegisterSpellScript(spell_death_knight_initiate_visual);
     RegisterCreatureAI(npc_eye_of_acherus);
-    new npc_death_knight_initiate();
     RegisterCreatureAI(npc_dark_rider_of_acherus);
     new npc_salanar_the_horseman();
     RegisterSpellScript(spell_stable_master_repo);

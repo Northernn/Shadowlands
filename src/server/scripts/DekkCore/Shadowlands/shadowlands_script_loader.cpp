@@ -21,7 +21,8 @@ void AddSC_zone_exiles_reach_horde();
 void AddSC_zone_exiles_reach_phasehandler();
 void AddSC_zone_bastion();
 void AddSC_zone_korthia();
-void AddSC_zone_the_maw();
+void AddSC_zone_the_maw_part_one();
+void AddSC_zone_the_maw_part_two();
 void AddSC_zone_oribos();
 void AddSC_zone_maldraxxus();
 void AddSC_zone_ardenweald();
@@ -88,9 +89,13 @@ void AddSC_boss_tredova();
 //Ardenweald
 void AddSC_Scenario_battle_of_ardenweald();
 //Sanguine Depths
-void AddSC_instance_sanquine_depths();
+void AddSC_instance_sanguine_depths();
+void AddSC_boss_kryxis_the_voracious();
+void AddSC_boss_executor_tarvold();
+void AddSC_boss_grand_proctor_beryllia();
+void AddSC_boss_general_kaal();
 //Halls of Atonement
-void AddSC_instance_halls_of_attonement(); 
+void AddSC_instance_halls_of_attonement();
 void AddSC_boss_echelon();
 void AddSC_boss_halkias();
 void AddSC_boss_high_adjuticator_aleez();
@@ -110,6 +115,12 @@ void AddSC_boss_valinor();
 //Sepulcher of First Ones
 void AddSC_boss_anduin_wrynn();
 void AddSC_instance_sepulcher_of_the_first_ones();
+//Scenario primus
+void AddSC_Scenario_defending_the_primus();
+//Thorgast
+void AddSC_TorghastSpells();
+void AddSC_instance_torgast_tower_of_the_damned();
+void AddSC_TorghastMain();
 
 void Add_DekkCore_ShadowlandsScripts()
 {
@@ -119,7 +130,8 @@ void Add_DekkCore_ShadowlandsScripts()
     AddSC_zone_exiles_reach_phasehandler();
 	AddSC_zone_bastion();
 	AddSC_zone_korthia();
-	AddSC_zone_the_maw();
+    AddSC_zone_the_maw_part_one();
+    AddSC_zone_the_maw_part_two();
 	AddSC_zone_oribos();
 	AddSC_zone_maldraxxus();
 	AddSC_zone_ardenweald();
@@ -185,7 +197,11 @@ void Add_DekkCore_ShadowlandsScripts()
     //Ardenweald
     AddSC_Scenario_battle_of_ardenweald();
 	//Sanguine Depths
-	AddSC_instance_sanquine_depths();
+	AddSC_instance_sanguine_depths();
+    AddSC_boss_kryxis_the_voracious();
+    AddSC_boss_executor_tarvold();
+    AddSC_boss_grand_proctor_beryllia();
+    AddSC_boss_general_kaal();
 	//Halls of Atonement
 	AddSC_instance_halls_of_attonement();
     AddSC_boss_echelon();
@@ -207,4 +223,10 @@ void Add_DekkCore_ShadowlandsScripts()
     //Sepulcher Of first Ones
     AddSC_boss_anduin_wrynn();
     AddSC_instance_sepulcher_of_the_first_ones();
+    //Scenario primus
+    AddSC_Scenario_defending_the_primus();
+    //Thorgast
+    AddSC_TorghastSpells();
+    AddSC_instance_torgast_tower_of_the_damned();
+    AddSC_TorghastMain();
 }

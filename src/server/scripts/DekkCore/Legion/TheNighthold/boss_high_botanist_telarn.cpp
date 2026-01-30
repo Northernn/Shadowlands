@@ -1531,8 +1531,6 @@ struct npc_telarn_toxic_spore : public ScriptedAI
 //218508
 class spell_telarn_recursive_strikes : public SpellScript
 {
-    PrepareSpellScript(spell_telarn_recursive_strikes);
-
     void Damage(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit())
@@ -1554,8 +1552,6 @@ class spell_telarn_recursive_strikes : public SpellScript
 //218304
 class spell_telarn_parasitic_fetter : public AuraScript
 {
-    PrepareAuraScript(spell_telarn_parasitic_fetter);
-
     float mod = 1.0f;
 
     void HandlePeriodicTick(AuraEffect const* aurEff)
@@ -1582,8 +1578,6 @@ class spell_telarn_parasitic_fetter : public AuraScript
 //218342
 class spell_telarn_parasitic_fixate : public AuraScript
 {
-    PrepareAuraScript(spell_telarn_parasitic_fixate);
-
     void OnTick(AuraEffect const* aurEff)
     {
         if (!GetCaster() || !GetCaster()->IsAlive())
@@ -1599,8 +1593,6 @@ class spell_telarn_parasitic_fixate : public AuraScript
 //219278
 class spell_telarn_parasitic_fetter_mark : public AuraScript
 {
-    PrepareAuraScript(spell_telarn_parasitic_fetter_mark);
-
     uint16 m_checkTimer = 500;
 
     void OnUpdate(AuraEffect const* aurEff)
@@ -1679,8 +1671,6 @@ class spell_telarn_parasitic_fetter_mark : public AuraScript
 //219248
 class spell_telarn_rampant_growth : public AuraScript
 {
-    PrepareAuraScript(spell_telarn_rampant_growth);
-
     uint8 tick = 0;
 
     void OnTick(AuraEffect const* aurEff)
@@ -1713,8 +1703,6 @@ class spell_telarn_rampant_growth : public AuraScript
 //218780
 class spell_telarn_plasma_explosion : public SpellScript
 {
-    PrepareSpellScript(spell_telarn_plasma_explosion);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit())
@@ -1736,8 +1724,6 @@ class spell_telarn_plasma_explosion : public SpellScript
 //218809
 class spell_telarn_call_of_night_aura : public AuraScript
 {
-    PrepareAuraScript(spell_telarn_call_of_night_aura);
-
     //FIXME! Need Timing
     uint32 m_checkTimer = urand(10, 30) * IN_MILLISECONDS;
 
@@ -1792,8 +1778,6 @@ class spell_telarn_call_of_night_aura : public AuraScript
 //218820
 class spell_telarn_arcane_eclipse_filter : public SpellScript
 {
-    PrepareSpellScript(spell_telarn_arcane_eclipse_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster() || !GetOriginalCaster())
@@ -1836,8 +1820,6 @@ class spell_telarn_arcane_eclipse_filter : public SpellScript
 //218503
 class spell_telarn_recursive_strikes_dummy : public AuraScript
 {
-    PrepareAuraScript(spell_telarn_recursive_strikes_dummy);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (!GetCaster() || !GetTarget() || GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE || !GetCaster()->GetMap()->IsMythic())
@@ -1856,8 +1838,6 @@ class spell_telarn_recursive_strikes_dummy : public AuraScript
 //216896
 class spell_telarn_share_health : public SpellScript
 {
-    PrepareSpellScript(spell_telarn_share_health);
-
     uint64 health{};
 
     void FilterTargets(std::list<WorldObject*>& targets)

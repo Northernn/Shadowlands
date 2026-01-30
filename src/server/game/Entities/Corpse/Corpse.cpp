@@ -76,8 +76,8 @@ bool Corpse::Create(ObjectGuid::LowType guidlow, Player* owner)
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.player", "Corpse (guidlow " UI64FMTD ", owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
-            guidlow, owner->GetName().c_str(), owner->GetPositionX(), owner->GetPositionY());
+        TC_LOG_ERROR("entities.player", "Corpse (guidlow {}, owner {}) not created. Suggested coordinates isn't valid (X: {} Y: {})",
+            guidlow, owner->GetName(), owner->GetPositionX(), owner->GetPositionY());
         return false;
     }
 
@@ -108,26 +108,26 @@ void Corpse::SaveToDB()
     DeleteFromDB(trans);
 
     std::ostringstream items;
-    for (uint16 index = 0; index < EQUIPMENT_SLOT_END; ++index)
+    for (size_t index = 0; index < m_corpseData->Items.size(); ++index)
         items << m_corpseData->Items[index] << ' ';
 
     uint16 index = 0;
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CORPSE);
     stmt->setUInt64(index++, GetOwnerGUID().GetCounter());                            // guid
-    stmt->setFloat (index++, GetPositionX());                                         // posX
-    stmt->setFloat (index++, GetPositionY());                                         // posY
-    stmt->setFloat (index++, GetPositionZ());                                         // posZ
-    stmt->setFloat (index++, GetOrientation());                                       // orientation
+    stmt->setFloat(index++, GetPositionX());                                         // posX
+    stmt->setFloat(index++, GetPositionY());                                         // posY
+    stmt->setFloat(index++, GetPositionZ());                                         // posZ
+    stmt->setFloat(index++, GetOrientation());                                       // orientation
     stmt->setUInt16(index++, GetMapId());                                             // mapId
     stmt->setUInt32(index++, m_corpseData->DisplayID);                                // displayId
     stmt->setString(index++, items.str());                                            // itemCache
-    stmt->setUInt8 (index++, m_corpseData->RaceID);                                   // race
-    stmt->setUInt8 (index++, m_corpseData->Class);                                    // class
-    stmt->setUInt8 (index++, m_corpseData->Sex);                                      // gender
-    stmt->setUInt8 (index++, m_corpseData->Flags);                                    // flags
-    stmt->setUInt8 (index++, m_corpseData->DynamicFlags);                             // dynFlags
+    stmt->setUInt8(index++, m_corpseData->RaceID);                                   // race
+    stmt->setUInt8(index++, m_corpseData->Class);                                    // class
+    stmt->setUInt8(index++, m_corpseData->Sex);                                      // gender
+    stmt->setUInt8(index++, m_corpseData->Flags);                                    // flags
+    stmt->setUInt8(index++, m_corpseData->DynamicFlags);                             // dynFlags
     stmt->setUInt32(index++, uint32(m_time));                                         // time
-    stmt->setUInt8 (index++, GetType());                                              // corpseType
+    stmt->setUInt8(index++, GetType());                                              // corpseType
     stmt->setUInt32(index++, GetInstanceId());                                        // instanceId
     trans->Append(stmt);
 
@@ -183,10 +183,10 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
     //        0     1     2     3            4      5          6          7     8      9       10     11        12    13          14          15
     // SELECT posX, posY, posZ, orientation, mapId, displayId, itemCache, race, class, gender, flags, dynFlags, time, corpseType, instanceId, guid FROM corpse WHERE mapId = ? AND instanceId = ?
 
-    float posX   = fields[0].GetFloat();
-    float posY   = fields[1].GetFloat();
-    float posZ   = fields[2].GetFloat();
-    float o      = fields[3].GetFloat();
+    float posX = fields[0].GetFloat();
+    float posY = fields[1].GetFloat();
+    float posZ = fields[2].GetFloat();
+    float o = fields[3].GetFloat();
     uint32 mapId = fields[4].GetUInt16();
 
     Object::_Create(ObjectGuid::Create<HighGuid::Corpse>(mapId, 0, guid));
@@ -194,8 +194,8 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
     SetObjectScale(1.0f);
     SetDisplayId(fields[5].GetUInt32());
     std::vector<std::string_view> items = Trinity::Tokenize(fields[6].GetStringView(), ' ', false);
-    if (items.size() == EQUIPMENT_SLOT_END)
-        for (uint32 index = 0; index < EQUIPMENT_SLOT_END; ++index)
+    if (items.size() == m_corpseData->Items.size())
+        for (size_t index = 0; index < m_corpseData->Items.size(); ++index)
             SetItem(index, Trinity::StringTo<uint32>(items[index]).value_or(0));
 
     SetRace(fields[7].GetUInt8());
@@ -208,7 +208,7 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 
     m_time = time_t(fields[12].GetUInt32());
 
-    uint32 instanceId  = fields[14].GetUInt32();
+    uint32 instanceId = fields[14].GetUInt32();
 
     // place
     SetLocationInstanceId(instanceId);
@@ -217,8 +217,8 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.player", "Corpse (%s, owner: %s) is not created, given coordinates are not valid (X: %f, Y: %f, Z: %f)",
-            GetGUID().ToString().c_str(), GetOwnerGUID().ToString().c_str(), posX, posY, posZ);
+        TC_LOG_ERROR("entities.player", "Corpse ({}, owner: {}) is not created, given coordinates are not valid (X: {}, Y: {}, Z: {})",
+            GetGUID().ToString(), GetOwnerGUID().ToString(), posX, posY, posZ);
         return false;
     }
 

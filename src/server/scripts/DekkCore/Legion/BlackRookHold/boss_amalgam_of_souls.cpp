@@ -295,94 +295,94 @@ struct npc_soul_echoes_stalker : public ScriptedAI
         }
     }
 };
-
 //
-struct npc_soul_echoes_outro : public ScriptedAI
-{
-    npc_soul_echoes_outro(Creature* creature) : ScriptedAI(creature)
-    {
-        instance = me->GetInstanceScript();
-        instance->SetData(DATA_AMALGAM_OUTRO, IN_PROGRESS);
-    }
-
-    EventMap events;
-    InstanceScript* instance;
-    bool first = false;
-    bool two = false;
-    bool three = false;
-    bool outro = false;
-
-    void IsSummonedBy(WorldObject* summoner) override
-    {
-        events.RescheduleEvent(EVENT_1, 10s);
-    }
-
-    void MovementInform(uint32 type, uint32 id) override
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
-
-        switch (id)
-        {
-        case 1:
-            instance->SetData(DATA_AMALGAM_OUTRO, 0);
-            Talk(0);
-            break;
-        case 2:
-            instance->SetData(DATA_AMALGAM_OUTRO, 0);
-            break;
-        case 3:
-            instance->SetData(DATA_AMALGAM_OUTRO, 0);
-            break;
-        }
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        events.Update(diff);
-
-        if (instance->GetData(DATA_AMALGAM_OUTRO) >= 3 && !outro)
-        {
-            outro = true;
-
-            if (me->GetEntry() == 99426)
-                me->CastSpell(me, 205210, true);
-
-            if (me->GetEntry() == 99858)
-                me->CastSpell(me, 205211, true);
-
-            if (me->GetEntry() == 99857)
-                me->CastSpell(me, 205212, true);
-
-            events.RescheduleEvent(EVENT_3, 5s);
-        }
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            case EVENT_1:
-                if (me->GetEntry() == 99857)
-                    DoCast(SPELL_SUMMON_CONVERSATION);
-                events.RescheduleEvent(EVENT_2, 7s);
-                break;
-            case EVENT_2:
-                if (me->GetEntry() == 99857)
-                    me->GetMotionMaster()->MovePoint(1, 3226.46f, 7553.97f, 15.26f);
-                if (me->GetEntry() == 99858)
-                    me->GetMotionMaster()->MovePoint(2, 3228.56f, 7548.91f, 14.85f);
-                if (me->GetEntry() == 99426)
-                    me->GetMotionMaster()->MovePoint(3, 3233.58f, 7548.09f, 15.04f);
-                break;
-            case EVENT_3:
-                me->CastStop();
-                instance->SetData(DATA_AMALGAM_OUTRO, DONE);
-                me->DespawnOrUnsummon(20s);
-                break;
-            }
-        }
-    }
-};
+////
+//struct npc_soul_echoes_outro : public ScriptedAI
+//{
+//    npc_soul_echoes_outro(Creature* creature) : ScriptedAI(creature)
+//    {
+//        instance = me->GetInstanceScript();
+//        instance->SetData(DATA_AMALGAM_OUTRO, IN_PROGRESS);
+//    }
+//
+//    EventMap events;
+//    InstanceScript* instance;
+//    bool first = false;
+//    bool two = false;
+//    bool three = false;
+//    bool outro = false;
+//
+//    void IsSummonedBy(WorldObject* summoner) override
+//    {
+//        events.RescheduleEvent(EVENT_1, 10s);
+//    }
+//
+//    void MovementInform(uint32 type, uint32 id) override
+//    {
+//        if (type != POINT_MOTION_TYPE)
+//            return;
+//
+//        switch (id)
+//        {
+//        case 1:
+//            instance->SetData(DATA_AMALGAM_OUTRO, 0);
+//            Talk(0);
+//            break;
+//        case 2:
+//            instance->SetData(DATA_AMALGAM_OUTRO, 0);
+//            break;
+//        case 3:
+//            instance->SetData(DATA_AMALGAM_OUTRO, 0);
+//            break;
+//        }
+//    }
+//
+//    void UpdateAI(uint32 diff) override
+//    {
+//        events.Update(diff);
+//
+//        if (instance->GetData(DATA_AMALGAM_OUTRO) >= 3 && !outro)
+//        {
+//            outro = true;
+//
+//            if (me->GetEntry() == 99426)
+//                me->CastSpell(me, 205210, true);
+//
+//            if (me->GetEntry() == 99858)
+//                me->CastSpell(me, 205211, true);
+//
+//            if (me->GetEntry() == 99857)
+//                me->CastSpell(me, 205212, true);
+//
+//            events.RescheduleEvent(EVENT_3, 5s);
+//        }
+//
+//        if (uint32 eventId = events.ExecuteEvent())
+//        {
+//            switch (eventId)
+//            {
+//            case EVENT_1:
+//                if (me->GetEntry() == 99857)
+//                    DoCast(SPELL_SUMMON_CONVERSATION);
+//                events.RescheduleEvent(EVENT_2, 7s);
+//                break;
+//            case EVENT_2:
+//                if (me->GetEntry() == 99857)
+//                    me->GetMotionMaster()->MovePoint(1, 3226.46f, 7553.97f, 15.26f);
+//                if (me->GetEntry() == 99858)
+//                    me->GetMotionMaster()->MovePoint(2, 3228.56f, 7548.91f, 14.85f);
+//                if (me->GetEntry() == 99426)
+//                    me->GetMotionMaster()->MovePoint(3, 3233.58f, 7548.09f, 15.04f);
+//                break;
+//            case EVENT_3:
+//                me->CastStop();
+//                instance->SetData(DATA_AMALGAM_OUTRO, DONE);
+//                me->DespawnOrUnsummon(20s);
+//                break;
+//            }
+//        }
+//    }
+//};
 
 //99664, 99663
 struct npc_amalgam_restless_soul : public ScriptedAI
@@ -459,31 +459,10 @@ struct npc_amalgam_restless_soul : public ScriptedAI
     }
 };
 
-//32385
-class achievement_black_rook_moan : public AchievementCriteriaScript
-{
-public:
-    achievement_black_rook_moan() : AchievementCriteriaScript("achievement_black_rook_moan") { }
-
-    bool OnCheck(Player* /*player*/, Unit* target) override
-    {
-        if (!target)
-            return false;
-
-        if (Creature* boss = target->ToCreature())
-            if (boss->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC || boss->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC_KEYSTONE)
-                if (boss->GetAI()->GetData(ACHIEVEMENT))
-                    return true;
-
-        return false;
-    }
-};
-
 void AddSC_boss_amalgam_of_souls()
 {
     RegisterCreatureAI(boss_the_amalgam_of_souls);
     RegisterCreatureAI(npc_soul_echoes_stalker);
-    RegisterCreatureAI(npc_soul_echoes_outro);
+   // RegisterCreatureAI(npc_soul_echoes_outro); need check id in game 
     RegisterCreatureAI(npc_amalgam_restless_soul);
-    new achievement_black_rook_moan();
 }

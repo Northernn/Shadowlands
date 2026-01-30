@@ -334,7 +334,7 @@ struct boss_tov_odyn : BossAI
         instance->DoRemoveAurasDueToSpellOnPlayers(SpellProtected);
     }
 
-    void EnterEvadeMode(EvadeReason w) 
+    void EnterEvadeMode(EvadeReason w)
     {
         if (disableEvade && eventPhase == PHASE_1)
             return;
@@ -369,7 +369,7 @@ struct boss_tov_odyn : BossAI
             DoCast(SpellIntroConverstaion);
         }
     }
-    
+
     void JustEngagedWith(Unit* who) override
     {
         _JustEngagedWith(who);
@@ -937,7 +937,8 @@ struct npc_tov_hymdall : ScriptedAI
         case ACTION_2:
             me->SetFaction(16);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-            me->GetMotionMaster()->MoveJump(2410.51f, 508.8186f, 748.9946f, 20, 10, 2, 0.91346f);
+//            me->GetMotionMaster()->MoveJump(Position(2410.51f, 508.8186f, 748.9946f, 20), 10, 2, 0.91346f);
+            me->GetMotionMaster()->MoveJump(Position(2410.51f, 508.8186f, 748.9946f, 20), 10, 2, true);
             if (auto player = me->SelectNearestPlayer(300.0f))
                 AttackStart(player);
             break;
@@ -956,7 +957,7 @@ struct npc_tov_hymdall : ScriptedAI
         }
     }
 
-void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override 
+void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (damage >= me->GetHealth())
             damage = 0;
@@ -1356,7 +1357,7 @@ struct npc_tov_raging_tempest : ScriptedAI
         me->SetReactState(REACT_PASSIVE);
         me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
         me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);        
+        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
         me->GetMotionMaster()->MoveRandom(5.0f);
         DoCast(SpellRagingTempest);
         events.RescheduleEvent(EVENT_1, 2s);
@@ -1469,7 +1470,7 @@ struct npc_valarjar_runebearer : ScriptedAI
         }
     }
 
-    void EnterEvadeMode(EvadeReason w) 
+    void EnterEvadeMode(EvadeReason w)
     {
         me->DespawnOrUnsummon();
     }
@@ -1486,8 +1487,6 @@ struct npc_valarjar_runebearer : ScriptedAI
 //227503
 class spell_odyn_power_regen : public AuraScript
 {
-    PrepareAuraScript(spell_odyn_power_regen);
-
     uint8 power{};
     std::vector<uint32> energy = { 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4 };
     uint32 i = 0;
@@ -1513,8 +1512,6 @@ class spell_odyn_power_regen : public AuraScript
 //229254
 class spell_arcing_storm : public AuraScript
 {
-    PrepareAuraScript(spell_arcing_storm);
-
     void Periodic(AuraEffect const* aurEff)
     {
         uint32 count = 0;
@@ -1553,8 +1550,6 @@ class spell_arcing_storm : public AuraScript
 //231384
 class spell_odyn_power_regen_mythic : public AuraScript
 {
-    PrepareAuraScript(spell_odyn_power_regen_mythic);
-
     uint8 power{};
     uint8 cap;
 
@@ -1587,8 +1582,6 @@ class spell_odyn_power_regen_mythic : public AuraScript
 //228911
 class spell_odyn_test : public AuraScript
 {
-    PrepareAuraScript(spell_odyn_test);
-
     void OnProc(AuraEffect * aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
@@ -1607,8 +1600,6 @@ class spell_odyn_test : public AuraScript
 //227491,227490,227498,227499,227500
 class spell_odyn_branded_event : public AuraScript
 {
-    PrepareAuraScript(spell_odyn_branded_event);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -1772,8 +1763,6 @@ class spell_odyn_branded_event : public AuraScript
 //228162
 class spell_shield_of_light_filter : public SpellScript
 {
-    PrepareSpellScript(spell_shield_of_light_filter);
-
     uint8 targetsCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -1797,8 +1786,6 @@ class spell_shield_of_light_filter : public SpellScript
 //227807
 class spell_odyn_storm_of_justice : public SpellScript
 {
-    PrepareSpellScript(spell_odyn_storm_of_justice);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         uint32 count = 0;
@@ -1823,20 +1810,6 @@ class spell_odyn_storm_of_justice : public SpellScript
     }
 };
 
-//8787,8788,8785,8784,8786
-struct at_odyn_tov_branded : AreaTriggerAI
-{
-    explicit at_odyn_tov_branded(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-    void OnUnitExit(Unit* target) override
-    {
-        if (target->GetEntry() != Data::Creatures::ValarjarRunebearer)
-            return;
-
-        target->GetAI()->DoAction(ACTION_1);
-    }
-};
-
 void AddSC_boss_odyn_tov()
 {
     RegisterCreatureAI(boss_tov_odyn);
@@ -1853,5 +1826,4 @@ void AddSC_boss_odyn_tov()
     RegisterSpellScript(spell_arcing_storm);
     RegisterSpellScript(spell_shield_of_light_filter);
     RegisterSpellScript(spell_odyn_storm_of_justice);
-    RegisterAreaTriggerAI(at_odyn_tov_branded);
 }

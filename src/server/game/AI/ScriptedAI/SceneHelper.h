@@ -26,17 +26,15 @@ enum ActionTypesScenehelperAction
 class TC_GAME_API SceneAction
 {
 public:
-
     SceneAction(ObjectGuid actorGuid, Map* actionMap, ActionTypesScenehelperAction actionType, uint32 actionTimer, ObjectGuid playerGuid) :
-        actorGuid(actorGuid), actionMap(actionMap), actionType(actionType), actionTimer(actionTimer), playerGuid(playerGuid) { }
-    virtual ~SceneAction() { };
+        actorGuid(actorGuid), playerGuid(playerGuid), actionMap(actionMap), actionType(actionType), actionTimer(actionTimer) { }
+    virtual ~SceneAction() = default;;
 
     ActionTypesScenehelperAction GetActionType() const { return actionType; }
     uint32 GetActionTimer() const { return actionTimer; }
     virtual void DoAction() {};
 
 protected:
-
     Creature* GetActor()
     {
         return actionMap->GetCreature(actorGuid);
@@ -63,7 +61,6 @@ protected:
     }
 
 protected:
-
     ObjectGuid actorGuid;
     ObjectGuid playerGuid;
     Map* actionMap;
@@ -74,82 +71,69 @@ protected:
 class TC_GAME_API SceneActionTalk : public SceneAction
 {
 public:
-
     SceneActionTalk(ObjectGuid actorGuid, Map* actionMap, uint32 talkIndex, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_TALK_SCENEHELPER_ACTIONS, actionTimer, playerGuid), talkIndex(talkIndex)
     {
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 talkIndex;
-
 };
 
 class TC_GAME_API SceneActionWhisper : public SceneAction
 {
 public:
-
     SceneActionWhisper(ObjectGuid actorGuid, Map* actionMap, uint32 talkIndex, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_WHISPER_SCENEHLPER_ACTIONS, actionTimer, playerGuid), talkIndex(talkIndex)
     {
 
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 talkIndex;
 };
 
 class TC_GAME_API SceneActionSay : public SceneAction
 {
 public:
-
     SceneActionSay(ObjectGuid actorGuid, Map* actionMap, uint32 sayIndex, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_SAY_SCENEHLPER_ACTIONS, actionTimer, playerGuid), sayIndex(sayIndex)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 sayIndex;
 };
 
 class TC_GAME_API SceneActionYell : public SceneAction
 {
 public:
-
     SceneActionYell(ObjectGuid actorGuid, Map* actionMap, uint32 yellIndex, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_YELL_SCENEHLPER_ACTIONS, actionTimer, playerGuid), yellIndex(yellIndex)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 yellIndex;
 };
 
 class TC_GAME_API SceneActionSummon : public SceneAction
 {
 public:
-
     SceneActionSummon(ObjectGuid actorGuid, Map* actionMap, uint32 summonEntry, const Position& summonPosition, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_SUMMON_SCENEHLPER_ACTIONS, actionTimer, playerGuid), summonEntry(summonEntry), summonPosition(summonPosition) {}
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 summonEntry;
     Position summonPosition;
 };
@@ -157,100 +141,83 @@ private:
 class TC_GAME_API SceneActionSummonGo : public SceneAction
 {
 public:
-
     SceneActionSummonGo(ObjectGuid actorGuid, Map* actionMap, uint32 summonEntry, const Position& summonPosition, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_SUMMON_GO_SCENEHLPER_ACTIONS, actionTimer, playerGuid), summonEntry(summonEntry), summonPosition(summonPosition) {}
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
-    uint32 summonEntry;
+    [[maybe_unused]] uint32 summonEntry;
     Position summonPosition;
 };
 
 class TC_GAME_API SceneActionCast : public SceneAction
 {
 public:
-
     SceneActionCast(ObjectGuid actorGuid, Map* actionMap, uint32 spellEntry, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_CAST_SCENEHLPER_ACTIONS, actionTimer, playerGuid), spellEntry(spellEntry)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 spellEntry;
 };
 
 class TC_GAME_API SceneActionMovePos : public SceneAction
 {
 public:
-
     SceneActionMovePos(ObjectGuid actorGuid, Map* actionMap, const Position position, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_MOVE_POS_SCENEHLPER_ACTIONS, actionTimer, playerGuid), position(position)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     const Position position;
 };
 
 class TC_GAME_API SceneActionMovePath : public SceneAction
 {
 public:
-
     SceneActionMovePath(ObjectGuid actorGuid, Map* actionMap, int pathId, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_MOVE_POS_SCENEHLPER_ACTIONS, actionTimer, playerGuid), pathId(pathId)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     int pathId;
 };
 
 class TC_GAME_API SceneActionAI : public SceneAction
 {
 public:
-
     SceneActionAI(ObjectGuid actorGuid, Map* actionMap, int32 m_actionId, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), actionId(m_actionId)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     int32 actionId;
 };
 
 class TC_GAME_API SceneActionCastTarget : public SceneAction
 {
 public:
-
     SceneActionCastTarget(ObjectGuid actorGuid, Map* actionMap, uint32 spellEntry, bool triggered, Unit* target, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_CAST_SCENEHLPER_ACTIONS, actionTimer, playerGuid), spellEntry(spellEntry), target(target), triggered(triggered)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 spellEntry;
     Unit* target;
     bool triggered;
@@ -259,17 +226,14 @@ private:
 class TC_GAME_API SceneActionKillCreditMonster : public SceneAction
 {
 public:
-
     SceneActionKillCreditMonster(ObjectGuid actorGuid, Map* actionMap, uint32 creditEntry, uint32 amount, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_CAST_SCENEHLPER_ACTIONS, actionTimer, playerGuid), creditEntry(creditEntry), amount(amount)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     uint32 creditEntry;
     uint32 amount;
 };
@@ -277,17 +241,15 @@ private:
 class TC_GAME_API SceneActionForceCast : public SceneAction
 {
 public:
-
     SceneActionForceCast(ObjectGuid actorGuid, Map* actionMap, Unit* caster, uint32 spellEntry, bool triggered, Unit* target, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_CAST_SCENEHLPER_ACTIONS, actionTimer, playerGuid), caster(caster), spellEntry(spellEntry), target(target), triggered(triggered)
     {
 
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     Unit* caster;
     uint32 spellEntry;
     Unit* target;
@@ -297,139 +259,112 @@ private:
 class TC_GAME_API SceneActionEmote : public SceneAction
 {
 public:
-
     SceneActionEmote(ObjectGuid actorGuid, Map* actionMap, int32 emoteId, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), emoteId(emoteId)
     {
 
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     int32 emoteId;
 };
 
 class TC_GAME_API SceneActionDespawn : public SceneAction
 {
 public:
-
     SceneActionDespawn(ObjectGuid actorGuid, Map* actionMap, int32 despawnTime, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), despawnTime(despawnTime)
     {
 
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     int32 despawnTime;
 };
 
 class TC_GAME_API SceneActionFace : public SceneAction
 {
 public:
-
     SceneActionFace(ObjectGuid actorGuid, Map* actionMap, Unit* target, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), target(target)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
     Unit* target;
 };
 
 class TC_GAME_API SceneActionSetFlag : public SceneAction
 {
 public:
-
-    SceneActionSetFlag(ObjectGuid actorGuid, Map* actionMap, uint8 index, uint16 newFlag, uint32 actionTimer, ObjectGuid playerGuid) :
-        SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), index(index), newFlag(newFlag)
+    SceneActionSetFlag(ObjectGuid actorGuid, Map* actionMap, UnitFlags flag, uint32 actionTimer, ObjectGuid playerGuid) :
+        SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), flag(flag)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
-    uint8 index;
-    uint16 newFlag;
+    UnitFlags flag;
 };
 
 class TC_GAME_API SceneActionRemoveFlag : public SceneAction
 {
 public:
-
-    SceneActionRemoveFlag(ObjectGuid actorGuid, Map* actionMap, uint8 index, uint16 oldFlag, uint32 actionTimer, ObjectGuid playerGuid) :
-        SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), index(index), oldFlag(oldFlag)
+    SceneActionRemoveFlag(ObjectGuid actorGuid, Map* actionMap, UnitFlags flag, uint32 actionTimer, ObjectGuid playerGuid) :
+        SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), flag(flag)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
-    uint8 index;
-    uint16 oldFlag;
+    UnitFlags flag;
 };
 
 class TC_GAME_API SceneActionSetPhase : public SceneAction
 {
 public:
-
     SceneActionSetPhase(ObjectGuid actorGuid, Map* actionMap, uint32 newPhase, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), newPhase(newPhase)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
-    uint8 index;
+    [[maybe_unused]] uint8 index;
     uint16 newPhase;
 };
 
 class TC_GAME_API SceneActionRemovePhase : public SceneAction
 {
 public:
-
     SceneActionRemovePhase(ObjectGuid actorGuid, Map* actionMap, uint32 oldPhase, uint32 actionTimer, ObjectGuid playerGuid) :
         SceneAction(actorGuid, actionMap, ACTION_AI_SCENEHLPER_ACTIONS, actionTimer, playerGuid), oldPhase(oldPhase)
     {
-
     }
 
-    void DoAction();
+    void DoAction() override;
 
 private:
-
-    uint8 index;
+    [[maybe_unused]] uint8 index;
     uint16 oldPhase;
 };
 
 class TC_GAME_API SceneHelper
 {
 public:
+    SceneHelper(ObjectGuid actorGuid, Map* actionMap) : defaultActorGuid(actorGuid), defaultPlayerGuid(ObjectGuid::Empty),
+        actionMap(actionMap) { }
 
-    SceneHelper(ObjectGuid actorGuid, Map* actionMap) : defaultActorGuid(actorGuid), actionMap(actionMap),
-        isActive(false), sceneTimer(1000), defaultPlayerGuid(ObjectGuid::Empty)
-    {
-    }
-
-    SceneHelper(Map* actionMap) : defaultActorGuid(ObjectGuid::Empty), actionMap(actionMap),
-        isActive(false), sceneTimer(1000), defaultPlayerGuid(ObjectGuid::Empty)
-    {
-    }
+    SceneHelper(Map* actionMap) : actionMap(actionMap) { }
 
     ~SceneHelper()
     {
@@ -449,7 +384,6 @@ public:
             return;
 
         sceneTimer = GetCurrentAction()->GetActionTimer();
-
         isActive = true;
     }
 
@@ -608,22 +542,22 @@ public:
         sceneActionList.push_back(new SceneActionFace(defaultActorGuid, actionMap, target, actionTimer, defaultPlayerGuid));
     }
 
-    void AddSceneActionSetFlag(uint8 index, uint16 newFlag, uint32 actionTimer = 1000)
+    void AddSceneActionSetFlag(uint8 index, UnitFlags flag, uint32 actionTimer = 1000)
     {
-        sceneActionList.push_back(new SceneActionSetFlag(defaultActorGuid, actionMap, index, newFlag, actionTimer, defaultPlayerGuid));
+        sceneActionList.push_back(new SceneActionSetFlag(defaultActorGuid, actionMap, flag, actionTimer, defaultPlayerGuid));
     }
 
-    void AddSceneActionRemoveFlag(uint8 index, uint16 oldFlag, uint32 actionTimer = 1000)
+    void AddSceneActionRemoveFlag(uint8 index, UnitFlags flag, uint32 actionTimer = 1000)
     {
-        sceneActionList.push_back(new SceneActionRemoveFlag(defaultActorGuid, actionMap, index, oldFlag, actionTimer, defaultPlayerGuid));
+        sceneActionList.push_back(new SceneActionRemoveFlag(defaultActorGuid, actionMap, flag, actionTimer, defaultPlayerGuid));
     }
 
-    void AddSceneActionSetPhase(uint8 index, uint32 newPhase, uint32 actionTimer = 1000)
+    void AddSceneActionSetPhase(uint8 /*index*/, uint32 newPhase, uint32 actionTimer = 1000)
     {
         sceneActionList.push_back(new SceneActionSetPhase(defaultActorGuid, actionMap, newPhase, actionTimer, defaultPlayerGuid));
     }
 
-    void AddSceneActionRemovePhase(uint8 index, uint32 oldPhase, uint32 actionTimer = 1000)
+    void AddSceneActionRemovePhase(uint8 /*index*/, uint32 oldPhase, uint32 actionTimer = 1000)
     {
         sceneActionList.push_back(new SceneActionRemovePhase(defaultActorGuid, actionMap, oldPhase, actionTimer, defaultPlayerGuid));
     }
@@ -640,22 +574,19 @@ public:
     }
 
 private:
-
     SceneAction* GetCurrentAction()
     {
         if (sceneActionList.empty())
-            return NULL;
+            return nullptr;
 
         return sceneActionList.front();
     }
 
-private:
-
-    bool isActive;
+    bool isActive{};
     ObjectGuid defaultActorGuid;
     ObjectGuid defaultPlayerGuid;
     Map* actionMap;
-    uint32 sceneTimer;
+    uint32 sceneTimer{ 1000 };
     std::list<SceneAction*> sceneActionList;
 };
 

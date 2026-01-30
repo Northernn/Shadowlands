@@ -80,7 +80,7 @@ void firelands_bossAI::EnterEvadeMode(EvadeReason why)
         if (Unit* owner = me->GetCharmerOrOwner())
         {
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), {}, MOTION_SLOT_ACTIVE);
         }
         else
         {
@@ -248,8 +248,6 @@ struct npc_firelands_magmakin : public ScriptedAI
 // http://www.wowhead.com/spell=100799/fiery-torment
 class spell_firelands_fiery_torment : public SpellScript
 {
-    PrepareSpellScript(spell_firelands_fiery_torment);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_FIERY_TORMENT_DAMAGE });
@@ -280,8 +278,6 @@ class spell_firelands_fiery_torment : public SpellScript
 // http://www.wowhead.com/spell=101092/smouldering
 class spell_firelands_smouldering : public SpellScript
 {
-    PrepareSpellScript(spell_firelands_smouldering);
-
     void CheckQuestStatus(std::list<WorldObject*>& targets)
     {
         uint32 questId = 0;
@@ -320,8 +316,6 @@ class spell_firelands_smouldering : public SpellScript
 // http://www.wowhead.com/spell=101093/smouldering
 class spell_firelands_smouldering_aura : public SpellScript
 {
-    PrepareSpellScript(spell_firelands_smouldering_aura);
-
     void SetTarget(WorldObject*& target)
     {
         target = GetCaster();

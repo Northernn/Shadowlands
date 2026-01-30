@@ -22,20 +22,20 @@
 #include "ChatCommand.h"
 #include "ChatPackets.h"
 #include "Common.h"
-#include "DatabaseEnv.h"
-#include "DB2Stores.h"
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Language.h"
-#include "Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Optional.h"
 #include "Player.h"
 #include "Realm.h"
-#include "ScriptMgr.h"
+#include "StringConvert.h"
 #include "World.h"
 #include "WorldSession.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 #include <boost/algorithm/string/replace.hpp>
 #include <sstream>
 
@@ -137,7 +137,7 @@ void ChatHandler::SendSysMessage(std::string_view str, bool escapeCharacters)
     }
 }
 
-void ChatHandler::SendGlobalSysMessage(const char *str)
+void ChatHandler::SendGlobalSysMessage(const char* str)
 {
     WorldPackets::Chat::Chat packet;
     for (std::string_view line : Trinity::Tokenize(str, '\n', true))
@@ -147,7 +147,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     }
 }
 
-void ChatHandler::SendGlobalGMSysMessage(const char *str)
+void ChatHandler::SendGlobalGMSysMessage(const char* str)
 {
     WorldPackets::Chat::Chat packet;
     for (std::string_view line : Trinity::Tokenize(str, '\n', true))
@@ -269,7 +269,7 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* linkType, char** s
         return nullptr;
 
     // skip spaces
-    while (*text == ' '||*text == '\t'||*text == '\b')
+    while (*text == ' ' || *text == '\t' || *text == '\b')
         ++text;
 
     if (!*text)
@@ -317,7 +317,7 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* const* linkTypes, 
         return nullptr;
 
     // skip spaces
-    while (*text == ' '||*text == '\t'||*text == '\b')
+    while (*text == ' ' || *text == '\t' || *text == '\b')
         ++text;
 
     if (!*text)
@@ -344,7 +344,7 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* const* linkTypes, 
         tail = strtok(nullptr, "");                         // tail
     }
     else
-        tail = text+1;                                      // skip first |
+        tail = text + 1;                                      // skip first |
 
     char* cLinkType = strtok(tail, ":");                    // linktype
     if (!cLinkType)
@@ -413,76 +413,10 @@ Creature* ChatHandler::GetCreatureFromPlayerMapByDbGuid(ObjectGuid::LowType lowg
     return creature;
 }
 
-enum SpellLinkType
-{
-    SPELL_LINK_SPELL   = 0,
-    SPELL_LINK_TALENT  = 1,
-    SPELL_LINK_ENCHANT = 2,
-    SPELL_LINK_TRADE   = 3,
-    SPELL_LINK_GLYPH   = 4
-};
-
-static char const* const spellKeys[] =
-{
-    "Hspell",                                               // normal spell
-    "Htalent",                                              // talent spell
-    "Henchant",                                             // enchanting recipe spell
-    "Htrade",                                               // profession/skill spell
-    "Hglyph",                                               // glyph
-    nullptr
-};
-
-uint32 ChatHandler::extractSpellIdFromLink(char* text)
-{
-    // number or [name] Shift-click form |color|Henchant:recipe_spell_id|h[prof_name: recipe_name]|h|r
-    // number or [name] Shift-click form |color|Hglyph:glyph_slot_id:glyph_prop_id|h[%s]|h|r
-    // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
-    // number or [name] Shift-click form |color|Htalent:talent_id, rank|h[name]|h|r
-    // number or [name] Shift-click form |color|Htrade:spell_id, skill_id, max_value, cur_value|h[name]|h|r
-    int type = 0;
-    char* param1_str = nullptr;
-    char* idS = extractKeyFromLink(text, spellKeys, &type, &param1_str);
-    if (!idS)
-        return 0;
-
-    uint32 id = atoul(idS);
-
-    switch (type)
-    {
-        case SPELL_LINK_SPELL:
-            return id;
-        case SPELL_LINK_TALENT:
-        {
-            // talent
-            TalentEntry const* talentEntry = sTalentStore.LookupEntry(id);
-            if (!talentEntry)
-                return 0;
-
-            return talentEntry->SpellID;
-        }
-        case SPELL_LINK_ENCHANT:
-        case SPELL_LINK_TRADE:
-            return id;
-        case SPELL_LINK_GLYPH:
-        {
-            uint32 glyph_prop_id = param1_str ? atoul(param1_str) : 0;
-
-            GlyphPropertiesEntry const* glyphPropEntry = sGlyphPropertiesStore.LookupEntry(glyph_prop_id);
-            if (!glyphPropEntry)
-                return 0;
-
-            return glyphPropEntry->SpellID;
-        }
-    }
-
-    // unknown type?
-    return 0;
-}
-
 enum GuidLinkType
 {
-    GUID_LINK_PLAYER     = 0,                              // must be first for selection in not link case
-    GUID_LINK_CREATURE   = 1,
+    GUID_LINK_PLAYER = 0,                              // must be first for selection in not link case
+    GUID_LINK_CREATURE = 1,
     GUID_LINK_GAMEOBJECT = 2
 };
 
@@ -507,34 +441,34 @@ ObjectGuid::LowType ChatHandler::extractLowGuidFromLink(char* text, HighGuid& gu
 
     switch (type)
     {
-        case GUID_LINK_PLAYER:
-        {
-            guidHigh = HighGuid::Player;
-            std::string name = idS;
-            if (!normalizePlayerName(name))
-                return 0;
+    case GUID_LINK_PLAYER:
+    {
+        guidHigh = HighGuid::Player;
+        std::string name = idS;
+        if (!normalizePlayerName(name))
+            return 0;
 
-            if (Player* player = ObjectAccessor::FindPlayerByName(name))
-                return player->GetGUID().GetCounter();
+        if (Player* player = ObjectAccessor::FindPlayerByName(name))
+            return player->GetGUID().GetCounter();
 
-            ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name);
-            if (guid.IsEmpty())
-                return 0;
+        ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name);
+        if (guid.IsEmpty())
+            return 0;
 
-            return guid.GetCounter();
-        }
-        case GUID_LINK_CREATURE:
-        {
-            guidHigh = HighGuid::Creature;
-            ObjectGuid::LowType lowguid = atoull(idS);
-            return lowguid;
-        }
-        case GUID_LINK_GAMEOBJECT:
-        {
-            guidHigh = HighGuid::GameObject;
-            ObjectGuid::LowType lowguid = atoull(idS);
-            return lowguid;
-        }
+        return guid.GetCounter();
+    }
+    case GUID_LINK_CREATURE:
+    {
+        guidHigh = HighGuid::Creature;
+        ObjectGuid::LowType lowguid = Trinity::StringTo<ObjectGuid::LowType>(idS).value_or(UI64LIT(0));
+        return lowguid;
+    }
+    case GUID_LINK_GAMEOBJECT:
+    {
+        guidHigh = HighGuid::GameObject;
+        ObjectGuid::LowType lowguid = Trinity::StringTo<ObjectGuid::LowType>(idS).value_or(UI64LIT(0));
+        return lowguid;
+    }
     }
 
     // unknown type?
@@ -618,7 +552,7 @@ char* ChatHandler::extractQuotedArg(char* args)
         return nullptr;
 
     if (*args == '"')
-        return strtok(args+1, "\"");
+        return strtok(args + 1, "\"");
     else
     {
         // skip spaces
@@ -746,7 +680,7 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player*& player
             player = m_session->GetPlayer();
 
         if (!guid || !offline)
-            guid  = player->GetGUID();
+            guid = player->GetGUID();
         group = player->GetGroup();
     }
 
@@ -774,34 +708,34 @@ bool AddonChannelCommandHandler::ParseCommands(std::string_view str)
 
     switch (opcode)
     {
-        case 'p': // p Ping
-            SendAck();
-            return true;
-        case 'h': // h Issue human-readable command
-        case 'i': // i Issue command
-        {
-            if (!str[5])
-                return false;
-            humanReadable = (opcode == 'h');
-            std::string_view cmd = str.substr(5);
-            if (_ParseCommands(cmd)) // actual command starts at str[5]
-            {
-                if (!hadAck)
-                    SendAck();
-                if (HasSentErrorMessage())
-                    SendFailed();
-                else
-                    SendOK();
-            }
-            else
-            {
-                PSendSysMessage(LANG_CMD_INVALID, STRING_VIEW_FMT_ARG(cmd));
-                SendFailed();
-            }
-            return true;
-        }
-        default:
+    case 'p': // p Ping
+        SendAck();
+        return true;
+    case 'h': // h Issue human-readable command
+    case 'i': // i Issue command
+    {
+        if (!str[5])
             return false;
+        humanReadable = (opcode == 'h');
+        std::string_view cmd = str.substr(5);
+        if (_ParseCommands(cmd)) // actual command starts at str[5]
+        {
+            if (!hadAck)
+                SendAck();
+            if (HasSentErrorMessage())
+                SendFailed();
+            else
+                SendOK();
+        }
+        else
+        {
+            PSendSysMessage(LANG_CMD_INVALID, STRING_VIEW_FMT_ARG(cmd));
+            SendFailed();
+        }
+        return true;
+    }
+    default:
+        return false;
     }
 }
 

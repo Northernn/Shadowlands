@@ -61,25 +61,22 @@ struct go_ashvane_arcane_wall : public GameObjectAI
     {
         me->GetScheduler().CancelAll();
         me->GetScheduler().Schedule(1s, [this](TaskContext context)
+        {
+            if (InstanceScript* instance = me->GetInstanceScript())
             {
-                if (InstanceScript* instance = me->GetInstanceScript())
-                {
-                    if (instance->GetBossState(DATA_COMMANDER_SIVARA == DONE) && instance->GetBossState(DATA_BLACKWATER_BEHEMOTH == DONE) && instance->GetBossState(DATA_RADIANCE_OF_AZSHARA == DONE))
-                        me->RemoveFromWorld();
+                if (instance->GetBossState(DATA_COMMANDER_SIVARA) == DONE && instance->GetBossState(DATA_BLACKWATER_BEHEMOTH) == DONE && instance->GetBossState(DATA_RADIANCE_OF_AZSHARA) == DONE)
+                    me->RemoveFromWorld();
 
-                    if (me->IsInWorld())
-                        context.Repeat(1s);
-                }
-            });
+                if (me->IsInWorld())
+                    context.Repeat(1s);
+            }
+        });
     }
 
     void UpdateAI(uint32 diff) override
     {
-        scheduler.Update(diff);
+        me->GetScheduler().Update(diff);
     }
-
-private:
-    TaskScheduler scheduler;
 };
 
 enum Generic
@@ -109,7 +106,7 @@ struct npc_generic_ashvane : public ScriptedAI
         ScriptedAI::Reset();
     }
 
-    void JustEngagedWith(Unit* u) override
+    void JustEngagedWith(Unit* /*u*/) override
     {
         switch (me->GetEntry())
         {
@@ -167,7 +164,7 @@ struct npc_generic_ashvane : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit* /*u*/) override
     {
         switch (me->GetEntry())
         {
@@ -187,9 +184,6 @@ struct npc_generic_ashvane : public ScriptedAI
             break;
         }
     }
-private:
-    EventMap events;
-    InstanceScript* instance;
 };
 
 void AddSC_instance_eternal_palace()

@@ -39,24 +39,12 @@ struct Rahel : public ScriptedAI
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
         return true;
     }
-
-    void CovenantRenownOpcode(Player* player)
-    {
-        WorldPackets::Misc::CovenantRenowOpenNpc send;
-        send.ObjGUID = player->GetGUID();
-        send.CatchupState = false;
-        player->GetSession()->SendPacket(send.Write());
-        WorldPackets::Misc::CovenantRenownSendCatchUpState sensd;
-        sensd.CatchupState = false;
-        player->GetSession()->SendPacket(sensd.Write());
-    }
-
     bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
     {
         switch (action)
         {
         case 0:
-            CovenantRenownOpcode(player);
+            player->GetSession()->SendCovenantRenownSendCatchUpState(false);
             CloseGossipMenuFor(player);
             break;
         }

@@ -36,11 +36,11 @@ class Unit;
 /// Spell cooldown flags sent in SMSG_SPELL_COOLDOWN
 enum SpellCooldownFlags
 {
-    SPELL_COOLDOWN_FLAG_NONE                    = 0x0,
-    SPELL_COOLDOWN_FLAG_INCLUDE_GCD             = 0x1,  ///< Starts GCD in addition to normal cooldown specified in the packet
+    SPELL_COOLDOWN_FLAG_NONE = 0x0,
+    SPELL_COOLDOWN_FLAG_INCLUDE_GCD = 0x1,  ///< Starts GCD in addition to normal cooldown specified in the packet
     SPELL_COOLDOWN_FLAG_INCLUDE_EVENT_COOLDOWNS = 0x2,  ///< Starts GCD for spells that should start their cooldown on events, requires SPELL_COOLDOWN_FLAG_INCLUDE_GCD set
-    SPELL_COOLDOWN_FLAG_LOSS_OF_CONTROL_UI      = 0x4,  ///< Shows interrupt cooldown in loss of control ui
-    SPELL_COOLDOWN_FLAG_ON_HOLD                 = 0x8   ///< Forces cooldown to behave as if SpellInfo::IsCooldownStartedOnEvent was true
+    SPELL_COOLDOWN_FLAG_LOSS_OF_CONTROL_UI = 0x4,  ///< Shows interrupt cooldown in loss of control ui
+    SPELL_COOLDOWN_FLAG_ON_HOLD = 0x8   ///< Forces cooldown to behave as if SpellInfo::IsCooldownStartedOnEvent was true
 };
 
 class TC_GAME_API SpellHistory
@@ -113,8 +113,22 @@ public:
     void AddCooldown(uint32 spellId, uint32 itemId, Clock::time_point cooldownEnd, uint32 categoryId, Clock::time_point categoryEnd, bool onHold = false);
     void ModifyCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown = false);
     void ModifyCooldown(SpellInfo const* spellInfo, Duration cooldownMod, bool withoutCategoryCooldown = false);
+    template<typename Predicate>
+    void ModifyCoooldowns(Predicate&& predicate, Duration cooldownMod, bool withoutCategoryCooldown = false)
+    {
+        for (auto itr = _spellCooldowns.begin(); itr != _spellCooldowns.end();)
+        {
+            if (predicate(itr))
+            {
+                ModifySpellCooldown(itr->first, itr->second, cooldownMod, withoutCategoryCooldown);
+                itr = _spellCooldowns.begin();
+            }
+            else
+                ++itr;
+        }
+    }
+
     void ResetCooldown(uint32 spellId, bool update = false);
-    void ResetCooldown(CooldownStorageType::iterator& itr, bool update = false);
     template<typename Predicate>
     void ResetCooldowns(Predicate predicate, bool update = false)
     {
@@ -166,12 +180,14 @@ public:
 
 private:
     Player* GetPlayerOwner() const;
-    void ModifySpellCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown = false);
+    void ModifySpellCooldown(uint32 spellId, Duration cooldownMod, bool withoutCategoryCooldown);
+    void ModifySpellCooldown(uint32 spellId, SpellHistory::CooldownEntry& itr, Duration cooldownMod, bool withoutCategoryCooldown);
+    void ResetCooldown(CooldownStorageType::iterator& itr, bool update = false);
     void SendClearCooldowns(std::vector<int32> const& cooldowns) const;
-    CooldownStorageType::iterator EraseCooldown(CooldownStorageType::iterator itr)
+    void EraseCooldown(uint32 spellId, SpellHistory::CooldownEntry& itr)
     {
-        _categoryCooldowns.erase(itr->second.CategoryId);
-        return _spellCooldowns.erase(itr);
+        _categoryCooldowns.erase(itr.CategoryId);
+        _spellCooldowns.erase(spellId);
     }
 
     void SendSetSpellCharges(uint32 chargeCategoryId, ChargeEntryCollection const& chargeCollection);
@@ -189,8 +205,6 @@ private:
     template<class T>
     struct PersistenceHelper { };
 
-
-
     // DekkCore >
     public:
         void ForceSendSetSpellCharges(SpellCategoryEntry const* chargeCategoryEntry);
@@ -198,8 +212,11 @@ private:
         void ForceSendSpellCharge(SpellCategoryEntry const* chargeCategoryEntry);
         void ReduceChargeCooldown(uint32 chargeCategoryId, uint32 reductionTime);
         void ReduceChargeCooldown(SpellCategoryEntry const* chargeCategoryEntry, uint32 reductionTime);
+        void RemoveSpellCooldownsWithTime(uint32 minRecoveryTime);
         void UpdateCharge(SpellCategoryEntry const* chargeCategoryEntry);
-    // < DekkCore
+        // < DekkCore
 };
 
 #endif // SpellHistory_h__
+
+

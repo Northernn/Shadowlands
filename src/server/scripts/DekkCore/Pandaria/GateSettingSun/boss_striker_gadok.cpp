@@ -652,8 +652,6 @@ class spell_gadok_strafing: public SpellScriptLoader
 
         class spell_gadok_strafing_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_gadok_strafing_SpellScript);
-
             void HandleBeforeCast()
             {
                 if (Unit* caster = GetCaster())
@@ -696,8 +694,6 @@ class spell_prey_time: public SpellScriptLoader
 
         class spell_prey_time_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_prey_time_AuraScript);
-
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster() && GetTarget())

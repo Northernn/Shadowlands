@@ -98,11 +98,6 @@ enum Actions
     ACTION_RP_EVENT_6,
 };
 
-enum Creatures
-{
-    BOSS_UNBOUND_ABOMINATION = 133007,
-}; 
-
 const Position centerPosition = { 1199.420044f, 1481.939941f, -181.505997f };
 
 enum Sounds
@@ -305,11 +300,10 @@ public:
             if (Creature* titan = me->SummonCreature(NPC_TITAN_KEEPER_HEZREL, centerPosition.GetPositionX(), centerPosition.GetPositionY(), centerPosition.GetPositionZ(), TEMPSUMMON_MANUAL_DESPAWN))
                 titan->AI()->DoAction(ACTION_COMBAT);
 
-         //   events.ScheduleEvent(EVENT_PUTRID_BLOOD, TIMER_PUTRID_BLOOD);
-          //  events.ScheduleEvent(EVENT_VILE_EXPULSION, TIMER_VILE_EXPULSION);
-          //  events.ScheduleEvent(EVENT_CHECK_ENERGY, TIMER_CHECK_ENERGY);
+            events.ScheduleEvent(EVENT_PUTRID_BLOOD, 15s);
+            events.ScheduleEvent(EVENT_VILE_EXPULSION, 19s);
+            events.ScheduleEvent(EVENT_CHECK_ENERGY, 20s);
         }
-
 
         void OnSpellCast(SpellInfo const* spell) override
         {
@@ -319,7 +313,6 @@ public:
             case SPELL_VILE_EXPULSION:
             {
                 std::list<Unit*> targets;
-               // SelectTargetList(targets, 5, SELECT_TARGET_RANDOM, 0, 500.0f, true);
 
                 if (!targets.empty())
                     if (targets.size() >= 1)
@@ -362,14 +355,14 @@ public:
                                 me->CastSpell(player, SPELL_PUTRID_BLOOD, true);
                             }
                         }
-                  //  events.ScheduleEvent(EVENT_PUTRID_BLOOD, TIMER_PUTRID_BLOOD);
+                    events.ScheduleEvent(EVENT_PUTRID_BLOOD, 15s);
                     break;
                 }
                 case EVENT_VILE_EXPULSION:
                 {
                     SelectSoundAndText(me, 3);
                     me->CastSpell(me, SPELL_VILE_EXPULSION);
-                //    events.RescheduleEvent(EVENT_VILE_EXPULSION, TIMER_VILE_EXPULSION);
+                    events.RescheduleEvent(EVENT_VILE_EXPULSION, 18s);
                     break;
                 }
                 case EVENT_CHECK_ENERGY:
@@ -384,7 +377,7 @@ public:
                     }
                     else
                         me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) - urand(5, 10));
-                  //  events.ScheduleEvent(EVENT_CHECK_ENERGY, TIMER_CHECK_ENERGY);
+                    events.ScheduleEvent(EVENT_CHECK_ENERGY, 20s);
                     break;
                 }
             }
@@ -492,8 +485,8 @@ public:
                     me->Attack(abo, false);
                 combat = true;
                 SelectSoundAndText(me, 1);
-                //events.ScheduleEvent(EVENT_HOLY_BOLT, TIMER_HOLY_BOLT);
-               // events.ScheduleEvent(EVENT_CLEANSING_LIGHT, TIMER_CLEANSING_LIGHT);
+                events.ScheduleEvent(EVENT_HOLY_BOLT, 12s);
+                events.ScheduleEvent(EVENT_CLEANSING_LIGHT, 21s);
                 break;
             }
         }
@@ -575,7 +568,7 @@ public:
                                 me->CastSpell(visage, SPELL_HOLY_BOLT);
                             }
                         }
-                    //    events.ScheduleEvent(EVENT_PURGE_CORRUPTION, TIMER_PURGE_CORRUPTION);
+                        events.ScheduleEvent(EVENT_PURGE_CORRUPTION, 15s);
                         break;
                     }
                     case EVENT_PURGE_CORRUPTION:
@@ -593,7 +586,7 @@ public:
                                 me->CastSpell(visage, SPELL_PURGE_CORRUPTION);
                             }
                         }
-                       // events.ScheduleEvent(EVENT_HOLY_BOLT, TIMER_HOLY_BOLT);
+                        events.ScheduleEvent(EVENT_HOLY_BOLT, 20s);
                         break;
                     }
                     case EVENT_CLEANSING_LIGHT:
@@ -604,7 +597,6 @@ public:
                         me->TextEmote(str.str().c_str(), 0, true);
 
                         std::list<Unit*> targets;
-                    //    SelectTargetList(targets, 1, SELECT_TARGET_RANDOM, 0, 500.0f, true);
 
                         if (!targets.empty())
                             if (targets.size() >= 1)
@@ -619,7 +611,7 @@ public:
 
                         }
 
-                     //   events.ScheduleEvent(EVENT_CLEANSING_LIGHT, TIMER_CLEANSING_LIGHT);
+                        events.ScheduleEvent(EVENT_CLEANSING_LIGHT, 22s);
                         break;
                     }
                     }
@@ -695,7 +687,7 @@ public:
         {
             me->SetReactState(REACT_AGGRESSIVE);
 
-           // events.ScheduleEvent(EVENT_FIXATE, TIMER_FIXATE_PLAYER);
+            events.ScheduleEvent(EVENT_FIXATE, 9s);
             events.ScheduleEvent(EVENT_CHECK_DIST_PLAYER, 3s);
         }
 
@@ -744,7 +736,6 @@ public:
                 case EVENT_FIXATE:
                 {
                     std::list<Unit*> targets;
-                 //   SelectTargetList(targets, 1, SELECT_TARGET_RANDOM, 0, 500.0f, true);
 
                     if (!targets.empty())
                         if (targets.size() >= 1)

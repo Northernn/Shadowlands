@@ -200,146 +200,9 @@ struct npc_rokmora_blightshard_skitter : public ScriptedAI
     }
 };
 
-//91001
-struct npc_nl_tarspitter_lurker : public ScriptedAI
-{
-    npc_nl_tarspitter_lurker(Creature* creature) : ScriptedAI(creature) {}
-
-    EventMap events;
-
-    void EnterEvadeMode(EvadeReason w)
-    {
-        me->SetReactState(REACT_AGGRESSIVE);
-    }
-
-    void Reset() override
-    {
-        events.Reset();
-    }
-
-    void JustDied(Unit* /*killer*/) override
-    {
-        me->CastSpell(me, 226385, true);
-    }
-
-    void JustEngagedWith(Unit* who) override
-    {
-        events.RescheduleEvent(EVENT_1, 6s);
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (me->HasUnitState(UNIT_STATE_CASTING | UNIT_STATE_STUNNED))
-            return;
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            case EVENT_1:
-            {
-                me->AttackStop();
-                me->SetReactState(REACT_AGGRESSIVE);
-                DoCast(183433);
-                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0))
-                    DoCast(target, 183430, true);
-                events.RescheduleEvent(EVENT_2, 2s);
-                events.RescheduleEvent(EVENT_1, 25s);
-                break;
-            }
-            case EVENT_2:
-            {
-                DoCast(183438);
-                events.RescheduleEvent(EVENT_3, 1s);
-                break;
-            }
-            case EVENT_3:
-            {
-                me->AttackStop();
-                me->SetReactState(REACT_AGGRESSIVE);
-                me->CastSpell(me, 183465);
-                break;
-            }
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-};
-
-//91000
-struct npc_nl_vileshard_hulk : public ScriptedAI
-{
-    npc_nl_vileshard_hulk(Creature* creature) : ScriptedAI(creature) {}
-
-    EventMap events;
-
-    void Reset() override
-    {
-        events.Reset();
-    }
-
-    void JustEngagedWith(Unit* who) override
-    {
-        events.RescheduleEvent(EVENT_1, 7s);
-        events.RescheduleEvent(EVENT_2, 9s);
-        events.RescheduleEvent(EVENT_3, 15s);
-    }
-
-    void SpellFinishCast(const SpellInfo* spell)
-    {
-        if ((spell->Id == 226296) || (spell->Id == 226304))
-        {
-            Position pos;
-            for (uint8 i = 0; i < 20; ++i)
-            {
-                me->GetNearPosition(frand(5.0f, 30.0f), frand(-0.5f, 0.5f));
-                me->CastSpell(pos, 226305, true);
-            }
-        }
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (me->HasUnitState(UNIT_STATE_CASTING))
-            return;
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            case EVENT_1:
-                DoCastVictim(193505);
-                events.RescheduleEvent(EVENT_1, 16s);
-                break;
-            case EVENT_2:
-                DoCast(226296);
-                events.RescheduleEvent(EVENT_2, 16s);
-                break;
-            case EVENT_3:
-                DoCast(226304);
-                events.RescheduleEvent(EVENT_3, 16s);
-                break;
-            }
-        }
-        DoMeleeAttackIfReady();
-    }
-};
-
 //200247
 class spell_rokmora_shatter_kill : public SpellScript
 {
-    PrepareSpellScript(spell_rokmora_shatter_kill);
-
     void HandleDamage(SpellEffIndex effIndex)
     {
         Unit* target = GetHitUnit();
@@ -364,8 +227,6 @@ class spell_rokmora_shatter_kill : public SpellScript
 //193245
 class spell_rokmora_gain_energy : public AuraScript
 {
-    PrepareAuraScript(spell_rokmora_gain_energy);
-
     bool checkTalk = false;
 
     void OnTick(AuraEffect const* aurEff)
@@ -402,8 +263,6 @@ class spell_rokmora_gain_energy : public AuraScript
 //215898
 class spell_rokmora_crystalline_ground : public AuraScript
 {
-    PrepareAuraScript(spell_rokmora_crystalline_ground);
-
     void OnPeriodic(AuraEffect const* aurEff)
     {
         if (!GetTarget())
@@ -422,8 +281,6 @@ class spell_rokmora_crystalline_ground : public AuraScript
 //183433
 class spell_nl_submerge : public AuraScript
 {
-    PrepareAuraScript(spell_nl_submerge);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTarget())
@@ -456,8 +313,6 @@ class spell_nl_submerge : public AuraScript
 //209888
 class spell_entrance_run_plr_move : public AuraScript
 {
-    PrepareAuraScript(spell_entrance_run_plr_move);
-
     void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (auto player = GetTarget()->ToPlayer())
@@ -477,8 +332,6 @@ void AddSC_boss_rokmora()
 {
     RegisterCreatureAI(boss_rokmora);
     RegisterCreatureAI(npc_rokmora_blightshard_skitter);
-    RegisterCreatureAI(npc_nl_tarspitter_lurker);
-    RegisterCreatureAI(npc_nl_vileshard_hulk);
     RegisterSpellScript(spell_rokmora_shatter_kill);
     RegisterSpellScript(spell_rokmora_gain_energy);
     RegisterSpellScript(spell_rokmora_crystalline_ground);

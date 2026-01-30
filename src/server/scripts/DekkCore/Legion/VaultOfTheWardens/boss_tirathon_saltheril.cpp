@@ -499,8 +499,6 @@ public:
 
     class spell_tirathon_beam_dmg_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_tirathon_beam_dmg_AuraScript);
-
         uint16 castTimer = 500;
 
         void OnUpdate(AuraEffect const* aurEff)
@@ -526,8 +524,6 @@ public:
 //191941
 class spell_tirathon_darkstrikes : public AuraScript
 {
-    PrepareAuraScript(spell_tirathon_darkstrikes);
-
     uint32 procDelay = 0;
 
     void HandleOnProc( AuraEffect* aurEff, ProcEventInfo& eventInfo)
@@ -545,8 +541,6 @@ class spell_tirathon_darkstrikes : public AuraScript
 //191948
 class spell_tirathon_darkstrike : public SpellScript
 {
-    PrepareSpellScript(spell_tirathon_darkstrike);
-
     void HandleDamage(SpellEffIndex /*effectIndex*/)
     {
         if (!GetCaster() || !GetHitUnit())

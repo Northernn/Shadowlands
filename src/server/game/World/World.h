@@ -95,6 +95,8 @@ enum WorldTimers
     WUPDATE_WHO_LIST,
     WUPDATE_CHANNEL_SAVE,
     WUPDATE_WORLD_QUEST,
+    WUPDATE_PLAYERBOT_MGR,
+    WUPDATE_FIELDBOT_MGR,
     WUPDATE_COUNT
 };
 
@@ -197,9 +199,9 @@ enum WorldBoolConfigs
     CONFIG_ALLOW_LOGGING_IP_ADDRESSES_IN_DATABASE,
     CONFIG_CHARACTER_CREATING_DISABLE_ALLIED_RACE_ACHIEVEMENT_REQUIREMENT,
 
-    CONFIG_BATTLE_PAY_ENABLED, // < DekkCore
+    CONFIG_BATTLE_PAY_ENABLED, // < Fluxurion
+    CONFIG_FEATURE_SYSTEM_BATTLE_PAY_AVAILABLE, // < Fluxurion
     CONFIG_ARGUSWOW_ENABLE, // < DekkCore
-    CONFIG_FEATURE_SYSTEM_BATTLE_PAY_AVAILABLE, // < DekkCore
     CONFIG_CHALLENGE_ENABLED,// < DekkCore
     CONFIG_LFG_FORCE_MINPLAYERS, // TrinityCoreCustomChanges
 
@@ -230,6 +232,23 @@ enum WorldFloatConfigs
     CONFIG_CALL_TO_ARMS_5_PCT,
     CONFIG_CALL_TO_ARMS_10_PCT,
     CONFIG_CALL_TO_ARMS_20_PCT,
+    CONFIG_ADV_FLY_AIR_FRICTION,
+    CONFIG_ADV_FLY_MAX_VEL,
+    CONFIG_ADV_FLY_LIFT_COEF,
+    CONFIG_ADV_FLY_DOUBLE_JUMP_VEL_MOD,
+    CONFIG_ADV_FLY_GLIDE_START_MIN_HEIGHT,
+    CONFIG_ADV_FLY_ADD_IMPULSE_MAX_SPEED,
+    CONFIG_ADV_FLY_MIN_BANKING_RATE,
+    CONFIG_ADV_FLY_MAX_BANKING_RATE,
+    CONFIG_ADV_FLY_MIN_PITCHING_RATE_DOWN,
+    CONFIG_ADV_FLY_MAX_PITCHING_RATE_DOWN,
+    CONFIG_ADV_FLY_MIN_PITCHING_RATE_UP,
+    CONFIG_ADV_FLY_MAX_PITCHING_RATE_UP,
+    CONFIG_ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD,
+    CONFIG_ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD,
+    CONFIG_ADV_FLY_SURFACE_FRICTION,
+    CONFIG_ADV_FLY_OVER_MAX_DECELERATION,
+    CONFIG_ADV_FLY_LAUNCH_SPEED_COEFFICIENT ,
     FLOAT_CONFIG_VALUE_COUNT
 };
 
@@ -257,13 +276,16 @@ enum WorldIntConfigs
     CONFIG_CHARACTER_CREATING_DISABLED_CLASSMASK,
     CONFIG_CHARACTERS_PER_ACCOUNT,
     CONFIG_CHARACTERS_PER_REALM,
+    CONFIG_CHARACTER_CREATING_EVOKERS_PER_REALM,
     CONFIG_CHARACTER_CREATING_MIN_LEVEL_FOR_DEMON_HUNTER,
+    CONFIG_CHARACTER_CREATING_MIN_LEVEL_FOR_EVOKER,
     CONFIG_SKIP_CINEMATICS,
     CONFIG_MAX_PLAYER_LEVEL,
     CONFIG_MIN_DUALSPEC_LEVEL,
     CONFIG_START_PLAYER_LEVEL,
     CONFIG_START_DEATH_KNIGHT_PLAYER_LEVEL,
     CONFIG_START_DEMON_HUNTER_PLAYER_LEVEL,
+    CONFIG_START_DRACTHYR_PLAYER_LEVEL,
     CONFIG_START_ALLIED_RACE_LEVEL,
     CONFIG_START_PLAYER_MONEY,
     CONFIG_CURRENCY_START_APEXIS_CRYSTALS,
@@ -440,7 +462,6 @@ enum WorldIntConfigs
     CONFIG_BLACKMARKET_UPDATE_PERIOD,
     CONFIG_FACTION_BALANCE_LEVEL_CHECK_DIFF,
     // < DekkCore
-    CONFIG_BATTLE_PAY_CURRENCY,  
     CONFIG_CHALLENGE_LEVEL_LIMIT,
     CONFIG_CHALLENGE_LEVEL_MAX,
     CONFIG_CHALLENGE_LEVEL_STEP,
@@ -451,12 +472,18 @@ enum WorldIntConfigs
     CONFIG_CHALLENGE_MANUAL_AFFIX2,
     CONFIG_CHALLENGE_MANUAL_AFFIX3,
     CONFIG_CHALLENGE_MANUAL_AFFIX4,
+    CONFIG_CHALLENGE_MANUAL_AFFIX5,
     CONFIG_WEIGHTED_MYTHIC_KEYSTONE,
+    CONFIG_MYTHIC_PLUS_SEASON,
+    CONFIG_MYTHIC_PLUS_DISPLAY_SEASON,
     CONFIG_DUNGEON_ACTIVE_STEP,
     CONFIG_CHALLENGE_KEY_RESET,
     CONFIG_WORLD_QUEST_RESET_TIME_HOUR,
     CONFIG_WORLD_QUEST_DAILY_RESET,
     // < DekkCore
+    // Fluxurion >
+    CONFIG_BATTLE_PAY_CURRENCY,
+    // < Fluxurion
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -487,6 +514,7 @@ enum Rates
     RATE_POWER_ARCANE_CHARGES,
     RATE_POWER_FURY,
     RATE_POWER_PAIN,
+    RATE_POWER_ESSENCE,
     RATE_SKILL_DISCOVERY,
     RATE_DROP_ITEM_POOR,
     RATE_DROP_ITEM_NORMAL,
@@ -545,48 +573,6 @@ enum Rates
     RATE_MONEY_QUEST,
     RATE_MONEY_MAX_LEVEL_QUEST,
     MAX_RATES
-};
-
-enum RealmZone
-{
-    REALM_ZONE_UNKNOWN       = 0,                           // any language
-    REALM_ZONE_DEVELOPMENT   = 1,                           // any language
-    REALM_ZONE_UNITED_STATES = 2,                           // extended-Latin
-    REALM_ZONE_OCEANIC       = 3,                           // extended-Latin
-    REALM_ZONE_LATIN_AMERICA = 4,                           // extended-Latin
-    REALM_ZONE_TOURNAMENT_5  = 5,                           // basic-Latin at create, any at login
-    REALM_ZONE_KOREA         = 6,                           // East-Asian
-    REALM_ZONE_TOURNAMENT_7  = 7,                           // basic-Latin at create, any at login
-    REALM_ZONE_ENGLISH       = 8,                           // extended-Latin
-    REALM_ZONE_GERMAN        = 9,                           // extended-Latin
-    REALM_ZONE_FRENCH        = 10,                          // extended-Latin
-    REALM_ZONE_SPANISH       = 11,                          // extended-Latin
-    REALM_ZONE_RUSSIAN       = 12,                          // Cyrillic
-    REALM_ZONE_TOURNAMENT_13 = 13,                          // basic-Latin at create, any at login
-    REALM_ZONE_TAIWAN        = 14,                          // East-Asian
-    REALM_ZONE_TOURNAMENT_15 = 15,                          // basic-Latin at create, any at login
-    REALM_ZONE_CHINA         = 16,                          // East-Asian
-    REALM_ZONE_CN1           = 17,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN2           = 18,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN3           = 19,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN4           = 20,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN5           = 21,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN6           = 22,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN7           = 23,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN8           = 24,                          // basic-Latin at create, any at login
-    REALM_ZONE_TOURNAMENT_25 = 25,                          // basic-Latin at create, any at login
-    REALM_ZONE_TEST_SERVER   = 26,                          // any language
-    REALM_ZONE_TOURNAMENT_27 = 27,                          // basic-Latin at create, any at login
-    REALM_ZONE_QA_SERVER     = 28,                          // any language
-    REALM_ZONE_CN9           = 29,                          // basic-Latin at create, any at login
-    REALM_ZONE_TEST_SERVER_2 = 30,                          // any language
-    REALM_ZONE_CN10          = 31,                          // basic-Latin at create, any at login
-    REALM_ZONE_CTC           = 32,
-    REALM_ZONE_CNC           = 33,
-    REALM_ZONE_CN1_4         = 34,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN2_6_9       = 35,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN3_7         = 36,                          // basic-Latin at create, any at login
-    REALM_ZONE_CN5_8         = 37                           // basic-Latin at create, any at login
 };
 
 struct PersistentWorldVariable;
@@ -721,10 +707,13 @@ class TC_GAME_API World
         void SendWorldText(uint32 string_id, ...);
         void SendGlobalText(char const* text, WorldSession* self);
         void SendGMText(uint32 string_id, ...);
+        void SendMapText(uint32 mapid, uint32 string_id, ...);
         void SendServerMessage(ServerMessageType messageID, std::string stringParam = "", Player* player = nullptr);
         void SendGlobalMessage(WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
+        void SendMapMessage(uint32 mapid, WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
         void SendGlobalGMMessage(WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
         bool SendZoneMessage(uint32 zone, WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
+        bool SendAreaIDMessage(uint32 areaID, WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession* self = nullptr, uint32 team = 0);
 
         /// Are we in the middle of a shutdown?

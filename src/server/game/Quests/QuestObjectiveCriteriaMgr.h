@@ -35,7 +35,6 @@ public:
     void LoadFromDB(PreparedQueryResult objectiveResult, PreparedQueryResult criteriaResult);
     void SaveToDB(CharacterDatabaseTransaction trans);
 
-    void ResetCriteria(CriteriaFailEvent failEvent, int32 failAsset, bool evenIfCriteriaComplete = false);
     void ResetCriteriaTree(uint32 criteriaTreeId);
 
     void SendAllData(Player const* receiver) const override;
@@ -45,6 +44,7 @@ public:
 
     //DekkCore
     void RemoveCompletedObjective(QuestObjective const* questObjective);
+    void ResetCriteriaID(CriteriaType type, uint32 id);
     //DekkCore
 protected:
     void SendCriteriaUpdate(Criteria const* entry, CriteriaProgress const* progress, Seconds timeElapsed, bool timedCompleted) const override;

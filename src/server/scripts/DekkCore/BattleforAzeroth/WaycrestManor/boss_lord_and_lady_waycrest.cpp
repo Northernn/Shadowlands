@@ -259,8 +259,6 @@ private:
 //261440
 class spell_virulent_pathogen_aura : public AuraScript
 {
-	PrepareAuraScript(spell_virulent_pathogen_aura);
-
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		if (Unit* caster = GetCaster())

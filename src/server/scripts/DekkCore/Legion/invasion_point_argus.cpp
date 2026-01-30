@@ -2,6 +2,7 @@
     DekkCore
 */
 
+#include "Containers.h"
 #include "Scenario.h"
 #include "TemporarySummon.h"
 #include "OutdoorPvP.h"
@@ -113,7 +114,7 @@ struct npc_baldrazar : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        ////me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
@@ -158,15 +159,15 @@ struct npc_baldrazar : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-    //    //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-      //  if (!playerListAchiv.empty())
-           // for (auto& player : playerListAchiv)
-             //   player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -247,13 +248,6 @@ struct npc_baldrazar : ScriptedAI
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
 
-            //for (auto& player : playerList)
-            //{
-            //   // if (me->GetThreatTarget(player->GetGUID()))
-            //    //    continue;
-
-            //    me->AddThreatTarget(player->GetGUID());
-            //}
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -296,16 +290,13 @@ struct npc_dreadbringer_valus : ScriptedAI
     {
         events.Reset();
         DespawnAllSummons();
-       // //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/)
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -366,15 +357,15 @@ struct npc_dreadbringer_valus : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-       // if (!playerListAchiv.empty())
-     //       for (auto& player : playerListAchiv)
-         //       player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -444,14 +435,6 @@ struct npc_dreadbringer_valus : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-            //for (auto& player : playerList)
-           // {
-               // if (me->GetThreatTarget(player->GetGUID()))
-                //    continue;
-
-              //  me->AddThreatTarget(player->GetGUID());
-           // }
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -491,17 +474,14 @@ struct npc_vogrethar_the_defiled : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -551,15 +531,15 @@ struct npc_vogrethar_the_defiled : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-      ////  if (!playerListAchiv.empty())
-         //   for (auto& player : playerListAchiv)
-         //       player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -629,14 +609,6 @@ struct npc_vogrethar_the_defiled : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -676,17 +648,14 @@ struct npc_flamebringer_azrothel : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -737,15 +706,15 @@ struct npc_flamebringer_azrothel : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-        //if (!playerListAchiv.empty())
-         //   for (auto& player : playerListAchiv)
-            //    player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -815,14 +784,6 @@ struct npc_flamebringer_azrothel : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-            /*for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -866,16 +827,13 @@ struct npc_gorgoloth : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -914,14 +872,14 @@ struct npc_gorgoloth : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-      //  if (!playerListAchiv.empty())
-         //   for (auto& player : playerListAchiv)
-         //       player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -991,14 +949,6 @@ struct npc_gorgoloth : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -1034,17 +984,14 @@ struct npc_flameweaver_verathix : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -1094,15 +1041,15 @@ struct npc_flameweaver_verathix : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-      //  if (!playerListAchiv.empty())
-          //  for (auto& player : playerListAchiv)
-          //      player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+       if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -1172,14 +1119,6 @@ struct npc_flameweaver_verathix : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -1216,17 +1155,14 @@ struct npc_velthrak_the_punisher : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -1267,15 +1203,15 @@ struct npc_velthrak_the_punisher : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-     //   if (!playerListAchiv.empty())
-       //     for (auto& player : playerListAchiv)
-         //       player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, nullptr);
 
         switch (me->GetZoneId())
         {
@@ -1373,14 +1309,6 @@ struct npc_velthrak_the_punisher : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -1424,16 +1352,13 @@ struct npc_mazgoroth : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -1472,14 +1397,14 @@ struct npc_mazgoroth : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-        //if (!playerListAchiv.empty())
-        //    for (auto& player : playerListAchiv)
-           //     player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, player);
 
         switch (me->GetZoneId())
         {
@@ -1549,14 +1474,6 @@ struct npc_mazgoroth : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -1565,28 +1482,26 @@ struct npc_mazgoroth : ScriptedAI
             {
             case 1:
             {
-              //  auto threatlist = me->GetThreatManager().GetThreatList();
+                auto threatlist = me->GetThreatManager().GetSortedThreatList();
 
-              //  for (uint8 i = 0; i < 3; ++i)
-              //  {
-                  //  if (threatlist.empty())
-                    //    break;
+                for (uint8 i = 0; i < 3; ++i)
+                {
+                    if (threatlist.end())
+                        break;
 
-                   // auto itr = Trinity::Containers::SelectRandomContainerElement(threatlist);
+                //    auto itr = Trinity::Containers::SelectRandomContainerElement(threatlist);
 
-                  //  if (Unit* target = itr->getTarget())
+                   // if (Unit* target = itr->GetVictim())
                      //   DoCast(target, 248501, false);
-
-                  //  threatlist.remove(itr);
-               // }
+                }
                 events.RescheduleEvent(1, 45s);
                 break;
             }
             case 2:
                 DoCast(248509);
 
-              //  if (auto victim = me->GetVictim())
-                 //   me->AddThreat(victim, 0.0f);
+                if (auto victim = me->GetVictim())
+                    me->IsThreatenedBy(victim);
 
                 events.RescheduleEvent(2, 32s);
                 break;
@@ -1612,17 +1527,14 @@ struct npc_malphazel_argus : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -1687,15 +1599,15 @@ struct npc_malphazel_argus : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-       // if (!playerListAchiv.empty())
-          //  for (auto& player : playerListAchiv)
-           //     player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, player);
 
         switch (me->GetZoneId())
         {
@@ -1753,12 +1665,12 @@ struct npc_malphazel_argus : ScriptedAI
         }
     }
 
-   // void SpellHit(Unit* /*owner*/, SpellInfo const* spell) override
-  //  {
-      //  if (spell->Id == 249245)
-          //  if (auto victim = me->getVictim())
-             //   me->AddThreat(victim, 0.0f);
-  //  }
+    void SpellHit(WorldObject* caster, SpellInfo const* spell) override
+    {
+        if (spell->Id == 249245)
+            if (auto victim = me->GetVictim())
+                me->IsThreatenedBy(victim);
+    }
 
     void UpdateAI(uint32 diff) override
     {
@@ -1772,14 +1684,6 @@ struct npc_malphazel_argus : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-          /*  for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -1819,17 +1723,14 @@ struct npc_fel_lord_kazral : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -1885,15 +1786,15 @@ struct npc_fel_lord_kazral : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-       // if (!playerListAchiv.empty())
-        //    for (auto& player : playerListAchiv)
-         //       player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, player);
 
         switch (me->GetZoneId())
         {
@@ -1963,14 +1864,6 @@ struct npc_fel_lord_kazral : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-            /*for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -2006,16 +1899,13 @@ struct npc_harbinger_drelnathar : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -2055,14 +1945,14 @@ struct npc_harbinger_drelnathar : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-      //  if (!playerListAchiv.empty())
-        //    for (auto& player : playerListAchiv)
-         //       player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, player);
 
         switch (me->GetZoneId())
         {
@@ -2132,14 +2022,6 @@ struct npc_harbinger_drelnathar : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-            /*for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -2179,16 +2061,13 @@ struct npc_flamecaller_vezrah : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -2227,14 +2106,14 @@ struct npc_flamecaller_vezrah : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-      ////  if (!playerListAchiv.empty())
-        //    for (auto& player : playerListAchiv)
-          //      player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, player);
 
         switch (me->GetZoneId())
         {
@@ -2304,14 +2183,6 @@ struct npc_flamecaller_vezrah : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -2347,17 +2218,14 @@ struct npc_dread_knight_zakgal : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
-    }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
         if (me->GetZoneId() == 9126)
             DoCast(251896);
 
@@ -2406,15 +2274,15 @@ struct npc_dread_knight_zakgal : ScriptedAI
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         std::list<Player*> playerListAchiv;
         playerListAchiv.clear();
         GetPlayerListInGrid(playerListAchiv, me, 300.0f);
-        //if (!playerListAchiv.empty())
-         //   for (auto& player : playerListAchiv)
-          //      player->UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, me->GetEntry(), 1, 0, nullptr, player);
+        if (!playerListAchiv.empty())
+            for (auto& player : playerListAchiv)
+                player->UpdateCriteria(CriteriaType::KillCreature, me->GetEntry(), 1, 0, player);
 
         switch (me->GetZoneId())
         {
@@ -2484,14 +2352,6 @@ struct npc_dread_knight_zakgal : ScriptedAI
             Addthreatlist = true;
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 300.0f);
-
-           /* for (auto& player : playerList)
-            {
-                if (me->GetThreatTarget(player->GetGUID()))
-                    continue;
-
-                me->AddThreatTarget(player->GetGUID());
-            }*/
         }
 
         if (uint32 eventId = events.ExecuteEvent())
@@ -2550,12 +2410,12 @@ struct npc_fragment_of_argus : ScriptedAI
                 {
                     nextPlayer.Clear();
 
-                  /*  if (auto newPlayer = me->FindNearestPlayer(50.0f, true))
+                    if (auto newPlayer = me->FindNearestPlayer(50.0f, true))
                     {
                         if (newPlayer->IsInCombat())
                             nextPlayer = newPlayer->GetGUID();
                     }
-                    else*/
+                    else
                         me->DespawnOrUnsummon();
 
                     if (auto next = ObjectAccessor::GetPlayer(*me, nextPlayer))
@@ -2647,7 +2507,7 @@ struct npc_wake_of_blood : ScriptedAI
 
         std::list<Player*> playerList;
         GetPlayerListInGrid(playerList, me, 200.0f);
-       // Trinity::Containers::RandomResizeList(playerList, 1);
+        Trinity::Containers::RandomResize(playerList, 1);
         if (!playerList.empty())
             for (auto& target : playerList)
                 listPlayers.push_back(target->GetGUID());
@@ -2845,7 +2705,7 @@ struct npc_decimax : ScriptedAI
             return;
 
         use = true;
-        //me->SetReactState(REACT_PASSIVE); // вызывает проблемы с уроном АТ от 250242.
+        me->SetReactState(REACT_PASSIVE); 
         DoCast(250242);
         me->AddDelayedEvent(3000, [=]() -> void
         {
@@ -2891,8 +2751,8 @@ struct npc_temporal_anomaly : ScriptedAI
                         use = true;
 
                         auto outdoor = players->GetOutdoorPvP();
-                       // if (outdoor && outdoor->GetTypeId() == OUTDOOR_PVP_ARGUS_INVASION)
-                          //  outdoor->HandleKill(players, me);
+                        if (outdoor && outdoor->GetTypeId() == OUTDOOR_PVP_ARGUS_INVASION)
+                            outdoor->HandleKill(players, me);
                     }
                 }
 
@@ -2942,7 +2802,7 @@ struct npc_demon_hunter_val : ScriptedAI
                         use = true;
 
                         auto outdoor = players->GetOutdoorPvP();
-                     //   if (outdoor && outdoor->GetTypeId() == OUTDOOR_PVP_ARGUS_INVASION)
+                        if (outdoor && outdoor->GetTypeId() == OUTDOOR_PVP_ARGUS_INVASION)
                             outdoor->HandleKill(players, me);
                     }
                 }
@@ -2998,20 +2858,17 @@ struct npc_felflame_invader : ScriptedAI
                 me->CastSpell(c, 252327, false);
     }
 
-    void EnterCombat(Unit* /*who*/) 
+    void JustEngagedWith(Unit* who) override
     {
+        ScriptedAI::JustEngagedWith(who);
+
         Talk(0);
         events.RescheduleEvent(1, 2s);
     }
 
-    void JustEngagedWith(Unit* who) override
-    {
-        ScriptedAI::JustEngagedWith(who);
-    }
-
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void UpdateAI(uint32 diff) override
@@ -3045,7 +2902,7 @@ struct npc_felflame_subjugator : ScriptedAI
     void Reset() override
     {
         events.Reset();
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
 
         me->AddDelayedEvent(5000, [=]() -> void
         {
@@ -3082,20 +2939,17 @@ struct npc_felflame_subjugator : ScriptedAI
             DoCast(252628);
     }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
-        Talk(0);
-        events.RescheduleEvent(1, 2s);
-    }
-
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
+
+        Talk(0);
+        events.RescheduleEvent(1, 2s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -3132,20 +2986,12 @@ struct npc_crazed_corruptor : ScriptedAI
         events.Reset();
         events.RescheduleEvent(2, 5s);
         events.RescheduleEvent(3, 5s);
-        //me->RemoveAllAreaObjects();
-    }
-
-    void EnterCombat(Unit* /*who*/) 
-    {
-        if (me->GetZoneId() == 9126 || me->GetZoneId() == 9295)
-            DoCast(251896);
-
-        events.RescheduleEvent(1, 2s);
+        me->RemoveAllAreaObjects();
     }
 
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
 
         if (auto cre = ObjectAccessor::GetCreature(*me, guid))
         {
@@ -3157,6 +3003,11 @@ struct npc_crazed_corruptor : ScriptedAI
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
+
+        if (me->GetZoneId() == 9126 || me->GetZoneId() == 9295)
+            DoCast(251896);
+
+        events.RescheduleEvent(1, 2s);
     }
 
     void UpdateAI(uint32 diff) override
@@ -3211,7 +3062,7 @@ struct npc_magma_giant : ScriptedAI
     {
         events.Reset();
         DoCast(251888);
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
         DespawnAllSummons();
 
         if (!introDone)
@@ -3231,20 +3082,17 @@ struct npc_magma_giant : ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* /*who*/) 
-    {
-        events.RescheduleEvent(1, 18s);
-        events.RescheduleEvent(2, 3s);
-    }
-
     void JustDied(Unit* /*who*/) override
     {
-        //me->RemoveAllAreaObjects();
+        me->RemoveAllAreaObjects();
     }
 
     void JustEngagedWith(Unit* who) override
     {
         ScriptedAI::JustEngagedWith(who);
+
+        events.RescheduleEvent(1, 18s);
+        events.RescheduleEvent(2, 3s);
     }
 
     void JustSummoned(Creature* summon) override
@@ -3324,8 +3172,8 @@ struct npc_magma_giant : ScriptedAI
         if (!UpdateVictim() && me->IsInCombat())
             return;
 
-       // if (CheckHomeDistToEvade(diff, 150.0f))
-        //    return;
+        if (CheckHomeDistToEvade(diff, 150.0f))
+            return;
 
         events.Update(diff);
 
@@ -3401,15 +3249,13 @@ struct npc_future_image : ScriptedAI
 //251888
 class spell_fire_enchanted : public AuraScript
 {
-    PrepareAuraScript(spell_fire_enchanted);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
         if (!caster)
             return;
 
-    //    if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
+        if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
             caster->CastSpell(caster, 251891, false);
     }
 
@@ -3422,15 +3268,13 @@ class spell_fire_enchanted : public AuraScript
 //252113
 class spell_spore_filled : public AuraScript
 {
-    PrepareAuraScript(spell_spore_filled);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
         if (!caster)
             return;
 
-      //  if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
+        if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
             caster->CastSpell(caster, 252120, false);
     }
 
@@ -3443,8 +3287,6 @@ class spell_spore_filled : public AuraScript
 //249391
 class spell_cripple : public AuraScript
 {
-    PrepareAuraScript(spell_cripple);
-
     void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* target = GetTarget();
@@ -3463,8 +3305,6 @@ class spell_cripple : public AuraScript
 //248508
 class spell_creeping_doom_argus_dummy : public SpellScript
 {
-    PrepareSpellScript(spell_creeping_doom_argus_dummy);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.remove_if([](WorldObject* object)
@@ -3500,8 +3340,6 @@ class spell_creeping_doom_argus_dummy : public SpellScript
 //248507
 class spell_creeping_doom_argus : public AuraScript
 {
-    PrepareAuraScript(spell_creeping_doom_argus);
-
     void OnPeriodic(AuraEffect const*aurEff)
     {
         Unit* target = GetTarget();
@@ -3523,8 +3361,6 @@ class spell_creeping_doom_argus : public AuraScript
 //249257
 class spell_narcolepsy : public AuraScript
 {
-    PrepareAuraScript(spell_narcolepsy);
-
     void OnPeriodic(AuraEffect const*aurEff)
     {
         Unit* target = GetTarget();
@@ -3546,8 +3382,6 @@ class spell_narcolepsy : public AuraScript
 //249440
 class spell_summon_explosive_orbs : public SpellScript
 {
-    PrepareSpellScript(spell_summon_explosive_orbs);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -3567,8 +3401,6 @@ class spell_summon_explosive_orbs : public SpellScript
 //252470
 class spell_destroying_ip_argus : public SpellScript
 {
-    PrepareSpellScript(spell_destroying_ip_argus);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -3588,8 +3420,6 @@ class spell_destroying_ip_argus : public SpellScript
 //252320
 class spell_destroying_argus_val : public SpellScript
 {
-    PrepareSpellScript(spell_destroying_argus_val);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -3609,16 +3439,14 @@ class spell_destroying_argus_val : public SpellScript
 //250221
 class spell_alert_invasion_point : public SpellScript
 {
-    PrepareSpellScript(spell_alert_invasion_point);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         Unit* targets = GetHitUnit()->ToCreature();
         if (!targets)
             return;
 
-      //  if (auto player = targets->FindNearestPlayer(20.0f, true))
-        //    targets->GetAI()->AttackStart(player);
+        if (auto player = targets->FindNearestPlayer(20.0f, true))
+            targets->GetAI()->AttackStart(player);
     }
 
     void Register() override
@@ -3630,8 +3458,6 @@ class spell_alert_invasion_point : public SpellScript
 //250262
 class spell_surging_blood : public AuraScript
 {
-    PrepareAuraScript(spell_surging_blood);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -3650,8 +3476,6 @@ class spell_surging_blood : public AuraScript
 //251708
 class spell_flash_freeze : public AuraScript
 {
-    PrepareAuraScript(spell_flash_freeze);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -4105,7 +3929,7 @@ class OutdoorPVPArgusInvasion : public OutdoorPvP
 public:
     OutdoorPVPArgusInvasion(Map* map) : OutdoorPvP(map)
     {
-      //  m_TypeId = OUTDOOR_PVP_ARGUS_INVASION;
+        m_TypeId = OUTDOOR_PVP_ARGUS_INVASION;
     }
 
     ~OutdoorPVPArgusInvasion()
@@ -4152,25 +3976,24 @@ public:
 
         if (scenarioId)
         {
-          //  m_scenarios[zoneId] = new Scenario(m_map, scenarioId);
-        //    m_scenarios[zoneId]->SetOutdoorPvP(this, zoneId);
+           // m_scenarios[zoneId] = new Scenario(m_map, scenarioId);
+          //  m_scenarios[zoneId]->SetOutdoorPvP(this, zoneId);
 
-          //  if (!m_players[zoneId].empty())
-           //     m_scenarios[zoneId]->SetCurrentStep(0);
+            if (!m_players[zoneId].empty())
+                m_scenarios[zoneId]->SendStepUpdate(0, true);
 
             m_justInitialized[zoneId] = !m_players[zoneId].empty();
 
-           // for (auto& guid : m_players[zoneId])
-             //   if (Player* player = ObjectAccessor::GetObjectInMap(guid, m_map, (Player*)nullptr))
-               //     m_scenarios[zoneId]->SendStepUpdate(player, true);
+            for (auto& guid : m_players[zoneId])
+                if (Player* player = ObjectAccessor::GetObjectInMap(guid, m_map, (Player*)nullptr))
+                    m_scenarios[zoneId]->SendStepUpdate(player, true);
         }
     }
 
-   /* void HandlePlayerEnterZone(ObjectGuid guid, uint32 zone) override
+    void HandlePlayerEnterZone(Player* player, uint32 zone) override
     {
-        OutdoorPvP::HandlePlayerEnterZone(guid, zone);
+        OutdoorPvP::HandlePlayerEnterZone(player, zone);
 
-        Player* player = ObjectAccessor::GetObjectInMap(guid, m_map, (Player*)nullptr);
         if (!player)
             return;
 
@@ -4216,19 +4039,19 @@ public:
         if (player->IsMounted())
             player->Dismount();
 
-        if (!player->isAlive())
+        if (!player->IsAlive())
         {
             player->ResurrectPlayer(!AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) ? 1.0f : 0.5f);
             player->SpawnCorpseBones();
             player->SaveToDB();
         }
 
-        if (questId && player->WorldQuestCompleted(questId) && !player->isGameMaster())
+        if (questId && player->WorldQuestCompleted(questId) && !player->IsGameMaster())
             player->CastSpell(player, 247069, true);
 
         if (eventid1 && eventid2)
             if (!sGameEventMgr->IsActiveEvent(eventid1) && !sGameEventMgr->IsActiveEvent(eventid2))
-                if (!player->isGameMaster())
+                if (!player->IsGameMaster())
                     player->CastSpell(player, 210818, true);
 
         if (m_scenarios.find(zone) == m_scenarios.end())
@@ -4238,27 +4061,27 @@ public:
         {
             m_justInitialized[zone] = true;
             if (m_scenarios[zone])
-                m_scenarios[zone]->SetCurrentStep(0);
+                m_scenarios[zone]->SendStepUpdate(0, true);
         }
         
         if (m_scenarios[zone])
             m_scenarios[zone]->SendStepUpdate(player, true);
 
-        m_players[zone].insert(guid);
+      //  m_players[zone].insert(guid);
     }
 
-    void HandlePlayerLeaveZone(ObjectGuid guid, uint32 zone) override
+    void HandlePlayerLeaveZone(Player* player, uint32 zone) override
     {
-        OutdoorPvP::HandlePlayerLeaveZone(guid, zone);
-        Player* player = ObjectAccessor::GetObjectInMap(guid, m_map, (Player*)nullptr);
+        OutdoorPvP::HandlePlayerLeaveZone(player, zone);
+
         if (!player)
             return;
 
-        m_players[zone].erase(guid);
+       // m_players[zone].erase(guid);
 
         if (m_players[zone].empty())
             m_timersPerZone[zone] = 1;
-    }*/
+    }
 
     void HandleKill(Player* killer, Unit* killed) override
     {
@@ -4509,7 +4332,7 @@ public:
             for (auto& guid : m_creatures[zone])
             {
               //  if (Creature* cre = ObjectAccessor::GetObjectInMap(guid, m_map, (Creature*)nullptr))
-                Creature* cre;
+                Creature* cre = nullptr;
                 {
                     switch (zone)
                     {
@@ -4769,7 +4592,7 @@ public:
         }
     }
 
-    bool Update(uint32 diff) override
+    void Update(uint32 diff) override
     {
         std::vector<uint32> clearing{};
 
@@ -4873,8 +4696,6 @@ public:
 
         for (auto& id : clearing)
             m_timersPerZone.erase(id);
-
-        return true;
     }
 
     void HandleGameEventStart(uint32 eventId)

@@ -30,7 +30,7 @@ class Quest;
 class SpellInfo;
 class Unit;
 class WorldObject;
-enum class QuestGiverStatus : uint32;
+enum class QuestGiverStatus : uint64;
 
 namespace WorldPackets
 {
@@ -62,6 +62,9 @@ class TC_GAME_API GameObjectAI
 
         virtual void Reset() { }
 
+        /// Called when the gameobject is added to the world (after SMSG_UPDATE_OBJECT is sent)
+        virtual void OnAddToWorld() { }
+
         // Pass parameters between AI
         virtual void DoAction(int32 /*param = 0 */) { }
         virtual void SetGUID(ObjectGuid const& /*guid*/, int32 /*id = 0 */) { }
@@ -70,7 +73,7 @@ class TC_GAME_API GameObjectAI
         static int32 Permissible(GameObject const* go);
 
         // Called when the dialog status between a player and the gameobject is requested.
-        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* player);
+        virtual Optional<QuestGiverStatus> GetDialogStatus(Player const* player);
 
         // Called when a player opens a gossip dialog with the gameobject.
         virtual bool OnGossipHello(Player* /*player*/) { return false; }
@@ -90,6 +93,8 @@ class TC_GAME_API GameObjectAI
         // Called when a Player clicks a GameObject, before GossipHello
         // prevents achievement tracking if returning true
         virtual bool OnReportUse(Player* /*player*/) { return false; }
+
+        virtual bool OnPlayerChoice(Player* /*player*/) { return false; }
 
         virtual void Destroyed(WorldObject* /*attacker*/, uint32 /*eventId*/) { }
         virtual void Damaged(WorldObject* /*attacker*/, uint32 /*eventId*/) { }

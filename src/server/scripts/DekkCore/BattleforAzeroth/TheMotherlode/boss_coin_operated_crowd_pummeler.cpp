@@ -176,12 +176,12 @@ public:
             me->RemoveAllAuras();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-           // if (me->GetMap()->IsMythic() || me->GetMap()->IsHeroic())
-            //    events.ScheduleEvent(EVENT_THROW_COINS, TIMER_THROW_COINS);
+            if (me->GetMap()->IsMythic() || me->GetMap()->IsHeroic())
+                events.ScheduleEvent(EVENT_THROW_COINS, 35s);
 
-          //  events.ScheduleEvent(EVENT_SHOCKING_CLAW, TIMER_SHOCKING_CLAW);
-         //   events.ScheduleEvent(EVENT_STATIC_PULSE, TIMER_STATIC_PULSE);
-          //  events.ScheduleEvent(EVENT_FOOTBOMB_LAUNCHER, TIMER_FOOTBOMB_LAUNCHER);
+            events.ScheduleEvent(EVENT_SHOCKING_CLAW, 25s);
+            events.ScheduleEvent(EVENT_STATIC_PULSE, 17s);
+            events.ScheduleEvent(EVENT_FOOTBOMB_LAUNCHER, 23s);
         }
 
         void UpdateAI(uint32 diff) override
@@ -201,7 +201,7 @@ public:
                 case EVENT_STATIC_PULSE:
                     SelectSoundAndText(me, 3);
                     me->CastSpell(me->GetVictim(), SPELL_STATIC_PULSE);
-                  //  events.ScheduleEvent(EVENT_STATIC_PULSE, TIMER_STATIC_PULSE);
+                    events.ScheduleEvent(EVENT_STATIC_PULSE, 16s);
                     break;
                 case EVENT_SHOCKING_CLAW:
                     me->AddUnitState(UNIT_STATE_ROOT);
@@ -210,7 +210,7 @@ public:
                         SelectSoundAndText(me, 5);
                         me->CastSpell(Position(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()), SPELL_SHOCKING_CLAWS, true);
                     }
-                 //   events.ScheduleEvent(EVENT_SHOCKING_CLAW, TIMER_SHOCKING_CLAW);
+                    events.ScheduleEvent(EVENT_SHOCKING_CLAW, 18s);
                     break;
                 case EVENT_THROW_COINS:
                 {
@@ -219,7 +219,7 @@ public:
                         Position randomPos = me->GetRandomPoint(me->GetPosition(), 10.0f);
                         me->SummonCreature(NPC_PILE_OF_GOLD, randomPos, TEMPSUMMON_MANUAL_DESPAWN);
                     }
-                    //events.ScheduleEvent(EVENT_COIN_MAGNET, TIMER_COIN_MAGNET);
+                    events.ScheduleEvent(EVENT_COIN_MAGNET, 19s);
                     break;
                 }
                 case EVENT_FOOTBOMB_LAUNCHER:
@@ -228,13 +228,13 @@ public:
                     str << "Coin-Operated Crowd Pummeler casts |cFFF00000|h[Footbomb Launcher]|h|r !";
                     me->TextEmote(str.str().c_str(), 0, true);
                     me->CastSpell(me, SPELL_FOOTBOMB_LAUNCHER);
-                  //  events.ScheduleEvent(EVENT_FOOTBOMB_LAUNCHER, TIMER_FOOTBOMB_LAUNCHER);
+                    events.ScheduleEvent(EVENT_FOOTBOMB_LAUNCHER, 13s);
                     break;
                 }
                 case EVENT_COIN_MAGNET:
                     SelectSoundAndText(me, 4);
                     me->CastSpell(me, SPELL_COIN_MAGNET);
-                  //  events.ScheduleEvent(EVENT_THROW_COINS, TIMER_THROW_COINS);
+                    events.ScheduleEvent(EVENT_THROW_COINS, 18s);
                     break;
                 }
             }
@@ -325,7 +325,7 @@ public:
                 break;
             }
             case ACTION_INIT_SPELL:
-             //   events.ScheduleEvent(EVENT_DETONATE, TIMER_DETONATE);
+                events.ScheduleEvent(EVENT_DETONATE, 15s);
                 break;
             }
         }
@@ -362,8 +362,6 @@ public:
 
     class bfa_spell_blazing_azerite_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_blazing_azerite_SpellScript);
-
         void HandleOnHit()
         {
             Unit* target = GetHitUnit();
@@ -395,8 +393,6 @@ public:
 
     class bfa_spell_footbomb_launcher_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_footbomb_launcher_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -429,8 +425,6 @@ public:
 
     class bfa_spell_coin_magnet_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_coin_magnet_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();

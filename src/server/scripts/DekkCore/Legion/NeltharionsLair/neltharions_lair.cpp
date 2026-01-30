@@ -143,96 +143,6 @@ public:
     };
 };
 
-class mob_trigger_start_waterfall : public CreatureScript
-{
-public:
-    mob_trigger_start_waterfall() : CreatureScript("mob_trigger_start_waterfall") { }
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new mob_trigger_start_waterfall_AI(creature);
-    }
-
-    struct mob_trigger_start_waterfall_AI : public ScriptedAI
-    {
-        mob_trigger_start_waterfall_AI(Creature* creature) : ScriptedAI(creature) 
-        {
-            me->SetVisible(false);
-        }
-
-        void MoveInLineOfSight(Unit* who) override
-        {
-            if (me->GetMapId() == 1458 && who->GetTypeId() == TYPEID_PLAYER && !who->ToPlayer()->IsGameMaster() && me->IsWithinDistInMap(who, 150.0f))
-            {
-                if (who->GetPositionZ() < 350 && who->GetPositionZ() > 114 && !who->HasAura(SPELL_FALLING_VISUAL))
-                {
-                    who->CastSpell(who, SPELL_FALLING_VISUAL, false);
-                    who->SetCanFly(true);
-                    float allSpeed = 4.0f;
-                    who->SetSpeedRate(MOVE_WALK, allSpeed);
-                    who->SetSpeedRate(MOVE_RUN, allSpeed);
-                    who->SetSpeedRate(MOVE_SWIM, allSpeed);
-                    who->SetSpeedRate(MOVE_FLIGHT, allSpeed);
-
-                    std::vector<uint32> destinations;
-                    destinations.push_back(TAXI_NODE_FALLING_END_POINT);
-                    destinations.push_back(TAXI_NODE_FALLING_START_POINT);
-                    who->ToPlayer()->m_taxi.SetTaxiDestination(destinations);
-                    who->ToPlayer()->SaveToDB();
-                    who->ToPlayer()->ContinueTaxiFlight();
-                }
-
-                if (who->GetPositionZ() < 112 && who->HasAura(SPELL_FALLING_VISUAL))
-                {
-                    who->RemoveAura(SPELL_FALLING_VISUAL);
-                    float allSpeed = 1.0f;
-                    who->SetSpeedRate(MOVE_WALK, allSpeed);
-                    who->SetSpeedRate(MOVE_RUN, allSpeed);
-                    who->SetSpeedRate(MOVE_SWIM, allSpeed);
-                    who->SetSpeedRate(MOVE_FLIGHT, allSpeed);
-                    who->SetCanFly(false);
-                    who->ToPlayer()->m_taxi.ClearTaxiDestinations();
-                    who->ToPlayer()->SaveToDB();
-                }
-            }
-        }
-    };
-};
-
-class mob_neltharionslair_trigger : public CreatureScript
-{
-public:
-    mob_neltharionslair_trigger() : CreatureScript("mob_neltharionslair_trigger") { }
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new mob_neltharionslair_trigger_AI(creature);
-    }
-
-    struct mob_neltharionslair_trigger_AI : public ScriptedAI
-    {
-        mob_neltharionslair_trigger_AI(Creature* creature) : ScriptedAI(creature) 
-        {
-            me->SetVisible(false);
-        }
-
-        void MoveInLineOfSight(Unit* who) override
-        {
-            if (me->GetMapId() == MAP_NELTHARION_LAIR && me->GetAreaId() == AREA_BROKEN_TEETH &&
-                who->IsPlayer() && !who->ToPlayer()->IsGameMaster() && me->IsWithinDistInMap(who, 20.0f))
-            {
-                float allSpeed = 1.0f;
-                who->ToPlayer()->SetSpeedRate(MOVE_WALK, allSpeed);
-                who->ToPlayer()->SetSpeedRate(MOVE_RUN, allSpeed);
-                who->ToPlayer()->SetSpeedRate(MOVE_SWIM, allSpeed);
-                who->ToPlayer()->SetSpeedRate(MOVE_FLIGHT, allSpeed);
-                who->ToPlayer()->m_taxi.ClearTaxiDestinations();
-                who->ToPlayer()->SaveToDB();
-            }
-        }
-    };
-};
-
 // 91006
 class mob_rockback_gnasher : public CreatureScript
 {
@@ -799,8 +709,6 @@ class spell_lurker_submerge : public SpellScriptLoader
 
         class spell_lurker_submerge_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_lurker_submerge_AuraScript);
-
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -823,8 +731,6 @@ void AddSC_neltharions_lair()
 {
     new mob_vileshard_crawler();
     new mob_embershard_scorpion();
-    new mob_neltharionslair_trigger();
-    new mob_trigger_start_waterfall();
     new mob_rockback_gnasher();
     new mob_vileshard_chunk();
     new mob_tarspitter_lurker();

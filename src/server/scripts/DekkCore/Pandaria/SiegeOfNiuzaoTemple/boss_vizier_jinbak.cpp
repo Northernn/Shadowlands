@@ -373,8 +373,6 @@ class spell_jinbak_sap_residue_aura : public SpellScriptLoader
         
         class spell_jinbak_sap_residue_aura_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_jinbak_sap_residue_aura_SpellScript);
-
             void SelectTargets(std::list<WorldObject*>& targets)
             {
                 if (Unit* caster = GetCaster())
@@ -412,8 +410,6 @@ class spell_jinbak_sap_residue_se : public SpellScriptLoader
 
         class spell_jinbak_sap_residue_se_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_jinbak_sap_residue_se_SpellScript);
-
             void SelectTargets(std::list<WorldObject*>& targets)
             {
                 if (Unit* caster = GetCaster())
@@ -470,8 +466,6 @@ class spell_jinbak_detonate : public SpellScriptLoader
 
         class spell_jinbak_detonate_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_jinbak_detonate_AuraScript);
-
            void OnPeriodic(AuraEffect const* aurEff)
             {
                 Unit* caster = GetCaster();
@@ -504,8 +498,6 @@ class spell_jinbak_detonate_damage : public SpellScriptLoader
 
         class spell_jinbak_detonate_damage_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_jinbak_detonate_damage_SpellScript);
-
             void CalculateDamage(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();

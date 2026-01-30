@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 DekkCore
+ * Copyright (C) 2023 DekkCore
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -14,9 +14,12 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 #include "Common.h"
+#include "Group.h"
+#include "Player.h"
 #include "DB2Structure.h"
 
 static uint16 const LFG_LIST_APPLY_FOR_GROUP_TIMEOUT = 300;
@@ -41,16 +44,18 @@ enum class LFGListApplicationStatus : uint8
 
 enum LFGListActivityCategory
 {
-    LFG_LIST_ACTIVITY_CATEGORY_ZONE = 1,
+    LFG_LIST_ACTIVITY_CATEGORY_QUESTING = 1,
     LFG_LIST_ACTIVITY_CATEGORY_DUNGEON = 2,
-    LFG_LIST_ACTIVITY_CATEGORY_RAID = 3,
-    LFG_LIST_ACTIVITY_CATEGORY_ARENA = 4,
-    LFG_LIST_ACTIVITY_CATEGORY_SCENARIO = 5,
+    LFG_LIST_ACTIVITY_CATEGORY_RAIDS = 3,
+    LFG_LIST_ACTIVITY_CATEGORY_ARENAS = 4,
+    LFG_LIST_ACTIVITY_CATEGORY_SCENARIOS = 5,
     LFG_LIST_ACTIVITY_CATEGORY_CUSTOM = 6,
-    LFG_LIST_ACTIVITY_CATEGORY_ARENA_SKIRMISH = 7,
+    LFG_LIST_ACTIVITY_CATEGORY_ARENA_SKIRMISHES = 7,
     LFG_LIST_ACTIVITY_CATEGORY_BATTLEGROUNDS = 8,
     LFG_LIST_ACTIVITY_CATEGORY_RATED_BATTLEGROUNDS = 9,
-    LFG_LIST_ACTIVITY_CATEGORY_OUTDOOR_PVP = 10
+    LFG_LIST_ACTIVITY_CATEGORY_ISLAND_EXPEDITIONS = 111,
+    LFG_LIST_ACTIVITY_CATEGORY_THORGAST = 113
+
 };
 
 enum class LFGListStatus : uint8
@@ -129,16 +134,20 @@ struct LFGListEntry
     GroupFinderActivityEntry const* GroupFinderActivityData;
     Group* ApplicationGroup;
 
-    uint32 Timeout;
-    uint32 CreationTime;
-    uint32 HonorLevel;
-    uint32 QuestID;
-    uint8 MinMyticPlusRating;
-    uint8 CrossFaction;
-    float ItemLevel;
+    uint32 Timeout = 0;
+    uint32 CreationTime = 0;
+
+    Optional<uint32> QuestID;
+    int32 ActivityID = 0;
+    float ItemLevel = 0.0f;
+    uint32 HonorLevel = 0;
     std::string GroupName;
     std::string Comment;
     std::string VoiceChat;
-    bool AutoAccept;
+    bool minChallege = false;
     bool PrivateGroup = false;
+    bool HasQuest = false;
+    bool AutoAccept = false;
+    float TypeActivity = 0.0f;
+    uint32 MinMyticPlusRating = 0;
 };

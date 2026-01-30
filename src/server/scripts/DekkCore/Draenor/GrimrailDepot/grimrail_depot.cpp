@@ -1115,8 +1115,6 @@ public:
 
     class grimrail_depot_spell_dash_dummy_SpellScript : public SpellScript
     {
-        PrepareSpellScript(grimrail_depot_spell_dash_dummy_SpellScript);
-
         void HandleDummy(SpellEffIndex /*p_EffIndex*/)
         {
             if (Unit* l_Caster = GetCaster())
@@ -1151,8 +1149,6 @@ class grimrail_depot_thunder_zone : public SpellScriptLoader
 
     class grimrail_depot_thunder_zone_SpellScript : public SpellScript
     {
-        PrepareSpellScript(grimrail_depot_thunder_zone_SpellScript);
-
         void HandleDummy(SpellEffIndex p_EffIndex)
         {
             if (Unit* l_Caster = GetCaster())
@@ -1186,8 +1182,6 @@ public:
 
     class grimrail_depot_spell_activating_AuraScript : public AuraScript
     {
-        PrepareAuraScript(grimrail_depot_spell_activating_AuraScript);
-
         void OnProc(AuraEffect* p_AurEff, ProcEventInfo& p_EventInfo)
         {
             PreventDefaultAction();
@@ -1225,8 +1219,6 @@ class grimrail_depot_spell_sharpnel_blast : public SpellScriptLoader
 
     class grimrail_depot_spell_sharpnel_blast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(grimrail_depot_spell_sharpnel_blast_SpellScript);
-
         void HandleDamage(SpellEffIndex p_EffIndex)
         {
             if (Unit* l_Caster = GetCaster())
@@ -1262,8 +1254,6 @@ class grimrail_depot_spell_arcane_blitz : public SpellScriptLoader
 
     class grimrail_depot_spell_arcane_blitz_AuraScript : public AuraScript
     {
-        PrepareAuraScript(grimrail_depot_spell_arcane_blitz_AuraScript);
-
         enum eWardenChainAuras
         {
             SpellArcaneBlitzTriggerMissile = 166398

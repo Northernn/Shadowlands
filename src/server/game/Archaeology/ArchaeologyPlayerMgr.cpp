@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 
+ * Copyright (C)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -54,16 +54,16 @@ void ArchaeologyPlayerMgr::LoadArchaeologyBranchs(PreparedQueryResult result)
     if (!result)
         return;
 
-    uint32 mpos = 0;
-
-    do
-    {
-        Field* fields = result->Fetch();
-        uint16 branch = fields[0].GetUInt16();
-      //  GetPlayer()->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, mpos, branch);
-        ++mpos;
-    }
-    while (result->NextRow());
+//    uint32 mpos = 0;
+//
+//    do
+//    {
+//        Field* fields = result->Fetch();
+//        uint16 branch = fields[0].GetUInt16();
+//      //  GetPlayer()->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, mpos, branch);
+//        ++mpos;
+//    }
+//    while (result->NextRow());
 }
 
 void ArchaeologyPlayerMgr::LoadArchaeologyHistory(PreparedQueryResult result)
@@ -126,7 +126,7 @@ void ArchaeologyPlayerMgr::SaveArchaeologyBranchs(CharacterDatabaseTransaction& 
     }*/
 }
 
-void ArchaeologyPlayerMgr::SaveArchaeologyHistory(CharacterDatabaseTransaction& trans)
+void ArchaeologyPlayerMgr::SaveArchaeologyHistory(CharacterDatabaseTransaction& /*trans*/)
 {
    /* CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_HISTORY);
     stmt->setUInt64(0, GetPlayer()->GetGUID().GetCounter());
@@ -234,43 +234,43 @@ int ArchaeologyPlayerMgr::GetDigsite(int32 /*x*/, int32 /*y*/)
             DigsitePolygon.push_back(std::make_pair(poi->X, poi->Y));
         }
 
-        float x1, x2, y2;
-        int crs = 0;
-
-      //  if (DigsitePolygon.size() == 0)
-        //    continue;
-
-        for (int i = 0; i < (int)DigsitePolygon.size(); i++)
-        {
-            if (DigsitePolygon[i].first < DigsitePolygon[(i + 1) % DigsitePolygon.size()].first)
-            {
-                x1 = DigsitePolygon[i].first;
-                x2 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
-            }
-            else
-            {
-                x1 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
-                x2 = DigsitePolygon[i].first;
-            }
-
-          /*  if (x > x1 && x <= x2 && (y < DigsitePolygon[i].second || y <= DigsitePolygon[(i + 1) % DigsitePolygon.size()].second))
-            {
-                float dx = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first - DigsitePolygon[i].first;
-                float dy = DigsitePolygon[(i + 1) % DigsitePolygon.size()].second - DigsitePolygon[i].second;
-                float k;
-
-                if (fabs(dx) < 0.000001)
-                    k = float(0xFFFFFFFF);
-                else
-                    k = dy / dx;
-
-                float m = DigsitePolygon[i].second - k * DigsitePolygon[i].first;
-                y2 = k * x + m;
-
-                if (y <= y2)
-                    crs++;
-            }*/
-        }
+//        float x1, x2, y2;
+//        int crs = 0;
+//
+//      //  if (DigsitePolygon.size() == 0)
+//        //    continue;
+//
+//        for (int i = 0; i < (int)DigsitePolygon.size(); i++)
+//        {
+//            if (DigsitePolygon[i].first < DigsitePolygon[(i + 1) % DigsitePolygon.size()].first)
+//            {
+//                x1 = DigsitePolygon[i].first;
+//                x2 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
+//            }
+//            else
+//            {
+//                x1 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
+//                x2 = DigsitePolygon[i].first;
+//            }
+//
+//          /*  if (x > x1 && x <= x2 && (y < DigsitePolygon[i].second || y <= DigsitePolygon[(i + 1) % DigsitePolygon.size()].second))
+//            {
+//                float dx = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first - DigsitePolygon[i].first;
+//                float dy = DigsitePolygon[(i + 1) % DigsitePolygon.size()].second - DigsitePolygon[i].second;
+//                float k;
+//
+//                if (fabs(dx) < 0.000001)
+//                    k = float(0xFFFFFFFF);
+//                else
+//                    k = dy / dx;
+//
+//                float m = DigsitePolygon[i].second - k * DigsitePolygon[i].first;
+//                y2 = k * x + m;
+//
+//                if (y <= y2)
+//                    crs++;
+//            }*/
+//        }
 
         DigsitePolygon.clear();
 
@@ -301,7 +301,7 @@ bool ArchaeologyPlayerMgr::IsCurrentArtifactSpell(int32 spellId)
     return false;
 }
 
-void ArchaeologyPlayerMgr::CompleteArtifact(uint32 spellId)
+void ArchaeologyPlayerMgr::CompleteArtifact(uint32 /*spellId*/)
 {
     uint32 ftime = time(NULL);
     uint32 count = 0;
@@ -312,17 +312,13 @@ void ArchaeologyPlayerMgr::CompleteArtifact(uint32 spellId)
 
        // if (artifactId)
         {
-            for (uint32 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
+            for (auto const rs : sResearchProjectStore)
             {
-                ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(i);
-
                // if (!rs || rs->Id != artifactId || rs->SpellId != int32(spellId))
                //     continue;
 
-                for (uint32 i = 0; i < sResearchBranchStore.GetNumRows(); ++i)
+                for (auto const ab : sResearchProjectStore)
                 {
-                    ResearchBranchEntry const* ab = sResearchBranchStore.LookupEntry(i);
-
                     if (!ab || ab->Id != rs->ResearchBranchId)
                         continue;
 
@@ -334,34 +330,26 @@ void ArchaeologyPlayerMgr::CompleteArtifact(uint32 spellId)
                         m_ArchaeologyHistoryMap.erase(artifactId);
                     }*/
 
-                    ArchaeologyHistory artifact;
+                    ArchaeologyHistory artifact{};
                     artifact.time = ftime;
                     artifact.count = count ? count : 1;
                  //   m_ArchaeologyHistoryMap.insert(ArchaeologyHistoryMap::value_type(artifactId, artifact));
 
                    // GetPlayer()->GetAchievementMgr()->UpdateCriteria(CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, artifactId);
 
-                    WorldPackets::Misc::ResearchComplete researchComplete;
-                  //  researchComplete.researchHistory.id = artifactId;
-                  ///  researchComplete.researchHistory.time = artifact.time;
-                  //  researchComplete.researchHistory.count = artifact.count;
-                    GetPlayer()->SendDirectMessage(researchComplete.Write());
-
-                    std::vector<uint16> BranchProjects;
-
-                    for (uint32 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
-                    {
-                        ResearchProjectEntry const* rs2 = sResearchProjectStore.LookupEntry(i);
-
-                     //   if (!rs2 || rs2->ResearchBranchId != ab->Id || rs2->Id == artifactId || sArchaeologyMgr->GetArtifactSkillReqLevel(uint32(rs2->SpellId)) > GetPlayer()->GetBaseSkillValue(SKILL_ARCHAEOLOGY))
-                        //    continue;
-
-                        BranchProjects.push_back(rs2->Id);
-                    }
-
-                    uint16 selectProject = BranchProjects[urand(0, BranchProjects.size() - 1)];
-                //    GetPlayer()->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, memId, selectProject);
-                    BranchProjects.clear();
+//                    std::vector<uint16> BranchProjects;
+//
+//                    for (auto const rs2 : sResearchProjectStore)
+//                    {
+//                        //   if (!rs2 || rs2->ResearchBranchId != ab->Id || rs2->Id == artifactId || sArchaeologyMgr->GetArtifactSkillReqLevel(uint32(rs2->SpellId)) > GetPlayer()->GetBaseSkillValue(SKILL_ARCHAEOLOGY))
+//                        //    continue;
+//
+//                        BranchProjects.push_back(rs2->Id);
+//                    }
+//
+////                    uint16 selectProject = BranchProjects[urand(0, BranchProjects.size() - 1)];
+//                //    GetPlayer()->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, memId, selectProject);
+//                    BranchProjects.clear();
                     return;
                 }
             }

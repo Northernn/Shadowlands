@@ -542,8 +542,6 @@ public:
 
     class spell_rtk_intangible_presence_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_rtk_intangible_presence_SpellScript);
-
         uint8 targetCount = 0;
         uint8 randTarget = 1;
 
@@ -585,8 +583,6 @@ public:
 
     class spell_rtk_intangible_presence_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_rtk_intangible_presence_AuraScript);
-
         void HandleDispel(DispelInfo* dispelInfo)
         {
             if (Unit* owner = GetUnitOwner())

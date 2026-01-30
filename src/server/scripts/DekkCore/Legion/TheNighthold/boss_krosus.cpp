@@ -529,8 +529,6 @@ struct npc_krosus_fel_beam_caster : ScriptedAI
 // 205348
 class spell_krosus_orb_of_destruction_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_krosus_orb_of_destruction_dmg);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         auto caster = GetCaster();
@@ -555,8 +553,6 @@ class spell_krosus_orb_of_destruction_dmg : public SpellScript
 // 206280
 class spell_krosus_burning_pitch : public SpellScript
 {
-    PrepareSpellScript(spell_krosus_burning_pitch);
-
     void TargetsList(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())

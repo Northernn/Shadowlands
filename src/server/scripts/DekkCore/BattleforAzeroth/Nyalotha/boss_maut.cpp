@@ -100,9 +100,10 @@ struct boss_maut : public CreatureAI
 
 private:
 	uint8 phase;
+    EventMap events;
 
 	void Reset() override
-	{	
+	{
         CreatureAI::Reset();
 		me->SetPowerType(POWER_ENERGY);
 		me->SetPower(POWER_ENERGY, 0);
@@ -112,12 +113,10 @@ private:
         intro = false;
        // me->AddAura(AURA_OVERRIDE_POWER_COLOR_ENTROPIC);
 	}
-    EventMap events;
 
-	void JustEngagedWith(Unit* u) override
+	void JustEngagedWith(Unit*) override
 	{
         me->RemoveAura(OBSIDIAN_SKIN_VISUAL);
-		JustEngagedWith(u);
 		Talk(SAY_AGGRO);
 		DoCast(PERIODIC_ENERGY_GAIN);
         this->phase = 1;
@@ -148,11 +147,11 @@ private:
 		{
 			if (Unit* target = SelectTarget(SelectTargetMethod::MinDistance, 0, 10.0f, false))
 			{
-				me->AddAura(SHADOW_WOUNDS_PERIODIC, me);				
+				me->AddAura(SHADOW_WOUNDS_PERIODIC, me);
 			}
 		}
 		if (spell->Id == STYGIAN_ANNIHILATION_CAST)
-		{			
+		{
             std::list<Player*> p_li;
             me->GetPlayerListInGrid(p_li, 500.0f);
             for (auto& players : p_li)
@@ -184,8 +183,8 @@ private:
 		switch (summon->GetEntry())
 		{
 		case NPC_DARK_MANIFESTATION:
-             //instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
-			 summon->SetNativeDisplayId(93869, 2.5f);
+             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
+			 summon->SetDisplayId(93869, false); 
 			 summon->AddAura(DARK_AEGIS, summon);
              summon->AI()->JustEngagedWith(nullptr);
 			 summon->AI()->DoZoneInCombat();
@@ -204,7 +203,6 @@ private:
 
 	void JustReachedHome() override
 	{
-		JustReachedHome();		
 		me->SetPower(POWER_ENERGY, 0);
 	}
 
@@ -213,21 +211,18 @@ private:
 		if (type != POINT_MOTION_TYPE)
 			return;
 
-		if (point == 1 && this->phase == 1)
+		if (point == 1 && phase == 1)
         {
-            this->phase = 2;
-            if (this->phase)
-            {
-                me->AI()->DoAction(ACTION_OBSIDIAN_SKIN);
-            }			
+            phase = 2;
+            me->AI()->DoAction(ACTION_OBSIDIAN_SKIN);
         }
 	}
 
-	void DoAction(int32 param)
+	void DoAction(int32 param) override
 	{
 		switch (param)
 		{
-		case ACTION_OBSIDIAN_SKIN:             
+		case ACTION_OBSIDIAN_SKIN:
 			 Talk(SAY_OBSIDIAN_SKIN);
 			 events.Reset();
 			 me->SetFacingTo(1.62f);
@@ -243,7 +238,7 @@ private:
 		}
 	}
 
-    void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HasAura(OBSIDIAN_SKIN_LOSE_MANA_INSTEAD_OF_HP))
         {
@@ -287,7 +282,7 @@ private:
 			me->CastStop();
 			events.Reset();
 			me->RemoveAura(PERIODIC_ENERGY_GAIN);
-			events.ScheduleEvent(EVENT_OBSIDIAN_SKIN, 500ms);		
+			events.ScheduleEvent(EVENT_OBSIDIAN_SKIN, 500ms);
 		}
 		switch (eventId)
 		{
@@ -317,13 +312,13 @@ private:
 		{
 			Talk(SAY_STYGIAN_ANNIHILATION);
 			me->StopMoving();
-			DoCastAOE(STYGIAN_ANNIHILATION_CAST);			
+			DoCastAOE(STYGIAN_ANNIHILATION_CAST);
 			events.Repeat(30s);
 			break;
 		}
         case EVENT_DARK_MANIFESTATION:
         {
-            me->CastSpell(me, DARK_MANIFESTATION_CREAT_AT_PULL);            
+            me->CastSpell(me, DARK_MANIFESTATION_CREAT_AT_PULL);
             events.Repeat(40s);
             break;
         }
@@ -334,11 +329,11 @@ private:
 			me->GetMotionMaster()->Clear();
 			me->GetMotionMaster()->MovePoint(1, middle_of_the_room_pos, false);
 			break;
-		}	
+		}
 		case EVENT_BLACK_WINGS:
 		{
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 40.0F, true))
-			{		
+			{
 				me->SetFacingToObject(me, true);
 				DoCast(me, BLACK_WINGS);
 			}
@@ -385,9 +380,9 @@ private:
 		}
 	}
 
-	void JustDied(Unit* attacker) override
+	void JustDied(Unit* /*attacker*/) override
 	{
-		JustDied(attacker);
+//        _JustDied();
 	//	instance->DoModifyPlayerCurrencies(CURRENCY_ECHOES_OF_NYALOTHA, 15);
 	}
 
@@ -397,7 +392,7 @@ private:
 
 enum Mana
 {
-    SPELL_FORBIDDEN_BUFF_FROM_AT = 306293,// 21916    
+    SPELL_FORBIDDEN_BUFF_FROM_AT = 306293,// 21916
 };
 
 //500506
@@ -411,7 +406,7 @@ struct npc_mana_orb : public ScriptedAI
 
 	void Reset() override
 	{
-		ScriptedAI::Reset(); 
+		ScriptedAI::Reset();
 	}
 
     void MoveInLineOfSight(Unit* unit) override
@@ -430,8 +425,8 @@ struct npc_mana_orb : public ScriptedAI
         }
     }
 
-	void IsSummonedBy(WorldObject* unit) override
-	{        
+	void IsSummonedBy(WorldObject* /*unit*/) override
+	{
         me->SetReactState(REACT_PASSIVE);
 		if (Creature* maut = me->FindNearestCreature(NPC_MAUT, 500.0f, true))
 		{
@@ -448,8 +443,6 @@ private:
 //308158 - Consuming Shadows
 class aura_consuming_shadows : public AuraScript
 {
-	PrepareAuraScript(aura_consuming_shadows);
-
 	void HandlePeriodic(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		if (Unit* caster = GetCaster())
@@ -467,8 +460,6 @@ class aura_consuming_shadows : public AuraScript
 //307806 - Devour Magic
 class aura_devour_magic : public AuraScript
 {
-	PrepareAuraScript(aura_devour_magic);
-
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
         if (Unit* caster = GetTarget())
@@ -487,8 +478,6 @@ class aura_devour_magic : public AuraScript
 //314993 - Drain Essence
 class aura_drain_essence : public AuraScript
 {
-	PrepareAuraScript(aura_drain_essence);
-
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		if (Unit* caster = GetCaster())
@@ -506,19 +495,17 @@ class aura_drain_essence : public AuraScript
 //315025 - Ancient Curse
 class aura_ancient_curse : public AuraScript
 {
-	PrepareAuraScript(aura_ancient_curse);
-
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
 		{
             Unit* target = GetTarget();
 			if (Unit* caster = GetCaster())
-			{                
+			{
                 target->CastSpell(nullptr, ANCIENT_CURSE_DAMAGE, true);
                 target->CastSpell(nullptr, ANCIENT_CURSE_INSTAKILL, true);
 			}
-		}		
+		}
 	}
 
 	void Register() override
@@ -530,8 +517,6 @@ class aura_ancient_curse : public AuraScript
 //306301 - Forbidden Mana Debuff
 class aura_forbidden_mana : public AuraScript
 {
-	PrepareAuraScript(aura_forbidden_mana);
-
 	void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		if (Unit* caster = GetCaster())
@@ -577,7 +562,7 @@ struct at_maut_dark_manifestation_pull : public AreaTriggerAI
 {
     at_maut_dark_manifestation_pull(AreaTrigger* at) : AreaTriggerAI(at) {}
 
-    void OnCreate() override
+    void OnCreate(Spell const* /*creatingSpell*/) override
     {
         at->SetDuration(6000);
     }

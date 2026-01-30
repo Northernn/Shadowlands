@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2017-2019 AshamaneProject <https://github.com/AshamaneProject>
- * Copyright (C) 2016 Firestorm Servers <https://firestorm-servers.com>
- *
+ * Dekk Core Team 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -292,90 +291,8 @@ class OnlyTriggerInFrontPredicate
         Unit* _caster;
 };
 
-class spell_dart: public SpellScriptLoader
-{
-    public:
-        spell_dart() : SpellScriptLoader("spell_dart") { }
-
-        class spell_dart_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dart_SpellScript);
-
-            bool Validate(SpellInfo const* /*spell*/) override
-            {
-                return true;
-            }
-
-            // set up initial variables and check if caster is creature
-            // this will let use safely use ToCreature() casts in entire script
-            bool Load() override
-            {
-                return true;
-            }
-
-            void SelectTarget(std::list<WorldObject*>& targetList)
-            {
-                if (!GetCaster())
-                    return;
-
-                if (targetList.empty())
-                {
-                    FinishCast(SPELL_FAILED_NO_VALID_TARGETS);
-                    return;
-                }
-
-                //Select the two targets.
-                std::list<WorldObject*> targets = targetList;
-                targetList.remove_if(OnlyTriggerInFrontPredicate(GetCaster()));
-
-                //See if we intersect with any players.
-                for (auto object : targets)
-                {
-                    if (object->ToPlayer())
-                    {
-                        for (auto trigger : targetList)
-                        {
-                            if (object->IsInBetween(GetCaster(), trigger, 2.0f))
-                            {
-                                //const SpellInfo* damageSpell = sSpellMgr->GetSpellInfo(SPELL_THROW_DAMAGE);
-                               // GetCaster()->DealDamage(object->ToPlayer(), damageSpell->GetEffect(SpellEffIndex::EFFECT_0).BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, damageSpell);
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register() override
-            {
-                switch (m_scriptSpellId)
-                {
-                    case 119337:
-                    case 119314:
-                    case 123127:
-                    case 123128:
-                    case 124320:
-                    case 124321:
-                        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-                        break;
-                    case 120142:
-                        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                        break;
-                    default:
-                        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_CONE_CASTER_TO_DEST_ENEMY);
-                        break;
-                }
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_dart_SpellScript();
-        }
-};
-
 void AddSC_boss_xin_the_weaponmaster()
 {
     new boss_xin_the_weaponmaster();
     new mob_animated_staff();
-    new spell_dart();
 }

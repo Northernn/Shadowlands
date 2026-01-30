@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,6 +29,7 @@ enum eSpells
 {
     SPELL_TIKI_BLAZE = 257689,
 };
+
 //Npc 127315
 struct npc_reanimation_totem : public ScriptedAI
 {
@@ -85,7 +86,6 @@ struct npc_tiki_mask : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-        //if(me->isplayer)
         ScriptedAI::UpdateAI(diff);
     }
 
@@ -108,7 +108,6 @@ struct npc_zandalar_witch : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-        //if(me->isplayer)
         ScriptedAI::UpdateAI(diff);
     }
 };
@@ -120,7 +119,7 @@ struct npc_mob_echo_of_shadra : public ScriptedAI
 
     void Reset() override
     {
-       // events.Reset();
+        events.Reset();
         me->setActive(false);
         me->SetWalk(false);
         me->GetMotionMaster()->MoveRandom(urand(0, 15));
@@ -138,16 +137,16 @@ struct npc_mob_echo_of_shadra : public ScriptedAI
         ScriptedAI::InitializeAI();
     }
 
-    void DamageTaken(Unit* /*who*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*who*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
     }
 
-    void MovementInform(uint32 type, uint32 id) override
+    void MovementInform(uint32 /*type*/, uint32 /*id*/) override
     {
         me->GetMotionMaster()->MoveRandom(urand(5, 15));
     }
 
-    void UpdateAI(uint32 diff) override
+    void UpdateAI(uint32 /*diff*/) override
     {
         if (Player* closestplayer = me->SelectNearestPlayer(50))
             if (me->GetDistance(closestplayer) < 1)
@@ -224,9 +223,7 @@ private:
 //256960
 class spell_rooting_decay : public AuraScript
 {
-    PrepareAuraScript(spell_rooting_decay);
-
-    void OnPeriodic(AuraEffect const* aurEff)
+    void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* caster = GetCaster())
             caster->CastSpell(caster, 256959);

@@ -146,7 +146,8 @@ Position const AtaPath[17] =
     { -543.195f, 810.397f, 395.891f },
     { -622.331f, 903.649f, 353.563f }
 };
-using AtaPathSize = std::extent<decltype(AtaPath)>;
+
+size_t const AtaPathSize = std::extent<decltype(AtaPathSize)>::value;
 
 Position const Ata2Path[3] =
 {
@@ -201,13 +202,13 @@ struct npc_talanji_arrival_escort : public EscortAI
     {
         if (Player* player = summoner->ToPlayer())
         {
-            if (player->GetQuestStatus(QUEST_WELCOME_ZULDAZAR) == QUEST_STATUS_INCOMPLETE)
+            if (player->HasQuest(QUEST_WELCOME_ZULDAZAR))
             {
                 me->Mount(80358);
-                Start(false, true, summoner->GetGUID());
+                Start(false, summoner->GetGUID());
                 SetDespawnAtEnd(false);
                 summoner->CastSpell(summoner, SPELL_TALANJI_EXPOSITION_CONVERSATION_1, true);
-                summoner->ToUnit()->GetScheduler().Schedule(50s, [this, summoner] (TaskContext context)
+                summoner->ToUnit()->GetScheduler().Schedule(5s, [summoner] (TaskContext /*context*/)
                 {
                     if (Player* player = summoner->ToPlayer())
                     {
@@ -219,7 +220,6 @@ struct npc_talanji_arrival_escort : public EscortAI
         }
     }
 };
-
 
 // 138912
 struct npc_enforcer_pterrordax : public EscortAI
@@ -237,7 +237,7 @@ struct npc_enforcer_pterrordax : public EscortAI
         me->SetSpeed(MOVE_RUN, 21.f);
         player->EnterVehicle(me);
         player->KilledMonsterCredit(135438);
-        Start(false, true, player->GetGUID());
+        Start(false, player->GetGUID());
     }
 };
 
@@ -282,7 +282,7 @@ struct npc_soth_zolani : public EscortAI
             me->SetWalk(true);
             Talk(0);
             me->GetMotionMaster()->MovePoint(1, -1129.335f, 845.836f, 487.865f, true);
-            player->GetScheduler().Schedule(27s, [this, player] (TaskContext context)
+            player->GetScheduler().Schedule(27s, [this, player] (TaskContext /*context*/)
             {
                 player->KilledMonsterCredit(120169);
                 Talk(1);
@@ -382,41 +382,53 @@ struct npc_talanji_great_seal : public ScriptedAI
 };
 
 //126822, Ata the Winglord
-struct npc_ata_the_winglord_offensively_defence : public VehicleAI
+struct npc_ata_the_winglord_offensively_defence : public CreatureScript
 {
-    npc_ata_the_winglord_offensively_defence(Creature* creature) : VehicleAI(creature) { }
+public:
+    npc_ata_the_winglord_offensively_defence() : CreatureScript("npc_ata_the_winglord_offensively_defence") { }
+
+    struct npc_ata_the_winglord_offensively_defence_AI : public ScriptedAI
+    {
+        npc_ata_the_winglord_offensively_defence_AI(Creature* creature) : ScriptedAI(creature) { }
 
     bool OnGossipHello(Player* player) override
     {
-        if (player->GetQuestStatus(QUEST_OFFENSIVELY_DEFENSIVE) == QUEST_STATUS_INCOMPLETE)
-            player->SummonCreature(me->GetEntry(), player->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
+        if (player->HasQuest(QUEST_OFFENSIVELY_DEFENSIVE))
+            player->ForceCompleteQuest(QUEST_OFFENSIVELY_DEFENSIVE);
+           // player->SummonCreature(me->GetEntry(), player->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
 
         return true;
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
-    {
-        if (Player* player = summoner->ToPlayer())
-        {
-            if (player->GetQuestStatus(QUEST_OFFENSIVELY_DEFENSIVE) == QUEST_STATUS_INCOMPLETE)
-            {
-                me->GetVehicleKit();
-                player->EnterVehicle(me);
-                me->GetMotionMaster()->MoveSmoothPath(AtaPathSize::value, AtaPath, AtaPathSize::value, false, true);
-            }
-        }
-    }
+    //void IsSummonedBy(WorldObject* summoner) override
+    //{
+    //    if (Player* player = summoner->ToPlayer())
+    //    {
+    //        if (player->HasQuest(QUEST_OFFENSIVELY_DEFENSIVE))
+    //        {
+    //            me->GetVehicleKit();
+    //            player->EnterVehicle(me);
+    //            me->GetMotionMaster()->MoveSmoothPath(uint32(AtaPathSize), AtaPath, AtaPathSize, false, true);
+    //        }
+    //    }
+    //}
 
-    void PassengerBoarded(Unit* who, int8 /*seatId*/, bool /*apply*/) override
-    {
-        if (Player* player = who->ToPlayer())
-            player->KilledMonsterCredit(126822);
-    }
+    //void PassengerBoarded(Unit* who, int8 /*seatId*/, bool /*apply*/) override
+    //{
+    //    if (Player* player = who->ToPlayer())
+    //        player->KilledMonsterCredit(126822);
+    //}
 
-    void MovementInform(uint32 /* type */, uint32 id) override
+    //void MovementInform(uint32 /* type */, uint32 id) override
+    //{
+    //    if (id == AtaPathSize)
+    //        me->DespawnOrUnsummon(100ms);
+    //}
+  };
+
+    CreatureAI* GetAI(Creature* creature) const override
     {
-        if (id == AtaPathSize::value)
-            me->DespawnOrUnsummon(100ms);
+        return new npc_ata_the_winglord_offensively_defence_AI(creature);
     }
 };
 
@@ -520,7 +532,7 @@ public:
     {
         if (Player* player = who->ToPlayer())
             player->KilledMonsterCredit(127512);
-        Start(false, true, who->GetGUID());
+        Start(false, who->GetGUID());
     }
 
 
@@ -572,8 +584,6 @@ struct npc_paku : public ScriptedAI
 //263018
 class spell_rastari_skull_whistle : public SpellScript
 {
-	PrepareSpellScript(spell_rastari_skull_whistle);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -607,8 +617,6 @@ class spell_rastari_skull_whistle : public SpellScript
 // 254904 - Revitalize Spirit Obelisk
 class spell_quest_revitalize_spirit_obelisk : public SpellScript
 {
-    PrepareSpellScript(spell_quest_revitalize_spirit_obelisk);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -638,8 +646,6 @@ class spell_quest_revitalize_spirit_obelisk : public SpellScript
 // todo fix the positions and amount of spells 224839
 class spell_call_the_storm : public SpellScript
 {
-    PrepareSpellScript(spell_call_the_storm);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -668,8 +674,6 @@ public:
 
     class spell_lightning_rod_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_lightning_rod_AuraScript);
-
         void HandlePeriodicDummy(AuraEffect const* /*auraEff*/)
         {
             Unit* caster = GetCaster();
@@ -726,7 +730,7 @@ struct npc_voljamba : public ScriptedAI
     }
 
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_SOUL_BLAST, 2s);
         events.ScheduleEvent(EVENT_SUMMON_MASK, 9s);
@@ -767,7 +771,7 @@ struct npc_voljamba : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->GetHealthPct() <= 80 && !gong)
         {
@@ -848,8 +852,6 @@ private:
 //264007
 class spell_soul_jaunt : public SpellScript
 {
-    PrepareSpellScript(spell_soul_jaunt);
-
     void HandleAfterCast()
     {
         Unit* caster = GetCaster();
@@ -866,39 +868,20 @@ class spell_soul_jaunt : public SpellScript
     }
 };
 
-class scene_warpack : public SceneScript
-{
-public:
-    scene_warpack() : SceneScript("scene_warpack") { }
-
-    void OnSceneTriggerEvent(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* /*sceneTemplate*/, std::string const& triggerName)
-    {
-        if (triggerName == "Charge")
-        {
-            if (Creature* loti = player->FindNearestCreature(134132, 5))
-            {
-                loti->AI()->SetData(0, 1);
-            }
-        }
-    }
-};
-
 //123000
 struct npc_captain_rezokon_123000 : public ScriptedAI
 {
     npc_captain_rezokon_123000(Creature* c) : ScriptedAI(c) { }
 
-    bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* player, uint32 /*sender*/, uint32 action) override
     {
         if (action == GOSSIP_ACTION_INFO_DEF + 0 && player->HasQuest(QUEST_SEND_THE_FLEET_HORDE))  //Let's go.
         {
             player->SendMovieStart(919);
             player->TeleportTo(1718, 107.0f, 29.0f, -30.0f, 0.33f);
-        }
-     //   if (action == GOSSIP_ACTION_INFO_DEF + 1 && !player->GetQuestObjectiveData(QUEST_RIDE_OF_THE_ZANDALARI, 0))
-        {
             player->KilledMonsterCredit(146830);
         }
+
         return true;
     }
 };
@@ -958,24 +941,28 @@ struct npc_dread_admiral_tattersail_135690 : public ScriptedAI
         return true;
     }
 
-    bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* player, uint32 /*sender*/, uint32 action) override
     {
         if (action == GOSSIP_ACTION_INFO_DEF + 0)   //Set sail for Drustvar.
         {
             player->TeleportTo(1643, -406.0f, 4122.0f, 4.08f, 4.24f);
         }
+
         if (action == GOSSIP_ACTION_INFO_DEF + 1)   //Set sail for Stormsong Valley.
         {
             player->TeleportTo(1643, 4246.0f, 406.0f, 0.58f, 2.51f);
         }
+
         if (action == GOSSIP_ACTION_INFO_DEF + 2)   //Set sail for Tiragarde Sound.
         {
             player->TeleportTo(1643, -218.0f, -1554.0f, 2.83f, 0.76f);
         }
+
         if (action == GOSSIP_ACTION_INFO_DEF + 3)   //Take us back to Zuldazar.
         {
             player->TeleportTo(1642, -2141.0f, 775.0f, 9.0f, 1.59f);
         }
+
         return true;
     }
 };
@@ -1046,7 +1033,7 @@ struct npc_fleet_scout : public VehicleAI
         }
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -1081,7 +1068,7 @@ struct npc_harli_the_swift : public VehicleAI
         }
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -1116,7 +1103,7 @@ struct npc_captain_grezko : public VehicleAI
         }
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -1172,8 +1159,6 @@ struct npc_wavesinger_zara : public ScriptedAI
 //248495, Scroll of Illusion
 class spell_scroll_of_illusion : public SpellScript
 {
-    PrepareSpellScript(spell_scroll_of_illusion);
-
     void HandleScript()
     {
         Unit* caster = GetCaster();
@@ -1268,7 +1253,7 @@ struct npc_pinky : public ScriptedAI
         me->SetFaction(14);
     }
 
-void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
+    void DamageTaken(Unit* attacker, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
     {
         if (Player* player = attacker->ToPlayer())
             if (player->GetQuestStatus(QUEST_A_GOOD_SPANKING) == QUEST_STATUS_INCOMPLETE)
@@ -1276,7 +1261,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
                 {
                     player->KilledMonsterCredit(NPC_KILL_CREDIT_SPANKING);
                     me->SetFaction(35);
-                    me->GetMotionMaster()->MoveFleeing(player, 3000);
+                    me->GetMotionMaster()->MoveFleeing(player, 3s);
                     me->GetScheduler().Schedule(Milliseconds(120000), [](TaskContext context)
                     {
                         GetContextCreature()->AI()->Reset();
@@ -1406,42 +1391,28 @@ struct go_mogu_weapon : public GameObjectAI
     }
 };
 
-//49489 49490
-struct quest_Needs_a_Little_Body__The_Urn_of_Voices : public QuestScript
+class npc_forgemaster_zakaal : public ScriptedAI
 {
-    quest_Needs_a_Little_Body__The_Urn_of_Voices() : QuestScript("quest_Needs_a_Little_Body__The_Urn_of_Voices") { }
+public:
+    npc_forgemaster_zakaal(Creature* creature) : ScriptedAI(creature) { }
 
-    void OnQuestStatusChange(Player* player, Quest const* /*quest*/, QuestStatus oldStatus, QuestStatus /*newStatus*/) override
+    bool OnGossipHello(Player* player) override
     {
-        if (oldStatus == QUEST_STATUS_NONE)
-        {
-            if (player->GetQuestStatus(49489) != QUEST_STATUS_NONE && player->GetQuestStatus(49490) != QUEST_STATUS_NONE)
-            {
-                player->SummonCreature(129907, Position(-457.821f, 392.892f, 177.829f, 5.50005f), TEMPSUMMON_MANUAL_DESPAWN);
-            }
-        }
-    }
-};
+        if (me->IsQuestGiver())
+            player->PrepareQuestMenu(me->GetGUID());
 
-// 47433
-struct quest_forbidden_practices : public QuestScript
-{
-    quest_forbidden_practices() : QuestScript("quest_forbidden_practices") { }
+        if (player->HasQuest(50277))
+            player->ForceCompleteQuest(50277);
 
-    void OnQuestObjectiveChange(Player* player, Quest const* /*quest*/, QuestObjective const& objective, int32 /*oldAmount*/, int32 /*newAmount*/) override
-    {
-        if (objective.ID == 292610)
-        {
-            if (player->GetQuestObjectiveCounter(292610) == 0 && player->HasQuest(47433))
-            {
-                player->SummonCreature(126564, Position(-485.618f, 749.658f, 293.962f, 1.62767f), TEMPSUMMON_MANUAL_DESPAWN);
-            }
-        }
+        else
+        SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
+        return true;
     }
 };
 
 void AddSC_zone_zuldazar()
 {
+    RegisterCreatureAI(npc_forgemaster_zakaal);
     RegisterCreatureAI(npc_talanji_arrival);
     RegisterCreatureAI(npc_talanji_arrival_escort);
     RegisterCreatureAI(npc_enforcer_pterrordax);
@@ -1453,7 +1424,7 @@ void AddSC_zone_zuldazar()
     RegisterCreatureAI(npc_natal_hakata);
     RegisterCreatureAI(npc_telemancer_oculeth_zuldazar);
     RegisterCreatureAI(npc_talanji_great_seal);
-    RegisterCreatureAI(npc_ata_the_winglord_offensively_defence);
+    new npc_ata_the_winglord_offensively_defence();
     RegisterCreatureAI(npc_ata_the_winglord_paku_master_of_winds);
     RegisterCreatureAI(npc_pterrordax_paku_master_of_winds);
     RegisterCreatureAI(npc_paku);
@@ -1463,7 +1434,6 @@ void AddSC_zone_zuldazar()
     new spell_lightning_rod();
     RegisterCreatureAI(npc_voljamba);
     RegisterSpellScript(spell_soul_jaunt);
-    new scene_warpack();
     RegisterCreatureAI(npc_captain_rezokon_123000);
     RegisterCreatureAI(npc_rakera_146812);
     RegisterCreatureAI(npc_hexlord_146851);
@@ -1483,6 +1453,4 @@ void AddSC_zone_zuldazar()
     RegisterCreatureAI(npc_gonk);
     RegisterCreatureAI(npc_volkaal);
     RegisterGameObjectAI(go_mogu_weapon);
-    RegisterQuestScript(quest_Needs_a_Little_Body__The_Urn_of_Voices);
-    RegisterQuestScript(quest_forbidden_practices);
 }

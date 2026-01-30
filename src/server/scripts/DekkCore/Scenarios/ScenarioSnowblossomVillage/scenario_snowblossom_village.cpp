@@ -82,11 +82,7 @@ public:
             SetCheckPointPos({ 2234.674f, -129.7475f, 6.3429f, 2.344061f });
             player->RemoveAurasDueToSpell(SPELL_AZERITE_RESIDUE);
 
-            WorldPackets::Misc::StartTimer startTimer;
-            startTimer.Type = WorldPackets::Misc::StartTimer::Pvp;
-            startTimer.TotalTime = Seconds(33);
-            startTimer.TimeLeft = Seconds(33);
-            instance->SendToPlayers(startTimer.Write());
+            player->GetSession()->StartTimer(instance, WorldPackets::Misc::StartTimer::Pvp, Seconds(33), Seconds(33));
 
             events.ScheduleEvent(EVENT_START_TIMER, 3s);
         }

@@ -925,8 +925,6 @@ void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageTy
 //232229
 class spell_helya_blue_power_regen : public AuraScript
 {
-    PrepareAuraScript(spell_helya_blue_power_regen);
-
     uint8 power{};
     std::vector<uint32> energy_initial = { 1, 2, 2, 1, 1, 2, 1, 2, 2, 2, 2, 1, 2 };
     std::vector<uint32> energy = { 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1 };
@@ -975,8 +973,6 @@ class spell_helya_blue_power_regen : public AuraScript
 //232230
 class spell_helya_purple_power_regen : public AuraScript
 {
-    PrepareAuraScript(spell_helya_purple_power_regen);
-
     uint8 power{};
 
     void Tick(AuraEffect const* aurEff)
@@ -1000,8 +996,6 @@ class spell_helya_purple_power_regen : public AuraScript
 //228383
 class spell_tov_darkness : public AuraScript
 {
-    PrepareAuraScript(spell_tov_darkness);
-
     uint8 power{};
     std::vector<uint32> energyLfr = { 1, 2, 3, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2 };
     std::vector<uint32> energy = { 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 4 };
@@ -1031,8 +1025,6 @@ class spell_tov_darkness : public AuraScript
 //228546
 class spell_helya_alt_power_regen : public AuraScript
 {
-    PrepareAuraScript(spell_helya_alt_power_regen);
-
     uint8 power{};
     uint32 i = 0;
     uint32 alt_energy[4] = { 2, 3, 2, 1 };
@@ -1058,8 +1050,6 @@ class spell_helya_alt_power_regen : public AuraScript
 //228053
 class spell_taint_of_the_sea : public AuraScript
 {
-    PrepareAuraScript(spell_taint_of_the_sea);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -1704,8 +1694,6 @@ struct npc_kvaldir_longboat_tov : ScriptedAI
 //228397
 class spell_fetid_rot : public SpellScript
 {
-    PrepareSpellScript(spell_fetid_rot);
-
     void HandleDamage(SpellEffIndex /*effectIndex*/)
     {
         Unit* target = GetHitUnit();
@@ -1724,8 +1712,6 @@ class spell_fetid_rot : public SpellScript
 //228730
 class spell_tentacle_strike : public SpellScript
 {
-    PrepareSpellScript(spell_tentacle_strike);
-
     uint8 targetsCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -1756,8 +1742,6 @@ class spell_tentacle_strike : public SpellScript
 //232449
 class spell_corrupted_axion : public SpellScript
 {
-    PrepareSpellScript(spell_corrupted_axion);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         Unit* caster = GetCaster();
@@ -1777,8 +1761,6 @@ class spell_corrupted_axion : public SpellScript
 //232450
 class spell_corrupted_axion_aura : public AuraScript
 {
-    PrepareAuraScript(spell_corrupted_axion_aura);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
@@ -1803,8 +1785,6 @@ class spell_corrupted_axion_aura : public AuraScript
 //232350
 class spell_corrupted_mc : public AuraScript
 {
-    PrepareAuraScript(spell_corrupted_mc);
-
     void OnProc(AuraEffect const* aurEff)
     {
         Unit* target = GetTarget();
@@ -1830,8 +1810,6 @@ class spell_corrupted_mc : public AuraScript
 //228300
 class spell_fury_of_the_maw : public AuraScript
 {
-    PrepareAuraScript(spell_fury_of_the_maw);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster()->ToCreature();
@@ -1850,8 +1828,6 @@ class spell_fury_of_the_maw : public AuraScript
 //228514
 class spell_tov_torrent : public SpellScript
 {
-    PrepareSpellScript(spell_tov_torrent);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         uint32 count = 5;

@@ -547,8 +547,6 @@ public:
 	class bfa_spell_bellowing_roar_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_bellowing_roar_SpellScript);
-
 		void HandleDummy(SpellEffIndex /**/)
 		{
 			if (!GetCaster())
@@ -582,8 +580,6 @@ public:
 	class bfa_spell_impale_spear_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_impale_spear_SpellScript);
-
 		void HandleDummy(SpellEffIndex /**/)
 		{
 			if (!GetCaster() || !GetHitUnit())

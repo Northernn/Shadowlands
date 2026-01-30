@@ -16,6 +16,7 @@
  */
 
 #include "FlightPathMovementGenerator.h"
+#include "Config.h" // < Fluxurion
 #include "DB2Stores.h"
 #include "GameEventSender.h"
 #include "Log.h"
@@ -81,7 +82,7 @@ void FlightPathMovementGenerator::DoReset(Player* owner)
 
     if (currentNodeId == end)
     {
-        TC_LOG_DEBUG("movement.flightpath", "FlightPathMovementGenerator::DoReset: trying to start a flypath from the end point. %s", owner->GetDebugInfo().c_str());
+        TC_LOG_DEBUG("movement.flightpath", "FlightPathMovementGenerator::DoReset: trying to start a flypath from the end point. {}", owner->GetDebugInfo());
         return;
     }
 
@@ -99,6 +100,10 @@ void FlightPathMovementGenerator::DoReset(Player* owner)
     init.SetUncompressed();
     init.SetWalk(true);
     init.SetVelocity(PLAYER_FLIGHT_SPEED);
+    // Fluxurion >
+    if (sConfigMgr->GetBoolDefault("Flux.Taxi.Enable", false))
+        init.SetVelocity(float(sConfigMgr->GetIntDefault("Flux.Taxi.Speed", int(PLAYER_FLIGHT_SPEED))));
+    // < Fluxurion
     init.Launch();
 }
 
@@ -158,20 +163,20 @@ void FlightPathMovementGenerator::DoFinalize(Player* owner, bool active, bool/* 
     if (!active)
         return;
 
-    uint32 taxiNodeId = owner->m_taxi.GetTaxiDestination();
     owner->m_taxi.ClearTaxiDestinations();
     owner->Dismount();
     owner->RemoveUnitFlag(UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_ON_TAXI);
 
-    if (owner->m_taxi.empty())
-    {
-        // update z position to ground and orientation for landing point
-        // this prevent cheating with landing point at lags
-        // when client side flight end early in comparison server side
-        owner->StopMoving();
+      // update z position to ground and orientation for landing point
+      // this prevent cheating with landing point at lags
+      // when client side flight end early in comparison server side
+    owner->StopMoving();
 
-        // When the player reaches the last flight point, teleport to destination taxi node location
-        if (TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(taxiNodeId))
+    // When the player reaches the last flight point, teleport to destination taxi node location
+    if (!_path.empty() && (_path.size() < 2 || !(_path[_path.size() - 2]->Flags & TAXI_PATH_NODE_FLAG_TELEPORT)))
+    {
+        TaxiPathEntry const* lastPath = sTaxiPathStore.AssertEntry(_path.back()->PathID);
+        if (TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(lastPath->ToTaxiNode))
         {
             owner->SetFallInformation(0, node->Pos.Z);
             owner->TeleportTo(node->ContinentID, node->Pos.X, node->Pos.Y, node->Pos.Z, owner->GetOrientation());
@@ -191,6 +196,8 @@ uint32 FlightPathMovementGenerator::GetPathAtMapEnd() const
     {
         if (_path[itr]->ContinentID != curMapId)
             return itr;
+        if (itr > 0 && _path[itr - 1]->Flags & TAXI_PATH_NODE_FLAG_TELEPORT)
+            return itr;
     }
 
     return _path.size();
@@ -198,7 +205,10 @@ uint32 FlightPathMovementGenerator::GetPathAtMapEnd() const
 
 bool IsNodeIncludedInShortenedPath(TaxiPathNodeEntry const* p1, TaxiPathNodeEntry const* p2)
 {
-    return p1->ContinentID != p2->ContinentID || std::pow(p1->Loc.X - p2->Loc.X, 2) + std::pow(p1->Loc.Y - p2->Loc.Y, 2) > SKIP_SPLINE_POINT_DISTANCE_SQ;
+    return p1->ContinentID != p2->ContinentID
+        || std::pow(p1->Loc.X - p2->Loc.X, 2) + std::pow(p1->Loc.Y - p2->Loc.Y, 2) > SKIP_SPLINE_POINT_DISTANCE_SQ
+        || p2->Flags & TAXI_PATH_NODE_FLAG_TELEPORT
+        || (p2->Flags & TAXI_PATH_NODE_FLAG_STOP && p2->Delay);
 }
 
 void FlightPathMovementGenerator::LoadPath(Player* owner, uint32 startNode /*= 0*/)
@@ -226,7 +236,8 @@ void FlightPathMovementGenerator::LoadPath(Player* owner, uint32 startNode /*= 0
                 if (passedPreviousSegmentProximityCheck || !src || _path.empty() || IsNodeIncludedInShortenedPath(_path.back(), nodes[i]))
                 {
                     if ((!src || (IsNodeIncludedInShortenedPath(start, nodes[i]) && i >= 2)) &&
-                        (dst == taxi.size() - 1 || (IsNodeIncludedInShortenedPath(end, nodes[i]) && i < nodes.size() - 1)))
+                        (dst == taxi.size() - 1 || (IsNodeIncludedInShortenedPath(end, nodes[i]) && (i < nodes.size() - 1 || _path.empty()))) &&
+                        (!(nodes[i]->Flags & TAXI_PATH_NODE_FLAG_TELEPORT) || _path.empty() || !(_path.back()->Flags & TAXI_PATH_NODE_FLAG_TELEPORT))) // skip consecutive teleports, only keep the first one
                     {
                         passedPreviousSegmentProximityCheck = true;
                         _path.push_back(nodes[i]);
@@ -240,7 +251,7 @@ void FlightPathMovementGenerator::LoadPath(Player* owner, uint32 startNode /*= 0
             }
         }
 
-        _pointsForPathSwitch.push_back({ uint32(_path.size() - 1), int64(ceil(cost * discount)) });
+        _pointsForPathSwitch.push_back({ uint32(std::max<std::size_t>(_path.size(), 1) - 1), int64(ceil(cost * discount)) });
     }
 }
 
@@ -252,7 +263,7 @@ void FlightPathMovementGenerator::SetCurrentNodeAfterTeleport()
     uint32 map0 = _path[_currentNode]->ContinentID;
     for (size_t i = _currentNode + 1; i < _path.size(); ++i)
     {
-        if (_path[i]->ContinentID != map0)
+        if (_path[i]->ContinentID != map0 || _path[i - 1]->Flags & TAXI_PATH_NODE_FLAG_TELEPORT)
         {
             _currentNode = i;
             return;
@@ -266,7 +277,7 @@ void FlightPathMovementGenerator::DoEventIfAny(Player* owner, TaxiPathNodeEntry 
 
     if (uint32 eventid = departure ? node->DepartureEventID : node->ArrivalEventID)
     {
-        TC_LOG_DEBUG("maps.script", "FlightPathMovementGenerator::DoEventIfAny: taxi %s event %u of node %u of path %u for player %s", departure ? "departure" : "arrival", eventid, node->NodeIndex, node->PathID, owner->GetName().c_str());
+        TC_LOG_DEBUG("maps.script", "FlightPathMovementGenerator::DoEventIfAny: taxi {} event {} of node {} of path {} for player {}", departure ? "departure" : "arrival", eventid, node->NodeIndex, node->PathID, owner->GetName());
         GameEvents::Trigger(eventid, owner, owner);
     }
 }
@@ -300,7 +311,7 @@ void FlightPathMovementGenerator::PreloadEndGrid(Player* owner)
     // Load the grid
     if (endMap)
     {
-        TC_LOG_DEBUG("movement.flightpath", "FlightPathMovementGenerator::PreloadEndGrid: preloading grid (%f, %f) for map %u at node index %u/%u", _endGridX, _endGridY, _endMapId, _preloadTargetNode, uint32(_path.size() - 1));
+        TC_LOG_DEBUG("movement.flightpath", "FlightPathMovementGenerator::PreloadEndGrid: preloading grid ({}, {}) for map {} at node index {}/{}", _endGridX, _endGridY, _endMapId, _preloadTargetNode, uint32(_path.size() - 1));
         endMap->LoadGrid(_endGridX, _endGridY);
     }
     else

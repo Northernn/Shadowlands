@@ -51,20 +51,3 @@ WorldPacket const* WorldPackets::Transmogrification::AccountTransmogUpdate::Writ
 
     return &_worldPacket;
 }
-
-WorldPacket const* WorldPackets::Transmogrification::TransmogrifyNPC::Write()
-{
-    _worldPacket << Guid;
-
-    return &_worldPacket;
-}
-
-//DekkCore
-WorldPacket const* WorldPackets::Transmogrification::TransmogSetFavoritesUpdate::Write()
-{
-    _worldPacket.WriteBit(IsFullUpdate);
-    _worldPacket.WriteBit(IsSetFavorite);
-
-    return &_worldPacket;
-}
-//DekkCore

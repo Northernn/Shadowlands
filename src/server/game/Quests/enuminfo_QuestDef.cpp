@@ -23,14 +23,14 @@
 namespace Trinity::Impl::EnumUtilsImpl
 {
 
-/********************************************************************\
-|* data for enum 'QuestFailedReason' in 'QuestDef.h' auto-generated *|
-\********************************************************************/
-template <>
-TC_API_EXPORT EnumText EnumUtils<QuestFailedReason>::ToString(QuestFailedReason value)
-{
-    switch (value)
+    /********************************************************************\
+    |* data for enum 'QuestFailedReason' in 'QuestDef.h' auto-generated *|
+    \********************************************************************/
+    template <>
+    TC_API_EXPORT EnumText EnumUtils<QuestFailedReason>::ToString(QuestFailedReason value)
     {
+        switch (value)
+        {
         case QUEST_ERR_NONE: return { "QUEST_ERR_NONE", "QUEST_ERR_NONE", "" };
         case QUEST_ERR_FAILED_LOW_LEVEL: return { "QUEST_ERR_FAILED_LOW_LEVEL", "QUEST_ERR_FAILED_LOW_LEVEL", "\042You are not high enough level for that quest.\042\042" };
         case QUEST_ERR_FAILED_WRONG_RACE: return { "QUEST_ERR_FAILED_WRONG_RACE", "QUEST_ERR_FAILED_WRONG_RACE", "\042That quest is not available to your race.\042" };
@@ -46,17 +46,17 @@ TC_API_EXPORT EnumText EnumUtils<QuestFailedReason>::ToString(QuestFailedReason 
         case QUEST_ERR_FAILED_SPELL: return { "QUEST_ERR_FAILED_SPELL", "QUEST_ERR_FAILED_SPELL", "\042You haven't learned the required spell.\042" };
         case QUEST_ERR_HAS_IN_PROGRESS: return { "QUEST_ERR_HAS_IN_PROGRESS", "QUEST_ERR_HAS_IN_PROGRESS", "\042Progress Bar objective not completed\042" };
         default: throw std::out_of_range("value");
+        }
     }
-}
 
-template <>
-TC_API_EXPORT size_t EnumUtils<QuestFailedReason>::Count() { return 14; }
+    template <>
+    TC_API_EXPORT size_t EnumUtils<QuestFailedReason>::Count() { return 14; }
 
-template <>
-TC_API_EXPORT QuestFailedReason EnumUtils<QuestFailedReason>::FromIndex(size_t index)
-{
-    switch (index)
+    template <>
+    TC_API_EXPORT QuestFailedReason EnumUtils<QuestFailedReason>::FromIndex(size_t index)
     {
+        switch (index)
+        {
         case 0: return QUEST_ERR_NONE;
         case 1: return QUEST_ERR_FAILED_LOW_LEVEL;
         case 2: return QUEST_ERR_FAILED_WRONG_RACE;
@@ -72,14 +72,14 @@ TC_API_EXPORT QuestFailedReason EnumUtils<QuestFailedReason>::FromIndex(size_t i
         case 12: return QUEST_ERR_FAILED_SPELL;
         case 13: return QUEST_ERR_HAS_IN_PROGRESS;
         default: throw std::out_of_range("index");
+        }
     }
-}
 
-template <>
-TC_API_EXPORT size_t EnumUtils<QuestFailedReason>::ToIndex(QuestFailedReason value)
-{
-    switch (value)
+    template <>
+    TC_API_EXPORT size_t EnumUtils<QuestFailedReason>::ToIndex(QuestFailedReason value)
     {
+        switch (value)
+        {
         case QUEST_ERR_NONE: return 0;
         case QUEST_ERR_FAILED_LOW_LEVEL: return 1;
         case QUEST_ERR_FAILED_WRONG_RACE: return 2;
@@ -95,17 +95,17 @@ TC_API_EXPORT size_t EnumUtils<QuestFailedReason>::ToIndex(QuestFailedReason val
         case QUEST_ERR_FAILED_SPELL: return 12;
         case QUEST_ERR_HAS_IN_PROGRESS: return 13;
         default: throw std::out_of_range("value");
+        }
     }
-}
 
-/******************************************************************\
-|* data for enum 'QuestPushReason' in 'QuestDef.h' auto-generated *|
-\******************************************************************/
-template <>
-TC_API_EXPORT EnumText EnumUtils<QuestPushReason>::ToString(QuestPushReason value)
-{
-    switch (value)
+    /******************************************************************\
+    |* data for enum 'QuestPushReason' in 'QuestDef.h' auto-generated *|
+    \******************************************************************/
+    template <>
+    TC_API_EXPORT EnumText EnumUtils<QuestPushReason>::ToString(QuestPushReason value)
     {
+        switch (value)
+        {
         case QuestPushReason::Success: return { "Success", "Success", "\042Sharing quest with %s...\042" };
         case QuestPushReason::Invalid: return { "Invalid", "Invalid", "\042%s is not eligible for that quest\042" };
         case QuestPushReason::InvalidToRecipient: return { "InvalidToRecipient", "InvalidToRecipient", "\042%s's attempt to share quest \042%s\042 failed. You are not eligible for that quest.\042" };
@@ -149,17 +149,17 @@ TC_API_EXPORT EnumText EnumUtils<QuestPushReason>::ToString(QuestPushReason valu
         case QuestPushReason::WrongFaction: return { "WrongFaction", "WrongFaction", "\042%s is the wrong faction for that quest.\042" };
         case QuestPushReason::WrongFactionToRecipient: return { "WrongFactionToRecipient", "WrongFactionToRecipient", "\042%s's attempt to share quest \042%s\042 failed. You are the wrong faction for that quest.\042" };
         default: throw std::out_of_range("value");
+        }
     }
-}
 
-template <>
-TC_API_EXPORT size_t EnumUtils<QuestPushReason>::Count() { return 42; }
+    template <>
+    TC_API_EXPORT size_t EnumUtils<QuestPushReason>::Count() { return 42; }
 
-template <>
-TC_API_EXPORT QuestPushReason EnumUtils<QuestPushReason>::FromIndex(size_t index)
-{
-    switch (index)
+    template <>
+    TC_API_EXPORT QuestPushReason EnumUtils<QuestPushReason>::FromIndex(size_t index)
     {
+        switch (index)
+        {
         case 0: return QuestPushReason::Success;
         case 1: return QuestPushReason::Invalid;
         case 2: return QuestPushReason::InvalidToRecipient;
@@ -203,14 +203,14 @@ TC_API_EXPORT QuestPushReason EnumUtils<QuestPushReason>::FromIndex(size_t index
         case 40: return QuestPushReason::WrongFaction;
         case 41: return QuestPushReason::WrongFactionToRecipient;
         default: throw std::out_of_range("index");
+        }
     }
-}
 
-template <>
-TC_API_EXPORT size_t EnumUtils<QuestPushReason>::ToIndex(QuestPushReason value)
-{
-    switch (value)
+    template <>
+    TC_API_EXPORT size_t EnumUtils<QuestPushReason>::ToIndex(QuestPushReason value)
     {
+        switch (value)
+        {
         case QuestPushReason::Success: return 0;
         case QuestPushReason::Invalid: return 1;
         case QuestPushReason::InvalidToRecipient: return 2;
@@ -254,6 +254,6 @@ TC_API_EXPORT size_t EnumUtils<QuestPushReason>::ToIndex(QuestPushReason value)
         case QuestPushReason::WrongFaction: return 40;
         case QuestPushReason::WrongFactionToRecipient: return 41;
         default: throw std::out_of_range("value");
+        }
     }
-}
 }

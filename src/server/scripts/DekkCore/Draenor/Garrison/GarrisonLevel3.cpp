@@ -19,32 +19,9 @@
 #include "GarrisonAI.h"
 #include "Player.h"
 #include "ScriptMgr.h"
-
-/*
- * Common scripts for garrison level 3 Alliance & Horde
- */
-struct garrison_level_3 : public GarrisonAI
-{
-    garrison_level_3(Garrison* gar) : GarrisonAI(gar) { }
-
-    bool OnCheckUpgradeable() override
-    {
-        return false;
-    }
-};
-
-struct garrison_level_3_alliance : public garrison_level_3
-{
-    garrison_level_3_alliance(Garrison* gar) : garrison_level_3(gar) { }
-};
-
-struct garrison_level_3_horde : public garrison_level_3
-{
-    garrison_level_3_horde(Garrison* gar) : garrison_level_3(gar) { }
-};
+//place for quests
 
 void AddSC_garrison_level_3()
 {
-    RegisterGarrisonAI(garrison_level_3_alliance);
-    RegisterGarrisonAI(garrison_level_3_horde);
+
 };

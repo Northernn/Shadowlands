@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +25,7 @@
 #include "ObjectMgr.h"
 #include "jade_forest.h"
 #include <Loot/LootMgr.h>
+#include "PhasingHandler.h"
 
 #define REPUTATION_ORDER_OF_THE_CLOUD_SERPENT 1271
 #define GOSSIP_TEXT_I 12585
@@ -726,405 +727,6 @@ class mob_sha_reminant : public CreatureScript
         }
 };
 
-// Pandriarch Windfur - 56206
-class mob_pandriarch_windfur : public CreatureScript
-{
-    public:
-        mob_pandriarch_windfur() : CreatureScript("mob_pandriarch_windfur") {}
-
-        struct mob_pandriarch_windfurAI : public ScriptedAI
-        {
-            mob_pandriarch_windfurAI(Creature* creature) : ScriptedAI(creature) {}
-
-            EventMap events;
-
-            void Reset() override
-            {
-                events.Reset();
-
-                events.ScheduleEvent(EVENT_THUNDERING_PALM, 3s, 7s);
-                events.ScheduleEvent(EVENT_WIND_SWORD,  8s, 10s);
-                events.ScheduleEvent(EVENT_WINDFUR_PUNCH, 13s, 17s);
-            }
-
-            bool OnGossipHello(Player* player) override
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                SendGossipMenuFor(player, 75009, me->GetGUID());
-
-                return true;
-            }
-
-            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-            {
-                player->PlayerTalkClass->ClearMenus();
-
-                if (action == GOSSIP_ACTION_INFO_DEF + 1)
-                {
-                    if (player->GetQuestStatus(QUEST_GETTING_PERMISSION) == QUEST_STATUS_INCOMPLETE)
-                    {
-                        me->SetFaction(14);
-                        me->SetReactState(REACT_DEFENSIVE);
-                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                        me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        me->AI()->Reset();
-                        //      me->CombatStart(player, true);
-                    }
-
-                    CloseGossipMenuFor(player);
-                }
-
-                return true;
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
-            {
-                if (Player* player = attacker->ToPlayer())
-                {
-                    if (me->HealthBelowPctDamaged(10, damage))
-                    {
-                        damage = 0;
-                        me->CombatStop();
-                        me->GetMotionMaster()->MovePoint(0, 1996.76001f, -2216.780029f, 247.725006f);
-                        me->SetFaction(35);
-                        me->SetFullHealth();
-                        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-                        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                        me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        player->KilledMonsterCredit(NPC_PANDRIARCH_WINDFUR);
-                    }
-
-                    if (damage > me->GetHealth())
-                        damage = 0;
-                }
-            }
-
-            void JustEngagedWith(Unit* who) override
-            {
-                if (Player* player = who->ToPlayer())
-                {
-                    if (player->GetQuestStatus(QUEST_GETTING_PERMISSION) == QUEST_STATUS_INCOMPLETE)
-                        return;
-
-                    else
-                    {
-                        me->CombatStop();
-                        me->SetFaction(35);
-                    }
-                }
-            }
-
-            void UpdateAI(uint32 diff) override
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_THUNDERING_PALM:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_THUNDERING_PALM, false);
-                            events.ScheduleEvent(EVENT_THUNDERING_PALM, 10s);
-                            break;
-                        case EVENT_WIND_SWORD:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_WIND_SWORD, false);
-                            events.ScheduleEvent(EVENT_WIND_SWORD, 15s);
-                            break;
-                        case EVENT_WINDFUR_PUNCH:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_WINDFUR_PUNCH, false);
-                            events.ScheduleEvent(EVENT_WINDFUR_PUNCH, 15s);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_pandriarch_windfurAI(creature);
-        }
-};
-
-// Pandriarch Bramblestaff - 56209
-class mob_pandriarch_bramblestaff : public CreatureScript
-{
-    public:
-        mob_pandriarch_bramblestaff() : CreatureScript("mob_pandriarch_bramblestaff") {}
-
-        struct mob_pandriarch_bramblestaffAI : public ScriptedAI
-        {
-            mob_pandriarch_bramblestaffAI(Creature* creature) : ScriptedAI(creature) {}
-
-            EventMap events;
-
-            void Reset() override
-            {
-                events.Reset();
-
-                events.ScheduleEvent(EVENT_ROLL, 3s, 7s);
-                events.ScheduleEvent(EVENT_STAFF_STRIKE,  8s, 10s);
-                events.ScheduleEvent(EVENT_THROW_BRAMBLESTAFF,  13s, 17s);
-                // events.ScheduleEvent(EVENT_WHIRLWIND, urand (20000, 23s));
-                // events.ScheduleEvent(EVENT_WHIRLWIND_2, urand (24000, 27s));
-            }
-
-            bool OnGossipHello(Player* player) override
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                SendGossipMenuFor(player, 75010, me->GetGUID());
-
-                return true;
-            }
-
-            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-            {
-                player->PlayerTalkClass->ClearMenus();
-
-                if (action == GOSSIP_ACTION_INFO_DEF + 1)
-                {
-                    if (player->GetQuestStatus(QUEST_GETTING_PERMISSION) == QUEST_STATUS_INCOMPLETE)
-                    {
-                        me->SetFaction(14);
-                        me->SetReactState(REACT_DEFENSIVE);
-                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                        me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        me->AI()->Reset();
-                        //   me->CombatStart(player, true);
-                    }
-
-                    CloseGossipMenuFor(player);
-                }
-
-                return true;
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
-            {
-                if (Player* player = attacker->ToPlayer())
-                {
-                    if (me->HealthBelowPctDamaged(10, damage) || damage > me->GetHealth())
-                    {
-                        damage = 0;
-                        me->CombatStop();
-                        me->GetMotionMaster()->MovePoint(0, 1862.300049f, -2325.060059f, 257.062012f);
-                        me->SetFaction(35);
-                        me->SetFullHealth();
-                        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-                        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                        me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        player->KilledMonsterCredit(NPC_PANDRIARCH_BRAMBLESTAFF);
-                    }
-                }
-            }
-
-            void JustEngagedWith(Unit* who) override
-            {
-                if (Player* player = who->ToPlayer())
-                {
-                    if (player->GetQuestStatus(QUEST_GETTING_PERMISSION) == QUEST_STATUS_INCOMPLETE)
-                        return;
-
-                    else
-                    {
-                        me->CombatStop();
-                        me->SetFaction(35);
-                    }
-                }
-            }
-
-            void UpdateAI(uint32 diff) override
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ROLL:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_ROLL, false);
-                            events.ScheduleEvent(EVENT_ROLL,      10s);
-                            break;
-                        case EVENT_STAFF_STRIKE:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_STAFF_STRIKE, false);
-                            events.ScheduleEvent(EVENT_STAFF_STRIKE,      10s);
-                            break;
-                        case EVENT_THROW_BRAMBLESTAFF:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_THROW_BRAMBLESTAFF, false);
-                            events.ScheduleEvent(EVENT_THROW_BRAMBLESTAFF,      10s);
-                            break;
-                        case EVENT_WHIRLWIND:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_WHIRLWIND, false);
-                            events.ScheduleEvent(EVENT_WHIRLWIND,      10s);
-                            break;
-                        case EVENT_WHIRLWIND_2:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_WHIRLWIND_2, false);
-                            events.ScheduleEvent(EVENT_WHIRLWIND_2,      10s);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_pandriarch_bramblestaffAI(creature);
-        }
-};
-
-// Pandriarch Goldendraft - 56210
-class mob_pandriarch_goldendraft : public CreatureScript
-{
-    public:
-        mob_pandriarch_goldendraft() : CreatureScript("mob_pandriarch_goldendraft") {}
-
-        struct mob_pandriarch_goldendraftAI : public ScriptedAI
-        {
-            mob_pandriarch_goldendraftAI(Creature* creature) : ScriptedAI(creature) {}
-
-            EventMap events;
-
-            void Reset() override
-            {
-                events.Reset();
-
-                events.ScheduleEvent(EVENT_EXPLOSIVE_LAGER, 3s, 7s);
-                events.ScheduleEvent(EVENT_FIRE_ALE, 8s, 10s);
-            }
-
-            bool OnGossipHello(Player* player) override
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_CHOICE_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                SendGossipMenuFor(player, 75010, me->GetGUID());
-
-                return true;
-            }
-
-            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-            {
-                player->PlayerTalkClass->ClearMenus();
-
-                if (action == GOSSIP_ACTION_INFO_DEF + 1)
-                {
-                    if (player->GetQuestStatus(QUEST_GETTING_PERMISSION) == QUEST_STATUS_INCOMPLETE)
-                    {
-                        me->SetFaction(14);
-                        me->SetReactState(REACT_DEFENSIVE);
-                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-                        me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                        me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        me->AI()->Reset();
-                        //      me->CombatStart(player, true);
-                    }
-
-                    CloseGossipMenuFor(player);
-                }
-
-                return true;
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
-            {
-                if (Player* player = attacker->ToPlayer())
-                {
-                    if (me->HealthBelowPctDamaged(10, damage) || damage > me->GetHealth())
-                    {
-                        damage = 0;
-                        me->CombatStop();
-                        me->GetMotionMaster()->MovePoint(0, 1942.630005f, -2290.530029f, 240.429001f);
-                        me->SetFaction(35);
-                        me->SetFullHealth();
-                        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-                        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-                        me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-                        player->KilledMonsterCredit(NPC_PANDRIARCH_GOLDENDRAFT);
-                    }
-                }
-            }
-
-            void JustEngagedWith(Unit* who) override
-            {
-                if (Player* player = who->ToPlayer())
-                {
-                    if (player->GetQuestStatus(QUEST_GETTING_PERMISSION) == QUEST_STATUS_INCOMPLETE)
-                        return;
-
-                    else
-                    {
-                        me->CombatStop();
-                        me->SetFaction(35);
-                    }
-                }
-            }
-
-            void UpdateAI(uint32 diff) override
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_EXPLOSIVE_LAGER:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_EXPLOSIVE_LAGER, false);
-                            events.ScheduleEvent(EVENT_EXPLOSIVE_LAGER,      10s);
-                            break;
-                        case EVENT_FIRE_ALE:
-                            if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                                me->CastSpell(target, SPELL_FIRE_ALE, false);
-                            events.ScheduleEvent(EVENT_FIRE_ALE,      10s);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const override
-        {
-            return new mob_pandriarch_goldendraftAI(creature);
-        }
-};
-
 // Big Bao - 58512
 class mob_big_bao : public CreatureScript
 {
@@ -1725,7 +1327,7 @@ class npc_custom_npc : public CreatureScript
 
                                     for (auto creature: creatureList)
                                     {
-                                        creature->GetMotionMaster()->MoveFollow(player, 4.0f, 4.0f, MOTION_SLOT_ACTIVE);
+                                        creature->GetMotionMaster()->MoveFollow(player, 4.0f, 4.0f);
                                     }
                                 }
 
@@ -2688,7 +2290,7 @@ class npc_fei : public CreatureScript
                 player->KilledMonsterCredit(57243);
 
                 if (Creature* questTaker = GetClosestCreatureWithEntry(creature, 57242, 200.0f, true))
-                    player->TeleportTo(870, questTaker->GetPositionX() + 1.4f, questTaker->GetPositionY() + 1.5f, questTaker->GetPositionZ(), 0.0f, 0);
+                    player->TeleportTo(870, questTaker->GetPositionX() + 1.4f, questTaker->GetPositionY() + 1.5f, questTaker->GetPositionZ(), 0.0f);
             }
 
             return true;
@@ -2831,24 +2433,6 @@ class mob_chi_ji_student : public CreatureScript
         }
 };
 
-class zone_garroshar_point : public PlayerScript
-{
-public:
-    zone_garroshar_point() : PlayerScript("zone_garroshar_point") { }
-
-    void OnUpdateArea(Player* player, uint32 /*newArea*/, uint32 /*oldArea*/) override
-    {
-        if (player->GetMapId() != 870)
-            return;
-
-        if (player->HasQuest(29548)) //The Mission
-            player->CastSpell(nullptr, 131057, true);
-
-        if (player->HasQuest(29690)) //Into the Mists
-            player->GetSceneMgr().PlaySceneByPackageId(44, SceneFlag::None);
-    }
-};
-
 void AddSC_jade_forest()
 {
     // Rare mobs
@@ -2865,9 +2449,6 @@ void AddSC_jade_forest()
     new mob_sha_reminant();
     new mob_hutia();
     // Standard Mobs
-    new mob_pandriarch_windfur();
-    new mob_pandriarch_bramblestaff();
-    new mob_pandriarch_goldendraft();
     new mob_big_bao();
     new npc_elder_anli();
     new mob_kher_shan();
@@ -2891,5 +2472,4 @@ void AddSC_jade_forest()
     new mob_chi_ji_student();
     // Game Objects
     new gob_hozen_cage();
-    RegisterPlayerScript(zone_garroshar_point);
 }

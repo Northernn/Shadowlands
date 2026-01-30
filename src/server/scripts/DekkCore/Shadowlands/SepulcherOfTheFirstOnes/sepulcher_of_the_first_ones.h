@@ -23,6 +23,7 @@
 #define DataHeader "SFO"
 #define SFOScriptName "instance_sepulcher_of_the_first_ones"
 
+
 uint32 const EncounterCount = 11;
 
 enum SepulcherOfTheFirstOnesDataTypes
@@ -31,15 +32,30 @@ enum SepulcherOfTheFirstOnesDataTypes
 
     DATA_ANDUIN_WRYNN = 7,
 
+
     // Encounter-related data
+    DATA_ANDUIN_GAMEOBJECTS,
+    DATA_BEFOULED_BARRIER,
+    DATA_EMPTY_VESSEL,
+    DATA_GRIM_REFLECTION,
+    DATA_REMNANT_OF_A_FALLEN_KING,
+    DATA_SYLVANAS_WINDRUNNER,
+    DATA_ANDUIN_SOUL,
+    DATA_BEACON_OF_HOPE,
+    DATA_JAINA_PROUDMOORE,
+    DATA_UTHER_THE_LIGHTBRINGER,
+    DATA_BRIDGE_TO_ANDUIN,
+    DATA_BRIDGE_AFTER_ANDUIN,
 
 };
+
 
 enum SepulcherOfTheFirstOnesCreatureIds
 {
     // Bosses
 
     BOSS_ANDUIN_WRYNN = 181954,
+    BOSS_REMNANT_OF_A_FALLEN_KING = 183463,
 
     // Anduin Wrynn Encounter
 
@@ -49,16 +65,23 @@ enum SepulcherOfTheFirstOnesCreatureIds
 
     NPC_BEFOULED_BARRIER = 184585,
 
+    NPC_ANDUIN_SOUL = 184519,
     NPC_ANDUIN_DESPAIR = 184520,
     NPC_ANDUIN_HOPE = 184493,
     NPC_ANDUIN_DOUBT = 184494,
+    NPC_EMPTY_VESSEL = 183452,
+    NPC_LOST_SOUL = 185607,
 
-    NPC_REMNANT_OF_A_FALLEN_KING = 183463,
     NPC_MONSTROUS_SOUL = 183671,
     NPC_FIENDISH_SOUL = 183669,
+    NPC_MARCH_OF_THE_DAMNED = 183793,
     NPC_GRIM_REFLECTION = 183033,
 
     NPC_BEACON_OF_HOPE = 184830,
+
+
+
+
 };
 
 enum SepulcherOfTheFirstOnesTranslocatorIds
@@ -79,19 +102,24 @@ enum SepulcherOfTheFirstOnesEvents
     EVENT_RESET_PLAYERS_ON_TRANSLOCATOR = 1
 };
 
+
+
 enum SepulcherOfTheFirstOnesActions
 {
-   
+
 };
 
 enum SepulcherOfTheFirstOnesAreas
 {
     AREA_DOMINATION_GRASP = 13965,
+    AREA_SEPULCHER_OF_THE_FIRST_ONES = 13742,
 };
 
 enum SepulcherOfTheFirstOnesWorldStates
 {
-
+    WORLD_STATE_ANDUIN_ENCOUNTER_STARTED = 21243,
+    WORLD_STATE_ANDUIN_INTERMISSION = 21433,
+    WORLD_STATE_ANDUIN_ENCOUNTER_COMPLETED = 21242,
 
 };
 

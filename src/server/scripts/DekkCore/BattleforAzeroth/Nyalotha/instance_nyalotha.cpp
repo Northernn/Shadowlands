@@ -21,22 +21,22 @@ public:
     struct instance_nyalotha_InstanceMapScript : public InstanceScript
     {
         instance_nyalotha_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
-        
-            {
-                SetHeaders(DataHeader);
-                SetBossNumber(EncounterCount);
-            }
 
-            void OnPlayerEnter(Player * player) override
-            {
-                if (InstanceScript* instance = player->GetInstanceScript())
-                    if (instance->GetBossState(DATA_WRATHION) == DONE)
-                        player->TeleportTo(2217, -1760.0f, -43.0f, -518.0f, 6.26f);
-            }
-        };
-
-        void AddSC_instance_nyalotha()
         {
-            new instance_nyalotha();
+            SetHeaders(DataHeader);
+            SetBossNumber(EncounterCount);
+        }
+
+        void OnPlayerEnter(Player* player) override
+        {
+            if (InstanceScript* instance = player->GetInstanceScript())
+                if (instance->GetBossState(DATA_WRATHION) == DONE)
+                    player->TeleportTo(2217, -1760.0f, -43.0f, -518.0f, 6.26f);
         }
     };
+};
+
+void AddSC_instance_nyalotha()
+{
+    new instance_nyalotha();
+}

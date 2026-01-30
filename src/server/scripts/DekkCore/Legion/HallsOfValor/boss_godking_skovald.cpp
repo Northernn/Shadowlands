@@ -331,158 +331,6 @@ public:
     }
 };
 
-//95843, 97081, 97083, 97084
-class npc_generic_odyn_kings : public CreatureScript
-{
-public:
-    npc_generic_odyn_kings() : CreatureScript("npc_generic_odyn_kings") {}
-
-    struct npc_generic_odyn_kingsAI : public ScriptedAI
-    {
-        npc_generic_odyn_kingsAI(Creature* creature) : ScriptedAI(creature), summons(me)
-        {
-            instance = me->GetInstanceScript();
-        }
-
-        EventMap events;
-        SummonList summons;
-        std::set<uint32> spellIDs;
-        uint8 splashed = 0;
-        bool gotaura = false;
-        InstanceScript* instance;
-
-        void Reset() override
-        {
-            events.Reset();
-            summons.DespawnAll();
-            me->SetFaction(35);
-
-            if (Unit* owner = me->GetOwner())
-                owner->GetAI()->DoAction(ACTION_2);
-
-            for (auto spellId : spellIDs)
-                if (!me->HasAura(spellId))
-                    DoCast(me, spellId, true);
-        }
-
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-        {
-            player->PlayerTalkClass->ClearMenus();
-            switch (action)
-            {
-            case 1:
-                if (Unit* owner = me->GetOwner())
-                    owner->GetAI()->DoAction(ACTION_1);
-                break;
-            }
-            return true;
-        }
-
-        void JustEngagedWith(Unit* who) override
-        {
-            events.RescheduleEvent(EVENT_1, 27s); // Call
-            events.RescheduleEvent(EVENT_2, 18s); // Dagger
-            events.RescheduleEvent(EVENT_3, 5s);   // Yell
-            events.RescheduleEvent(EVENT_4, 15s); // Sever
-
-            if (me->GetEntry() != NPC_KING_RANULF)
-                Talk(0);
-
-            DoCast(me, 202366, true); //Remove Odyn's Blessing - Speed buff
-        }
-
-        void JustDied(Unit* /*killer*/) override
-        {
-            summons.DespawnAll();
-
-            Talk(1);
-
-            if (me->GetEntry() == NPC_KING_TOR)
-                me->CastSpell(me, 199614, true); // Bond of Kings
-            if (me->GetEntry() == NPC_KING_RANULF)
-                me->CastSpell(me, 199622, true); // Bond of Kings 
-            if (me->GetEntry() == NPC_KING_BJORN)
-                me->CastSpell(me, 199621, true); // Bond of Kings
-            if (me->GetEntry() == NPC_KING_HALDOR)
-                me->CastSpell(me, 199620, true); // Bond of Kings
-        }
-
-        void SpellHit(WorldObject* caster, const SpellInfo* spell) override
-        {
-            switch (spell->Id)
-            {
-            case 199614:
-                spellIDs.insert(199590);
-                break;
-            case 199620:
-                spellIDs.insert(199591);
-                break;
-            case 199621:
-                spellIDs.insert(199592);
-                break;
-            case 199622:
-                spellIDs.insert(199593);
-                break;
-            }
-        }
-
-        void DoAction(const int32 action) override
-        {
-            switch (action)
-            {
-            case ACTION_1:
-                ++splashed;
-                if (splashed == 4)
-                    if (instance && (me->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC || me->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC_KEYSTONE))
-                        instance->DoUpdateCriteria(CriteriaType::BeSpellTarget, 207733);
-                break;
-            case ACTION_2:
-                splashed = splashed - 1;
-                break;
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_1: // Call
-                    DoCast(SPELL_CALL_ANCESTOR);
-                    events.RescheduleEvent(EVENT_1, 26s);
-                    break;
-                case EVENT_2: // Dagger
-                    DoCast(SPELL_WICKED_DAGGER);
-                    events.RescheduleEvent(EVENT_2, 18s);
-                    break;
-                case EVENT_3: // Yell
-                    DoCast(SPELL_UNRULY_YELL);
-                    break;
-                case EVENT_4: // Sever
-                    DoCast(SPELL_SEVER);
-                    events.RescheduleEvent(EVENT_4, 15s);
-                    break;
-                }
-            }
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_generic_odyn_kingsAI(creature);
-    }
-};
-
 //98364
 class npc_skovald_aegis_of_aggramar : public CreatureScript
 {
@@ -711,8 +559,6 @@ public:
 
     class spell_skovald_ragnarok_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_skovald_ragnarok_AuraScript);
-
         uint16 m_checkTimer = 1500;
 
         void OnUpdate(AuraEffect const* aurEff)
@@ -745,8 +591,6 @@ public:
 
     class spell_skovald_drop_aegis_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_skovald_drop_aegis_SpellScript);
-
         void HandleScript(SpellEffIndex effIndex)
         {
             Unit* caster = GetCaster();
@@ -780,8 +624,6 @@ public:
 
     class spell_skovald_aegis_remove_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_skovald_aegis_remove_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (!GetTarget())
@@ -830,8 +672,6 @@ public:
 
     class spell_skovald_aegis_absorb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_skovald_aegis_absorb_AuraScript);
-
         void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& /*canBeRecalculated*/)
         {
             amount = -1;
@@ -873,8 +713,6 @@ public:
 
     class spell_skovald_aegis_check_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_skovald_aegis_check_cast_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (InstanceScript* instance = GetCaster()->GetInstanceScript())
@@ -899,7 +737,6 @@ public:
 void AddSC_boss_godking_skovald()
 {
     new boss_god_king_skovald();
-    new npc_generic_odyn_kings();
     new npc_skovald_aegis_of_aggramar();
     new npc_skovald_honored_ancestor();
     new npc_skovald_flame_of_woe();

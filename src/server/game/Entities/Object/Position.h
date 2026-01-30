@@ -53,13 +53,14 @@ struct TC_GAME_API Position
     float m_positionX;
     float m_positionY;
     float m_positionZ;
+
+    float m_orientation;
     // Better to limit access to _orientation field, to guarantee the value is normalized
 private:
-    float m_orientation;
+    float m_pitch;
 
 public:
     bool operator==(Position const& a) const;
-    bool operator!=(Position const& a) const { return !(operator==(a)); }
 
     void Relocate(float x, float y) { m_positionX = x; m_positionY = y; }
     void Relocate(float x, float y, float z) { Relocate(x, y); m_positionZ = z; }
@@ -74,10 +75,16 @@ public:
         m_orientation = NormalizeOrientation(orientation);
     }
 
+    void SetPitch(float pitch)
+    {
+        m_pitch = std::clamp(pitch, -1.0f, 1.0f);
+    }
+
     float GetPositionX() const { return m_positionX; }
     float GetPositionY() const { return m_positionY; }
     float GetPositionZ() const { return m_positionZ; }
     float GetOrientation() const { return m_orientation; }
+    float GetPitch() const { return m_pitch; }
 
     void GetPosition(float &x, float &y) const { x = m_positionX; y = m_positionY; }
     void GetPosition(float &x, float &y, float &z) const { GetPosition(x, y); z = m_positionZ; }
@@ -172,6 +179,24 @@ public:
 
         return Position(x, y, GetPositionZ(), GetOrientation());
     }
+
+    // Return angle in range 0..2*pi
+    float GetAngle(const float x, const float y) const
+    {
+        float dx = x - GetPositionX();
+        float dy = y - GetPositionY();
+
+        float ang = std::atan2(dy, dx);
+        ang = (ang >= 0) ? ang : 2 * float(M_PI) + ang;
+        return ang;
+    }
+    float GetAngle(Position const* pos) const;
+    float GetAngle(Position const& pos) const
+    {
+        return GetAngle(pos.m_positionX, pos.m_positionY);
+    }
+
+    Position GetRandomPositionBetween(Position otherPosition) const;
     // < DekkCore
 };
 

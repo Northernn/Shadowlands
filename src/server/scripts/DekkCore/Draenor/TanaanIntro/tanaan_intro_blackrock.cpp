@@ -541,9 +541,6 @@ struct gob_powder_keg : public GameObjectAI
     {
         if (player->GetQuestStatus(TanaanQuests::QuestTheGunpowderPlot) == QUEST_STATUS_INCOMPLETE)
         {
-            if (player->GetQuestObjectiveCounter(273294))
-            return true;
-
             player->AddAura(SPELL_LEAKY_GUNPOWDER_BARREL, player);
             player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneBuildingExplosion, SceneFlag::None);
         }
@@ -561,9 +558,6 @@ struct gob_makeshift_plunger : public GameObjectAI
     {
         if (player->GetQuestStatus(TanaanQuests::QuestTheGunpowderPlot) == QUEST_STATUS_INCOMPLETE)
         {
-            if (!player->GetQuestObjectiveCounter(273294))
-            return true;
-
             player->KilledMonsterCredit(TanaanKillCredits::CreditMakeShiftPlunger);
 
             if (player->HasAura(SPELL_LEAKY_GUNPOWDER_BARREL))

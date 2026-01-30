@@ -325,8 +325,6 @@ class TC_GAME_API UnitAI
         SpellCastResult DoCastVictim(uint32 spellId, CastSpellExtraArgs const& args = {});
         SpellCastResult DoCastAOE(uint32 spellId, CastSpellExtraArgs const& args = {}) { return DoCast(nullptr, spellId, args); }
 
-        virtual bool ShouldSparWith(Unit const* /*target*/) const { return false; }
-
         void DoMeleeAttackIfReady();
         bool DoSpellAttackIfReady(uint32 spellId);
 
@@ -372,11 +370,13 @@ class TC_GAME_API UnitAI
             bool                                                    m_EmptyWarned;              ///< Warning when there are no more delayed operations
 
 
-            void DoCastRandom(uint32 spellId, float dist, bool triggered = false, int32 aura = 0, uint32 position = 0);
+            void DoCastRandom(uint32 spellId, float dist = .0f, bool triggered = false, int32 aura = 0, uint32 position = 0);
             void DoCastRandomFriendlyCreature(uint32 spellId, float dist = 50.f, bool triggered = false);
             void DoCastAI(uint32 spellId);
             void SetBaseAttackSpell(uint32 spellId) { _baseAttackSpell = spellId; }
             uint32 GetBaseAttackSpell() { return _baseAttackSpell; }
+
+            virtual void OnPowerChange(Powers /*type*/, int32 /*oldValue*/, int32& /*newValue*/) { }
 
        private:
             uint32 _baseAttackSpell = 0;

@@ -107,13 +107,13 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void EnterEvadeMode(EvadeReason w) override
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             Reset();
             _DespawnAtEvade(15s);
         }
-        
-        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+
+        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
         {
             switch (summon->GetEntry())
             {
@@ -123,7 +123,7 @@ public:
             }
         }
 
-        void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*at*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (me->HealthBelowPct(60) && !phase2)
             {
@@ -137,7 +137,7 @@ public:
 
                 events.Reset();
                 events.ScheduleEvent(EVENT_BURROW, 1s);
-               // events.ScheduleEvent(EVENT_EMERGE, TIMER_EMERGE);
+                events.ScheduleEvent(EVENT_EMERGE, 30s);
 
                 for (uint8 i = 0; i < 4; ++i)
                     me->SummonCreature(NPC_VENOMOUS_OPHIDIAN, 3550.0f, 3447.0f, 51.0f, TEMPSUMMON_MANUAL_DESPAWN);
@@ -155,7 +155,7 @@ public:
 
                 events.Reset();
                 events.ScheduleEvent(EVENT_BURROW, 1s);
-               // events.ScheduleEvent(EVENT_EMERGE, TIMER_EMERGE);
+                events.ScheduleEvent(EVENT_EMERGE, 30s);
 
                 for (uint8 i = 0; i < 4; ++i)
                     me->SummonCreature(NPC_SAND_CRUSTED_STRIKER_BFA, 3550.0f, 3447.0f, 51.0f, TEMPSUMMON_MANUAL_DESPAWN);
@@ -166,10 +166,10 @@ public:
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-         //  if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-             //   events.ScheduleEvent(EVENT_A_KNOT_OF_SNAKES, TIMER_A_KNOT_OF_SNAKES);
+           if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
+                events.ScheduleEvent(EVENT_A_KNOT_OF_SNAKES, 12s);
 
-          // events.ScheduleEvent(EVENT_NOXIOUS_BREATH, TIMER_NOXIOUS_BREATH);
+           events.ScheduleEvent(EVENT_NOXIOUS_BREATH, 15s);
         }
 
         void UpdateAI(uint32 diff) override
@@ -189,7 +189,7 @@ public:
                 case EVENT_NOXIOUS_BREATH:
                     if (Unit* target = me->GetVictim())
                         me->CastSpell(target, SPELL_NOXIOUS_BREATH);
-//                    events.ScheduleEvent(EVENT_NOXIOUS_BREATH, TIMER_NOXIOUS_BREATH);
+                    events.ScheduleEvent(EVENT_NOXIOUS_BREATH, 20s);
                     break;
                 case EVENT_BLINDING_SAND:
                 {
@@ -199,13 +199,12 @@ public:
 
                     if (Unit* target = me->GetVictim())
                         me->CastSpell(target, SPELL_BLINDING_SAND);
-                  //  events.ScheduleEvent(EVENT_BLINDING_SAND, TIMER_BLIDING_SAND);
+                    events.ScheduleEvent(EVENT_BLINDING_SAND, 14s);
                     break;
                 }
                 case EVENT_A_KNOT_OF_SNAKES:
                 {
                     std::list<Unit*> targets;
-                  //  SelectTargetList(targets, 1, SELECT_TARGET_RANDOM, 100.0f, true);
 
                     if (!targets.empty())
                         if (targets.size() >= 1)
@@ -216,11 +215,11 @@ public:
                         me->SummonCreature(NPC_A_KNOT_OF_SNAKES, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), TEMPSUMMON_MANUAL_DESPAWN);
 
                         std::ostringstream str;
-                        str << target->GetName(); " is enveloped by |cFFF00000|h[A Knot of Snakes]|h|r free him!";
+                        str << target->GetName() << " is enveloped by |cFFF00000|h[A Knot of Snakes]|h|r free him!";
                         me->TextEmote(str.str().c_str(), 0, true);
                     }
 
-                  //  events.ScheduleEvent(EVENT_A_KNOT_OF_SNAKES, TIMER_A_KNOT_OF_SNAKES);
+                    events.ScheduleEvent(EVENT_A_KNOT_OF_SNAKES, 9s);
                     break;
                 }
                 case EVENT_BURROW:
@@ -237,16 +236,16 @@ public:
                     me->GetMotionMaster()->Clear();
                     if (Unit* target = me->GetVictim())
                         me->Attack(target, true);
-                   // if (burrow == 1)
-                    //    events.ScheduleEvent(EVENT_BLINDING_SAND, TIMER_BLIDING_SAND);
-                  //  else if (burrow > 1)
-                  //  {
-                   //     events.ScheduleEvent(EVENT_NOXIOUS_BREATH, TIMER_NOXIOUS_BREATH);
-                   //     events.ScheduleEvent(EVENT_BLINDING_SAND, TIMER_BLIDING_SAND);
-                  //  }
+                    if (burrow == 1)
+                        events.ScheduleEvent(EVENT_BLINDING_SAND, 16s);
+                    else if (burrow > 1)
+                    {
+                        events.ScheduleEvent(EVENT_NOXIOUS_BREATH, 9s);
+                        events.ScheduleEvent(EVENT_BLINDING_SAND, 15s);
+                    }
 
-                  //  if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-                   //     events.ScheduleEvent(EVENT_A_KNOT_OF_SNAKES, TIMER_A_KNOT_OF_SNAKES);
+                    if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
+                        events.ScheduleEvent(EVENT_A_KNOT_OF_SNAKES, 19s);
                     break;
                 }
             }
@@ -282,7 +281,7 @@ public:
 
         void JustEngagedWith(Unit*) override
         {
-            //events.ScheduleEvent(EVENT_CYTOTOXIN, TIMER_CYTOTOXIN);
+            events.ScheduleEvent(EVENT_CYTOTOXIN, 16s);
         }
 
         Creature* GetMerektha()
@@ -308,7 +307,7 @@ public:
                     if (Creature* merektha = GetMerektha())
                         if (Unit* target = merektha->GetVictim())
                             me->CastSpell(target, SPELL_CYTOTOXIN);
-               //     events.ScheduleEvent(EVENT_CYTOTOXIN, TIMER_CYTOTOXIN);
+                    events.ScheduleEvent(EVENT_CYTOTOXIN, 16s);
                     break;
                 }
             }
@@ -325,6 +324,6 @@ public:
 void AddSC_boss_merektha()
 {
     new bfa_boss_merektha();
-    
+
     new bfa_npc_venomous_ophidian();
 }

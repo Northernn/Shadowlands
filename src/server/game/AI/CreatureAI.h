@@ -33,7 +33,7 @@ class GameObject;
 class PlayerAI;
 class WorldObject;
 struct Position;
-enum class QuestGiverStatus : uint32;
+enum class QuestGiverStatus : uint64;
 
 typedef std::vector<AreaBoundary const*> CreatureBoundary;
 
@@ -109,11 +109,17 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called for reaction when initially engaged - this will always happen _after_ JustEnteredCombat
         virtual void JustEngagedWith(Unit* /*who*/) { }
 
+        // Called when the creature reaches 0 health (or 1 if unkillable).
+        virtual void OnHealthDepleted(Unit* /*attacker*/) { }
+
         // Called when the creature is killed
         virtual void JustDied(Unit* /*killer*/) { }
 
         // Called when the creature kills a unit
         virtual void KilledUnit(Unit* /*victim*/) { }
+
+        // Called when the creature is unsummoned
+        virtual void JustUnsummoned() { }
 
         // Called when the creature summon successfully other creature
         virtual void JustSummoned(Creature* /*summon*/) { }
@@ -175,7 +181,8 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called at reaching home after evade
         virtual void JustReachedHome() { }
 
-        void DoZoneInCombat(Creature* creature = nullptr);
+        void DoZoneInCombat() { DoZoneInCombat(me); }
+        static void DoZoneInCombat(Creature* creature);
 
         // Called at text emote receive from player
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*emoteId*/) { }
@@ -208,7 +215,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         /// == Gossip system ================================
 
         // Called when the dialog status between a player and the creature is requested.
-        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* player);
+        virtual Optional<QuestGiverStatus> GetDialogStatus(Player const* player);
 
         // Called when a player opens a gossip dialog with the creature.
         virtual bool OnGossipHello(Player* /*player*/) { return false; }
@@ -255,6 +262,12 @@ class TC_GAME_API CreatureAI : public UnitAI
         static bool IsInBounds(CreatureBoundary const& boundary, Position const* who);
         bool IsInBoundary(Position const* who = nullptr) const;
 
+        //DekkCOre
+         // Called when a spell cast has been successfully finished
+        virtual void OnSuccessfulSpellCast(SpellInfo const* /*spell*/) { }
+        virtual void OnUnitRelocation(Unit*) { }
+        //DekkCore
+
     protected:
         void EngagementStart(Unit* who);
         void EngagementOver();
@@ -274,7 +287,6 @@ class TC_GAME_API CreatureAI : public UnitAI
         uint32 const _scriptId;
         bool _isEngaged;
         bool _moveInLOSLocked;
-
 
     // DekkCore >
     public:

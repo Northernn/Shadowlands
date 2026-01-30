@@ -20,6 +20,7 @@
 #include "DB2Stores.h"
 #include "GridDefines.h"
 #include "World.h"
+#include "Random.h"
 #include <G3D/g3dmath.h>
 #include <sstream>
 
@@ -147,6 +148,24 @@ float Position::NormalizeOrientation(float o)
     return std::fmod(o, 2.0f * static_cast<float>(M_PI));
 }
 
+Position Position::GetRandomPositionBetween(Position otherPosition) const
+{
+    float minX = std::min(GetPositionX(), otherPosition.GetPositionX());
+    float maxX = std::max(GetPositionX(), otherPosition.GetPositionX());
+
+    float minY = std::min(GetPositionY(), otherPosition.GetPositionY());
+    float maxY = std::max(GetPositionY(), otherPosition.GetPositionY());
+
+    float minZ = std::min(GetPositionZ(), otherPosition.GetPositionZ());
+    float maxZ = std::max(GetPositionZ(), otherPosition.GetPositionZ());
+
+    return Position(
+        frand(minX, maxX),
+        frand(minY, maxY),
+        frand(minZ, maxZ)
+    );
+}
+
 ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> const& streamer)
 {
     buf << streamer.Pos->GetPositionX();
@@ -207,4 +226,12 @@ std::string WorldLocation::GetDebugInfo() const
     MapEntry const* mapEntry = sMapStore.LookupEntry(m_mapId);
     sstr << "MapID: " << m_mapId << " Map name: '" << (mapEntry ? mapEntry->MapName[sWorld->GetDefaultDbcLocale()] : "<not found>") <<"' " << Position::ToString();
     return sstr.str();
+}
+
+float Position::GetAngle(Position const* pos) const
+{
+    if (!pos)
+        return 0.0f;
+
+    return GetAngle(pos->GetPositionX(), pos->GetPositionY());
 }

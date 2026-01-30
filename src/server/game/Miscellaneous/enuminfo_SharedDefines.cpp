@@ -43,12 +43,14 @@ namespace Trinity::Impl::EnumUtilsImpl
         case CLASS_MONK: return { "CLASS_MONK", "Monk", "" };
         case CLASS_DRUID: return { "CLASS_DRUID", "Druid", "" };
         case CLASS_DEMON_HUNTER: return { "CLASS_DEMON_HUNTER", "Demon Hunter", "" };
+        case CLASS_EVOKER: return { "CLASS_EVOKER", "Evoker", "" };
+        case CLASS_ADVENTURER: return { "CLASS_ADVENTURER", "Adventurer", "" };
         default: throw std::out_of_range("value");
         }
     }
 
     template <>
-    TC_API_EXPORT size_t EnumUtils<Classes>::Count() { return 12; }
+    TC_API_EXPORT size_t EnumUtils<Classes>::Count() { return 14; }
 
     template <>
     TC_API_EXPORT Classes EnumUtils<Classes>::FromIndex(size_t index)
@@ -67,6 +69,8 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 9: return CLASS_MONK;
         case 10: return CLASS_DRUID;
         case 11: return CLASS_DEMON_HUNTER;
+        case 12: return CLASS_EVOKER;
+        case 13: return CLASS_ADVENTURER;
         default: throw std::out_of_range("index");
         }
     }
@@ -88,6 +92,8 @@ namespace Trinity::Impl::EnumUtilsImpl
         case CLASS_MONK: return 9;
         case CLASS_DRUID: return 10;
         case CLASS_DEMON_HUNTER: return 11;
+        case CLASS_EVOKER: return 12;
+        case CLASS_ADVENTURER: return 13;
         default: throw std::out_of_range("value");
         }
     }
@@ -120,12 +126,19 @@ namespace Trinity::Impl::EnumUtilsImpl
         case POWER_ARCANE_CHARGES: return { "POWER_ARCANE_CHARGES", "Arcane Charges", "" };
         case POWER_FURY: return { "POWER_FURY", "Fury", "" };
         case POWER_PAIN: return { "POWER_PAIN", "Pain", "" };
+        case POWER_ESSENCE: return { "POWER_ESSENCE", "Essence", "" };
+        case POWER_RUNE_BLOOD: return { "POWER_RUNE_BLOOD", "Blood Runes", "" };
+        case POWER_RUNE_FROST: return { "POWER_RUNE_FROST", "Frost Runes", "" };
+        case POWER_RUNE_UNHOLY: return { "POWER_RUNE_UNHOLY", "Unholy Runes", "" };
+        case POWER_ALTERNATE_QUEST: return { "POWER_ALTERNATE_QUEST", "Alternate (Quest)", "" };
+        case POWER_ALTERNATE_ENCOUNTER: return { "POWER_ALTERNATE_ENCOUNTER", "Alternate (Encounter)", "" };
+        case POWER_ALTERNATE_MOUNT: return { "POWER_ALTERNATE_MOUNT", "Alternate (Mount)", "" };
         default: throw std::out_of_range("value");
         }
     }
 
     template <>
-    TC_API_EXPORT size_t EnumUtils<Powers>::Count() { return 20; }
+    TC_API_EXPORT size_t EnumUtils<Powers>::Count() { return 27; }
 
     template <>
     TC_API_EXPORT Powers EnumUtils<Powers>::FromIndex(size_t index)
@@ -152,6 +165,13 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 17: return POWER_ARCANE_CHARGES;
         case 18: return POWER_FURY;
         case 19: return POWER_PAIN;
+        case 20: return POWER_ESSENCE;
+        case 21: return POWER_RUNE_BLOOD;
+        case 22: return POWER_RUNE_FROST;
+        case 23: return POWER_RUNE_UNHOLY;
+        case 24: return POWER_ALTERNATE_QUEST;
+        case 25: return POWER_ALTERNATE_ENCOUNTER;
+        case 26: return POWER_ALTERNATE_MOUNT;
         default: throw std::out_of_range("index");
         }
     }
@@ -181,6 +201,13 @@ namespace Trinity::Impl::EnumUtilsImpl
         case POWER_ARCANE_CHARGES: return 17;
         case POWER_FURY: return 18;
         case POWER_PAIN: return 19;
+        case POWER_ESSENCE: return 20;
+        case POWER_RUNE_BLOOD: return 21;
+        case POWER_RUNE_FROST: return 22;
+        case POWER_RUNE_UNHOLY: return 23;
+        case POWER_ALTERNATE_QUEST: return 24;
+        case POWER_ALTERNATE_ENCOUNTER: return 25;
+        case POWER_ALTERNATE_MOUNT: return 26;
         default: throw std::out_of_range("value");
         }
     }
@@ -1150,38 +1177,38 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR7_UNK0: return { "SPELL_ATTR7_UNK0", "Unknown attribute 0@Attr7", "" };
-        case SPELL_ATTR7_IGNORE_DURATION_MODS: return { "SPELL_ATTR7_IGNORE_DURATION_MODS", "Ignore duration modifiers", "" };
-        case SPELL_ATTR7_REACTIVATE_AT_RESURRECT: return { "SPELL_ATTR7_REACTIVATE_AT_RESURRECT", "Reactivate at resurrect (client only)", "" };
-        case SPELL_ATTR7_IS_CHEAT_SPELL: return { "SPELL_ATTR7_IS_CHEAT_SPELL", "Is cheat spell", "Cannot cast if caster doesn't have UnitFlag2 & UNIT_FLAG2_ALLOW_CHEAT_SPELLS" };
-        case SPELL_ATTR7_UNK4: return { "SPELL_ATTR7_UNK4", "Unknown attribute 4@Attr7", "Soulstone related?" };
-        case SPELL_ATTR7_SUMMON_TOTEM: return { "SPELL_ATTR7_SUMMON_TOTEM", "Summons player-owned totem", "" };
-        case SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE: return { "SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE", "Damage dealt by this does not cause spell pushback", "" };
-        case SPELL_ATTR7_UNK7: return { "SPELL_ATTR7_UNK7", "Unknown attribute 7@Attr7", "" };
-        case SPELL_ATTR7_HORDE_ONLY: return { "SPELL_ATTR7_HORDE_ONLY", "Horde only", "" };
-        case SPELL_ATTR7_ALLIANCE_ONLY: return { "SPELL_ATTR7_ALLIANCE_ONLY", "Alliance only", "" };
-        case SPELL_ATTR7_DISPEL_CHARGES: return { "SPELL_ATTR7_DISPEL_CHARGES", "Dispel/Spellsteal remove individual charges", "" };
-        case SPELL_ATTR7_INTERRUPT_ONLY_NONPLAYER: return { "SPELL_ATTR7_INTERRUPT_ONLY_NONPLAYER", "Can Cause Interrupt", "Only interrupt non-player casting" };
-        case SPELL_ATTR7_SILENCE_ONLY_NONPLAYER: return { "SPELL_ATTR7_SILENCE_ONLY_NONPLAYER", "Can Cause Silence", "" };
-        case SPELL_ATTR7_CAN_ALWAYS_BE_INTERRUPTED: return { "SPELL_ATTR7_CAN_ALWAYS_BE_INTERRUPTED", "No UI Not Interruptible", "Can always be interrupted, even if caster is immune" };
-        case SPELL_ATTR7_UNK14: return { "SPELL_ATTR7_UNK14", "Unknown attribute 14@Attr7", "" };
-        case SPELL_ATTR7_UNK15: return { "SPELL_ATTR7_UNK15", "Unknown attribute 15@Attr7", "Exorcism - guaranteed crit vs families?" };
-        case SPELL_ATTR7_HIDDEN_IN_SPELLBOOK_WHEN_LEARNED: return { "SPELL_ATTR7_HIDDEN_IN_SPELLBOOK_WHEN_LEARNED", "Only In Spellbook Until Learned", "After learning these spells become hidden in spellbook (but are visible when not learned for low level characters)" };
-        case SPELL_ATTR7_UNK17: return { "SPELL_ATTR7_UNK17", "Unknown attribute 17@Attr7", "" };
-        case SPELL_ATTR7_HAS_CHARGE_EFFECT: return { "SPELL_ATTR7_HAS_CHARGE_EFFECT", "Has charge effect", "" };
-        case SPELL_ATTR7_ZONE_TELEPORT: return { "SPELL_ATTR7_ZONE_TELEPORT", "Is zone teleport", "" };
-        case SPELL_ATTR7_UNK20: return { "SPELL_ATTR7_UNK20", "Unknown attribute 20@Attr7", "Invulnerability related?" };
-        case SPELL_ATTR7_UNK21: return { "SPELL_ATTR7_UNK21", "Unknown attribute 21@Attr7", "" };
+        case SPELL_ATTR7_ALLOW_SPELL_REFLECTION: return { "SPELL_ATTR7_ALLOW_SPELL_REFLECTION", "Allow Spell Reflection", "" };
+        case SPELL_ATTR7_NO_TARGET_DURATION_MOD: return { "SPELL_ATTR7_NO_TARGET_DURATION_MOD", "No Target Duration Mod", "" };
+        case SPELL_ATTR7_DISABLE_AURA_WHILE_DEAD: return { "SPELL_ATTR7_DISABLE_AURA_WHILE_DEAD", "Disable Aura While Dead", "" };
+        case SPELL_ATTR7_DEBUG_SPELL: return { "SPELL_ATTR7_DEBUG_SPELL", "Debug Spell", "Cannot cast if caster doesn't have UnitFlag2 & UNIT_FLAG2_ALLOW_CHEAT_SPELLS" };
+        case SPELL_ATTR7_TREAT_AS_RAID_BUFF: return { "SPELL_ATTR7_TREAT_AS_RAID_BUFF", "Treat as Raid Buff", "" };
+        case SPELL_ATTR7_CAN_BE_MULTI_CAST: return { "SPELL_ATTR7_CAN_BE_MULTI_CAST", "Can Be Multi Cast", "" };
+        case SPELL_ATTR7_DONT_CAUSE_SPELL_PUSHBACK: return { "SPELL_ATTR7_DONT_CAUSE_SPELL_PUSHBACK", "Don't Cause Spell Pushback", "Damage dealt by this does not cause spell pushback" };
+        case SPELL_ATTR7_PREPARE_FOR_VEHICLE_CONTROL_END: return { "SPELL_ATTR7_PREPARE_FOR_VEHICLE_CONTROL_END", "Prepare for Vehicle Control End", "" };
+        case SPELL_ATTR7_HORDE_SPECIFIC_SPELL: return { "SPELL_ATTR7_HORDE_SPECIFIC_SPELL", "Horde Specific Spell", "" };
+        case SPELL_ATTR7_ALLIANCE_SPECIFIC_SPELL: return { "SPELL_ATTR7_ALLIANCE_SPECIFIC_SPELL", "Alliance Specific Spell", "" };
+        case SPELL_ATTR7_DISPEL_REMOVES_CHARGES: return { "SPELL_ATTR7_DISPEL_REMOVES_CHARGES", "Dispel Removes Charges", "Dispel/Spellsteal remove individual charges" };
+        case SPELL_ATTR7_CAN_CAUSE_INTERRUPT: return { "SPELL_ATTR7_CAN_CAUSE_INTERRUPT", "Can Cause Interrupt", "Only interrupt non-player casting" };
+        case SPELL_ATTR7_CAN_CAUSE_SILENCE: return { "SPELL_ATTR7_CAN_CAUSE_SILENCE", "Can Cause Silence", "" };
+        case SPELL_ATTR7_NO_UI_NOT_INTERRUPTIBLE: return { "SPELL_ATTR7_NO_UI_NOT_INTERRUPTIBLE", "No UI Not Interruptible", "Can always be interrupted, even if caster is immune" };
+        case SPELL_ATTR7_RECAST_ON_RESUMMON: return { "SPELL_ATTR7_RECAST_ON_RESUMMON", "Recast On Resummon", "" };
+        case SPELL_ATTR7_RESET_SWING_TIMER_AT_SPELL_START: return { "SPELL_ATTR7_RESET_SWING_TIMER_AT_SPELL_START", "Reset Swing Timer at spell start", "" };
+        case SPELL_ATTR7_ONLY_IN_SPELLBOOK_UNTIL_LEARNED: return { "SPELL_ATTR7_ONLY_IN_SPELLBOOK_UNTIL_LEARNED", "Only In Spellbook Until Learned", "After learning these spells become hidden in spellbook (but are visible when not learned for low level characters)" };
+        case SPELL_ATTR7_DO_NOT_LOG_PVP_KILL: return { "SPELL_ATTR7_DO_NOT_LOG_PVP_KILL", "Do Not Log PvP Kill", "" };
+        case SPELL_ATTR7_ATTACK_ON_CHARGE_TO_UNIT: return { "SPELL_ATTR7_ATTACK_ON_CHARGE_TO_UNIT", "Attack on Charge to Unit", "" };
+        case SPELL_ATTR7_REPORT_SPELL_FAILURE_TO_UNIT_TARGET: return { "SPELL_ATTR7_REPORT_SPELL_FAILURE_TO_UNIT_TARGET", "Report Spell failure to unit target", "" };
+        case SPELL_ATTR7_NO_CLIENT_FAIL_WHILE_STUNNED_FLEEING_CONFUSED: return { "SPELL_ATTR7_NO_CLIENT_FAIL_WHILE_STUNNED_FLEEING_CONFUSED", "No Client Fail While Stunned, Fleeing, Confused", "Clientside - skips stunned/fleeing/confused checks" };
+        case SPELL_ATTR7_RETAIN_COOLDOWN_THROUGH_LOAD: return { "SPELL_ATTR7_RETAIN_COOLDOWN_THROUGH_LOAD", "Retain Cooldown Through Load", "" };
         case SPELL_ATTR7_IGNORES_COLD_WEATHER_FLYING_REQUIREMENT: return { "SPELL_ATTR7_IGNORES_COLD_WEATHER_FLYING_REQUIREMENT", "Ignores Cold Weather Flying Requirement", "" };
         case SPELL_ATTR7_NO_ATTACK_DODGE: return { "SPELL_ATTR7_NO_ATTACK_DODGE", "No Attack Dodge", "" };
         case SPELL_ATTR7_NO_ATTACK_PARRY: return { "SPELL_ATTR7_NO_ATTACK_PARRY", "No Attack Parry", "" };
         case SPELL_ATTR7_NO_ATTACK_MISS: return { "SPELL_ATTR7_NO_ATTACK_MISS", "No Attack Miss", "" };
-        case SPELL_ATTR7_UNK26: return { "SPELL_ATTR7_UNK26", "Unknown attribute 26@Attr7", "" };
+        case SPELL_ATTR7_TREAT_AS_NPC_AOE: return { "SPELL_ATTR7_TREAT_AS_NPC_AOE", "Treat as NPC AoE", "" };
         case SPELL_ATTR7_BYPASS_NO_RESURRECT_AURA: return { "SPELL_ATTR7_BYPASS_NO_RESURRECT_AURA", "Bypass No Resurrect Aura", "" };
-        case SPELL_ATTR7_CONSOLIDATED_RAID_BUFF: return { "SPELL_ATTR7_CONSOLIDATED_RAID_BUFF", "Consolidate in raid buff frame (client only)", "" };
-        case SPELL_ATTR7_UNK29: return { "SPELL_ATTR7_UNK29", "Unknown attribute 29@Attr7", "" };
-        case SPELL_ATTR7_UNK30: return { "SPELL_ATTR7_UNK30", "Unknown attribute 30@Attr7", "" };
-        case SPELL_ATTR7_CLIENT_INDICATOR: return { "SPELL_ATTR7_CLIENT_INDICATOR", "Client indicator (client only)", "" };
+        case SPELL_ATTR7_DO_NOT_COUNT_FOR_PVP_SCOREBOARD: return { "SPELL_ATTR7_DO_NOT_COUNT_FOR_PVP_SCOREBOARD", "Do Not Count For PvP Scoreboard", "" };
+        case SPELL_ATTR7_REFLECTION_ONLY_DEFENDS: return { "SPELL_ATTR7_REFLECTION_ONLY_DEFENDS", "Reflection Only Defends", "" };
+        case SPELL_ATTR7_CAN_PROC_FROM_SUPPRESSED_TARGET_PROCS: return { "SPELL_ATTR7_CAN_PROC_FROM_SUPPRESSED_TARGET_PROCS", "Can Proc From Suppressed Target Procs", "" };
+        case SPELL_ATTR7_ALWAYS_CAST_LOG: return { "SPELL_ATTR7_ALWAYS_CAST_LOG", "Always Cast Log", "" };
         default: throw std::out_of_range("value");
         }
     }
@@ -1194,38 +1221,38 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (index)
         {
-        case 0: return SPELL_ATTR7_UNK0;
-        case 1: return SPELL_ATTR7_IGNORE_DURATION_MODS;
-        case 2: return SPELL_ATTR7_REACTIVATE_AT_RESURRECT;
-        case 3: return SPELL_ATTR7_IS_CHEAT_SPELL;
-        case 4: return SPELL_ATTR7_UNK4;
-        case 5: return SPELL_ATTR7_SUMMON_TOTEM;
-        case 6: return SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE;
-        case 7: return SPELL_ATTR7_UNK7;
-        case 8: return SPELL_ATTR7_HORDE_ONLY;
-        case 9: return SPELL_ATTR7_ALLIANCE_ONLY;
-        case 10: return SPELL_ATTR7_DISPEL_CHARGES;
-        case 11: return SPELL_ATTR7_INTERRUPT_ONLY_NONPLAYER;
-        case 12: return SPELL_ATTR7_SILENCE_ONLY_NONPLAYER;
-        case 13: return SPELL_ATTR7_CAN_ALWAYS_BE_INTERRUPTED;
-        case 14: return SPELL_ATTR7_UNK14;
-        case 15: return SPELL_ATTR7_UNK15;
-        case 16: return SPELL_ATTR7_HIDDEN_IN_SPELLBOOK_WHEN_LEARNED;
-        case 17: return SPELL_ATTR7_UNK17;
-        case 18: return SPELL_ATTR7_HAS_CHARGE_EFFECT;
-        case 19: return SPELL_ATTR7_ZONE_TELEPORT;
-        case 20: return SPELL_ATTR7_UNK20;
-        case 21: return SPELL_ATTR7_UNK21;
+        case 0: return SPELL_ATTR7_ALLOW_SPELL_REFLECTION;
+        case 1: return SPELL_ATTR7_NO_TARGET_DURATION_MOD;
+        case 2: return SPELL_ATTR7_DISABLE_AURA_WHILE_DEAD;
+        case 3: return SPELL_ATTR7_DEBUG_SPELL;
+        case 4: return SPELL_ATTR7_TREAT_AS_RAID_BUFF;
+        case 5: return SPELL_ATTR7_CAN_BE_MULTI_CAST;
+        case 6: return SPELL_ATTR7_DONT_CAUSE_SPELL_PUSHBACK;
+        case 7: return SPELL_ATTR7_PREPARE_FOR_VEHICLE_CONTROL_END;
+        case 8: return SPELL_ATTR7_HORDE_SPECIFIC_SPELL;
+        case 9: return SPELL_ATTR7_ALLIANCE_SPECIFIC_SPELL;
+        case 10: return SPELL_ATTR7_DISPEL_REMOVES_CHARGES;
+        case 11: return SPELL_ATTR7_CAN_CAUSE_INTERRUPT;
+        case 12: return SPELL_ATTR7_CAN_CAUSE_SILENCE;
+        case 13: return SPELL_ATTR7_NO_UI_NOT_INTERRUPTIBLE;
+        case 14: return SPELL_ATTR7_RECAST_ON_RESUMMON;
+        case 15: return SPELL_ATTR7_RESET_SWING_TIMER_AT_SPELL_START;
+        case 16: return SPELL_ATTR7_ONLY_IN_SPELLBOOK_UNTIL_LEARNED;
+        case 17: return SPELL_ATTR7_DO_NOT_LOG_PVP_KILL;
+        case 18: return SPELL_ATTR7_ATTACK_ON_CHARGE_TO_UNIT;
+        case 19: return SPELL_ATTR7_REPORT_SPELL_FAILURE_TO_UNIT_TARGET;
+        case 20: return SPELL_ATTR7_NO_CLIENT_FAIL_WHILE_STUNNED_FLEEING_CONFUSED;
+        case 21: return SPELL_ATTR7_RETAIN_COOLDOWN_THROUGH_LOAD;
         case 22: return SPELL_ATTR7_IGNORES_COLD_WEATHER_FLYING_REQUIREMENT;
         case 23: return SPELL_ATTR7_NO_ATTACK_DODGE;
         case 24: return SPELL_ATTR7_NO_ATTACK_PARRY;
         case 25: return SPELL_ATTR7_NO_ATTACK_MISS;
-        case 26: return SPELL_ATTR7_UNK26;
+        case 26: return SPELL_ATTR7_TREAT_AS_NPC_AOE;
         case 27: return SPELL_ATTR7_BYPASS_NO_RESURRECT_AURA;
-        case 28: return SPELL_ATTR7_CONSOLIDATED_RAID_BUFF;
-        case 29: return SPELL_ATTR7_UNK29;
-        case 30: return SPELL_ATTR7_UNK30;
-        case 31: return SPELL_ATTR7_CLIENT_INDICATOR;
+        case 28: return SPELL_ATTR7_DO_NOT_COUNT_FOR_PVP_SCOREBOARD;
+        case 29: return SPELL_ATTR7_REFLECTION_ONLY_DEFENDS;
+        case 30: return SPELL_ATTR7_CAN_PROC_FROM_SUPPRESSED_TARGET_PROCS;
+        case 31: return SPELL_ATTR7_ALWAYS_CAST_LOG;
         default: throw std::out_of_range("index");
         }
     }
@@ -1235,38 +1262,38 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR7_UNK0: return 0;
-        case SPELL_ATTR7_IGNORE_DURATION_MODS: return 1;
-        case SPELL_ATTR7_REACTIVATE_AT_RESURRECT: return 2;
-        case SPELL_ATTR7_IS_CHEAT_SPELL: return 3;
-        case SPELL_ATTR7_UNK4: return 4;
-        case SPELL_ATTR7_SUMMON_TOTEM: return 5;
-        case SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE: return 6;
-        case SPELL_ATTR7_UNK7: return 7;
-        case SPELL_ATTR7_HORDE_ONLY: return 8;
-        case SPELL_ATTR7_ALLIANCE_ONLY: return 9;
-        case SPELL_ATTR7_DISPEL_CHARGES: return 10;
-        case SPELL_ATTR7_INTERRUPT_ONLY_NONPLAYER: return 11;
-        case SPELL_ATTR7_SILENCE_ONLY_NONPLAYER: return 12;
-        case SPELL_ATTR7_CAN_ALWAYS_BE_INTERRUPTED: return 13;
-        case SPELL_ATTR7_UNK14: return 14;
-        case SPELL_ATTR7_UNK15: return 15;
-        case SPELL_ATTR7_HIDDEN_IN_SPELLBOOK_WHEN_LEARNED: return 16;
-        case SPELL_ATTR7_UNK17: return 17;
-        case SPELL_ATTR7_HAS_CHARGE_EFFECT: return 18;
-        case SPELL_ATTR7_ZONE_TELEPORT: return 19;
-        case SPELL_ATTR7_UNK20: return 20;
-        case SPELL_ATTR7_UNK21: return 21;
+        case SPELL_ATTR7_ALLOW_SPELL_REFLECTION: return 0;
+        case SPELL_ATTR7_NO_TARGET_DURATION_MOD: return 1;
+        case SPELL_ATTR7_DISABLE_AURA_WHILE_DEAD: return 2;
+        case SPELL_ATTR7_DEBUG_SPELL: return 3;
+        case SPELL_ATTR7_TREAT_AS_RAID_BUFF: return 4;
+        case SPELL_ATTR7_CAN_BE_MULTI_CAST: return 5;
+        case SPELL_ATTR7_DONT_CAUSE_SPELL_PUSHBACK: return 6;
+        case SPELL_ATTR7_PREPARE_FOR_VEHICLE_CONTROL_END: return 7;
+        case SPELL_ATTR7_HORDE_SPECIFIC_SPELL: return 8;
+        case SPELL_ATTR7_ALLIANCE_SPECIFIC_SPELL: return 9;
+        case SPELL_ATTR7_DISPEL_REMOVES_CHARGES: return 10;
+        case SPELL_ATTR7_CAN_CAUSE_INTERRUPT: return 11;
+        case SPELL_ATTR7_CAN_CAUSE_SILENCE: return 12;
+        case SPELL_ATTR7_NO_UI_NOT_INTERRUPTIBLE: return 13;
+        case SPELL_ATTR7_RECAST_ON_RESUMMON: return 14;
+        case SPELL_ATTR7_RESET_SWING_TIMER_AT_SPELL_START: return 15;
+        case SPELL_ATTR7_ONLY_IN_SPELLBOOK_UNTIL_LEARNED: return 16;
+        case SPELL_ATTR7_DO_NOT_LOG_PVP_KILL: return 17;
+        case SPELL_ATTR7_ATTACK_ON_CHARGE_TO_UNIT: return 18;
+        case SPELL_ATTR7_REPORT_SPELL_FAILURE_TO_UNIT_TARGET: return 19;
+        case SPELL_ATTR7_NO_CLIENT_FAIL_WHILE_STUNNED_FLEEING_CONFUSED: return 20;
+        case SPELL_ATTR7_RETAIN_COOLDOWN_THROUGH_LOAD: return 21;
         case SPELL_ATTR7_IGNORES_COLD_WEATHER_FLYING_REQUIREMENT: return 22;
         case SPELL_ATTR7_NO_ATTACK_DODGE: return 23;
         case SPELL_ATTR7_NO_ATTACK_PARRY: return 24;
         case SPELL_ATTR7_NO_ATTACK_MISS: return 25;
-        case SPELL_ATTR7_UNK26: return 26;
+        case SPELL_ATTR7_TREAT_AS_NPC_AOE: return 26;
         case SPELL_ATTR7_BYPASS_NO_RESURRECT_AURA: return 27;
-        case SPELL_ATTR7_CONSOLIDATED_RAID_BUFF: return 28;
-        case SPELL_ATTR7_UNK29: return 29;
-        case SPELL_ATTR7_UNK30: return 30;
-        case SPELL_ATTR7_CLIENT_INDICATOR: return 31;
+        case SPELL_ATTR7_DO_NOT_COUNT_FOR_PVP_SCOREBOARD: return 28;
+        case SPELL_ATTR7_REFLECTION_ONLY_DEFENDS: return 29;
+        case SPELL_ATTR7_CAN_PROC_FROM_SUPPRESSED_TARGET_PROCS: return 30;
+        case SPELL_ATTR7_ALWAYS_CAST_LOG: return 31;
         default: throw std::out_of_range("value");
         }
     }
@@ -1279,37 +1306,37 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR8_CANT_MISS: return { "SPELL_ATTR8_CANT_MISS", "No Attack Block", "" };
-        case SPELL_ATTR8_UNK1: return { "SPELL_ATTR8_UNK1", "Unknown attribute 1@Attr8", "" };
-        case SPELL_ATTR8_UNK2: return { "SPELL_ATTR8_UNK2", "Unknown attribute 2@Attr8", "" };
-        case SPELL_ATTR8_UNK3: return { "SPELL_ATTR8_UNK3", "Unknown attribute 3@Attr8", "" };
-        case SPELL_ATTR8_UNK4: return { "SPELL_ATTR8_UNK4", "Unknown attribute 4@Attr8", "" };
-        case SPELL_ATTR8_UNK5: return { "SPELL_ATTR8_UNK5", "Unknown attribute 5@Attr8", "" };
-        case SPELL_ATTR8_UNK6: return { "SPELL_ATTR8_UNK6", "Unknown attribute 6@Attr8", "" };
-        case SPELL_ATTR8_UNK7: return { "SPELL_ATTR8_UNK7", "Unknown attribute 7@Attr8", "" };
-        case SPELL_ATTR8_AFFECT_PARTY_AND_RAID: return { "SPELL_ATTR8_AFFECT_PARTY_AND_RAID", "Use Target's Level for Spell Scaling", "" };
-        case SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER: return { "SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER", "Periodic Can Crit", "(WRONG) Periodic auras with this flag keep old periodic timer when refreshing at close to one tick remaining (kind of anti DoT clipping)" };
-        case SPELL_ATTR8_NAME_CHANGED_DURING_TRANSFORM: return { "SPELL_ATTR8_NAME_CHANGED_DURING_TRANSFORM", "Mirror creature name", "" };
-        case SPELL_ATTR8_UNK11: return { "SPELL_ATTR8_UNK11", "Unknown attribute 11@Attr8", "" };
-        case SPELL_ATTR8_AURA_SEND_AMOUNT: return { "SPELL_ATTR8_AURA_SEND_AMOUNT", "Aura Points On Client", "" };
-        case SPELL_ATTR8_UNK13: return { "SPELL_ATTR8_UNK13", "Unknown attribute 13@Attr8", "" };
-        case SPELL_ATTR8_UNK14: return { "SPELL_ATTR8_UNK14", "Unknown attribute 14@Attr8", "" };
-        case SPELL_ATTR8_WATER_MOUNT: return { "SPELL_ATTR8_WATER_MOUNT", "Requires location to be on liquid surface", "" };
-        case SPELL_ATTR8_UNK16: return { "SPELL_ATTR8_UNK16", "Unknown attribute 16@Attr8", "" };
+        case SPELL_ATTR8_NO_ATTACK_BLOCK: return { "SPELL_ATTR8_NO_ATTACK_BLOCK", "No Attack Block", "" };
+        case SPELL_ATTR8_IGNORE_DYNAMIC_OBJECT_CASTER: return { "SPELL_ATTR8_IGNORE_DYNAMIC_OBJECT_CASTER", "Ignore Dynamic Object Caster", "" };
+        case SPELL_ATTR8_REMOVE_OUTSIDE_DUNGEONS_AND_RAIDS: return { "SPELL_ATTR8_REMOVE_OUTSIDE_DUNGEONS_AND_RAIDS", "Remove Outside Dungeons and Raids", "" };
+        case SPELL_ATTR8_ONLY_TARGET_IF_SAME_CREATOR: return { "SPELL_ATTR8_ONLY_TARGET_IF_SAME_CREATOR", "Only Target If Same Creator", "" };
+        case SPELL_ATTR8_CAN_HIT_AOE_UNTARGETABLE: return { "SPELL_ATTR8_CAN_HIT_AOE_UNTARGETABLE", "Can Hit AOE Untargetable", "" };
+        case SPELL_ATTR8_ALLOW_WHILE_CHARMED: return { "SPELL_ATTR8_ALLOW_WHILE_CHARMED", "Allow While Charmed", "" };
+        case SPELL_ATTR8_AURA_REQUIRED_BY_CLIENT: return { "SPELL_ATTR8_AURA_REQUIRED_BY_CLIENT", "Aura Required by Client", "" };
+        case SPELL_ATTR8_IGNORE_SANCTUARY: return { "SPELL_ATTR8_IGNORE_SANCTUARY", "Ignore Sanctuary", "" };
+        case SPELL_ATTR8_USE_TARGETS_LEVEL_FOR_SPELL_SCALING: return { "SPELL_ATTR8_USE_TARGETS_LEVEL_FOR_SPELL_SCALING", "Use Target's Level for Spell Scaling", "" };
+        case SPELL_ATTR8_PERIODIC_CAN_CRIT: return { "SPELL_ATTR8_PERIODIC_CAN_CRIT", "Periodic Can Crit", "" };
+        case SPELL_ATTR8_MIRROR_CREATURE_NAME: return { "SPELL_ATTR8_MIRROR_CREATURE_NAME", "Mirror creature name", "Transform auras also override name (handled clientside)" };
+        case SPELL_ATTR8_ONLY_PLAYERS_CAN_CAST_THIS_SPELL: return { "SPELL_ATTR8_ONLY_PLAYERS_CAN_CAST_THIS_SPELL", "Only Players Can Cast This Spell", "" };
+        case SPELL_ATTR8_AURA_POINTS_ON_CLIENT: return { "SPELL_ATTR8_AURA_POINTS_ON_CLIENT", "Aura Points On Client", "" };
+        case SPELL_ATTR8_NOT_IN_SPELLBOOK_UNTIL_LEARNED: return { "SPELL_ATTR8_NOT_IN_SPELLBOOK_UNTIL_LEARNED", "Not In Spellbook Until Learned", "Hides autolearned spell from spellbook before learning (handled clientside)" };
+        case SPELL_ATTR8_TARGET_PROCS_ON_CASTER: return { "SPELL_ATTR8_TARGET_PROCS_ON_CASTER", "Target Procs On Caster", "Target (taken) procs happen on caster (actor) instead of aura target (action target)" };
+        case SPELL_ATTR8_REQUIRES_LOCATION_TO_BE_ON_LIQUID_SURFACE: return { "SPELL_ATTR8_REQUIRES_LOCATION_TO_BE_ON_LIQUID_SURFACE", "Requires location to be on liquid surface", "" };
+        case SPELL_ATTR8_ONLY_TARGET_OWN_SUMMONS: return { "SPELL_ATTR8_ONLY_TARGET_OWN_SUMMONS", "Only Target Own Summons", "" };
         case SPELL_ATTR8_HASTE_AFFECTS_DURATION: return { "SPELL_ATTR8_HASTE_AFFECTS_DURATION", "Haste Affects Duration", "" };
-        case SPELL_ATTR8_REMEMBER_SPELLS: return { "SPELL_ATTR8_REMEMBER_SPELLS", "SPELL_ATTR8_REMEMBER_SPELLS", "TTILE Ignore Spellcast Override Cost" };
-        case SPELL_ATTR8_USE_COMBO_POINTS_ON_ANY_TARGET: return { "SPELL_ATTR8_USE_COMBO_POINTS_ON_ANY_TARGET", "Allow Targets Hidden by Spawn Tracking", "" };
-        case SPELL_ATTR8_ARMOR_SPECIALIZATION: return { "SPELL_ATTR8_ARMOR_SPECIALIZATION", "Requires Equipped Inv Types", "" };
-        case SPELL_ATTR8_UNK21: return { "SPELL_ATTR8_UNK21", "Unknown attribute 21@Attr8", "" };
-        case SPELL_ATTR8_UNK22: return { "SPELL_ATTR8_UNK22", "Unknown attribute 22@Attr8", "" };
-        case SPELL_ATTR8_BATTLE_RESURRECTION: return { "SPELL_ATTR8_BATTLE_RESURRECTION", "Enforce In Combat Ressurection Limit", "Used to limit the number of resurrections in boss encounters" };
-        case SPELL_ATTR8_HEALING_SPELL: return { "SPELL_ATTR8_HEALING_SPELL", "Heal Prediction", "" };
-        case SPELL_ATTR8_UNK25: return { "SPELL_ATTR8_UNK25", "Unknown attribute 25@Attr8", "" };
-        case SPELL_ATTR8_RAID_MARKER: return { "SPELL_ATTR8_RAID_MARKER", "Skip Is Known Check", "" };
-        case SPELL_ATTR8_UNK27: return { "SPELL_ATTR8_UNK27", "Unknown attribute 27@Attr8", "" };
-        case SPELL_ATTR8_NOT_IN_BG_OR_ARENA: return { "SPELL_ATTR8_NOT_IN_BG_OR_ARENA", "Not in Battleground", "" };
+        case SPELL_ATTR8_IGNORE_SPELLCAST_OVERRIDE_COST: return { "SPELL_ATTR8_IGNORE_SPELLCAST_OVERRIDE_COST", "SPELL_ATTR8_IGNORE_SPELLCAST_OVERRIDE_COST", "TTILE Ignore Spellcast Override Cost" };
+        case SPELL_ATTR8_ALLOW_TARGETS_HIDDEN_BY_SPAWN_TRACKING: return { "SPELL_ATTR8_ALLOW_TARGETS_HIDDEN_BY_SPAWN_TRACKING", "Allow Targets Hidden by Spawn Tracking", "" };
+        case SPELL_ATTR8_REQUIRES_EQUIPPED_INV_TYPES: return { "SPELL_ATTR8_REQUIRES_EQUIPPED_INV_TYPES", "Requires Equipped Inv Types", "" };
+        case SPELL_ATTR8_NO_SUMMON_DEST_FROM_CLIENT_TARGETING_PATHING_REQUIREMENT: return { "SPELL_ATTR8_NO_SUMMON_DEST_FROM_CLIENT_TARGETING_PATHING_REQUIREMENT", "No 'Summon + Dest from Client' Targeting Pathing Requirement", "" };
+        case SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC: return { "SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC", "Melee Haste Affects Periodic", "" };
+        case SPELL_ATTR8_ENFORCE_IN_COMBAT_RESSURECTION_LIMIT: return { "SPELL_ATTR8_ENFORCE_IN_COMBAT_RESSURECTION_LIMIT", "Enforce In Combat Ressurection Limit", "Used to limit the number of resurrections in boss encounters" };
+        case SPELL_ATTR8_HEAL_PREDICTION: return { "SPELL_ATTR8_HEAL_PREDICTION", "Heal Prediction", "" };
+        case SPELL_ATTR8_NO_LEVEL_UP_TOAST: return { "SPELL_ATTR8_NO_LEVEL_UP_TOAST", "No Level Up Toast", "" };
+        case SPELL_ATTR8_SKIP_IS_KNOWN_CHECK: return { "SPELL_ATTR8_SKIP_IS_KNOWN_CHECK", "Skip Is Known Check", "" };
+        case SPELL_ATTR8_AI_FACE_TARGET: return { "SPELL_ATTR8_AI_FACE_TARGET", "AI Face Target", "" };
+        case SPELL_ATTR8_NOT_IN_BATTLEGROUND: return { "SPELL_ATTR8_NOT_IN_BATTLEGROUND", "Not in Battleground", "" };
         case SPELL_ATTR8_MASTERY_AFFECTS_POINTS: return { "SPELL_ATTR8_MASTERY_AFFECTS_POINTS", "Mastery Affects Points", "" };
-        case SPELL_ATTR8_UNK30: return { "SPELL_ATTR8_UNK30", "Unknown attribute 30@Attr8", "" };
+        case SPELL_ATTR8_DISPLAY_LARGE_AURA_ICON_ON_UNIT_FRAMES_BOSS_AURA: return { "SPELL_ATTR8_DISPLAY_LARGE_AURA_ICON_ON_UNIT_FRAMES_BOSS_AURA", "Display Large Aura Icon On Unit Frames (Boss Aura)", "" };
         case SPELL_ATTR8_ATTACK_IGNORE_IMMUNE_TO_PC_FLAG: return { "SPELL_ATTR8_ATTACK_IGNORE_IMMUNE_TO_PC_FLAG", "Can Attack ImmunePC", "Do not check UNIT_FLAG_IMMUNE_TO_PC in IsValidAttackTarget" };
         default: throw std::out_of_range("value");
         }
@@ -1323,37 +1350,37 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (index)
         {
-        case 0: return SPELL_ATTR8_CANT_MISS;
-        case 1: return SPELL_ATTR8_UNK1;
-        case 2: return SPELL_ATTR8_UNK2;
-        case 3: return SPELL_ATTR8_UNK3;
-        case 4: return SPELL_ATTR8_UNK4;
-        case 5: return SPELL_ATTR8_UNK5;
-        case 6: return SPELL_ATTR8_UNK6;
-        case 7: return SPELL_ATTR8_UNK7;
-        case 8: return SPELL_ATTR8_AFFECT_PARTY_AND_RAID;
-        case 9: return SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER;
-        case 10: return SPELL_ATTR8_NAME_CHANGED_DURING_TRANSFORM;
-        case 11: return SPELL_ATTR8_UNK11;
-        case 12: return SPELL_ATTR8_AURA_SEND_AMOUNT;
-        case 13: return SPELL_ATTR8_UNK13;
-        case 14: return SPELL_ATTR8_UNK14;
-        case 15: return SPELL_ATTR8_WATER_MOUNT;
-        case 16: return SPELL_ATTR8_UNK16;
+        case 0: return SPELL_ATTR8_NO_ATTACK_BLOCK;
+        case 1: return SPELL_ATTR8_IGNORE_DYNAMIC_OBJECT_CASTER;
+        case 2: return SPELL_ATTR8_REMOVE_OUTSIDE_DUNGEONS_AND_RAIDS;
+        case 3: return SPELL_ATTR8_ONLY_TARGET_IF_SAME_CREATOR;
+        case 4: return SPELL_ATTR8_CAN_HIT_AOE_UNTARGETABLE;
+        case 5: return SPELL_ATTR8_ALLOW_WHILE_CHARMED;
+        case 6: return SPELL_ATTR8_AURA_REQUIRED_BY_CLIENT;
+        case 7: return SPELL_ATTR8_IGNORE_SANCTUARY;
+        case 8: return SPELL_ATTR8_USE_TARGETS_LEVEL_FOR_SPELL_SCALING;
+        case 9: return SPELL_ATTR8_PERIODIC_CAN_CRIT;
+        case 10: return SPELL_ATTR8_MIRROR_CREATURE_NAME;
+        case 11: return SPELL_ATTR8_ONLY_PLAYERS_CAN_CAST_THIS_SPELL;
+        case 12: return SPELL_ATTR8_AURA_POINTS_ON_CLIENT;
+        case 13: return SPELL_ATTR8_NOT_IN_SPELLBOOK_UNTIL_LEARNED;
+        case 14: return SPELL_ATTR8_TARGET_PROCS_ON_CASTER;
+        case 15: return SPELL_ATTR8_REQUIRES_LOCATION_TO_BE_ON_LIQUID_SURFACE;
+        case 16: return SPELL_ATTR8_ONLY_TARGET_OWN_SUMMONS;
         case 17: return SPELL_ATTR8_HASTE_AFFECTS_DURATION;
-        case 18: return SPELL_ATTR8_REMEMBER_SPELLS;
-        case 19: return SPELL_ATTR8_USE_COMBO_POINTS_ON_ANY_TARGET;
-        case 20: return SPELL_ATTR8_ARMOR_SPECIALIZATION;
-        case 21: return SPELL_ATTR8_UNK21;
-        case 22: return SPELL_ATTR8_UNK22;
-        case 23: return SPELL_ATTR8_BATTLE_RESURRECTION;
-        case 24: return SPELL_ATTR8_HEALING_SPELL;
-        case 25: return SPELL_ATTR8_UNK25;
-        case 26: return SPELL_ATTR8_RAID_MARKER;
-        case 27: return SPELL_ATTR8_UNK27;
-        case 28: return SPELL_ATTR8_NOT_IN_BG_OR_ARENA;
+        case 18: return SPELL_ATTR8_IGNORE_SPELLCAST_OVERRIDE_COST;
+        case 19: return SPELL_ATTR8_ALLOW_TARGETS_HIDDEN_BY_SPAWN_TRACKING;
+        case 20: return SPELL_ATTR8_REQUIRES_EQUIPPED_INV_TYPES;
+        case 21: return SPELL_ATTR8_NO_SUMMON_DEST_FROM_CLIENT_TARGETING_PATHING_REQUIREMENT;
+        case 22: return SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC;
+        case 23: return SPELL_ATTR8_ENFORCE_IN_COMBAT_RESSURECTION_LIMIT;
+        case 24: return SPELL_ATTR8_HEAL_PREDICTION;
+        case 25: return SPELL_ATTR8_NO_LEVEL_UP_TOAST;
+        case 26: return SPELL_ATTR8_SKIP_IS_KNOWN_CHECK;
+        case 27: return SPELL_ATTR8_AI_FACE_TARGET;
+        case 28: return SPELL_ATTR8_NOT_IN_BATTLEGROUND;
         case 29: return SPELL_ATTR8_MASTERY_AFFECTS_POINTS;
-        case 30: return SPELL_ATTR8_UNK30;
+        case 30: return SPELL_ATTR8_DISPLAY_LARGE_AURA_ICON_ON_UNIT_FRAMES_BOSS_AURA;
         case 31: return SPELL_ATTR8_ATTACK_IGNORE_IMMUNE_TO_PC_FLAG;
         default: throw std::out_of_range("index");
         }
@@ -1364,37 +1391,37 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR8_CANT_MISS: return 0;
-        case SPELL_ATTR8_UNK1: return 1;
-        case SPELL_ATTR8_UNK2: return 2;
-        case SPELL_ATTR8_UNK3: return 3;
-        case SPELL_ATTR8_UNK4: return 4;
-        case SPELL_ATTR8_UNK5: return 5;
-        case SPELL_ATTR8_UNK6: return 6;
-        case SPELL_ATTR8_UNK7: return 7;
-        case SPELL_ATTR8_AFFECT_PARTY_AND_RAID: return 8;
-        case SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER: return 9;
-        case SPELL_ATTR8_NAME_CHANGED_DURING_TRANSFORM: return 10;
-        case SPELL_ATTR8_UNK11: return 11;
-        case SPELL_ATTR8_AURA_SEND_AMOUNT: return 12;
-        case SPELL_ATTR8_UNK13: return 13;
-        case SPELL_ATTR8_UNK14: return 14;
-        case SPELL_ATTR8_WATER_MOUNT: return 15;
-        case SPELL_ATTR8_UNK16: return 16;
+        case SPELL_ATTR8_NO_ATTACK_BLOCK: return 0;
+        case SPELL_ATTR8_IGNORE_DYNAMIC_OBJECT_CASTER: return 1;
+        case SPELL_ATTR8_REMOVE_OUTSIDE_DUNGEONS_AND_RAIDS: return 2;
+        case SPELL_ATTR8_ONLY_TARGET_IF_SAME_CREATOR: return 3;
+        case SPELL_ATTR8_CAN_HIT_AOE_UNTARGETABLE: return 4;
+        case SPELL_ATTR8_ALLOW_WHILE_CHARMED: return 5;
+        case SPELL_ATTR8_AURA_REQUIRED_BY_CLIENT: return 6;
+        case SPELL_ATTR8_IGNORE_SANCTUARY: return 7;
+        case SPELL_ATTR8_USE_TARGETS_LEVEL_FOR_SPELL_SCALING: return 8;
+        case SPELL_ATTR8_PERIODIC_CAN_CRIT: return 9;
+        case SPELL_ATTR8_MIRROR_CREATURE_NAME: return 10;
+        case SPELL_ATTR8_ONLY_PLAYERS_CAN_CAST_THIS_SPELL: return 11;
+        case SPELL_ATTR8_AURA_POINTS_ON_CLIENT: return 12;
+        case SPELL_ATTR8_NOT_IN_SPELLBOOK_UNTIL_LEARNED: return 13;
+        case SPELL_ATTR8_TARGET_PROCS_ON_CASTER: return 14;
+        case SPELL_ATTR8_REQUIRES_LOCATION_TO_BE_ON_LIQUID_SURFACE: return 15;
+        case SPELL_ATTR8_ONLY_TARGET_OWN_SUMMONS: return 16;
         case SPELL_ATTR8_HASTE_AFFECTS_DURATION: return 17;
-        case SPELL_ATTR8_REMEMBER_SPELLS: return 18;
-        case SPELL_ATTR8_USE_COMBO_POINTS_ON_ANY_TARGET: return 19;
-        case SPELL_ATTR8_ARMOR_SPECIALIZATION: return 20;
-        case SPELL_ATTR8_UNK21: return 21;
-        case SPELL_ATTR8_UNK22: return 22;
-        case SPELL_ATTR8_BATTLE_RESURRECTION: return 23;
-        case SPELL_ATTR8_HEALING_SPELL: return 24;
-        case SPELL_ATTR8_UNK25: return 25;
-        case SPELL_ATTR8_RAID_MARKER: return 26;
-        case SPELL_ATTR8_UNK27: return 27;
-        case SPELL_ATTR8_NOT_IN_BG_OR_ARENA: return 28;
+        case SPELL_ATTR8_IGNORE_SPELLCAST_OVERRIDE_COST: return 18;
+        case SPELL_ATTR8_ALLOW_TARGETS_HIDDEN_BY_SPAWN_TRACKING: return 19;
+        case SPELL_ATTR8_REQUIRES_EQUIPPED_INV_TYPES: return 20;
+        case SPELL_ATTR8_NO_SUMMON_DEST_FROM_CLIENT_TARGETING_PATHING_REQUIREMENT: return 21;
+        case SPELL_ATTR8_MELEE_HASTE_AFFECTS_PERIODIC: return 22;
+        case SPELL_ATTR8_ENFORCE_IN_COMBAT_RESSURECTION_LIMIT: return 23;
+        case SPELL_ATTR8_HEAL_PREDICTION: return 24;
+        case SPELL_ATTR8_NO_LEVEL_UP_TOAST: return 25;
+        case SPELL_ATTR8_SKIP_IS_KNOWN_CHECK: return 26;
+        case SPELL_ATTR8_AI_FACE_TARGET: return 27;
+        case SPELL_ATTR8_NOT_IN_BATTLEGROUND: return 28;
         case SPELL_ATTR8_MASTERY_AFFECTS_POINTS: return 29;
-        case SPELL_ATTR8_UNK30: return 30;
+        case SPELL_ATTR8_DISPLAY_LARGE_AURA_ICON_ON_UNIT_FRAMES_BOSS_AURA: return 30;
         case SPELL_ATTR8_ATTACK_IGNORE_IMMUNE_TO_PC_FLAG: return 31;
         default: throw std::out_of_range("value");
         }
@@ -1795,8 +1822,8 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR12_UNK0: return { "SPELL_ATTR12_UNK0", "Unknown attribute 0@Attr12", "" };
-        case SPELL_ATTR12_UNK1: return { "SPELL_ATTR12_UNK1", "Unknown attribute 1@Attr12", "" };
+        case SPELL_ATTR12_ENABLE_PROCS_FROM_SUPPRESSED_CASTER_PROCS: return { "SPELL_ATTR12_ENABLE_PROCS_FROM_SUPPRESSED_CASTER_PROCS", "Enable Procs from Suppressed Caster Procs", "" };
+        case SPELL_ATTR12_CAN_PROC_FROM_SUPPRESSED_CASTER_PROCS: return { "SPELL_ATTR12_CAN_PROC_FROM_SUPPRESSED_CASTER_PROCS", "Can Proc from Suppressed Caster Procs", "" };
         case SPELL_ATTR12_UNK2: return { "SPELL_ATTR12_UNK2", "Unknown attribute 2@Attr12", "" };
         case SPELL_ATTR12_UNK3: return { "SPELL_ATTR12_UNK3", "Unknown attribute 3@Attr12", "" };
         case SPELL_ATTR12_UNK4: return { "SPELL_ATTR12_UNK4", "Unknown attribute 4@Attr12", "" };
@@ -1826,7 +1853,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_ATTR12_UNK28: return { "SPELL_ATTR12_UNK28", "Unknown attribute 28@Attr12", "" };
         case SPELL_ATTR12_UNK29: return { "SPELL_ATTR12_UNK29", "Unknown attribute 29@Attr12", "" };
         case SPELL_ATTR12_UNK30: return { "SPELL_ATTR12_UNK30", "Unknown attribute 30@Attr12", "" };
-        case SPELL_ATTR12_UNK31: return { "SPELL_ATTR12_UNK31", "Unknown attribute 31@Attr12", "" };
+        case SPELL_ATTR12_ONLY_PROC_FROM_CLASS_ABILITIES: return { "SPELL_ATTR12_ONLY_PROC_FROM_CLASS_ABILITIES", "Only Proc From Class Abilities", "" };
         default: throw std::out_of_range("value");
         }
     }
@@ -1839,8 +1866,8 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (index)
         {
-        case 0: return SPELL_ATTR12_UNK0;
-        case 1: return SPELL_ATTR12_UNK1;
+        case 0: return SPELL_ATTR12_ENABLE_PROCS_FROM_SUPPRESSED_CASTER_PROCS;
+        case 1: return SPELL_ATTR12_CAN_PROC_FROM_SUPPRESSED_CASTER_PROCS;
         case 2: return SPELL_ATTR12_UNK2;
         case 3: return SPELL_ATTR12_UNK3;
         case 4: return SPELL_ATTR12_UNK4;
@@ -1870,7 +1897,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 28: return SPELL_ATTR12_UNK28;
         case 29: return SPELL_ATTR12_UNK29;
         case 30: return SPELL_ATTR12_UNK30;
-        case 31: return SPELL_ATTR12_UNK31;
+        case 31: return SPELL_ATTR12_ONLY_PROC_FROM_CLASS_ABILITIES;
         default: throw std::out_of_range("index");
         }
     }
@@ -1880,8 +1907,8 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR12_UNK0: return 0;
-        case SPELL_ATTR12_UNK1: return 1;
+        case SPELL_ATTR12_ENABLE_PROCS_FROM_SUPPRESSED_CASTER_PROCS: return 0;
+        case SPELL_ATTR12_CAN_PROC_FROM_SUPPRESSED_CASTER_PROCS: return 1;
         case SPELL_ATTR12_UNK2: return 2;
         case SPELL_ATTR12_UNK3: return 3;
         case SPELL_ATTR12_UNK4: return 4;
@@ -1911,7 +1938,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_ATTR12_UNK28: return 28;
         case SPELL_ATTR12_UNK29: return 29;
         case SPELL_ATTR12_UNK30: return 30;
-        case SPELL_ATTR12_UNK31: return 31;
+        case SPELL_ATTR12_ONLY_PROC_FROM_CLASS_ABILITIES: return 31;
         default: throw std::out_of_range("value");
         }
     }
@@ -1924,7 +1951,7 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR13_UNK0: return { "SPELL_ATTR13_UNK0", "Unknown attribute 0@Attr13", "" };
+        case SPELL_ATTR13_ALLOW_CLASS_ABILITY_PROCS: return { "SPELL_ATTR13_ALLOW_CLASS_ABILITY_PROCS", "Allow Class Ability Procs", "" };
         case SPELL_ATTR13_UNK1: return { "SPELL_ATTR13_UNK1", "Unknown attribute 0@Attr13", "" };
         case SPELL_ATTR13_PASSIVE_IS_UPGRADE: return { "SPELL_ATTR13_PASSIVE_IS_UPGRADE", "Is Upgrade", "Displays \042Upgrade\042 in spell tooltip instead of \042Passive\042" };
         case SPELL_ATTR13_UNK3: return { "SPELL_ATTR13_UNK3", "Unknown attribute 3@Attr13", "" };
@@ -1944,7 +1971,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_ATTR13_UNK17: return { "SPELL_ATTR13_UNK17", "Unknown attribute 17@Attr13", "" };
         case SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT: return { "SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT", "Do Not Enforce Shapeshift Requirements", "" };
         case SPELL_ATTR13_UNK19: return { "SPELL_ATTR13_UNK19", "Unknown attribute 19@Attr13", "" };
-        case SPELL_ATTR13_UNK20: return { "SPELL_ATTR13_UNK20", "Unknown attribute 20@Attr13", "" };
+        case SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION: return { "SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION", "Periodic Refresh Extends Duration", "" };
         case SPELL_ATTR13_UNK21: return { "SPELL_ATTR13_UNK21", "Unknown attribute 21@Attr13", "" };
         case SPELL_ATTR13_UNK22: return { "SPELL_ATTR13_UNK22", "Unknown attribute 22@Attr13", "" };
         case SPELL_ATTR13_UNK23: return { "SPELL_ATTR13_UNK23", "Unknown attribute 23@Attr13", "" };
@@ -1968,7 +1995,7 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (index)
         {
-        case 0: return SPELL_ATTR13_UNK0;
+        case 0: return SPELL_ATTR13_ALLOW_CLASS_ABILITY_PROCS;
         case 1: return SPELL_ATTR13_UNK1;
         case 2: return SPELL_ATTR13_PASSIVE_IS_UPGRADE;
         case 3: return SPELL_ATTR13_UNK3;
@@ -1988,7 +2015,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 17: return SPELL_ATTR13_UNK17;
         case 18: return SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT;
         case 19: return SPELL_ATTR13_UNK19;
-        case 20: return SPELL_ATTR13_UNK20;
+        case 20: return SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION;
         case 21: return SPELL_ATTR13_UNK21;
         case 22: return SPELL_ATTR13_UNK22;
         case 23: return SPELL_ATTR13_UNK23;
@@ -2009,7 +2036,7 @@ namespace Trinity::Impl::EnumUtilsImpl
     {
         switch (value)
         {
-        case SPELL_ATTR13_UNK0: return 0;
+        case SPELL_ATTR13_ALLOW_CLASS_ABILITY_PROCS: return 0;
         case SPELL_ATTR13_UNK1: return 1;
         case SPELL_ATTR13_PASSIVE_IS_UPGRADE: return 2;
         case SPELL_ATTR13_UNK3: return 3;
@@ -2029,7 +2056,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_ATTR13_UNK17: return 17;
         case SPELL_ATTR13_ACTIVATES_REQUIRED_SHAPESHIFT: return 18;
         case SPELL_ATTR13_UNK19: return 19;
-        case SPELL_ATTR13_UNK20: return 20;
+        case SPELL_ATTR13_PERIODIC_REFRESH_EXTENDS_DURATION: return 20;
         case SPELL_ATTR13_UNK21: return 21;
         case SPELL_ATTR13_UNK22: return 22;
         case SPELL_ATTR13_UNK23: return 23;
@@ -2198,8 +2225,8 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_FAILED_BAD_TARGETS: return { "SPELL_FAILED_BAD_TARGETS", "SPELL_FAILED_BAD_TARGETS", "" };
         case SPELL_FAILED_PVP_TARGET_WHILE_UNFLAGGED: return { "SPELL_FAILED_PVP_TARGET_WHILE_UNFLAGGED", "SPELL_FAILED_PVP_TARGET_WHILE_UNFLAGGED", "" };
         case SPELL_FAILED_CANT_BE_CHARMED: return { "SPELL_FAILED_CANT_BE_CHARMED", "SPELL_FAILED_CANT_BE_CHARMED", "" };
-        case SPELL_FAILED_CANT_BE_DISENCHANTED: return { "SPELL_FAILED_CANT_BE_DISENCHANTED", "SPELL_FAILED_CANT_BE_DISENCHANTED", "" };
-        case SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL: return { "SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL", "SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL", "" };
+        case SPELL_FAILED_CANT_BE_SALVAGED: return { "SPELL_FAILED_CANT_BE_SALVAGED", "SPELL_FAILED_CANT_BE_SALVAGED", "" };
+        case SPELL_FAILED_CANT_BE_SALVAGED_SKILL: return { "SPELL_FAILED_CANT_BE_SALVAGED_SKILL", "SPELL_FAILED_CANT_BE_SALVAGED_SKILL", "" };
         case SPELL_FAILED_CANT_BE_ENCHANTED: return { "SPELL_FAILED_CANT_BE_ENCHANTED", "SPELL_FAILED_CANT_BE_ENCHANTED", "" };
         case SPELL_FAILED_CANT_BE_MILLED: return { "SPELL_FAILED_CANT_BE_MILLED", "SPELL_FAILED_CANT_BE_MILLED", "" };
         case SPELL_FAILED_CANT_BE_PROSPECTED: return { "SPELL_FAILED_CANT_BE_PROSPECTED", "SPELL_FAILED_CANT_BE_PROSPECTED", "" };
@@ -2492,19 +2519,24 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_FAILED_INELIGIBLE_WEAPON_APPEARANCE: return { "SPELL_FAILED_INELIGIBLE_WEAPON_APPEARANCE", "SPELL_FAILED_INELIGIBLE_WEAPON_APPEARANCE", "" };
         case SPELL_FAILED_PLAYER_CONDITION: return { "SPELL_FAILED_PLAYER_CONDITION", "SPELL_FAILED_PLAYER_CONDITION", "" };
         case SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED: return { "SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED", "SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED", "" };
-        case SPELL_FAILED_OPTIONAL_REAGENTS: return { "SPELL_FAILED_OPTIONAL_REAGENTS", "SPELL_FAILED_OPTIONAL_REAGENTS", "" };
+        case SPELL_FAILED_CRAFTING_REAGENTS: return { "SPELL_FAILED_CRAFTING_REAGENTS", "SPELL_FAILED_CRAFTING_REAGENTS", "" };
         case SPELL_FAILED_SPECTATOR_OR_COMMENTATOR: return { "SPELL_FAILED_SPECTATOR_OR_COMMENTATOR", "SPELL_FAILED_SPECTATOR_OR_COMMENTATOR", "" };
         case SPELL_FAILED_SOULBIND_CONDUIT_LEARN_FAILED_INVALID_COVENANT: return { "SPELL_FAILED_SOULBIND_CONDUIT_LEARN_FAILED_INVALID_COVENANT", "SPELL_FAILED_SOULBIND_CONDUIT_LEARN_FAILED_INVALID_COVENANT", "" };
         case SPELL_FAILED_SHADOWLANDS_RIDING_REQUIREMENT: return { "SPELL_FAILED_SHADOWLANDS_RIDING_REQUIREMENT", "SPELL_FAILED_SHADOWLANDS_RIDING_REQUIREMENT", "" };
         case SPELL_FAILED_NOT_IN_MAGE_TOWER: return { "SPELL_FAILED_NOT_IN_MAGE_TOWER", "SPELL_FAILED_NOT_IN_MAGE_TOWER", "" };
         case SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL: return { "SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL", "SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL", "" };
+        case SPELL_FAILED_CANT_BE_RECRAFTED: return { "SPELL_FAILED_CANT_BE_RECRAFTED", "SPELL_FAILED_CANT_BE_RECRAFTED", "" };
+        case SPELL_FAILED_PASSIVE_REPLACED: return { "SPELL_FAILED_PASSIVE_REPLACED", "SPELL_FAILED_PASSIVE_REPLACED", "" };
+        case SPELL_FAILED_CANT_FLY_HERE: return { "SPELL_FAILED_CANT_FLY_HERE", "SPELL_FAILED_CANT_FLY_HERE", "" };
+        case SPELL_FAILED_DRAGONRIDING_RIDING_REQUIREMENT: return { "SPELL_FAILED_DRAGONRIDING_RIDING_REQUIREMENT", "SPELL_FAILED_DRAGONRIDING_RIDING_REQUIREMENT", "" };
+        case SPELL_FAILED_ITEM_MOD_APPEARANCE_GROUP_ALREADY_KNOWN: return { "SPELL_FAILED_ITEM_MOD_APPEARANCE_GROUP_ALREADY_KNOWN", "SPELL_FAILED_ITEM_MOD_APPEARANCE_GROUP_ALREADY_KNOWN", "" };
         case SPELL_FAILED_UNKNOWN: return { "SPELL_FAILED_UNKNOWN", "SPELL_FAILED_UNKNOWN", "" };
         default: throw std::out_of_range("value");
         }
     }
 
     template <>
-    TC_API_EXPORT size_t EnumUtils<SpellCastResult>::Count() { return 317; }
+    TC_API_EXPORT size_t EnumUtils<SpellCastResult>::Count() { return 322; }
 
     template <>
     TC_API_EXPORT SpellCastResult EnumUtils<SpellCastResult>::FromIndex(size_t index)
@@ -2527,8 +2559,8 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 13: return SPELL_FAILED_BAD_TARGETS;
         case 14: return SPELL_FAILED_PVP_TARGET_WHILE_UNFLAGGED;
         case 15: return SPELL_FAILED_CANT_BE_CHARMED;
-        case 16: return SPELL_FAILED_CANT_BE_DISENCHANTED;
-        case 17: return SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL;
+        case 16: return SPELL_FAILED_CANT_BE_SALVAGED;
+        case 17: return SPELL_FAILED_CANT_BE_SALVAGED_SKILL;
         case 18: return SPELL_FAILED_CANT_BE_ENCHANTED;
         case 19: return SPELL_FAILED_CANT_BE_MILLED;
         case 20: return SPELL_FAILED_CANT_BE_PROSPECTED;
@@ -2821,13 +2853,18 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 307: return SPELL_FAILED_INELIGIBLE_WEAPON_APPEARANCE;
         case 308: return SPELL_FAILED_PLAYER_CONDITION;
         case 309: return SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED;
-        case 310: return SPELL_FAILED_OPTIONAL_REAGENTS;
+        case 310: return SPELL_FAILED_CRAFTING_REAGENTS;
         case 311: return SPELL_FAILED_SPECTATOR_OR_COMMENTATOR;
         case 312: return SPELL_FAILED_SOULBIND_CONDUIT_LEARN_FAILED_INVALID_COVENANT;
         case 313: return SPELL_FAILED_SHADOWLANDS_RIDING_REQUIREMENT;
         case 314: return SPELL_FAILED_NOT_IN_MAGE_TOWER;
         case 315: return SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL;
-        case 316: return SPELL_FAILED_UNKNOWN;
+        case 316: return SPELL_FAILED_CANT_BE_RECRAFTED;
+        case 317: return SPELL_FAILED_PASSIVE_REPLACED;
+        case 318: return SPELL_FAILED_CANT_FLY_HERE;
+        case 319: return SPELL_FAILED_DRAGONRIDING_RIDING_REQUIREMENT;
+        case 320: return SPELL_FAILED_ITEM_MOD_APPEARANCE_GROUP_ALREADY_KNOWN;
+        case 321: return SPELL_FAILED_UNKNOWN;
         default: throw std::out_of_range("index");
         }
     }
@@ -2853,8 +2890,8 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_FAILED_BAD_TARGETS: return 13;
         case SPELL_FAILED_PVP_TARGET_WHILE_UNFLAGGED: return 14;
         case SPELL_FAILED_CANT_BE_CHARMED: return 15;
-        case SPELL_FAILED_CANT_BE_DISENCHANTED: return 16;
-        case SPELL_FAILED_CANT_BE_DISENCHANTED_SKILL: return 17;
+        case SPELL_FAILED_CANT_BE_SALVAGED: return 16;
+        case SPELL_FAILED_CANT_BE_SALVAGED_SKILL: return 17;
         case SPELL_FAILED_CANT_BE_ENCHANTED: return 18;
         case SPELL_FAILED_CANT_BE_MILLED: return 19;
         case SPELL_FAILED_CANT_BE_PROSPECTED: return 20;
@@ -3147,13 +3184,18 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELL_FAILED_INELIGIBLE_WEAPON_APPEARANCE: return 307;
         case SPELL_FAILED_PLAYER_CONDITION: return 308;
         case SPELL_FAILED_NOT_WHILE_CHROMIE_TIMED: return 309;
-        case SPELL_FAILED_OPTIONAL_REAGENTS: return 310;
+        case SPELL_FAILED_CRAFTING_REAGENTS: return 310;
         case SPELL_FAILED_SPECTATOR_OR_COMMENTATOR: return 311;
         case SPELL_FAILED_SOULBIND_CONDUIT_LEARN_FAILED_INVALID_COVENANT: return 312;
         case SPELL_FAILED_SHADOWLANDS_RIDING_REQUIREMENT: return 313;
         case SPELL_FAILED_NOT_IN_MAGE_TOWER: return 314;
         case SPELL_FAILED_GARRISON_FOLLOWER_AT_MIN_LEVEL: return 315;
-        case SPELL_FAILED_UNKNOWN: return 316;
+        case SPELL_FAILED_CANT_BE_RECRAFTED: return 316;
+        case SPELL_FAILED_PASSIVE_REPLACED: return 317;
+        case SPELL_FAILED_CANT_FLY_HERE: return 318;
+        case SPELL_FAILED_DRAGONRIDING_RIDING_REQUIREMENT: return 319;
+        case SPELL_FAILED_ITEM_MOD_APPEARANCE_GROUP_ALREADY_KNOWN: return 320;
+        case SPELL_FAILED_UNKNOWN: return 321;
         default: throw std::out_of_range("value");
         }
     }
@@ -3307,12 +3349,16 @@ namespace Trinity::Impl::EnumUtilsImpl
         case MECHANIC_SAPPED: return { "MECHANIC_SAPPED", "MECHANIC_SAPPED", "" };
         case MECHANIC_ENRAGED: return { "MECHANIC_ENRAGED", "MECHANIC_ENRAGED", "" };
         case MECHANIC_WOUNDED: return { "MECHANIC_WOUNDED", "MECHANIC_WOUNDED", "" };
+        case MECHANIC_INFECTED_2: return { "MECHANIC_INFECTED_2", "MECHANIC_INFECTED_2", "" };
+        case MECHANIC_INFECTED_3: return { "MECHANIC_INFECTED_3", "MECHANIC_INFECTED_3", "" };
+        case MECHANIC_INFECTED_4: return { "MECHANIC_INFECTED_4", "MECHANIC_INFECTED_4", "" };
+        case MECHANIC_TAUNTED: return { "MECHANIC_TAUNTED", "MECHANIC_TAUNTED", "" };
         default: throw std::out_of_range("value");
         }
     }
 
     template <>
-    TC_API_EXPORT size_t EnumUtils<Mechanics>::Count() { return 33; }
+    TC_API_EXPORT size_t EnumUtils<Mechanics>::Count() { return 37; }
 
     template <>
     TC_API_EXPORT Mechanics EnumUtils<Mechanics>::FromIndex(size_t index)
@@ -3352,6 +3398,10 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 30: return MECHANIC_SAPPED;
         case 31: return MECHANIC_ENRAGED;
         case 32: return MECHANIC_WOUNDED;
+        case 33: return MECHANIC_INFECTED_2;
+        case 34: return MECHANIC_INFECTED_3;
+        case 35: return MECHANIC_INFECTED_4;
+        case 36: return MECHANIC_TAUNTED;
         default: throw std::out_of_range("index");
         }
     }
@@ -3394,6 +3444,10 @@ namespace Trinity::Impl::EnumUtilsImpl
         case MECHANIC_SAPPED: return 30;
         case MECHANIC_ENRAGED: return 31;
         case MECHANIC_WOUNDED: return 32;
+        case MECHANIC_INFECTED_2: return 33;
+        case MECHANIC_INFECTED_3: return 34;
+        case MECHANIC_INFECTED_4: return 35;
+        case MECHANIC_TAUNTED: return 36;
         default: throw std::out_of_range("value");
         }
     }
@@ -3900,12 +3954,26 @@ namespace Trinity::Impl::EnumUtilsImpl
         case EMOTE_ONESHOT_FLYCUSTOMSPELL01: return { "EMOTE_ONESHOT_FLYCUSTOMSPELL01", "EMOTE_ONESHOT_FLYCUSTOMSPELL01", "" };
         case EMOTE_ONESHOT_SPELLEFFECT_DECAY: return { "EMOTE_ONESHOT_SPELLEFFECT_DECAY", "EMOTE_ONESHOT_SPELLEFFECT_DECAY", "" };
         case EMOTE_STATE_CREATURE_SPECIAL: return { "EMOTE_STATE_CREATURE_SPECIAL", "EMOTE_STATE_CREATURE_SPECIAL", "" };
+        case EMOTE_ONESHOT_WAREACT01: return { "EMOTE_ONESHOT_WAREACT01", "EMOTE_ONESHOT_WAREACT01", "" };
+        case EMOTE_ONESHOT_FLYCUSTOMSPELL04: return { "EMOTE_ONESHOT_FLYCUSTOMSPELL04", "EMOTE_ONESHOT_FLYCUSTOMSPELL04", "" };
+        case EMOTE_ONESHOT_TALK_SUBDUED: return { "EMOTE_ONESHOT_TALK_SUBDUED", "EMOTE_ONESHOT_TALK_SUBDUED", "" };
+        case EMOTE_STATE_EMOTETALK: return { "EMOTE_STATE_EMOTETALK", "EMOTE_STATE_EMOTETALK", "" };
+        case EMOTE_STATE_WAINTERACTION: return { "EMOTE_STATE_WAINTERACTION", "EMOTE_STATE_WAINTERACTION", "" };
+        case EMOTE_ONESHOT_TAKE_OFF_START: return { "EMOTE_ONESHOT_TAKE_OFF_START", "EMOTE_ONESHOT_TAKE_OFF_START", "" };
+        case EMOTE_ONESHOT_BATTLEROAR_NO_SOUND: return { "EMOTE_ONESHOT_BATTLEROAR_NO_SOUND", "EMOTE_ONESHOT_BATTLEROAR_NO_SOUND", "" };
+        case EMOTE_STATE_WAWEAPONSHARPEN: return { "EMOTE_STATE_WAWEAPONSHARPEN", "EMOTE_STATE_WAWEAPONSHARPEN", "" };
+        case EMOTE_ONESHOT_ROLLSTART: return { "EMOTE_ONESHOT_ROLLSTART", "EMOTE_ONESHOT_ROLLSTART", "" };
+        case EMOTE_ONESHOT_ROLLEND: return { "EMOTE_ONESHOT_ROLLEND", "EMOTE_ONESHOT_ROLLEND", "" };
+        case EMOTE_ONESHOT_WAREACT02: return { "EMOTE_ONESHOT_WAREACT02", "EMOTE_ONESHOT_WAREACT02", "" };
+        case EMOTE_ONESHOT_WATHREATEN: return { "EMOTE_ONESHOT_WATHREATEN", "EMOTE_ONESHOT_WATHREATEN", "" };
+        case EMOTE_ARTOFFLOOP: return { "EMOTE_ARTOFFLOOP", "EMOTE_ARTOFFLOOP", "" };
+        case EMOTE_STATE_READYSPELLOMNI_NOSHEATH: return { "EMOTE_STATE_READYSPELLOMNI_NOSHEATH", "EMOTE_STATE_READYSPELLOMNI_NOSHEATH", "" };
         default: throw std::out_of_range("value");
         }
     }
 
     template <>
-    TC_API_EXPORT size_t EnumUtils<Emote>::Count() { return 404; }
+    TC_API_EXPORT size_t EnumUtils<Emote>::Count() { return 418; }
 
     template <>
     TC_API_EXPORT Emote EnumUtils<Emote>::FromIndex(size_t index)
@@ -4316,6 +4384,20 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 401: return EMOTE_ONESHOT_FLYCUSTOMSPELL01;
         case 402: return EMOTE_ONESHOT_SPELLEFFECT_DECAY;
         case 403: return EMOTE_STATE_CREATURE_SPECIAL;
+        case 404: return EMOTE_ONESHOT_WAREACT01;
+        case 405: return EMOTE_ONESHOT_FLYCUSTOMSPELL04;
+        case 406: return EMOTE_ONESHOT_TALK_SUBDUED;
+        case 407: return EMOTE_STATE_EMOTETALK;
+        case 408: return EMOTE_STATE_WAINTERACTION;
+        case 409: return EMOTE_ONESHOT_TAKE_OFF_START;
+        case 410: return EMOTE_ONESHOT_BATTLEROAR_NO_SOUND;
+        case 411: return EMOTE_STATE_WAWEAPONSHARPEN;
+        case 412: return EMOTE_ONESHOT_ROLLSTART;
+        case 413: return EMOTE_ONESHOT_ROLLEND;
+        case 414: return EMOTE_ONESHOT_WAREACT02;
+        case 415: return EMOTE_ONESHOT_WATHREATEN;
+        case 416: return EMOTE_ARTOFFLOOP;
+        case 417: return EMOTE_STATE_READYSPELLOMNI_NOSHEATH;
         default: throw std::out_of_range("index");
         }
     }
@@ -4729,6 +4811,20 @@ namespace Trinity::Impl::EnumUtilsImpl
         case EMOTE_ONESHOT_FLYCUSTOMSPELL01: return 401;
         case EMOTE_ONESHOT_SPELLEFFECT_DECAY: return 402;
         case EMOTE_STATE_CREATURE_SPECIAL: return 403;
+        case EMOTE_ONESHOT_WAREACT01: return 404;
+        case EMOTE_ONESHOT_FLYCUSTOMSPELL04: return 405;
+        case EMOTE_ONESHOT_TALK_SUBDUED: return 406;
+        case EMOTE_STATE_EMOTETALK: return 407;
+        case EMOTE_STATE_WAINTERACTION: return 408;
+        case EMOTE_ONESHOT_TAKE_OFF_START: return 409;
+        case EMOTE_ONESHOT_BATTLEROAR_NO_SOUND: return 410;
+        case EMOTE_STATE_WAWEAPONSHARPEN: return 411;
+        case EMOTE_ONESHOT_ROLLSTART: return 412;
+        case EMOTE_ONESHOT_ROLLEND: return 413;
+        case EMOTE_ONESHOT_WAREACT02: return 414;
+        case EMOTE_ONESHOT_WATHREATEN: return 415;
+        case EMOTE_ARTOFFLOOP: return 416;
+        case EMOTE_STATE_READYSPELLOMNI_NOSHEATH: return 417;
         default: throw std::out_of_range("value");
         }
     }
@@ -5056,12 +5152,13 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELLFAMILY_UNK91: return { "SPELLFAMILY_UNK91", "SPELLFAMILY_UNK91", "" };
         case SPELLFAMILY_UNK100: return { "SPELLFAMILY_UNK100", "SPELLFAMILY_UNK100", "" };
         case SPELLFAMILY_DEMON_HUNTER: return { "SPELLFAMILY_DEMON_HUNTER", "SPELLFAMILY_DEMON_HUNTER", "" };
+        case SPELLFAMILY_EVOKER: return { "SPELLFAMILY_EVOKER", "SPELLFAMILY_EVOKER", "" };
         default: throw std::out_of_range("value");
         }
     }
 
     template <>
-    TC_API_EXPORT size_t EnumUtils<SpellFamilyNames>::Count() { return 24; }
+    TC_API_EXPORT size_t EnumUtils<SpellFamilyNames>::Count() { return 25; }
 
     template <>
     TC_API_EXPORT SpellFamilyNames EnumUtils<SpellFamilyNames>::FromIndex(size_t index)
@@ -5092,6 +5189,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case 21: return SPELLFAMILY_UNK91;
         case 22: return SPELLFAMILY_UNK100;
         case 23: return SPELLFAMILY_DEMON_HUNTER;
+        case 24: return SPELLFAMILY_EVOKER;
         default: throw std::out_of_range("index");
         }
     }
@@ -5125,6 +5223,7 @@ namespace Trinity::Impl::EnumUtilsImpl
         case SPELLFAMILY_UNK91: return 21;
         case SPELLFAMILY_UNK100: return 22;
         case SPELLFAMILY_DEMON_HUNTER: return 23;
+        case SPELLFAMILY_EVOKER: return 24;
         default: throw std::out_of_range("value");
         }
     }

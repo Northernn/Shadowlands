@@ -1650,9 +1650,9 @@ public:
     ~BattlegroundAV();
 
     /* inherited from BattlegroundClass */
-    void AddPlayer(Player* player) override;
     void StartingEventCloseDoors() override;
     void StartingEventOpenDoors() override;
+    void AddPlayer(Player* player, BattlegroundQueueTypeId queueId) override;
 
     void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
     void HandleAreaTrigger(Player* player, uint32 trigger, bool entered) override;

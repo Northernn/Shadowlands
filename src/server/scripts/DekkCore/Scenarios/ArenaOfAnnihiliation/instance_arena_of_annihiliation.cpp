@@ -20,6 +20,7 @@
 #include "VMapFactory.h"
 #include "arena_of_annihiliation.h"
 #include "ScenarioMgr.h"
+#include "TemporarySummon.h"
 
 class instance_arena_of_annihiliation : public InstanceMapScript
 {
@@ -73,10 +74,10 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                     case NPC_CHAGAN_FIREHOOF:
                     case NPC_CLOUDBENDER_KOBO:
                     case NPC_SATAY_BYU:
-                     //   m_ArenaEncounters.insert(std::pair<uint32, uint64>(creature->GetEntry(), creature->GetGUID()));
+                     //  m_ArenaEncounters.insert(std::pair<uint32, uint64>(creature->GetEntry(), creature->GetGUID()));
                         creature->SetVisible(false);
                         creature->SetReactState(REACT_PASSIVE);
-                        //creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED);
+                        creature->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED);
                         break;
                     case NPC_GURGTHOCK:
                     case NPC_WODIN_TROLL_SERVANT:
@@ -100,15 +101,15 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                         break;
                     case GO_TIGER_TEMPLE_DOOR:
                        // templeDoorGUID = go->GetGUID();
-                      //  go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
+                        go->SetFlag(GO_FLAG_INTERACT_COND);
                         break;
                 }
             }
 
             void SetData(uint32 type, uint32 data) override
             {
-              //  if (type == DATA_CALL) // this data should call new boss
-                  //  ActivateNewBossType(GetEncountersDoneCount(CHAPTERS));
+                if (type == DATA_CALL) // this data should call new boss
+                    ActivateNewBossType((CHAPTERS));
 
                // if (data == DONE)
                 //    SaveToDB();
@@ -120,31 +121,31 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                 {
                     case DATA_SCAR_SHELL - 1: // begun
                     {
-                      //  if (Creature* ScarShell = instance->GetCreature(GetData64(NPC_SCAR_SHELL)))
-                        //    ScarShell->AI()->DoAction(ACTION_INTRO);
+                        if (Creature* ScarShell = instance->GetCreature(GetGuidData(NPC_SCAR_SHELL)))
+                            ScarShell->AI()->DoAction(ACTION_INTRO);
 
-                      //  if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                       //     Gurgthock->AI()->Talk(TALK_SCAR_SHELL_INTRO);
+                        if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                            Gurgthock->AI()->Talk(TALK_SCAR_SHELL_INTRO);
 
                         break;
                     }
                     case DATA_SCAR_SHELL:
                     {
-                       // if (Creature* JolGrum = instance->GetCreature(GetData64(NPC_JOL_GRUM)))
-                         //   JolGrum->AI()->DoAction(ACTION_INTRO);
+                        if (Creature* JolGrum = instance->GetCreature(GetGuidData(NPC_JOL_GRUM)))
+                            JolGrum->AI()->DoAction(ACTION_INTRO);
 
-                       // if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                        //    Gurgthock->AI()->Talk(TALK_JOL_GRUM_INTRO);
+                        if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                            Gurgthock->AI()->Talk(TALK_JOL_GRUM_INTRO);
 
                         break;
                     }
                     case DATA_JOL_GRUM:
                     {
-                       /* if (Creature* Liuyang = instance->GetCreature(GetData64(NPC_LITTLE_LIUYANG)))
+                        if (Creature* Liuyang = instance->GetCreature(GetGuidData(NPC_LITTLE_LIUYANG)))
                             Liuyang->AI()->DoAction(ACTION_INTRO);
 
-                        if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                            Gurgthock->AI()->Talk(TALK_LIUYANG_INTRO);*/
+                        if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                            Gurgthock->AI()->Talk(TALK_LIUYANG_INTRO);
 
                         break;
                     }
@@ -155,11 +156,11 @@ class instance_arena_of_annihiliation : public InstanceMapScript
 
                         hasChaganActivated = true;
 
-                      /*  if (Creature* Chagan = instance->GetCreature(GetData64(NPC_CHAGAN_FIREHOOF)))
+                        if (Creature* Chagan = instance->GetCreature(GetGuidData(NPC_CHAGAN_FIREHOOF)))
                             Chagan->AI()->DoAction(ACTION_INTRO);
 
-                        if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                            Gurgthock->AI()->Talk(TALK_CHAGAN_INTRO);*/
+                        if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                            Gurgthock->AI()->Talk(TALK_CHAGAN_INTRO);
 
                         break;
                     }
@@ -173,15 +174,15 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                         std::vector<uint32> assassinChallengers = { NPC_SATAY_BYU, NPC_CLOUDBENDER_KOBO, NPC_MAKI_WATERBLADE};
                         uint32 assassinChallenger = Trinity::Containers::SelectRandomContainerElement(assassinChallengers);
 
-                        //if (Creature* Gurghock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                        //{
-                        //    Gurghock->AI()->Talk(TALK_ASSASSIN_INTRO);
+                        if (Creature* Gurghock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                        {
+                            Gurghock->AI()->Talk(TALK_ASSASSIN_INTRO);
 
-                        //    if (Creature* assassin = instance->GetCreature(GetData64(assassinChallenger)))
-                        //        assassin->AI()->DoAction(ACTION_INTRO);
+                            if (Creature* assassin = instance->GetCreature(GetGuidData(assassinChallenger)))
+                                assassin->AI()->DoAction(ACTION_INTRO);
                         //    else if (Creature* maki = Gurghock->SummonCreature(assassinChallenger, makiSpawnPos, TEMPSUMMON_MANUAL_DESPAWN)) // in case if maki was select
-                        //        maki->AI()->DoAction(ACTION_INTRO);
-                        //}
+                           //     maki->AI()->DoAction(ACTION_INTRO);
+                        }
 
                         break;
                     }
@@ -249,10 +250,10 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                         case DATA_JOL_GRUM:
                         case DATA_LIUYANG:
                         case DATA_CHAGAN:
-                           // if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                             //   Gurgthock->AI()->Talk(m_GurthockDefeats.find(type)->second);
+                            if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                                Gurgthock->AI()->Talk(m_GurthockDefeats.find(type)->second);
 
-                           // //for (auto&& itr : instance->GetPlayers())
+                            //for (auto&& itr : instance->GetPlayers())
                                // if (Player* player = itr.GetSource())
                                  //   sScenarioMgr->SendScenarioState(player, 1031, type, 0);
 
@@ -262,8 +263,8 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                             //    gong->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
                             break;
                         case DATA_ASSASSIN:
-                         //   if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                             //   Gurgthock->AI()->Talk(m_GurthockDefeats.find(type)->second);
+                            if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                                Gurgthock->AI()->Talk(m_GurthockDefeats.find(type)->second);
 
                             events.ScheduleEvent(2, 2s);
 
@@ -286,18 +287,18 @@ class instance_arena_of_annihiliation : public InstanceMapScript
                     switch (eventId)
                     {
                         case 1:
-                           // if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                            //    Gurgthock->AI()->Talk(TALK_NEW_CHALLENGE);
+                            if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                                Gurgthock->AI()->Talk(TALK_NEW_CHALLENGE);
                             break;
                         case 2:
-                          //  if (Creature* Gurgthock = instance->GetCreature(GetData64(NPC_GURGTHOCK)))
-                              //  Gurgthock->AI()->Talk(TALK_DONE);
+                            if (Creature* Gurgthock = instance->GetCreature(GetGuidData(NPC_GURGTHOCK)))
+                                Gurgthock->AI()->Talk(TALK_DONE);
 
-                           /* if (Creature* Wodin = instance->GetCreature(GetData64(NPC_WODIN_TROLL_SERVANT)))
+                            if (Creature* Wodin = instance->GetCreature(GetGuidData(NPC_WODIN_TROLL_SERVANT)))
                             {
-                                Wodin->HandleEmoteStateCommand(EMOTE_STATE_NONE);
+                                Wodin->HandleEmoteCommand(EMOTE_STATE_NONE);
                                 Wodin->GetMotionMaster()->MoveJump(Wodin->GetPositionX() - 2.0f, Wodin->GetPositionY(), 639.69f, 5.0f, 3.0f, EVENT_JUMP);
-                            }*/
+                            }
                             break;
                     }
                 }

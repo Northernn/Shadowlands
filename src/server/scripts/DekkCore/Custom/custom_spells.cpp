@@ -30,7 +30,7 @@
 #include "CreatureTextMgr.h"
 #include "DBCEnums.h"
 #include <Grids/Notifiers/GridNotifiers.h>
-#include "Challenge.h"
+#include "ChallengeMode.h"
 
 //FluxurionsTestSpell = 263427 // i use this to test spell mechanics
 
@@ -66,24 +66,22 @@ public:
 
     class spell_fluxurion_test_spell_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_fluxurion_test_spell_SpellScript);
-
         void HandleOnCast()
         {
             if (Unit* caster = GetCaster())
             {
-                caster->SendPlaySpellVisual(caster->GetPosition(), caster->GetOrientation(), Cool_SpellVisuals::Decimating_Bolt_Casting, SPELL_MISS_NONE, SPELL_MISS_NONE, 20, false);
+                caster->SendPlaySpellVisual(caster->GetPosition(), Cool_SpellVisuals::Decimating_Bolt_Casting, SPELL_MISS_NONE, SPELL_MISS_NONE, 20);
                 caster->AddDelayedEvent(10, [caster]()        // time_delay
                     {
-                        caster->SendPlaySpellVisual(caster->GetPosition(), caster->GetOrientation(), Cool_SpellVisuals::Convoke_the_Spirits, SPELL_MISS_NONE, SPELL_MISS_NONE, 20, false);
+                        caster->SendPlaySpellVisual(caster->GetPosition(), Cool_SpellVisuals::Convoke_the_Spirits, SPELL_MISS_NONE, SPELL_MISS_NONE, 20);
                     });
                 caster->AddDelayedEvent(500, [caster]()        // time_delay
                     {
-                        caster->SendPlaySpellVisual(caster->GetPosition(), caster->GetOrientation(), Cool_SpellVisuals::FleshcraftChannel, SPELL_MISS_NONE, SPELL_MISS_NONE, 20, false);
+                        caster->SendPlaySpellVisual(caster->GetPosition(), Cool_SpellVisuals::FleshcraftChannel, SPELL_MISS_NONE, SPELL_MISS_NONE, 20);
                     });
                 caster->AddDelayedEvent(1000, [caster]()        // time_delay
                     {
-                        caster->SendPlaySpellVisual(caster->GetPosition(), caster->GetOrientation(), Cool_SpellVisuals::Radiant_Spark, SPELL_MISS_NONE, SPELL_MISS_NONE, 20, false);
+                        caster->SendPlaySpellVisual(caster->GetPosition(), Cool_SpellVisuals::Radiant_Spark, SPELL_MISS_NONE, SPELL_MISS_NONE, 20);
                     });
             }
         }
@@ -98,19 +96,19 @@ public:
             target->CastSpell(target, Death_Grasp_NecroticStyle);
             target->AddDelayedEvent(2000, [target, caster]()        // time_delay
                 {
-                    target->SendPlaySpellVisual(target->GetPosition(), caster->GetOrientation()/2, Cool_SpellVisuals::Deaths_Due, SPELL_MISS_NONE, SPELL_MISS_NONE, 50, false);
+                    target->SendPlaySpellVisual(target->GetPosition(), Cool_SpellVisuals::Deaths_Due, SPELL_MISS_NONE, SPELL_MISS_NONE, 50);
                 });
             target->AddDelayedEvent(4000, [target, caster]()        // time_delay
                 {
-                    target->SendPlaySpellVisual(target->GetPosition(), caster->GetOrientation() / 2, Cool_SpellVisuals::Elysian_Decree, SPELL_MISS_NONE, SPELL_MISS_NONE, 50, false);
+                    target->SendPlaySpellVisual(target->GetPosition(), Cool_SpellVisuals::Elysian_Decree, SPELL_MISS_NONE, SPELL_MISS_NONE, 50);
                 });
             target->AddDelayedEvent(6000, [target, caster]()        // time_delay
                 {
-                    target->SendPlaySpellVisual(target->GetPosition(), caster->GetOrientation() / 2, Cool_SpellVisuals::Faeline_Stomp, SPELL_MISS_NONE, SPELL_MISS_NONE, 50, false);
+                    target->SendPlaySpellVisual(target->GetPosition(), Cool_SpellVisuals::Faeline_Stomp, SPELL_MISS_NONE, SPELL_MISS_NONE, 50);
                 });
             target->AddDelayedEvent(8000, [target, caster]()        // time_delay
                 {
-                    target->SendPlaySpellVisual(target->GetPosition(), caster->GetOrientation() / 2, Cool_SpellVisuals::Decimating_Bolt_Explosion, SPELL_MISS_NONE, SPELL_MISS_NONE, 20, false);
+                    target->SendPlaySpellVisual(target->GetPosition(), Cool_SpellVisuals::Decimating_Bolt_Explosion, SPELL_MISS_NONE, SPELL_MISS_NONE, 20);
                     caster->Kill(caster, target);
                 });
         }
@@ -137,8 +135,6 @@ public:
 
     class spell_q34824_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_q34824_SpellScript);
-
 
         void HandleScriptEffect(SpellEffIndex effIndex)
         {
@@ -176,8 +172,6 @@ public:
 
     class spell_161033_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_161033_SpellScript);
-
 #define __spell 160767
         void Handle(SpellEffIndex effIndex)
         {
@@ -215,8 +209,6 @@ public:
 
     class spell_interract_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_interract_SpellScript);
-
         enum data
         {
             NPC__ = 79446,
@@ -278,8 +270,6 @@ public:
 
     class spell_garr_lumberjack_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_garr_lumberjack_SpellScript);
-
         void HandleEffect(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -349,11 +339,11 @@ public:
         {
             if (type != POINT_MOTION_TYPE)
                 return;
-  
+
             if (id == 1)
             {
                 if (GameObject* tree = me->GetMap()->GetGameObject(treeGUID))
-                    
+
                     //me->SetFacingToObject(tree);
 
                 me->CastSpell(me, SPELL_PEON_AXE, true);
@@ -455,7 +445,7 @@ public:
 
 //! A: 36194 H: 36142
 // Go: 234000
-// Spell: 167970 Summon Lumberjack Faction Picker 
+// Spell: 167970 Summon Lumberjack Faction Picker
 class spell_garr_lumberjack_lvl2 : public SpellScriptLoader
 {
 public:
@@ -463,8 +453,6 @@ public:
 
     class spell_garr_lumberjack_lvl2_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_garr_lumberjack_lvl2_SpellScript);
-
         void HandleEffect(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -546,12 +534,9 @@ public:
             me->CastSpell(me, 170069, true);
 
             //167972
-          //  me->SetAnimKitId(6784);
-            //me->SetDisableGravity(true, false);
-            WorldPackets::Misc::SetPlayHoverAnim packet;
-            packet.UnitGUID = me->GetGUID();
-            packet.PlayHoverAnim = true;
-            player->SendDirectMessage(packet.Write());
+            me->SetAIAnimKitId(6784);
+            me->SetDisableGravity(true, false);
+            me->SetPlayHoverAnim(true);
             me->CastSpell(me, 167972, true);
 
             _events.ScheduleEvent(1, 1s);
@@ -590,11 +575,7 @@ public:
                 me->RemoveAurasDueToSpell(167972);
               //  me->SetAnimKitId(0);
                 me->SetDisableGravity(false);
-                WorldPackets::Misc::SetPlayHoverAnim packet;
-                packet.UnitGUID = me->GetGUID();
-                packet.PlayHoverAnim = false;
-                if (Player* player = ObjectAccessor::GetPlayer(*me, plrGUID))
-                    player->SendDirectMessage(packet.Write());
+                me->SetPlayHoverAnim(false);
                 _events.ScheduleEvent(2, 4s);
                 me->GetMotionMaster()->MoveFall();
                 if (GameObject* tree = me->GetMap()->GetGameObject(treeGUID))
@@ -687,8 +668,6 @@ public:
 
     class spell_q37088_q37062_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_q37088_q37062_SpellScript);
-
         void HandleScriptEffect(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -732,8 +711,6 @@ public:
 
     class spell_challengers_might_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_challengers_might_AuraScript);
-
         uint8 volcanicTimer = 0;
         uint32 felExplosivesTimer = 0;
         uint32 necroticProcDelay = 0;
@@ -799,8 +776,8 @@ public:
                 if (auto player = itr->GetSource())
                 {
                     if (player->IsInCombat() && player->IsValidAttackTarget(caster))
-                        if (caster->GetDistance(player) > 15.0f && caster->GetDistance(player) < 60.0f) // Offlike 10m
-                            caster->CastSpell(player, ChallengerSummonVolcanicPlume, true);
+                        if (!caster->IsWithinMeleeRange(player) && caster->GetDistance(player) < 60.0f) // Offlike 10m
+                            player->CastSpell(player, SPELL_CHALLENGER_SUMMON_VOLCANIC_PLUME, true);
                 }
             }
         }
@@ -827,10 +804,6 @@ public:
 
             if (!GetCaster()->IsInCombat())
                 return;
-
-            if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                if (!instance->HasAffix(Affixes::FelExplosives))
-                    return;
 
             if (felExplosivesTimer <= diff)
                 felExplosivesTimer = urandms(8, 16);
@@ -867,7 +840,7 @@ public:
                     if (player->IsInCombat() && player->IsValidAttackTarget(caster))
                         if (caster->GetDistance(player) < 60.0f)
                         {
-                            caster->CastSpell(caster, SPELL_FEL_EXPLOSIVES_SUMMON_2, true);
+                            caster->CastSpell(caster, SPELL_CHALLENGER_EXPLOSIVES_SUMMON, true);
                             return;
                         }
                 }
@@ -879,7 +852,7 @@ public:
             OnEffectProc += AuraEffectProcFn(spell_challengers_might_AuraScript::OnProc, EFFECT_2, SPELL_AURA_DUMMY);
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_challengers_might_AuraScript::OnTick, EFFECT_7, SPELL_AURA_PERIODIC_DUMMY);
             OnEffectProc += AuraEffectProcFn(spell_challengers_might_AuraScript::OnProc2, EFFECT_8, SPELL_AURA_DUMMY);
-            OnAuraUpdate += AuraUpdateFn(spell_challengers_might_AuraScript::OnUpdate); 
+            OnAuraUpdate += AuraUpdateFn(spell_challengers_might_AuraScript::OnUpdate);
         }
     };
 
@@ -905,12 +878,12 @@ struct npc_volcanic_plume_105877 : public ScriptedAI
         me->SetDisplayId(16925);
         me->DespawnOrUnsummon(3s);
         events.Reset();
-        events.ScheduleEvent(1, 2s); 
+        events.ScheduleEvent(1, 2s);
     }
 
     void UpdateAI(uint32 diff) override
     {
-      //  events.Update(diff);
+        events.Update(diff);
 
         if (me->HasUnitState(UNIT_STATE_CASTING))
             return;
@@ -920,7 +893,7 @@ struct npc_volcanic_plume_105877 : public ScriptedAI
             switch (eventId)
             {
             case 1:
-                me->CastSpell(me, ChallengerVolcanicPlume, false);
+                me->CastSpell(me, SPELL_CHALLENGER_VOLCANIC_PLUME, false);
                 break;
             default:
                 break;
@@ -944,13 +917,13 @@ struct npc_challenger_fel_explosives : ScriptedAI
 
     void IsSummonedBy(WorldObject* summoner) override
     {
-        DoCast(me, SPELL_FEL_EXPLOSIVES_VISUAL, true);
+      //  DoCast(me, SPELL_FEL_EXPLOSIVES_VISUAL, true);
         events.ScheduleEvent(1, 5s);
     }
 
     void OnSpellCasted(SpellInfo const* spellInfo) //override NEED ADD ONSPELLCASTED
     {
-        if (spellInfo->Id == SPELL_FEL_EXPLOSIVES_DMG)
+       // if (spellInfo->Id == SPELL_FEL_EXPLOSIVES_DMG)
             me->DespawnOrUnsummon(1s);
     }
 
@@ -966,7 +939,7 @@ struct npc_challenger_fel_explosives : ScriptedAI
             switch (eventId)
             {
             case 1:
-                DoCast(SPELL_FEL_EXPLOSIVES_DMG);
+              //  DoCast(SPELL_FEL_EXPLOSIVES_DMG);
                 break;
             }
         }
@@ -981,8 +954,6 @@ public:
 
     class spell_challengers_bolster_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_challengers_bolster_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (targets.empty())
@@ -1033,8 +1004,6 @@ public:
 
     class spell_challengers_burst_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_challengers_burst_AuraScript);
-
         void OnTick(AuraEffect const* /*aurEff*/)
         {
             Unit* target = GetTarget();
@@ -1059,91 +1028,6 @@ public:
     {
         return new spell_challengers_burst_AuraScript();
     }
-};
-
-class challange_player_instance_handler : public PlayerScript
-{
-public:
-    challange_player_instance_handler() : PlayerScript("challange_player_instance_handler") {  }
-    
-
-    void OnSuccessfulSpellCast(Player* player, Spell* spell)
-    {
-      //  if (spell->GetSpellInfo()->Id == 227334)
-          //  player->TaxiFlightNearestNode();
-    }
-
-    void OnStartChallengeModeshadowlands(Player* player, uint8 level, uint8 affix1, uint8 affix2, uint8 affix3, uint8 affix4)
-    {
-        isstarted = true;
-        _affix1 = affix1;
-        _affix2 = affix2;
-        _affix3 = affix3;
-        _affix4 = affix4;
-    }
-
-    bool CheckChallengeModeStarted(Player* player)
-    {
-        if (InstanceScript* instance = player->GetInstanceScript())
-            isstarted = instance->IsChallengeModeStarted();
-        else
-            isstarted = false;
-        return isstarted;
-    }
-
-    void OnTakeDamage(Player* player, uint32 /*damage*/, SpellSchoolMask schoolMask)
-    {
-        if (isstarted)
-        {
-            isstarted = CheckChallengeModeStarted(player);
-            if (InstanceScript* instance = player->GetInstanceScript())
-            {
-                if (instance->HasAffix(Affixes::Necrotic) && schoolMask == SPELL_SCHOOL_MASK_NORMAL)//necrotic
-                {
-                    player->AddAura(209858, player);
-                }
-
-                if (instance->HasAffix(Affixes::Grievous))//grievous
-                {
-                    if (player->GetHealthPct() < 90.f && !player->HasAura(240559) && player->IsInCombat())
-                        player->CastSpell(player, 240559, true);
-
-                    if (player->GetHealthPct() > 90.f || player->GetHealthPct() < 60.f)
-                        player->RemoveAurasDueToSpell(240559);
-                }
-            }
-
-        }
-    }
-
-    void OnUpdate(Player* player, uint32 diff)
-    {
-        if (checkTimer <= diff)
-        {
-            if (isstarted)
-            {
-                isstarted = CheckChallengeModeStarted(player);
-
-                if (InstanceScript* instance = player->GetInstanceScript())
-                {
-                    if (instance->HasAffix(Affixes::Quaking) && player->IsInCombat())//quaking
-                    {
-                        player->AddAura(240447, player);
-                    }
-                }
-
-            }
-            checkTimer = 20000;
-        }
-        else checkTimer -= diff;
-
-    }
-    uint32 checkTimer = 10000;
-    bool isstarted = false;
-    uint8 _affix1;
-    uint8 _affix2;
-    uint8 _affix3;
-    uint8 _affix4;
 };
 
 //226489 / sanguine_ichor AT 12765
@@ -1198,8 +1082,6 @@ public:
 
     class spell_challenge_sanguine_ichor_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_challenge_sanguine_ichor_AuraScript);
-
         void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& /*canBeRecalculated*/)
         {
             if (aurEff->GetCaster()->IsPlayer())
@@ -1220,36 +1102,6 @@ public:
     }
 };
 
-// 348162 - Wandering Ancient (Mount)
-class spell_wandering_ancient : public SpellScriptLoader
-{
-public:
-    spell_wandering_ancient() : SpellScriptLoader("spell_wandering_ancient") { }
-
-    class spell_wandering_ancient_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_wandering_ancient_AuraScript);
-
-        void AfterAuraApplied(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            uint32 WanderingAncient_DisplayIDs[4] = {100463, 100464, 100465, 100466};
-            Trinity::Containers::RandomShuffle(WanderingAncient_DisplayIDs);
-
-            GetTarget()->Mount(WanderingAncient_DisplayIDs[0]);
-        }
-
-        void Register() override
-        {
-            AfterEffectApply += AuraEffectApplyFn(spell_wandering_ancient_AuraScript::AfterAuraApplied, EFFECT_0, SPELL_AURA_MOUNTED, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_wandering_ancient_AuraScript();
-    }
-};
-
 // 280713 Champion of Azeroth
 class spell_champion_of_azeroth : public SpellScriptLoader
 {
@@ -1258,8 +1110,6 @@ public:
 
     class spell_champion_of_azeroth_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_champion_of_azeroth_AuraScript);
-
         bool Validate(SpellInfo const* /*spell*/) override
         {
             return ValidateSpellInfo({ 280710 });
@@ -1269,7 +1119,7 @@ public:
         {
             if (Unit* caster = GetCaster())
             {
-                if (AuraEffect* aurEf = caster->GetAuraEffect(280710, EFFECT_0)) // Champion of Azeroth 
+                if (AuraEffect* aurEf = caster->GetAuraEffect(280710, EFFECT_0)) // Champion of Azeroth
                 {
                     amount = aurEf->GetAmount();
                 }
@@ -1299,8 +1149,6 @@ public:
 
     class spell_vampiric_speed_speed_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_vampiric_speed_speed_AuraScript);
-
         bool Validate(SpellInfo const* /*spell*/) override
         {
             return ValidateSpellInfo({ 268599 });
@@ -1337,8 +1185,6 @@ public:
 
     class spell_vampiric_speed_heal_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vampiric_speed_heal_SpellScript);
-
         bool Validate(SpellInfo const* /*spell*/) override
         {
             return ValidateSpellInfo({ 268599 });
@@ -1370,8 +1216,6 @@ public:
 // 278826 Crushing Assault (Level 120)
 class spell_crushing_assault : public AuraScript
 {
-    PrepareAuraScript(spell_crushing_assault);
-
     void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
         if (Unit* caster = GetCaster())
@@ -1404,8 +1248,6 @@ class spell_crushing_assault : public AuraScript
 // Arcane Pulse (Nightborne racial) - 260364
 class spell_arcane_pulse : public SpellScript
 {
-    PrepareSpellScript(spell_arcane_pulse);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         float damage = GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK) * 2.f;
@@ -1432,8 +1274,6 @@ enum SpatialRiftSpells
 // Spatial Rift teleport (Void Elf racial) - 257040
 class spell_spatial_rift_despawn : public SpellScript
 {
-    PrepareSpellScript(spell_spatial_rift_despawn);
-
     void OnDespawnAreaTrigger(SpellEffIndex /*effIndex*/)
     {
         if (AreaTrigger* at = GetCaster()->GetAreaTrigger(SPELL_SPATIAL_RIFT_AT))
@@ -1452,8 +1292,6 @@ class spell_spatial_rift_despawn : public SpellScript
 // Light's Judgement - 256893  (Lightforged Draenei Racial)
 class spell_light_judgement : public SpellScript
 {
-    PrepareSpellScript(spell_light_judgement);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -1470,8 +1308,6 @@ class spell_light_judgement : public SpellScript
 // 9.0.5
 class spell_back_camp : public SpellScript
 {
-    PrepareSpellScript(spell_back_camp);
-
     SpellCastResult CheckRequirement()
     {
         if (Unit* caster = GetCaster())
@@ -1522,8 +1358,6 @@ class spell_back_camp : public SpellScript
 //312370
 class spell_make_camp : public SpellScript
 {
-    PrepareSpellScript(spell_make_camp);
-
     void Oncast()
     {
         Unit* caster = GetCaster();
@@ -1562,8 +1396,6 @@ class spell_make_camp : public SpellScript
 //274738
 class spell_maghar_orc_racial_ancestors_call : public SpellScript
 {
-    PrepareSpellScript(spell_maghar_orc_racial_ancestors_call);
-
     void Oncast()
     {
         Unit* caster = GetCaster();
@@ -1611,8 +1443,6 @@ public:
 
     class spell_item_goren_gas_extractor_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_item_goren_gas_extractor_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (Player* player = GetCaster()->ToPlayer())
@@ -1643,80 +1473,96 @@ public:
 
     bool OnRemove(Player* player, Item* /*item*/) override
     {
-        if (player->GetLevel() < 50)
+        if (player->GetLevel() < 60)
         {
-            player->SetLevel(50);
+            player->SetLevel(60);
             player->SetFullHealth();
             player->SetFullPower(player->GetPowerType());
-            player->AddItem(182716, 4);
-            player->AddItem(169451, 20);
-            player->AddItem(141446, 10);
+            player->AddItem(182716, 4); //BAGS 30 slots
+            player->AddItem(191380, 10); //healing potion
+            player->LearnSpell(34092, true);// riding skill
+            player->AddItem(194034, 1); //dragon riding mount
             player->ModifyMoney(5000000, false);
             switch (player->GetClass())
             {
-            case CLASS_WARRIOR:
-                player->AddItem(164438, 1);
-                player->AddItem(164440, 1);
-                player->AddItem(164435, 1);
-                player->AddItem(164437, 1);
-                player->AddItem(164439, 1);
-                player->AddItem(164441, 1);
-                player->AddItem(164442, 1);
-                player->AddItem(164436, 1);
-                player->AddItem(164334, 2);
-                player->AddItem(164282, 1);
-                player->AddItem(164303, 1);
+            case CLASS_WARRIOR: //plate set ilvl 250
+                player->AddItem(204948, 1); //Helm 
+                player->AddItem(204950, 1); //Shoulder
+                player->AddItem(204945, 1); //Chest
+                player->AddItem(204951, 1); //Waist
+                player->AddItem(204949, 1); //Legs
+                player->AddItem(204946, 1); //Feet
+                player->AddItem(204952, 1); //Wrist
+                player->AddItem(204947, 1); //Hands
+                player->AddItem(193779, 2); //2 hand weapon
+                player->AddItem(193778, 1); //Shield
+                player->AddItem(193785, 1); //ONE hand weapon
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_PALADIN:
-                player->AddItem(164438, 1);
-                player->AddItem(164440, 1);
-                player->AddItem(164435, 1);
-                player->AddItem(164437, 1);
-                player->AddItem(164439, 1);
-                player->AddItem(164441, 1);
-                player->AddItem(164442, 1);
-                player->AddItem(164436, 1);
-                player->AddItem(164334, 1);
-                player->AddItem(164355, 1);
-                player->AddItem(164282, 1);
-                player->AddItem(164303, 1);
+                player->AddItem(204948, 1); //head
+                player->AddItem(204950, 1); //shoulder
+                player->AddItem(204945, 1); //chest
+                player->AddItem(204934, 1); //waist
+                player->AddItem(204949, 1); //legs
+                player->AddItem(204946, 1); //feet
+                player->AddItem(204952, 1); //wrist
+                player->AddItem(204947, 1); //hands
+                player->AddItem(193779, 1); //2 hand weapon
+                player->AddItem(193778, 1); //shield
+                player->AddItem(204956, 1); // one hand weapon
+                player->AddItem(204805, 1); //trinket
+                break;
+            case CLASS_EVOKER:
+                player->AddItem(204940, 1); //head
+                player->AddItem(204942, 1); //Shoulder
+                player->AddItem(204936, 1); //chest
+                player->AddItem(204805, 1); //trinket
+                player->AddItem(204943, 1); //waist
+                player->AddItem(204941, 1); //legs
+                player->AddItem(204937, 1); //feet
+                player->AddItem(193727, 1); //wrist
+                player->AddItem(204938, 1); //hands
+                player->AddItem(193803, 1); //staff
                 break;
             case CLASS_DEATH_KNIGHT:
-                player->AddItem(164438, 1);
-                player->AddItem(164440, 1);
-                player->AddItem(164435, 1);
-                player->AddItem(164437, 1);
-                player->AddItem(164439, 1);
-                player->AddItem(164441, 1);
-                player->AddItem(164442, 1);
-                player->AddItem(164436, 1);
-                player->AddItem(164334, 1);
-                player->AddItem(164334, 1);
+                player->AddItem(204948, 1); //head
+                player->AddItem(204950, 1); //shoulder
+                player->AddItem(204945, 1); //chest
+                player->AddItem(204951, 1); //waist
+                player->AddItem(204949, 1); //legs
+                player->AddItem(204946, 1); //feet
+                player->AddItem(204952, 1); //wrist
+                player->AddItem(204947, 1); //2 hands
+                player->AddItem(204956, 1); //one hand 
+                player->AddItem(204805, 1); //trinket
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_HUNTER:
-                player->AddItem(164399, 1);
-                player->AddItem(164401, 1);
-                player->AddItem(164402, 1);
-                player->AddItem(164395, 1);
-                player->AddItem(164400, 1);
-                player->AddItem(164398, 1);
-                player->AddItem(164396, 1);
-                player->AddItem(164397, 1);
-                player->AddItem(164333, 1);
-                player->AddItem(164270, 1);
+                player->AddItem(204940, 1); //head
+                player->AddItem(204942, 1); //Shoulder
+                player->AddItem(204936, 1); //chest
+                player->AddItem(204943, 1); //waist
+                player->AddItem(204941, 1); //legs
+                player->AddItem(204937, 1); //feet
+                player->AddItem(193727, 1); //wrist
+                player->AddItem(200139, 1); //Bow
+                player->AddItem(204938, 1); //hands
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_SHAMAN:
-                player->AddItem(164399, 1);
-                player->AddItem(164401, 1);
-                player->AddItem(164402, 1);
-                player->AddItem(164395, 1);
-                player->AddItem(164400, 1);
-                player->AddItem(164398, 1);
-                player->AddItem(164396, 1);
-                player->AddItem(164397, 1);
+                player->AddItem(204940, 1); //head
+                player->AddItem(204942, 1); //Shoulder
+                player->AddItem(204936, 1); //chest
+                player->AddItem(204943, 1); //waist
+                player->AddItem(204941, 1); //legs
+                player->AddItem(204937, 1); //feet
+                player->AddItem(193727, 1); //wrist
+                player->AddItem(204938, 1); //hands
                 player->AddItem(164282, 1);
                 player->AddItem(164320, 2);
-                player->AddItem(164346, 1);
+                player->AddItem(193803, 1); //staff
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_MAGE:
                 player->AddItem(166828, 1);
@@ -1727,7 +1573,8 @@ public:
                 player->AddItem(164822, 1);
                 player->AddItem(166826, 1);
                 player->AddItem(166823, 1);
-                player->AddItem(164369, 1);
+                player->AddItem(193803, 1); //staff
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_WARLOCK:
                 player->AddItem(166828, 1);
@@ -1738,7 +1585,8 @@ public:
                 player->AddItem(164822, 1);
                 player->AddItem(166826, 1);
                 player->AddItem(166823, 1);
-                player->AddItem(164369, 1);
+                player->AddItem(193803, 1); //staff
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_PRIEST:
                 player->AddItem(166828, 1);
@@ -1749,54 +1597,59 @@ public:
                 player->AddItem(164822, 1);
                 player->AddItem(166826, 1);
                 player->AddItem(166823, 1);
-                player->AddItem(164369, 1);
+                player->AddItem(193803, 1); //staff
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_ROGUE:
                 player->AddItem(164559, 1);
                 player->AddItem(164561, 1);
                 player->AddItem(164560, 1);
-                player->AddItem(164562, 1);
+                player->AddItem(204934, 1); //waist
                 player->AddItem(164557, 1);
                 player->AddItem(164556, 1);
                 player->AddItem(164555, 1);
                 player->AddItem(164558, 1);
                 player->AddItem(164320, 2);
                 player->AddItem(164291, 2);
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_DEMON_HUNTER:
                 player->AddItem(164559, 1);
                 player->AddItem(164561, 1);
                 player->AddItem(164560, 1);
-                player->AddItem(164562, 1);
+                player->AddItem(204934, 1); //waist
                 player->AddItem(164557, 1);
                 player->AddItem(164556, 1);
                 player->AddItem(164555, 1);
                 player->AddItem(164558, 1);
                 player->AddItem(164320, 2);
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_MONK:
                 player->AddItem(164559, 1);
                 player->AddItem(164561, 1);
                 player->AddItem(164560, 1);
-                player->AddItem(164562, 1);
+                player->AddItem(204934, 1); //waist
                 player->AddItem(164557, 1);
                 player->AddItem(164556, 1);
                 player->AddItem(164555, 1);
                 player->AddItem(164558, 1);
                 player->AddItem(164359, 1);
-                player->AddItem(164274, 1);
+                player->AddItem(193803, 1); //staff
+                player->AddItem(204805, 1); //trinket
                 break;
             case CLASS_DRUID:
                 player->AddItem(164559, 1);
                 player->AddItem(164561, 1);
                 player->AddItem(164560, 1);
-                player->AddItem(164562, 1);
+                player->AddItem(204934, 1); //waist
                 player->AddItem(164557, 1);
                 player->AddItem(164556, 1);
                 player->AddItem(164555, 1);
                 player->AddItem(164558, 1);
                 player->AddItem(164359, 1);
-                player->AddItem(164274, 1);
+                player->AddItem(193803, 1); //staff
+                player->AddItem(204805, 1); //trinket
                 break;
             }
             player->SaveToDB();
@@ -1806,47 +1659,131 @@ public:
     }
 };
 
-// 220124 - Ratstallion Harness
-class spell_gen_ratstallion_harness : public SpellScriptLoader
+//// 220124 - Ratstallion Harness
+//class spell_gen_ratstallion_harness : public SpellScriptLoader
+//{
+//public:
+//    spell_gen_ratstallion_harness() : SpellScriptLoader("spell_gen_ratstallion_harness") { }
+//
+//    class spell_gen_ratstallion_harness_AuraScript : public AuraScript
+//    {
+//        PrepareAuraScript(spell_gen_ratstallion_harness_AuraScript);
+//
+//        uint32 update = 0;
+//
+//        void OnUpdate(const uint32 diff)
+//        {
+//            update += diff;
+//
+//            if (update >= 250)
+//            {
+//                if (!GetCaster())
+//                    return;
+//
+//                if (Unit* vehicle = GetCaster()->GetVehicleBase())
+//                {
+//                    if (vehicle->IsInCombat())
+//                        GetAura()->Remove();
+//                    else if (GetCaster()->IsInCombat())
+//                        GetAura()->Remove();
+//                }
+//                update = 0;
+//            }
+//        }
+//
+//        void Register() override
+//        {
+//             OnAuraUpdate += AuraUpdateFn(spell_gen_ratstallion_harness_AuraScript::OnUpdate, SPELL_AURA_CONTROL_VEHICLE);
+//        }
+//    };
+//
+//    AuraScript* GetAuraScript() const override
+//    {
+//        return new spell_gen_ratstallion_harness_AuraScript();
+//    }
+//};
+
+enum racialspell
+ {
+    SPELL_DRAENEI_LIGHT_JUDGEMENT = 255647,
+ };
+
+//255647
+class spell_Draenei_light_judgment : public SpellScriptLoader
 {
 public:
-    spell_gen_ratstallion_harness() : SpellScriptLoader("spell_gen_ratstallion_harness") { }
+    spell_Draenei_light_judgment() : SpellScriptLoader("spell_Draenei_light_judgment") { }
 
-    class spell_gen_ratstallion_harness_AuraScript : public AuraScript
+    class spell_Draenei_light_judgment_SpellScript : public SpellScript
     {
-        PrepareAuraScript(spell_gen_ratstallion_harness_AuraScript);
-
-        uint32 update = 0;
-
-        void OnUpdate(uint32 diff, AuraEffect* aurEff)
+        void HandleOnHit()
         {
-            update += diff;
-
-            if (update >= 250)
+            if (Player* player = GetCaster()->ToPlayer())
             {
-                if (!GetCaster())
-                    return;
-
-                if (Unit* vehicle = GetCaster()->GetVehicleBase())
-                {
-                    if (vehicle->IsInCombat())
-                        GetAura()->Remove();
-                    else if (GetCaster()->IsInCombat())
-                        GetAura()->Remove();
-                }
-                update = 0;
+                int32 damage = player->GetTotalAttackPowerValue(BASE_ATTACK) * 3 * 1 * (1);
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_DRAENEI_LIGHT_JUDGEMENT, &damage);
             }
         }
 
-        void Register() override
+        void Register()
         {
-           // OnEffectUpdate += AuraEffectUpdateFn(spell_gen_ratstallion_harness_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_CONTROL_VEHICLE); rewrite later
+            OnHit += SpellHitFn(spell_Draenei_light_judgment_SpellScript::HandleOnHit);
         }
     };
 
-    AuraScript* GetAuraScript() const override
+    SpellScript* GetSpellScript() const
     {
-        return new spell_gen_ratstallion_harness_AuraScript();
+        return new spell_Draenei_light_judgment_SpellScript();
+    }
+};
+
+//159224 zuldazarhearthstone
+class item_sack_hearthstone : public ItemScript
+{
+public:
+    item_sack_hearthstone() : ItemScript("item_sack_hearthstone") { }
+
+    bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/, ObjectGuid /*castId*/) override
+    {
+        
+        player->TeleportTo(2444, 238.304520f, -1028.009644f, 1437.286987f, 5.670575f);
+            
+        return true;
+    }
+};
+
+// 313352
+class spell_activating_313352 : public SpellScript
+{
+    PrepareSpellScript(spell_activating_313352);
+
+    void HandleBeforeCast()
+    {
+        if (auto caster = GetCaster())
+            caster->SetEmoteState(Emote::EMOTE_STATE_SPELL_CHANNEL_OMNI);
+    }
+
+    void HandleAfterCast()
+    {
+        if (auto caster = GetCaster())
+            caster->SetEmoteState(Emote::EMOTE_ONESHOT_NONE);
+    }
+
+    void DoEffect(SpellEffIndex /*eff*/)
+    {
+        if (auto caster = GetCaster())
+        {
+            caster->CastSpell(caster, 313445, true); // nyalotha incursion
+          //  if (auto player = caster->ToPlayer())
+              //  player->KilledMonsterCredit(setquestidlater);
+        }
+    }
+
+    void Register() override
+    {
+        BeforeCast += SpellCastFn(spell_activating_313352::HandleBeforeCast);
+        AfterCast += SpellCastFn(spell_activating_313352::HandleAfterCast);
+        OnEffectHitTarget += SpellEffectFn(spell_activating_313352::DoEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
     }
 };
 
@@ -1866,9 +1803,7 @@ void AddSC_Custom_Spells()
     RegisterCreatureAI(npc_challenger_fel_explosives);
     new spell_challengers_bolster();
     new spell_challengers_burst();
-    new challange_player_instance_handler();
     RegisterAreaTriggerAI(at_challenge_sanguine_ichor);
-    new spell_wandering_ancient();
     new spell_champion_of_azeroth();
     new spell_vampiric_speed_speed();
     new spell_vampiric_speed_heal();
@@ -1881,5 +1816,8 @@ void AddSC_Custom_Spells()
     RegisterSpellScript(spell_maghar_orc_racial_ancestors_call);
     new spell_item_goren_gas_extractor();
     RegisterItemScript(item_level_boost_50);
-    new spell_gen_ratstallion_harness();
+   // new spell_gen_ratstallion_harness();
+    RegisterSpellScript(spell_Draenei_light_judgment);
+    new item_sack_hearthstone();
+    RegisterSpellScript(spell_activating_313352);
 }

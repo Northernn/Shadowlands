@@ -301,9 +301,9 @@ public:
                 if (!l_SpellInfo)
                     return;
 
-                uint32 l_Periodic;// = l_SpellInfo->GetEffect(0)->Amplitude;
+               // uint32 l_Periodic; = l_SpellInfo->GetEffect(0)->Amplitude;
 
-                m_Diff = l_Periodic;
+              //  m_Diff = l_Periodic;
             }
 
             me->RemoveAllAuras();
@@ -325,72 +325,6 @@ public:
             }
             else
                 m_Diff -= diff;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new shadowmoon_burial_grounds_creaturesAI(creature);
-    }
-};
-
-/// Ritual Of Bones Darkness Trigger - 534556
-class shadowmoon_burial_grounds_ritual_of_bones_darkness_trigger : public CreatureScript
-{
-public:
-    shadowmoon_burial_grounds_ritual_of_bones_darkness_trigger() : CreatureScript("shadowmoon_burial_grounds_ritual_of_bones_darkness_trigger") {}
-
-    struct shadowmoon_burial_grounds_creaturesAI : public ScriptedAI
-    {
-        shadowmoon_burial_grounds_creaturesAI(Creature* creature) : ScriptedAI(creature)
-        {
-            m_Instance = creature->GetInstanceScript();
-        }
-
-        InstanceScript* m_Instance;
-
-        void Reset() override
-        {
-            //// Orientation check
-            //if (TempSummon* l_Tempo = me->ToTempSummon())
-            //{
-            //    if (Unit* summoner = l_Tempo->ToTempSummon())
-            //    {
-            //        me->SetFacingTo(summoner->GetOrientation());
-            //    }
-            //}
-
-            me->SetDisplayId(11686);
-            me->SetFaction(35);
-            me->SetReactState(ReactStates::REACT_PASSIVE);
-            me->SetUnitFlag(UNIT_FLAG_REMOVE_CLIENT_CONTROL);
-
-            me->CastSpell(me, eNerzulSpells::SpellRitualOfBonesThirdVisual);
-            me->CastSpell(me, eNerzulSpells::SpellRitualOfBonesWeirdVisualPoop);
-        }
-
-        void UpdateAI(uint32 const diff) override
-        {
-            events.Update(diff);
-
-            std::list<Player*> l_ListPlayer;
-            me->GetPlayerListInGrid(l_ListPlayer, 100.0f);
-
-            if (l_ListPlayer.empty())
-                return;
-
-            for (auto itr : l_ListPlayer)
-            {
-                if (itr->isInBack(me))
-                {
-                    itr->AddAura(eNerzulSpells::SpellRitualOfBonesDot, itr);
-
-                    if (Aura* l_Aura = itr->GetAura(eNerzulSpells::SpellRitualOfBonesDot))
-                    {
-                        l_Aura->SetDuration(1);
-                    }
-                }
-            }
         }
     };
 
@@ -568,5 +502,4 @@ void AddSC_nerzul()
     new shadowmoon_burial_grounds_initial_teleport();
     new shadowmoon_burial_grounds_omen_of_death();
     new shadowmoon_burial_grounds_ritual_of_bones();
-    new shadowmoon_burial_grounds_ritual_of_bones_darkness_trigger();
 }

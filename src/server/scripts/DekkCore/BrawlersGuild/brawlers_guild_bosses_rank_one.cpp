@@ -28,6 +28,7 @@
 #include "SpellScript.h"
 #include "TemporarySummon.h"
 #include "Vehicle.h"
+#include "Flux.h"
 
 enum eSpells
 {
@@ -47,9 +48,9 @@ enum eSpells
     SPELL_THROW_LUCKY_FLEIT = 140988, // on 7%
 
     // oso
-    SPELL_SHOTGUN_ROAR = 234492, // 11 ?
+    SPELL_SHOTGUN_ROAR = 234489, // 11 ?
     SPELL_CLAWSTROPHOBIC = 234313, // 21 ?
-    SPELL_JUMP_GRIZZLY = 234305, // 21 ? (3 times)
+    SPELL_JUMP_GRIZZLY = 234365, // 21 ? (3 times)
 
     // gnomes
     SPELL_PREPARED_TO_SPELL = 229758, // ?????
@@ -58,7 +59,7 @@ enum eSpells
     SPELL_LAVA_BURST = 229393, // 4
     SPELL_MOLTEN_SLAG = 229394, // 10
 
-    SPELL_LIGHTING_CRASH = 229471, // 7    
+    SPELL_LIGHTING_CRASH = 229471, // 7
 };
 
 // 117133
@@ -76,6 +77,12 @@ public:
             events.Reset();
             me->ApplySpellImmune(0, IMMUNITY_ID, 236110, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INSTAKILL, true);
+            me->AddDelayedEvent(500, [this]() -> void
+                {
+                    Player* OwnerPlayer = ObjectAccessor::FindPlayer(me->GetPrivateObjectOwner());
+                    if (OwnerPlayer)
+                        AttackStart(OwnerPlayer);
+                });
         }
 
         void JustEngagedWith(Unit* /*who*/) override
@@ -158,6 +165,12 @@ public:
             healthPct = 50;
             summons.DespawnAll();
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_GRUMMKEPACK, true);
+            me->AddDelayedEvent(500, [this]() -> void
+                {
+                    Player* OwnerPlayer = ObjectAccessor::FindPlayer(me->GetPrivateObjectOwner());
+                    if (OwnerPlayer)
+                        AttackStart(OwnerPlayer);
+                });
         }
 
         void JustEngagedWith(Unit* /*who*/) override
@@ -222,11 +235,25 @@ public:
                 {
                 case 1:
                 {
-                    Position pos;
-                  //  if (me->HasAura(SPELL_BAD_LUCKYDO))
-                      //  me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_THROW_TOY_BAD);
-                   // else
-                     //   me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), (urand(1, 2) == 1 ? SPELL_THROW_TOY_1 : SPELL_THROW_TOY_2));
+                    float x;
+                    float y;
+                    me->GetNearPoint2D(nullptr, x, y, 20.0f, frand(float(-M_PI) / 3.f, float(M_PI) / 3.f));
+                    Position pos = me->GetPosition();
+                    pos.m_positionX = x;
+                    pos.m_positionY = y;
+
+                    SpellCastTargets targets;
+                    targets.SetDst(pos);
+                    CastSpellTargetArg targetarg;
+                    targetarg.Targets = targets;
+                    if (me->HasAura(SPELL_BAD_LUCKYDO))
+                    {
+                        me->CastSpell(targetarg, SPELL_THROW_TOY_BAD);
+                    }
+                    else
+                    {
+                        me->CastSpell(targetarg, (urand(1, 2) == 1 ? SPELL_THROW_TOY_1 : SPELL_THROW_TOY_2));
+                    }
                     events.RescheduleEvent(1, 4s);
                     break;
                 }
@@ -248,6 +275,11 @@ public:
                             for (std::list<Creature*>::iterator itr = adds.begin(); itr != adds.end(); ++itr)
                             {
                                 (*itr)->CastSpell(owner, 141053);
+                                if ((*itr)->GetExactDist2d(owner) <= 5.f)
+                                {
+                                    (*itr)->CastSpell(owner, 140954, true);
+                                    (*itr)->DespawnOrUnsummon();
+                                }
                             }
                     }
                     break;
@@ -286,16 +318,37 @@ public:
             if (Creature* morozec = me->SummonCreature(117759, me->GetPositionX() + 3.0f, me->GetPositionY() + 3.0f, me->GetPositionZ(), me->GetOrientation()))
             {
                 me->SetReactState(REACT_PASSIVE);
+                morozec->SetReactState(REACT_PASSIVE);
+                morozec->AI()->Talk(0);
+                me->SetFacingToObject(morozec);
+                me->StopMoving();
                 morozec->AddDelayedEvent(6000, [morozec, this]() -> void
                     {
+                        me->SetFacingToObject(morozec);
                         me->CastSpell(morozec, 93330);
                         morozec->CastSpell(morozec, 234213);
-                        morozec->DespawnOrUnsummon(1s);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        if (me->GetOwner())
-                            AttackStart(me->GetOwner());
-                        if (Creature* moroz = me->FindNearestCreature(117860, 30.0f, true))
+                        morozec->DespawnOrUnsummon(250ms);
+                    });
+
+                me->AddDelayedEvent(7500, [this]() -> void
+                    {
+                        TempSummon* moroz = me->SummonCreature(117860, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN);
+                        if (moroz)
+                        {
+                            moroz->SetOwnerGUID(me->GetGUID());
+                            moroz->GetMotionMaster()->MoveFollow(me, 0.f, 0.f);
+                            moroz->SetReactState(REACT_PASSIVE);
+                            moroz->SetDisplayId(11686); // invisible
                             moroz->AI()->Talk(0);
+
+                            me->ApplySpellImmune(SPELL_SHOTGUN_ROAR, IMMUNITY_ID, SPELL_SHOTGUN_ROAR, true);
+                            moroz->ApplySpellImmune(SPELL_SHOTGUN_ROAR, IMMUNITY_ID, SPELL_SHOTGUN_ROAR, true);
+                        }
+
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        Player* OwnerPlayer = ObjectAccessor::FindPlayer(me->GetPrivateObjectOwner());
+                        if (OwnerPlayer)
+                            AttackStart(OwnerPlayer);
                     });
             }
         }
@@ -305,6 +358,29 @@ public:
             events.RescheduleEvent(1, 12s);
             events.RescheduleEvent(2, randtime(20s, 21s));
             events.RescheduleEvent(3, randtime(21s, 22s));
+        }
+
+        void DoGrizzlyJump()
+        {
+            Position dest = me->GetPosition();
+            if (Player* OwnerPlayer = ObjectAccessor::FindPlayer(me->GetPrivateObjectOwner()))
+                dest = OwnerPlayer->GetPosition();
+
+            TempSummon* GrizzlyTarget = me->SummonCreature(117938, dest, TEMPSUMMON_CORPSE_DESPAWN);
+            if (GrizzlyTarget)
+            {
+                GrizzlyTarget->CastSpell(GrizzlyTarget, 234361, true);
+
+                me->CastSpell(GrizzlyTarget, SPELL_JUMP_GRIZZLY);
+
+                me->AddDelayedEvent(2000, [this, GrizzlyTarget]() -> void
+                    {
+                        if (GrizzlyTarget)
+                        {
+                            GrizzlyTarget->DespawnOrUnsummon(1s);
+                        }
+                    });
+            }
         }
 
         void UpdateAI(uint32 diff) override
@@ -322,34 +398,32 @@ public:
                 switch (eventId)
                 {
                 case 1:
-                    DoCast(SPELL_SHOTGUN_ROAR);
+                    me->CastSpell(me->GetVictim(), SPELL_SHOTGUN_ROAR);
                     if (urand(1, 4) != 1)
                         if (Creature* moroz = me->FindNearestCreature(117860, 30.0f, true))
                             moroz->AI()->Talk(1);
                     events.RescheduleEvent(1, 12s);
                     break;
                 case 2:
-                    DoCast(SPELL_CLAWSTROPHOBIC);
+                    me->CastSpell(me->GetVictim(), SPELL_CLAWSTROPHOBIC);
                     events.RescheduleEvent(2, randtime(20s, 22s));
                     break;
                 case 3:
-                {
-                    Position pos;
-                  //  me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_JUMP_GRIZZLY);
-                    me->AddDelayedEvent(2200, [this]() -> void
+
+                    DoGrizzlyJump();
+                    me->AddDelayedEvent(4000, [this]() -> void
                         {
-                            Position pos;
-                           // me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_JUMP_GRIZZLY);
-                            me->AddDelayedEvent(2200, [this]() -> void
-                                {
-                                    Position pos;
-                              //      me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_JUMP_GRIZZLY);
-                                });
+                            DoGrizzlyJump();
                         });
-                    events.RescheduleEvent(1, randtime(6s, 12s));
+
+                    me->AddDelayedEvent(8000, [this]() -> void
+                        {
+                            DoGrizzlyJump();
+                        });
+
+                    events.RescheduleEvent(1, randtime(12s, 14s));
                     events.RescheduleEvent(3, randtime(21s, 22s));
                     break;
-                }
                 }
             }
             DoMeleeAttackIfReady();

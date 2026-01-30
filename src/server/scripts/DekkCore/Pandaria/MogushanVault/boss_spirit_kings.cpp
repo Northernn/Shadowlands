@@ -1440,8 +1440,6 @@ class spell_massive_attacks : public SpellScriptLoader
 
         class spell_massive_attacks_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_massive_attacks_SpellScript);
-
             uint8 targetsCount;
 
             bool Load() override
@@ -1481,8 +1479,6 @@ class spell_volley : public SpellScriptLoader
 
         class spell_volley_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_volley_SpellScript);
-
             void HandleDummyLaunch(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
@@ -1536,8 +1532,6 @@ class spell_pinned_down : public SpellScriptLoader
 
         class spell_pinned_down_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_pinned_down_SpellScript);
-
             void HandleAfterHit()
             {
                 if (Unit* target = GetHitUnit())
@@ -1565,8 +1559,6 @@ class spell_maddening_shout : public SpellScriptLoader
 
         class spell_maddening_shout_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_maddening_shout_AuraScript);
-
             void OnAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 if (Unit* attacker = dmgInfo.GetAttacker())
@@ -1604,8 +1596,6 @@ class spell_crazed_cowardice : public SpellScriptLoader
 
         class spell_crazed_cowardice_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_crazed_cowardice_AuraScript);
-
             void HandlePeriodic(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();
@@ -1649,8 +1639,6 @@ class spell_crazed_cowardice : public SpellScriptLoader
 
         class spell_crazed_cowardice_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_crazed_cowardice_SpellScript);
-
             float runSpeed;
             float walkSpeed;
 
@@ -1710,8 +1698,6 @@ class spell_crazy_thought : public SpellScriptLoader
 
         class spell_crazy_thought_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_crazy_thought_SpellScript);
-
             void HandleEffect(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1757,8 +1743,6 @@ class spell_coalescing_shadow : public SpellScriptLoader
 
         class spell_coalescing_shadow_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_coalescing_shadow_SpellScript);
-
             void CorrectRange(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -1793,8 +1777,6 @@ class spell_sleight_of_hand : public SpellScriptLoader
 
         class spell_sleight_of_hand_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_sleight_of_hand_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1828,8 +1810,6 @@ class spell_shield_of_darkness : public SpellScriptLoader
 
         class spell_shield_of_darkness_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_shield_of_darkness_SpellScript);
-
             void SetStack()
             {
                 if (Unit* caster = GetCaster())

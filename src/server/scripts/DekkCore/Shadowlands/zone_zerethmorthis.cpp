@@ -65,11 +65,6 @@ public:
 
         void TestOp(Player* player)
         {
-            WorldPackets::Garrison::GarrisonOpenTalentNpc send;
-            send.NpcGUID = player->GetGUID();
-            send.GarrTalentTreeID = 474;
-            send.FriendshipFactionID = 0;
-            player->GetSession()->SendPacket(send.Write());
         }
 
         bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override

@@ -23,6 +23,7 @@
 #include "CUFProfile.h"
 #include "ItemPacketsCommon.h"
 #include "MythicPlusPacketsCommon.h" // < DekkCore
+#include "InstancePackets.h"
 #include "ObjectGuid.h"
 #include "InspectPackets.h"
 #include "Optional.h"
@@ -33,12 +34,16 @@
 #include <array>
 #include <map>
 
-enum MountStatusFlags : uint8;
 enum UnitStandStateType : uint8;
 enum WeatherState : uint32;
 
 namespace WorldPackets
 {
+    namespace Instance
+    {
+        struct InstancePlayerData;
+    }
+
     namespace Misc
     {
         class BindPointUpdate final : public ServerPacket
@@ -63,17 +68,6 @@ namespace WorldPackets
 
             ObjectGuid BinderID;
             uint32 AreaID = 0;
-        };
-
-        class BinderConfirm final : public ServerPacket
-        {
-        public:
-            BinderConfirm() : ServerPacket(SMSG_BINDER_CONFIRM, 16) { }
-            BinderConfirm(ObjectGuid unit) : ServerPacket(SMSG_BINDER_CONFIRM, 16), Unit(unit) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid Unit;
         };
 
         class InvalidatePlayer final : public ServerPacket
@@ -117,14 +111,18 @@ namespace WorldPackets
 
             int32 Type = 0;
             int32 Quantity = 0;
-            uint32 Flags = 0;
+            CurrencyGainFlags Flags = CurrencyGainFlags(0);
+            std::vector<Item::UiEventToast> Toasts;
             Optional<int32> WeeklyQuantity;
             Optional<int32> TrackedQuantity;
             Optional<int32> MaxQuantity;
-            Optional<int32> Unused901;
+            Optional<int32> TotalEarned;
             Optional<int32> QuantityChange;
-            Optional<int32> QuantityGainSource;
-            Optional<int32> QuantityLostSource;
+            Optional<CurrencyGainSource> QuantityGainSource;
+            Optional<CurrencyDestroyReason> QuantityLostSource;
+            Optional<uint32> FirstCraftOperationID;
+            Optional<Timestamp<>> NextRechargeTime;
+            Optional<Timestamp<>> RechargeCycleStartTime;
             bool SuppressChatLog = false;
         };
 
@@ -149,8 +147,10 @@ namespace WorldPackets
                 Optional<int32> MaxWeeklyQuantity;    // Weekly Currency cap.
                 Optional<int32> TrackedQuantity;
                 Optional<int32> MaxQuantity;
-                Optional<int32> Unused901;
-                uint8 Flags = 0;                      // 0 = none,
+                Optional<int32> TotalEarned;
+                Optional<Timestamp<>> NextRechargeTime;
+                Optional<Timestamp<>> RechargeCycleStartTime;
+                uint8 Flags = 0;
             };
 
             SetupCurrency() : ServerPacket(SMSG_SETUP_CURRENCY, 22) { }
@@ -537,7 +537,7 @@ namespace WorldPackets
 
             int32 Min = 0;
             int32 Max = 0;
-            uint8 PartyIndex = 0;
+            Optional<uint8> PartyIndex;
         };
 
         class RandomRoll final : public ServerPacket
@@ -557,9 +557,11 @@ namespace WorldPackets
         class EnableBarberShop final : public ServerPacket
         {
         public:
-            EnableBarberShop() : ServerPacket(SMSG_ENABLE_BARBER_SHOP, 0) { }
+            EnableBarberShop() : ServerPacket(SMSG_ENABLE_BARBER_SHOP, 1) { }
 
-            WorldPacket const* Write() override { return &_worldPacket; }
+            WorldPacket const* Write() override;
+
+            uint8 CustomizationScope = 0;
         };
 
         struct PhaseShiftDataPhase
@@ -937,13 +939,10 @@ namespace WorldPackets
             {
                 Pvp = 0,
                 ChallengeMode = 1,
-                PlayerCountdown = 2,
-                TIMER_TYPE_EVENT_TRIAL = 3,
-                TIMER_TYPE_NOODLE_STAND_SHIFT = 4,
-                TIMER_TYPE_TANAN_SCENARIO = 12,
+                PlayerCountdown = 2
             };
 
-            StartTimer() : ServerPacket(SMSG_START_TIMER, 12) { }
+            StartTimer() : ServerPacket(SMSG_START_TIMER, 20) { }
 
             WorldPacket const* Write() override;
 
@@ -998,7 +997,7 @@ namespace WorldPackets
             bool BonusRoll = false;
             int32 LootSpec = 0;
             ::Gender Gender = GENDER_NONE;
-            uint32 CurrencyID = 0;
+			uint32 CurrencyID = 0;
         };
 
 
@@ -1022,20 +1021,8 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            bool Availability = true;
-            int32 Index = 0;
-            int32 Data = 0;
-        };
-
-        class CovenantRenowOpenNpc  final : public ServerPacket
-        {
-        public:
-            CovenantRenowOpenNpc() : ServerPacket(SMSG_COVENANT_RENOWN_OPEN_NPC) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid ObjGUID;
-            bool CatchupState = false;
+            bool AreCallingsUnlocked = true;
+            std::vector<int32> BountyIds;
         };
 
         class CovenantRenownSendCatchUpState  final : public ServerPacket
@@ -1124,36 +1111,6 @@ namespace WorldPackets
             std::vector<uint16> Counts;
           };
 
-    class UpdateTaskProgress final : public ServerPacket
-         {
-          public:
-                 UpdateTaskProgress() : ServerPacket(SMSG_UPDATE_TASK_PROGRESS, 4) { }
-        
-                 WorldPacket const* Write() override;
-        
-                 std::vector<TaskProgress> Progress;
-        };
-
-    class SetTaskComplete final : public ServerPacket
-        {
-         public:
-         SetTaskComplete() : ServerPacket(SMSG_SET_TASK_COMPLETE, 4) { }
-        
-            WorldPacket const* Write() override;
-        
-            int32 TaskID = 0;
-        };
-
-    class IslandOpenNpc final : public ServerPacket
-    {
-    public:
-        IslandOpenNpc(ObjectGuid guid) : ServerPacket(SMSG_ISLANDS_MISSION_NPC, 36), QueueNPCGuid(guid) { }
-
-        WorldPacket const* Write() override;
-
-        ObjectGuid QueueNPCGuid;
-    };
-
     class IslandOnQueue final : public ClientPacket
     {
     public:
@@ -1211,18 +1168,6 @@ namespace WorldPackets
         uint32 FactionChoice = 0;
     };
 
-    class OpenNpcAnimaUI  final : public ServerPacket
-    {
-    public:
-        OpenNpcAnimaUI() : ServerPacket(SMSG_OPEN_ANIMA_DIVERSION_UI) { }
-
-        WorldPacket const* Write() override;
-
-        ObjectGuid ObjectGUID;
-        int32 UiMapID = 0;
-        int32 GarrTalentTreeID = 0;
-    };
-
     class StreamingMovie final : public ServerPacket
     {
     public:
@@ -1246,23 +1191,23 @@ namespace WorldPackets
         bool SuccessfulFind = false;
     };
 
-        struct ModeAttempt
+    struct ModeAttempt
+    {
+        struct MemberAttempt
         {
-            struct Member
-            {
-                ObjectGuid Guid;
-                uint32 VirtualRealmAddress = 0;
-                uint32 NativeRealmAddress = 0;
-                uint32 SpecializationID = 0;
-            };
-
-            uint32 InstanceRealmAddress = 0;
-            uint32 AttemptID = 0;
-            uint32 CompletionTime = 0;
-            time_t CompletionDate = time(nullptr);
-            uint32 MedalEarned = 0;
-            std::vector<Member> Members;
+            ObjectGuid Guid = ObjectGuid::Empty;
+            uint32 VirtualRealmAddress = 0;
+            uint32 NativeRealmAddress = 0;
+            uint16 SpecializationID = 0;
         };
+
+        uint32 InstanceRealmAddress = 0;
+        uint32 AttemptID = 0;
+        uint32 CompletionTime = 0;
+        time_t CompletionDate = time(nullptr);
+        uint32 MedalEarned = 0;
+        std::vector<MemberAttempt> Members;
+    };
 
         struct ChallengeModeMap
         {
@@ -1284,7 +1229,7 @@ namespace WorldPackets
             uint32 ChallengeID = 0;
             time_t LastMedalDate = time(nullptr);
             std::vector<uint16> BestSpecID;
-            std::array<uint32, 5> Affixes;
+            std::array<uint32, 4> Affixes;
             std::vector<bMember> Members;
             time_t MedalDate = time(nullptr);
         };
@@ -1300,34 +1245,44 @@ namespace WorldPackets
         uint32 ChallengeID = 0;
         time_t LastGuildUpdate = time(nullptr);
         time_t LastRealmUpdate = time(nullptr);
+        uint32 GuildLeadersCount = 0;
+        uint32 RealmLeadersCount = 0;
         std::vector<ModeAttempt> GuildLeaders;
         std::vector<ModeAttempt> RealmLeaders;
     };
- 
+
     class NewPlayerRecord final : public ServerPacket
     {
     public:
-        NewPlayerRecord() : ServerPacket(SMSG_MYTHIC_PLUS_NEW_WEEK_RECORD, 4) { }
+        NewPlayerRecord() : ServerPacket(SMSG_MYTHIC_PLUS_NEW_WEEK_RECORD, 12) { }
 
         WorldPacket const* Write() override;
 
-        int32 MapID = 0;
-        int32 CompletionMilliseconds = 0;
-        uint32 ChallengeLevel = 0;
+        uint32 ChallengeId;
+        uint32 Duration;
+        uint32 ChallengeLevel;
+    };
+
+    struct ChallengeCompleteMembers
+    {
+        ObjectGuid Member;
+        std::string Name;
+        bool IsEligibleForScore = true;
     };
 
     class Complete final : public ServerPacket
     {
     public:
-        Complete() : ServerPacket(SMSG_CHALLENGE_MODE_COMPLETE, 4) { }
+        Complete() : ServerPacket(SMSG_CHALLENGE_MODE_COMPLETE) { }
 
         WorldPacket const* Write() override;
 
-        uint32 Duration = 0;
-        uint32 MapId = 0;
-        uint32 ChallengeId = 0;
-        uint32 ChallengeLevel = 0;
-        uint8 IsCompletedInTimer = 128;
+        WorldPackets::MythicPlus::MythicPlusRun Run;
+        std::vector<ChallengeCompleteMembers> Members;
+        bool PracticeRun = false;
+        bool IsAffixRecorded = false;
+        bool IsMapRecord = false;
+        float NewOverallScore = .0f;
     };
 
     class Reset final : public ServerPacket
@@ -1340,10 +1295,18 @@ namespace WorldPackets
         uint32 MapID = 0;
     };
 
-    class ResetChallengeMode final : public ClientPacket
+    class ResetChallengeMode final : public ClientPacket //OK
     {
     public:
         ResetChallengeMode(WorldPacket&& packet) : ClientPacket(CMSG_RESET_CHALLENGE_MODE, std::move(packet)) { }
+
+        void Read() override { }
+    };
+
+    class ResetChallengeModeCheat final : public ClientPacket //OK
+    {
+    public:
+        ResetChallengeModeCheat(WorldPacket&& packet) : ClientPacket(CMSG_RESET_CHALLENGE_MODE_CHEAT, std::move(packet)) { }
 
         void Read() override { }
     };
@@ -1355,19 +1318,13 @@ namespace WorldPackets
 
         WorldPacket const* Write() override;
 
-        uint32 MapID = 0;
-        uint32 ChallengeID = 0;
-        uint32 ChallengeLevel = 0;
+        uint32 MapID;
+        uint32 ChallengeId;
+        uint32 ChallengeLevel;
+        std::array<int32, 4> Affixes;
         uint32 DeathCount = 0;
-
-        uint32 Affixes1 = 0;
-        uint32 Affixes2 = 0;
-        uint32 Affixes3 = 0;
-        uint32 Affixes4 = 0;
-
-        uint32 ClientEncounterStartPlayerInfo = 0;
-
-        uint8 Energized = 128;
+        std::vector<Instance::InstancePlayerData> PlayerDatas;
+        bool IsKeyCharged = false;
     };
 
     class UpdateDeathCount final : public ServerPacket
@@ -1419,11 +1376,11 @@ namespace WorldPackets
     class StartElapsedTimer final : public ServerPacket
     {
     public:
-        StartElapsedTimer() : ServerPacket(SMSG_START_ELAPSED_TIMER, 8) { }
+        StartElapsedTimer() : ServerPacket(SMSG_START_ELAPSED_TIMER, 12) { }
 
         WorldPacket const* Write() override;
 
-        ElaspedTimer Timer;
+         ElaspedTimer Timer;
     };
 
     class StartElapsedTimers final : public ServerPacket
@@ -1451,9 +1408,9 @@ namespace WorldPackets
 
         void Read() override;
 
-        uint8 Bag;
-        uint32 Slot;
-        ObjectGuid GobGUID;
+        uint8 Bag = 0;
+        uint32 Slot = 0;
+        ObjectGuid GameObjectGUID;
     };
 
     class StartChallengeMode final : public ClientPacket
@@ -1464,34 +1421,31 @@ namespace WorldPackets
         void Read() override;
 
         ObjectGuid GameObjectGUID;
-        uint32 UnkInt = 0;
-        bool IsKeyCharged = false;
+        uint8 Bag = 0;
+        uint32 Slot = 0;
     };
 
-    class RequestLeaders final : public ClientPacket
+    class RequestLeaders final : public ClientPacket //tested
     {
     public:
         RequestLeaders(WorldPacket&& packet) : ClientPacket(CMSG_CHALLENGE_MODE_REQUEST_LEADERS, std::move(packet)) { }
 
         void Read() override;
 
-        uint32 MapId = 0;
-        uint32 ChallengeID = 0;
         time_t LastGuildUpdate = time(nullptr);
         time_t LastRealmUpdate = time(nullptr);
+        int32 MapId = 0;
+        int32 ChallengeID = 0;
     };
 
-   
-
-    class WorldMapOpenNpc final : public ServerPacket
+    class ClaimWeeklyRewards final : public ClientPacket
     {
     public:
-        WorldMapOpenNpc() : ServerPacket(SMSG_WORLD_MAP_OPEN_NPC) { }
+        ClaimWeeklyRewards(WorldPacket&& packet) : ClientPacket(CMSG_CLAIM_WEEKLY_REWARD, std::move(packet)) { }
 
-        WorldPacket const* Write() override;
+        void Read() override;
 
-        ObjectGuid GUID;
-        int32 WorldMap;
+        int32 WeeklyRewardChestThresholdId = 0;
     };
 
     class WarfrontComplete final : public ServerPacket
@@ -1513,16 +1467,6 @@ namespace WorldPackets
 
         uint32 Type = 0;
         int32 MaxWeeklyQuantity = 0;
-    };
-
-    class SetAllTaskProgress final : public ServerPacket
-    {
-    public:
-        SetAllTaskProgress() : ServerPacket(SMSG_SET_ALL_TASK_PROGRESS, 4) { }
-
-        WorldPacket const* Write() override;
-
-        std::vector<TaskProgress> Progress;
     };
 
     class OpenContainer final : public ServerPacket
@@ -1575,54 +1519,15 @@ namespace WorldPackets
     {
     public:
         ShowTradeSkillResponse() : ServerPacket(SMSG_SHOW_TRADE_SKILL_RESPONSE, 16 + 4 + 12) { }
-        
+
         WorldPacket const* Write() override;
-        
+
         ObjectGuid PlayerGUID;
         uint32 SpellId = 0;
         std::vector<int32> SkillLineIDs;
         std::vector<int32> SkillRanks;
         std::vector<int32> SkillMaxRanks;
         std::vector<int32> KnownAbilitySpellIDs;
-     };
-
-    struct ResearchHistory
-    {
-        ResearchHistory() { }
-        ResearchHistory(int32 projectId, int32 completionCount, uint32 firstCompleted) :
-            ProjectID(projectId), CompletionCount(completionCount), FirstCompleted(firstCompleted) { }
-
-        int32 ProjectID = 0;
-        int32 CompletionCount = 0;
-        uint32 FirstCompleted = 0;
-    };
-
-    class SetupResearchHistory final : public ServerPacket
-    {
-    public:
-        SetupResearchHistory() : ServerPacket(SMSG_SETUP_RESEARCH_HISTORY, 3) { }
-
-        WorldPacket const* Write() override;
-
-        std::vector<ResearchHistory> History;
-    };
-
-    class RequestResearchHistory final : public ClientPacket
-    {
-    public:
-        RequestResearchHistory(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_RESEARCH_HISTORY, std::move(packet)) { }
-
-        void Read() override { }
-    };
-
-    class ResearchComplete final : public ServerPacket
-    {
-    public:
-        ResearchComplete() : ServerPacket(SMSG_RESEARCH_COMPLETE, 12) { }
-        
-        WorldPacket const* Write() override;
-        
-        ResearchHistory Research;
      };
 
     class PlayerSkinned final : public ServerPacket
@@ -1644,6 +1549,17 @@ namespace WorldPackets
 
         ObjectGuid ContributionTableNpcGuid;
         uint32 OrderIndex = 0;
+    };
+
+    class ContributionLastupdaterequest final : public ClientPacket
+    {
+    public:
+        ContributionLastupdaterequest(WorldPacket&& packet) : ClientPacket(CMSG_CONTRIBUTION_LAST_UPDATE_REQUEST, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 unk1 = 0;
+        int32 unk2 = 0;
     };
 
     class ContributionResponse final : public ServerPacket
@@ -1828,19 +1744,7 @@ namespace WorldPackets
 
         WorldPacket const* Write() override;
 
-        int32 Result = 0; 
-    };
-
-    class UIItemInteractionOpenNpc  final : public ServerPacket
-    {
-    public:
-        UIItemInteractionOpenNpc() : ServerPacket(SMSG_UI_ITEM_INTERACTION_NPC, 23) {}
-
-        WorldPacket const* Write() override;
-
-        ObjectGuid ObjectGUID;
-        int32 UiUnk1 = 0;
-        int32 UiUnk2 = 0;
+        int32 Result = 0;
     };
 
     class ActivateSoulbind final : public ClientPacket
@@ -1850,7 +1754,559 @@ namespace WorldPackets
 
         void Read() override;
 
-        int32 CovenantID;
+        uint32 CovenantID; // iss soulbindid
+    };
+
+    class PerksProgramAcitivtyUpdate final : public ServerPacket
+    {
+    public: PerksProgramAcitivtyUpdate() :ServerPacket(SMSG_PERKS_PROGRAM_ACTIVITY_UPDATE) { }
+
+          WorldPacket const* Write() override;
+
+          int32 ActivityID;
+          std::vector<uint32> ActivityCount;         
+    };
+
+    class Playerchoicedisplayerror final : public ServerPacket
+    {
+    public: Playerchoicedisplayerror() :ServerPacket(SMSG_PLAYER_CHOICE_DISPLAY_ERROR) { }
+
+          WorldPacket const* Write() override;
+
+          uint32 choiceid; //maybe
+    };
+
+    class PerksProgramDisabled final : public ServerPacket
+    {
+    public:
+        PerksProgramDisabled() : ServerPacket(SMSG_PERKS_PROGRAM_DISABLED) { }
+
+        WorldPacket const* Write() override {return &_worldPacket;}
+
+    };
+
+    class ClearTreasurePickerCache final : public ServerPacket
+    {
+    public: ClearTreasurePickerCache() :ServerPacket(SMSG_CLEAR_TREASURE_PICKER_CACHE) { }
+
+          WorldPacket const* Write() override;
+
+          uint32 treasurepickerid; //maybe
+    };
+
+    class AccountCosmeticAdded final : public ServerPacket
+    {
+    public: AccountCosmeticAdded() :ServerPacket(SMSG_ACCOUNT_COSMETIC_ADDED) { }
+
+          WorldPacket const* Write() override;
+
+          uint32 UNK1; 
+    };
+
+    class ActivateSoulbindFailed final : public ServerPacket
+    {
+    public: ActivateSoulbindFailed() :ServerPacket(SMSG_ACTIVATE_SOULBIND_FAILED) { }
+
+          WorldPacket const* Write() override;
+
+          uint8 unk;
+          uint32 CovenantID;
+    };
+
+    class ConversationCinematicReady final : public ClientPacket
+    {
+    public:
+        ConversationCinematicReady(WorldPacket&& packet) : ClientPacket(CMSG_CONVERSATION_CINEMATIC_READY, std::move(packet)) { }
+
+        void Read() override;
+
+        ObjectGuid ConversationGUID;
+    };
+
+    class PerksProgramReqestPendingRewards final : public ClientPacket
+    {
+    public:
+        PerksProgramReqestPendingRewards(WorldPacket&& packet) : ClientPacket(CMSG_PERKS_PROGRAM_REQUEST_PENDING_REWARDS, std::move(packet)) { }
+
+        void Read() override {}
+    };
+
+    class OverrideScreenFlash final : public ClientPacket
+    {
+    public:
+        OverrideScreenFlash(WorldPacket&& packet) : ClientPacket(CMSG_OVERRIDE_SCREEN_FLASH, std::move(packet)) { }
+
+        void Read() override;
+
+        bool BlackScreenOrRedScreen;
+    };
+
+    class PlayerChoiceClear final : public ServerPacket
+    {
+    public: PlayerChoiceClear() :ServerPacket(SMSG_PLAYER_CHOICE_CLEAR) { }
+
+          WorldPacket const* Write() override;
+
+          int32 ChoiceID;
+          bool Status;
+    };
+
+    class PerksProgramActivityComplete final : public ServerPacket
+    {
+    public: PerksProgramActivityComplete() :ServerPacket(SMSG_PERKS_PROGRAM_ACTIVITY_COMPLETE) { }
+
+          WorldPacket const* Write() override;
+
+          int32 ActivityID;
+    };
+
+    class ApplyMountEquipmentResult final : public ServerPacket
+    {
+    public: ApplyMountEquipmentResult() :ServerPacket(SMSG_APPLY_MOUNT_EQUIPMENT_RESULT) { }
+
+          WorldPacket const* Write() override;
+
+          ObjectGuid PlayerGuid;
+          int32 Unk1;
+          uint8 unk;
+    };
+
+    class GainMawPower final : public ServerPacket
+    {
+    public: GainMawPower() :ServerPacket(SMSG_GAIN_MAW_POWER) { }
+
+          WorldPacket const* Write() override;
+
+          ObjectGuid PlayerGuid;
+          int32 Power;
+    };
+
+    class MultiFloorLeaveFloor final : public ServerPacket
+    {
+    public: MultiFloorLeaveFloor() :ServerPacket(SMSG_MULTI_FLOOR_LEAVE_FLOOR) { }
+
+          WorldPacket const* Write() override;
+
+          int32 unk1;
+          int32 unk2;
+          int32 unk3;
+          uint8 unk4;
+    };
+
+    class ProfessionGossip final : public ServerPacket
+    {
+    public: ProfessionGossip() :ServerPacket(SMSG_PROFESSION_GOSSIP) { }
+
+          WorldPacket const* Write() override;
+
+          ObjectGuid NpcGUID;
+          int32 unk1;
+          int32 unk2;
+    };
+
+    class AbandonNpeResponse final : public ClientPacket
+    {
+    public:
+        AbandonNpeResponse(WorldPacket&& packet) : ClientPacket(CMSG_ABANDON_NPE_RESPONSE, std::move(packet)) { }
+
+        void Read() override;
+
+        uint8 UNK;
+    };
+
+    class AcceptReturningPlayerPrompt final : public ClientPacket
+    {
+    public:
+        AcceptReturningPlayerPrompt(WorldPacket&& packet) : ClientPacket(CMSG_ACCEPT_RETURNING_PLAYER_PROMPT, std::move(packet)) { }
+
+        void Read() override {}
+    };
+
+    class AcceptSocialContract final : public ClientPacket
+    {
+    public:
+        AcceptSocialContract(WorldPacket&& packet) : ClientPacket(CMSG_ACCEPT_SOCIAL_CONTRACT, std::move(packet)) { }
+
+        void Read() override {}
+    };
+
+    class AddAccountCosmetic final : public ClientPacket
+    {
+    public:
+        AddAccountCosmetic(WorldPacket&& packet) : ClientPacket(CMSG_ADD_ACCOUNT_COSMETIC, std::move(packet)) { }
+
+        void Read() override;
+
+        ObjectGuid Playerguid;
+    };
+
+    class ClearNewAppearance final : public ClientPacket
+    {
+    public:
+        ClearNewAppearance(WorldPacket&& packet) : ClientPacket(CMSG_CLEAR_NEW_APPEARANCE, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 unk;
+    };
+
+    class AccountNotificationAcknowledge final : public ClientPacket
+    {
+    public:
+        AccountNotificationAcknowledge(WorldPacket&& packet) : ClientPacket(CMSG_ACCOUNT_NOTIFICATION_ACKNOWLEDGED, std::move(packet)) { }
+
+        void Read() override;
+
+        int64 unk;
+        int32 unk2;
+        int32 unk3;
+    };
+
+    class AuctionableTokenSell final : public ClientPacket
+    {
+    public:
+        AuctionableTokenSell(WorldPacket&& packet) : ClientPacket(CMSG_AUCTIONABLE_TOKEN_SELL, std::move(packet)) { }
+
+        void Read() override;
+
+        int64 unkint64;
+        int64 CurrentMarketPrice;
+        int32 UnkInt32;
+    };
+
+    class AuctionableTokenSellAtMarketPrice final : public ClientPacket
+    {
+    public:
+        AuctionableTokenSellAtMarketPrice(WorldPacket&& packet) : ClientPacket(CMSG_AUCTIONABLE_TOKEN_SELL_AT_MARKET_PRICE, std::move(packet)) { }
+
+        void Read() override;
+
+        ObjectGuid TokenGuid;
+        uint32 UnkInt32;
+        uint32 PendingBuyConfirmations;
+        uint64 GuaranteedPrice;
+        bool confirmed;
+    };
+
+    class BonusRoll final : public ClientPacket
+    {
+    public:
+        BonusRoll(WorldPacket&& packet) : ClientPacket(CMSG_BONUS_ROLL, std::move(packet)) { }
+
+        void Read() override {}
+    };
+
+    class CanRedeemTokenForBalance final : public ClientPacket
+    {
+    public:
+        CanRedeemTokenForBalance(WorldPacket&& packet) : ClientPacket(CMSG_CAN_REDEEM_TOKEN_FOR_BALANCE, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 UnkInt32;
+    };
+
+    class ChangeBagSlotFlag final : public ClientPacket
+    {
+    public:
+        ChangeBagSlotFlag(WorldPacket&& packet) : ClientPacket(CMSG_CHANGE_BAG_SLOT_FLAG, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 UnkInt;
+        int32 UnkInt32;
+        bool unknown;
+    };
+
+    class ChangeBankBagSlotFlag final : public ClientPacket
+    {
+    public:
+        ChangeBankBagSlotFlag(WorldPacket&& packet) : ClientPacket(CMSG_CHANGE_BANK_BAG_SLOT_FLAG, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 UnkInt;
+        int32 UnkInt32;
+        bool unknown;
+    };
+
+    class CloseRuneforgeInteraction final : public ClientPacket
+    {
+    public:
+        CloseRuneforgeInteraction(WorldPacket&& packet) : ClientPacket(CMSG_CLOSE_RUNEFORGE_INTERACTION, std::move(packet)) { }
+
+        void Read() override {}
+    };
+
+    class CommerceTokenGetCount final : public ClientPacket
+    {
+    public:
+        CommerceTokenGetCount(WorldPacket&& packet) : ClientPacket(CMSG_COMMERCE_TOKEN_GET_COUNT, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 count;
+    };
+
+    class ContributionLastUpdateRequest final : public ClientPacket
+    {
+    public:
+        ContributionLastUpdateRequest(WorldPacket&& packet) : ClientPacket(CMSG_CONTRIBUTION_LAST_UPDATE_REQUEST, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 ContributionId;
+        int32 count;
+    };
+
+    class UsedFollow final : public ClientPacket
+    {
+    public:
+        UsedFollow(WorldPacket&& packet) : ClientPacket(CMSG_USED_FOLLOW, std::move(packet)) { }
+
+        void Read() override {}
+    };
+
+    class UpgradeRuneforgeLegendary final : public ClientPacket
+    {
+    public:
+        UpgradeRuneforgeLegendary(WorldPacket&& packet) : ClientPacket(CMSG_UPGRADE_RUNEFORGE_LEGENDARY, std::move(packet)) { }
+
+        void Read() override;
+
+        int32 ItemID;
+        uint8 UpgradeType;
+        uint8 UpgradeLevel;
+        uint8 Cost;
+        uint8 RemainingUpgradeLevel;
+    };
+
+    class ShowTradeSkill final : public ClientPacket
+    {
+    public:
+        ShowTradeSkill(WorldPacket&& packet) : ClientPacket(CMSG_SHOW_TRADE_SKILL, std::move(packet)) { }
+
+        void Read() override;
+
+        ObjectGuid PlayerGUID;
+        uint32 SpellID = 0;
+        uint32 SkillLineID = 0;
+    };
+
+    class QuickJoinSignalToastDisplayed final : public ClientPacket
+    {
+    public:
+        QuickJoinSignalToastDisplayed(WorldPacket&& packet) : ClientPacket(CMSG_QUICK_JOIN_SIGNAL_TOAST_DISPLAYED, std::move(packet)) { }
+
+        void Read() override;
+
+        std::vector<ObjectGuid> UnkGuids;
+        ObjectGuid GroupGUID;
+        float unk = 0.0f;;
+        uint32 Priority = 0;
+        bool UnkBit1 = false;
+    };
+
+    class AllMapStats final : public ServerPacket
+    {
+    public:
+        AllMapStats() : ServerPacket(SMSG_MYTHIC_PLUS_ALL_MAP_STATS, 10000) { }
+
+        WorldPacket const* Write() override;
+
+        uint32 Season = 0;
+        uint32 SubSeason = 0;
+        std::vector<MythicPlus::MythicPlusRun> Runs;
+        std::vector<MythicPlus::Reward> Rewards;
+    };
+
+    class RequestChallengeModeAffixes final : public ClientPacket
+    {
+    public:
+        RequestChallengeModeAffixes(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_MYTHIC_PLUS_AFFIXES, std::move(packet)) { }
+
+        void Read() override { }
+    };
+
+    struct Affix
+    {
+        uint32 KeystoneAffixID = 0;
+        uint32 RequiredSeason;
+    };
+
+    class MythicPlusCurrentAffixes final : public ServerPacket
+    {
+    public:
+        MythicPlusCurrentAffixes() : ServerPacket(SMSG_MYTHIC_PLUS_CURRENT_AFFIXES) { }
+
+        WorldPacket const* Write() override;
+
+        std::vector<Affix> Affixes;
+    };
+
+    struct WeeklyRewardItem
+    {
+        uint32 UnkItemInt1 = 0;
+        uint32 Count = 0;
+        Optional<Item::ItemInstance> Item;
+        Optional<uint64> UnkInt64;
+        Optional<Timestamp<>> OpenTime;
+        Optional<uint32> UnkInt32;
+    };
+
+    struct WeeklyReward
+    {
+        uint32 WeeklyRewardChestThresholdId;
+        std::vector<WeeklyRewardItem> Rewards;
+    };
+
+    class WeeklyRewardsResult final : public ServerPacket
+    {
+    public:
+        WeeklyRewardsResult() : ServerPacket(SMSG_WEEKLY_REWARDS_RESULT) { }
+
+        WorldPacket const* Write() override;
+
+        std::vector<WeeklyReward> Vaults;
+        uint32 TotalVaults = 0;
+    };
+
+    class NewPlayerSeasonRecord final : public ServerPacket
+    {
+    public:
+        NewPlayerSeasonRecord() : ServerPacket(SMSG_MYTHIC_PLUS_SEASON_DATA, 4) { }
+
+        WorldPacket const* Write() override;
+
+        uint32 ChallengeId;
+        uint32 BestDuration;
+        uint32 StartedChallengeLevel;
+    };
+
+    class GlobalGetChallengeModeRewards final : public ClientPacket
+    {
+    public:
+        GlobalGetChallengeModeRewards(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_WEEKLY_REWARDS, std::move(packet)) { }
+
+        void Read() override { }
+    };
+
+    class RequestMythicPlusSeasonData final : public ClientPacket
+    {
+    public:
+        RequestMythicPlusSeasonData(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_MYTHIC_PLUS_SEASON_DATA, std::move(packet)) { }
+
+        void Read() override { }
+    };
+
+    struct VaultEncounter
+    {
+        uint32 DungeonEncounterId;
+        uint32 DefeatedDifficulty;
+    };
+
+    struct VaultProgress
+    {
+        uint32 WeeklyRewardChestThresholdId;
+        uint32 TotalCompleted;
+        int32 RewardLevel; // Mythic+ level, Raid difficulty, ...
+        std::vector<VaultEncounter> Encounters;
+        Optional<Item::ItemInstance> RewardItemExample;
+        Optional<Item::ItemInstance> RewardItemExampleNext;
+    };
+
+    class WeeklyRewardsProgressResult final : public ServerPacket
+    {
+    public:
+        WeeklyRewardsProgressResult() : ServerPacket(SMSG_WEEKLY_REWARDS_PROGRESS_RESULT) { }
+
+        WorldPacket const* Write() override;
+
+        uint32 UnkInt321 = 0;
+        std::vector<VaultProgress> VaultProgresses;
+        uint32 Season = 0;
+    };
+
+    class RequestMapStats final : public ClientPacket
+    {
+    public:
+        RequestMapStats(WorldPacket&& packet) : ClientPacket(CMSG_MYTHIC_PLUS_REQUEST_MAP_STATS, std::move(packet)) { }
+
+        void Read() override { }
+    };
+
+    class RequestRPEResetCharacter final : public ClientPacket
+    {
+    public:
+        RequestRPEResetCharacter(WorldPacket&& packet) : ClientPacket(CMSG_RPE_RESET_CHARACTER, std::move(packet)) { }
+
+        void Read() override;
+
+        ObjectGuid CharGUID;
+        uint8 SpecID;
+        uint8 UnkByte1;
+        uint8 UnkByte2;
+        uint8 UnkByte3;
+        bool ResetQuests;
+    };
+
+    struct JamClientActiveScheduledWorldStateInfo
+    {
+        uint64 UnkLong = 0;
+        uint32 UnkInt1 = 0;
+        uint32 UnkInt2 = 0;
+        uint32 UnkInt3 = 0;
+    };
+
+    class ActiveScheduledWorldStateInfo final : public ServerPacket
+    {
+    public:
+        ActiveScheduledWorldStateInfo() : ServerPacket(SMSG_ACTIVE_SCHEDULED_WORLD_STATE_INFO, 4) { }
+
+        WorldPacket const* Write() override;
+
+        std::vector<JamClientActiveScheduledWorldStateInfo> ScheduledWorldStateInfo;
+    };
+
+    class ClubFinderApplicationResponse final : public ClientPacket
+    {
+    public:
+        ClubFinderApplicationResponse(WorldPacket&& packet) : ClientPacket(CMSG_CLUB_FINDER_APPLICATION_RESPONSE, std::move(packet)) { }
+
+        void Read() override;
+
+        ObjectGuid GUID;
+        bool unkbool;
+    };
+
+    class ClubFinderGetApplicantList final : public ClientPacket
+    {
+    public:
+        ClubFinderGetApplicantList(WorldPacket&& packet) : ClientPacket(CMSG_CLUB_FINDER_GET_APPLICANTS_LIST, std::move(packet)) { }
+
+        void Read() override;
+
+        bool unk;
+    };
+
+    class XpAwardedFromCurrency final : public ServerPacket
+    {
+    public:
+        XpAwardedFromCurrency() : ServerPacket(SMSG_XP_AWARDED_FROM_CURRENCY) { }
+
+        WorldPacket const* Write() override;
+
+        bool unk;
+    };
+
+    class StartLightningStorm  final : public ServerPacket
+    {
+    public:
+        StartLightningStorm() : ServerPacket(SMSG_START_LIGHTNING_STORM) { }
+
+        WorldPacket const* Write() override;
+
+        uint32 LightningStormId = 0;
     };
     // < DekkCore
     }

@@ -53,22 +53,24 @@ struct npc_jaina_150101 : public ScriptedAI
             player->CastSpell(player, 130);
             player->KilledMonsterCredit(153399);
         }
+
         if (quest->GetQuestId() == QUEST_SCOUTING_THE_PALACE_ALLIANCE)
         {
             player->GetSceneMgr().PlaySceneByPackageId(SCENE_SCOUTING_THE_TIDESTONE, SceneFlag::None);
             player->KilledMonsterCredit(152613);
         }
+
         if (quest->GetQuestId() == QUEST_A_WAY_HOME_ALLIANCE)
         {
-            me->SummonCreature(me->GetEntry(), me->GetPosition()), TEMPSUMMON_TIMED_DESPAWN, 30000;
-            player->GetScheduler().Schedule(38s, [player, this] (TaskContext /*context*/)
+            me->SummonCreature(me->GetEntry(), me->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 30s);
+            player->GetScheduler().Schedule(38s, [player](TaskContext /*context*/)
             {
                 player->KilledMonsterCredit(150101);
             });
         }
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
         me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
@@ -147,7 +149,7 @@ struct npc_generic_soldier_fortunate_souls : public ScriptedAI
         me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -214,11 +216,11 @@ struct boss_wekemara : public BossAI
         me->SetPower(POWER_MANA, 100);
         me->NearTeleportTo(me->GetHomePosition());
         me->AddUnitState(UNIT_STATE_ROOT);
-        submerged = false;        
+        submerged = false;
         me->SetReactState(REACT_AGGRESSIVE);
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         this->charges = 0;
         events.ScheduleEvent(EVENT_SPLIT, 1s);
@@ -233,7 +235,7 @@ struct boss_wekemara : public BossAI
 
         switch (summon->GetEntry())
         {
-        case NPC_SPAWN_OF_WEKEMARA:            
+        case NPC_SPAWN_OF_WEKEMARA:
             summon->UpdatePosition(PosZ, summon->GetOrientation());
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f))
                 summon->AI()->AttackStart(target);
@@ -250,7 +252,7 @@ struct boss_wekemara : public BossAI
         }
     }
 
-    void DamageTaken(Unit* done_by, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HealthBelowPct(51) && !submerged)
         {
@@ -268,13 +270,13 @@ struct boss_wekemara : public BossAI
     }
 
     void ExecuteEvent(uint32 eventid) override
-    {        
+    {
         std::list<Player*> p_list;
         p_list.clear();
         me->GetPlayerListInGrid(p_list, 100.0f);
         if (p_list.empty())
             me->DespawnOrUnsummon(15s);
-   
+
         switch (eventid)
         {
         case EVENT_SPLIT:
@@ -315,7 +317,7 @@ struct boss_wekemara : public BossAI
             for (Unit* targets : tarlist)
             {
                 DoCast(targets, SPELL_SHOCK_BURST_PERIODIC, true);
-                targets->GetScheduler().Schedule(12s, [this, targets] (TaskContext context)
+                targets->GetScheduler().Schedule(12s, [this, targets] (TaskContext /*context*/)
                 {
                     me->CastSpell(targets, SPELL_SHOCK_BURST_EXP, true);
                 });
@@ -330,7 +332,7 @@ struct boss_wekemara : public BossAI
             events.CancelEvent(EVENT_BIOELETRIC_BLAST);
             events.CancelEvent(EVENT_SHOCK_BURST);
             events.ScheduleEvent(EVENT_SUBMERGE_END, 30s);
-            me->GetScheduler().Schedule(30s, [this] (TaskContext context)
+            me->GetScheduler().Schedule(30s, [this] (TaskContext /*context*/)
             {
                 me->RemoveAura(SPELL_ELETRIFIED_SPLASH_TRIGGER);
             });
@@ -346,7 +348,7 @@ struct boss_wekemara : public BossAI
 
         case EVENT_ELECTRIFIED_SPLASH:
             me->DespawnCreaturesInArea(NPC_WEKEMARA_HANDLER, 125.0f);
-            me->SummonCreature(NPC_WEKEMARA_HANDLER, electrified_splash_pos, TEMPSUMMON_TIMED_DESPAWN, 30s);            
+            me->SummonCreature(NPC_WEKEMARA_HANDLER, electrified_splash_pos, TEMPSUMMON_TIMED_DESPAWN, 30s);
             break;
 
         case EVENT_SPAWN:
@@ -361,29 +363,6 @@ private:
     bool submerged;
     uint8 charges;
     float PosZ = -194.0388f;
-};
-
-//21646
-struct at_wakemara_bioeletric_blast : AreaTriggerAI
-{
-    at_wakemara_bioeletric_blast(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnCreate() override
-    {
-        at->SetDuration(30000);
-    }
-
-    void OnUnitEnter(Unit* target) override
-    {
-        if (target->IsPlayer())
-            at->GetCaster()->CastSpell(target, SPELL_ELECTRIFIED_GROUND_AT_DAMAGE, true);
-    }
-
-    void OnUnitExit(Unit* target) override
-    {
-        if (target->IsPlayer())
-            target->RemoveAura(SPELL_ELECTRIFIED_GROUND_AT_DAMAGE);
-    }
 };
 
 //50516
@@ -417,17 +396,17 @@ struct go_glimmering_chest : public GameObjectAI
     bool OnGossipHello(Player* player) override
     {
         me->SetFlag(GO_FLAG_IN_USE);
-        me->GetScheduler().Schedule(100ms, [this, player](TaskContext /*context*/)
+        me->GetScheduler().Schedule(100ms, [player](TaskContext /*context*/)
             {
-                player->ModifyCurrency(1560, 26, true, true);
-                player->ModifyCurrency(1721, 5, true, true);
-                player->ModifyCurrency(1587, 16, true, true);
+                player->ModifyCurrency(1560, 26, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
+                player->ModifyCurrency(1721, 5, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
+                player->ModifyCurrency(1587, 16, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
             });
-        me->GetScheduler().Schedule(15s, [this, player](TaskContext /*context*/)
+        me->GetScheduler().Schedule(15s, [this](TaskContext /*context*/)
             {
                 me->RemoveFromWorld();
             });
-        me->GetScheduler().Schedule(30s, [this, player](TaskContext /*context*/)
+        me->GetScheduler().Schedule(30s, [this](TaskContext /*context*/)
             {
                 me->AddToWorld();
             });
@@ -446,7 +425,7 @@ struct go_glimmering_chest : public GameObjectAI
         return false;
     }
 
-    void UpdateAI(uint32 diff)
+    void UpdateAI(uint32 diff) override
     {
         scheduler.Update(diff);
     }
@@ -484,7 +463,7 @@ struct npc_unleashed_arcano_fiend : public ScriptedAI
         me->DespawnCreaturesInArea(153307);
     }
 
-    void JustEngagedWith(Unit* unit) override
+    void JustEngagedWith(Unit* /*unit*/) override
     {
         events.ScheduleEvent(EVENT_ARCANE_BLAST, 1s);
         events.ScheduleEvent(EVENT_ARCANE_BOLT, 5s);
@@ -548,7 +527,7 @@ struct npc_urduu : public ScriptedAI
         ScriptedAI::Reset();
     }
 
-    void JustEngagedWith(Unit* unit) override
+    void JustEngagedWith(Unit* /*unit*/) override
     {
         events.ScheduleEvent(EVENT_ANGRY_STOMP, 3s);
         events.ScheduleEvent(EVENT_CORAL_GROWTH, 5s);
@@ -582,7 +561,7 @@ struct npc_urduu : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* unit) override
+    void JustDied(Unit* /*unit*/) override
     {
         std::list<Player*> p_list;
         me->GetPlayerListInGrid(p_list, 100.0f);
@@ -590,46 +569,13 @@ struct npc_urduu : public ScriptedAI
         {
             if (players->IsInSameGroupWith(players))
             {
-                players->ModifyCurrency(1553, 76, true, true);
-                players->ModifyCurrency(1721, 3, true, true);
+                players->ModifyCurrency(1553, 76, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
+                players->ModifyCurrency(1721, 3, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
             }
         }
     };
 private:
     EventMap events;
-};
-
-//500517
-struct npc_up_against_scene_trigger : public ScriptedAI
-{
-    npc_up_against_scene_trigger(Creature* creature) : ScriptedAI(creature) { }
-
-    void Reset() override
-    {
-        ScriptedAI::Reset();
-        me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-    }
-
-    void MoveInLineOfSight(Unit* unit) override
-    {
-        if (unit->IsPlayer() && me->GetDistance2d(unit) < 15.0f)
-        {
-            if (Player* player = unit->ToPlayer())
-            {
-                if (player->GetQuestStatus(QUEST_UP_AGAINST_IT_HORDE) == QUEST_STATUS_INCOMPLETE)
-                {
-                    player->ForceCompleteQuest(QUEST_UP_AGAINST_IT_HORDE);
-                    player->GetSceneMgr().PlaySceneByPackageId(SCENE_SEEING_THE_ARMY, SceneFlag::None);
-                }
-                else if (player->GetQuestStatus(QUEST_UP_AGAINST_IT_ALLIANCE) == QUEST_STATUS_INCOMPLETE)
-                {
-                    player->ForceCompleteQuest(QUEST_UP_AGAINST_IT_ALLIANCE);
-                    player->GetSceneMgr().PlaySceneByPackageId(SCENE_SEEING_THE_ARMY, SceneFlag::None);
-                }
-                me->ForcedDespawn(0, 15s);
-            }
-        }
-    }
 };
 
 //150196
@@ -665,8 +611,8 @@ struct npc_lorthemar_theron_151848 : public ScriptedAI
 {
     npc_lorthemar_theron_151848(Creature* creature) : ScriptedAI(creature) { }
 
-    void OnQuestAccept(Player * plr, Quest const* quest) override
-    {        
+    void OnQuestAccept(Player* plr, Quest const* /*quest*/) override
+    {
         if (plr->GetQuestStatus(QUEST_SCOUTING_THE_PALACE_HORDE) == QUEST_STATUS_INCOMPLETE)
         {
             plr->GetSceneMgr().PlaySceneByPackageId(SCENE_SCOUTING_THE_TIDESTONE, SceneFlag::None);
@@ -680,7 +626,7 @@ struct npc_spiritwalker_ussoh : public ScriptedAI
 {
     npc_spiritwalker_ussoh(Creature* creature) : ScriptedAI(creature) { }
 
-    bool OnGossipSelect(Player* plr, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* /*plr*/, uint32 /*sender*/, uint32 /*action*/) override
     {
         return true;
     }
@@ -738,10 +684,10 @@ struct npc_shandris_feathermoon : public ScriptedAI
 {
     npc_shandris_feathermoon(Creature* creature) : ScriptedAI(creature) { }
 
-    void OnQuestAccept(Player * plr, Quest const* quest) override
+    void OnQuestAccept(Player * plr, Quest const* /*quest*/) override
     {
         //Tempfix
-        if (plr->GetQuestStatus(QUEST_SECRETS_IN_THE_RUINS) == QUEST_STATUS_INCOMPLETE) 
+        if (plr->GetQuestStatus(QUEST_SECRETS_IN_THE_RUINS) == QUEST_STATUS_INCOMPLETE)
             plr->ForceCompleteQuest(QUEST_SECRETS_IN_THE_RUINS);
     }
 
@@ -753,7 +699,7 @@ struct npc_shandris_feathermoon : public ScriptedAI
                 {
                     player->ForceCompleteQuest(QUEST_WHAT_REMAINS_OF_ZIN_ASHARI_ALLIANCE);
                     Talk(0);
-                    me->GetScheduler().Schedule(6s, [player, this] (TaskContext /*context*/)
+                    me->GetScheduler().Schedule(6s, [this] (TaskContext /*context*/)
                     {
                         Talk(1);
                     });
@@ -786,7 +732,6 @@ struct npc_riathia_silverstar : public ScriptedAI
 void AddSC_nazjatar()
 {
     RegisterCreatureAI(boss_wekemara);
-    RegisterAreaTriggerAI(at_wakemara_bioeletric_blast);    
     RegisterCreatureAI(npc_wekemara_handler);
     RegisterCreatureAI(npc_jaina_150101);
     RegisterCreatureAI(npc_generic_soldier_fortunate_souls);
@@ -794,7 +739,6 @@ void AddSC_nazjatar()
     RegisterGameObjectAI(go_glimmering_chest);
     RegisterCreatureAI(npc_unleashed_arcano_fiend);
     RegisterCreatureAI(npc_urduu);
-    RegisterCreatureAI(npc_up_against_scene_trigger);
     RegisterCreatureAI(npc_thalyssra_150196);
     RegisterCreatureAI(npc_thalyssra_155137);
     RegisterCreatureAI(npc_lorthemar_theron_151848);

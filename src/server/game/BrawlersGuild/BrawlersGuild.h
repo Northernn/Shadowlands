@@ -162,6 +162,23 @@ enum BrawlersBosses
     
 };
 
+enum EBizmoYells
+{
+    YELL_BIZMO_INTRO_RANK_1,
+    YELL_BIZMO_INTRO_RANK_2,
+    YELL_BIZMO_INTRO_RANK_3,
+    YELL_BIZMO_INTRO_RANK_4,
+    YELL_BIZMO_INTRO_RANK_5,
+    YELL_BIZMO_INTRO_RANK_6,
+    YELL_BIZMO_INTRO_RANK_7,
+
+    YELL_BIZMO_PLAYER_LOSS,
+
+    YELL_BIZMO_PLAYER_WIN,
+
+    YELL_BIZMO_TIME_RUNNING_OUT
+};
+
 class TC_GAME_API BrawlersGuild
 {
 public:
@@ -174,6 +191,8 @@ public:
 
     void RemovePlayer(Player* player);
     void RemovePlayer(ObjectGuid guid);
+
+    void CheckBossState();
 
     void BossReport(ObjectGuid guid, bool win);
 
@@ -198,7 +217,7 @@ private:
     static uint32 GetBossForPlayer(Player* player);
 
     void SetBrawlState(uint32 state);
-   // void PlayFightSound(bool play, uint32 boss = 0);
+    void PlayFightSound(bool play);
     void SendCongratulations(Player* player);
     
     std::list<ObjectGuid> _waitList;

@@ -50,42 +50,42 @@ enum eTiragardeQuests
 
 enum Intro
 {
-    SPELL_PROUDMOORE_KEEP_ESCORT        = 269772,
-    SPELL_LADY_KATHERINE_MOVIE          = 241525,
+    SPELL_PROUDMOORE_KEEP_ESCORT = 269772,
+    SPELL_LADY_KATHERINE_MOVIE = 241525,
 
-    SPELL_TELEPORT_TO_TOL_DAGOR         = 241526,
-    SPELL_PRISONER                      = 272512,
-    SPELL_TOL_DAGOR_WAKE_UP             = 270081,
+    SPELL_TELEPORT_TO_TOL_DAGOR = 241526,
+    SPELL_PRISONER = 272512,
+    SPELL_TOL_DAGOR_WAKE_UP = 270081,
 
-    SPELL_PUNCH_FLYNN                   = 264918,
-    SPELL_FLYNN_KNOCKOUT_JAILER         = 246555,
-    SPELL_SUMMON_FLYNN_ESCORT           = 246931,
+    SPELL_PUNCH_FLYNN = 264918,
+    SPELL_FLYNN_KNOCKOUT_JAILER = 246555,
+    SPELL_SUMMON_FLYNN_ESCORT = 246931,
 
-    SPELL_SCENE_FLYNN_JAILBREAK         = 246821,
-    SPELL_SCENE_GETAWAY_BOAT_TRIGGER    = 281331,
-    SPELL_SCENE_NATION_DIVIDED          = 269191,
-    SPELL_SCENE_EXPOSING_ASHVANE        = 265916,
+    SPELL_SCENE_FLYNN_JAILBREAK = 246821,
+    SPELL_SCENE_GETAWAY_BOAT_TRIGGER = 281331,
+    SPELL_SCENE_NATION_DIVIDED = 269191,
+    SPELL_SCENE_EXPOSING_ASHVANE = 265916,
 
-    SPELL_GETAWAY_CONVERSATION_1        = 247230,
-    SPELL_GETAWAY_CONVERSATION_2        = 247275,
+    SPELL_GETAWAY_CONVERSATION_1 = 247230,
+    SPELL_GETAWAY_CONVERSATION_2 = 247275,
 
-    SPELL_MAINTAIN_TAELIA_SUMMON        = 247532,
-    SPELL_SCENE_OLD_KNIGHT              = 271234,
+    SPELL_MAINTAIN_TAELIA_SUMMON = 247532,
+    SPELL_SCENE_OLD_KNIGHT = 271234,
 
-    NPC_FLYNN_BEGIN                     = 121239,
-    NPC_FLYNN_ESCORT                    = 124311,
-    NPC_FLYNN_ESCAPE                    = 124363,
-    NPC_ASHVANE_JAILER_EVENT            = 124022,
-    NPC_TAELIA                          = 124356,
-    NPC_GETAWAY_BOAT_BOARDED            = 124030,
-    NPC_TAELIA_GET_YOUR_BEARINGS        = 124630,
-    NPC_CYRUS_CRESTFALL                 = 122370,
+    NPC_FLYNN_BEGIN = 121239,
+    NPC_FLYNN_ESCORT = 124311,
+    NPC_FLYNN_ESCAPE = 124363,
+    NPC_ASHVANE_JAILER_EVENT = 124022,
+    NPC_TAELIA = 124356,
+    NPC_GETAWAY_BOAT_BOARDED = 124030,
+    NPC_TAELIA_GET_YOUR_BEARINGS = 124630,
+    NPC_CYRUS_CRESTFALL = 122370,
 
-    GOB_PRISON_BARS                     = 281878,
-    GOB_PRISON_GATE                     = 301088,
-    GOB_CELL_BLOCK_GATE                 = 281902,
+    GOB_PRISON_BARS = 281878,
+    GOB_PRISON_GATE = 301088,
+    GOB_CELL_BLOCK_GATE = 281902,
 
-    MOVIE_LADY_KATHERINE                = 859,
+    MOVIE_LADY_KATHERINE = 859,
 };
 
 // 120922 - Lady Jaina Proudmoore
@@ -112,11 +112,11 @@ public:
     void OnSceneEnd(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* /*sceneTemplate*/) override
     {
         player->AddMovieDelayedAction(MOVIE_LADY_KATHERINE, [player]()
-        {
-            player->CastSpell(player, SPELL_TELEPORT_TO_TOL_DAGOR, true);
-            player->CastSpell(player, SPELL_PRISONER, true);
-            player->CastSpell(player, SPELL_TOL_DAGOR_WAKE_UP, true);
-        });
+            {
+                player->CastSpell(player, SPELL_TELEPORT_TO_TOL_DAGOR, true);
+                player->CastSpell(player, SPELL_PRISONER, true);
+                player->CastSpell(player, SPELL_TOL_DAGOR_WAKE_UP, true);
+            });
 
         player->CastSpell(player, SPELL_LADY_KATHERINE_MOVIE, true);
     }
@@ -125,8 +125,6 @@ public:
 // Prisoner - 272512
 class aura_tol_dagor_intro_prisoner : public AuraScript
 {
-    PrepareAuraScript(aura_tol_dagor_intro_prisoner);
-
     void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         GetTarget()->RemoveGameObjectByEntry(GOB_PRISON_BARS);
@@ -161,8 +159,8 @@ struct quest_out_like_flynn : public QuestScript
             player->RemoveAurasDueToSpell(SPELL_PRISONER);
         else if (objective.ObjectID == KILL_CREDIT_PULL_LEVER)
         {
-           player->RemoveGameObjectByEntry(GOB_PRISON_BARS);
-           player->RemoveGameObjectByEntry(GOB_PRISON_GATE);
+            player->RemoveGameObjectByEntry(GOB_PRISON_BARS);
+            player->RemoveGameObjectByEntry(GOB_PRISON_GATE);
         }
     }
 };
@@ -241,7 +239,6 @@ struct npc_flynn_fairwind : public ScriptedAI
     }
 
     void SpellHit(WorldObject* caster, SpellInfo const* spell) override
-
     {
         if (spell->Id != SPELL_PUNCH_FLYNN)
             return;
@@ -303,15 +300,15 @@ struct npc_flynn_fairwind : public ScriptedAI
                                             {
                                                 me->GetMotionMaster()->MovePoint(3, 165.596573f, -2707.874756f, 28.877989f);
                                             })
-                                            .Schedule(14s, [this, ashvaneJailer, caster](TaskContext /*context*/)
+                                            .Schedule(14s, [this](TaskContext /*context*/)
                                                 {
                                                     me->SetFacingTo(2.540090f);
                                                     Talk(TALK_HIT_THAT_LEVER);
-                                                    GetPlayer()->RemoveAura(SPELL_PRISONER); 
+                                                    GetPlayer()->RemoveAura(SPELL_PRISONER);
                                                 });
         }
     }
-    
+
 private:
     Player* GetPlayer() { return ObjectAccessor::GetPlayer(*me, m_playerGUID); }
     Creature* GetAshvaneJailer() { return ObjectAccessor::GetCreature(*me, m_ashvaneJailerGUID); }
@@ -328,7 +325,7 @@ struct go_toldagor_cell_block_lever : public GameObjectAI
     bool OnGossipHello(Player* player) override
     {
         player->CastSpell(player, SPELL_SCENE_FLYNN_JAILBREAK, true);
-       // player->UnsummonCreatureByEntry(NPC_FLYNN_BEGIN);
+        // player->UnsummonCreatureByEntry(NPC_FLYNN_BEGIN);
         return false;
     }
 };
@@ -356,28 +353,28 @@ struct npc_flynn_fairwind_follower : public FollowerAI
         me->SetLevel(120);
         me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
         me->GetScheduler().Schedule(1s, [this](TaskContext context)
-        {
-            if (me->FindNearestGameObject(GOB_CELL_BLOCK_GATE, 10.f))
             {
-                SetFollowPaused(true);
-                GetContextUnit()->GetMotionMaster()->MovePoint(1, 184.875366f, -2684.565918f, 29.504234f);
-            }
-            else
-                context.Repeat();
-        });
+                if (me->FindNearestGameObject(GOB_CELL_BLOCK_GATE, 10.f))
+                {
+                    SetFollowPaused(true);
+                    GetContextUnit()->GetMotionMaster()->MovePoint(1, 184.875366f, -2684.565918f, 29.504234f);
+                }
+                else
+                    context.Repeat();
+            });
 
         me->GetScheduler().Schedule(2s, [this](TaskContext context)
-        {
-            if (me->FindNearestCreature(NPC_TAELIA, 40.f))
             {
-                if (TempSummon* tempMe = me->ToTempSummon())
-                    if (WorldObject* summoner = tempMe->GetSummoner())
-                        if (Player* playerSummoner = summoner->ToPlayer())
-                            playerSummoner->PlayConversation(8334);
-            }
-            else
-                context.Repeat();
-        });
+                if (me->FindNearestCreature(NPC_TAELIA, 40.f))
+                {
+                    if (TempSummon* tempMe = me->ToTempSummon())
+                        if (WorldObject* summoner = tempMe->GetSummoner())
+                            if (Player* playerSummoner = summoner->ToPlayer())
+                                playerSummoner->PlayConversation(8334);
+                }
+                else
+                    context.Repeat();
+            });
     }
 
     void MovementInform(uint32 type, uint32 pointId) override
@@ -388,27 +385,27 @@ struct npc_flynn_fairwind_follower : public FollowerAI
         me->SetFacingTo(5.698150f);
 
         me->GetScheduler().Schedule(1s, [this](TaskContext /*context*/)
-        {
-            me->HandleEmoteCommand(EMOTE_ONESHOT_USE_STANDING);
-        })
-            .Schedule(2s, [this](TaskContext /*context*/)
-        {
-            if (GameObject* door = me->FindNearestGameObject(GOB_CELL_BLOCK_GATE, 10.f))
             {
-                door->UseDoorOrButton();
-                door->DestroyForPlayer(GetLeaderForFollower());
-            }
-        })
-            .Schedule(4s, [this](TaskContext /*context*/)
-        {
-            SetFollowPaused(false);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_USE_STANDING);
+            })
+            .Schedule(2s, [this](TaskContext /*context*/)
+                {
+                    if (GameObject* door = me->FindNearestGameObject(GOB_CELL_BLOCK_GATE, 10.f))
+                    {
+                        door->UseDoorOrButton();
+                        door->DespawnForPlayer(GetLeaderForFollower(), 30s);
+                    }
+                })
+                .Schedule(4s, [this](TaskContext /*context*/)
+                    {
+                        SetFollowPaused(false);
 
-            if (GameObject* door = me->FindNearestGameObject(GOB_CELL_BLOCK_GATE, 10.f))
-                door->UseDoorOrButton();
+                        if (GameObject* door = me->FindNearestGameObject(GOB_CELL_BLOCK_GATE, 10.f))
+                            door->UseDoorOrButton();
 
-            if (Player* player = GetLeaderForFollower())
-                player->KilledMonsterCredit(KILL_CREDIT_CELL_BLOCK_DOOR);
-        });
+                        if (Player* player = GetLeaderForFollower())
+                            player->KilledMonsterCredit(KILL_CREDIT_CELL_BLOCK_DOOR);
+                    });
     }
 };
 
@@ -466,16 +463,16 @@ struct npc_tol_dagor_getaway_boat : public ScriptedAI
             player->KilledMonsterCredit(NPC_GETAWAY_BOAT_BOARDED);
 
             player->GetScheduler().Schedule(1s, [this, player](TaskContext /*context*/)
-            {
-                player->PlayConversation(5336);
-                me->GetMotionMaster()->MoveSmoothPath(1, boatPath, 6, false, true);
-            })
+                {
+                    player->PlayConversation(5336);
+                    me->GetMotionMaster()->MoveSmoothPath(1, boatPath, 6, false, true);
+                })
                 .Schedule(36s, [player](TaskContext /*context*/)
-            {
-                // This specific scene is spawned at 0 0 0
-                Position scenePos = Position();
-                player->GetSceneMgr().PlayScene(1746, &scenePos);
-            });
+                    {
+                        // This specific scene is spawned at 0 0 0
+                        Position scenePos = Position();
+                        player->GetSceneMgr().PlayScene(1746, &scenePos);
+                    });
         }
     }
 };
@@ -523,15 +520,15 @@ public:
             {
                 vehicleBase->NearTeleportTo(867.132f, -602.811f, -0.117634f, 1.536673f);
                 vehicleBase->GetScheduler().Schedule(2s, [this, vehicleBase, player](TaskContext /*context*/)
-                {
-                    vehicleBase->GetMotionMaster()->MoveSmoothPath(2, boatPath, 4, false, true);
+                    {
+                        vehicleBase->GetMotionMaster()->MoveSmoothPath(2, boatPath, 4, false, true);
 
-                    player->CastSpell(player, SPELL_GETAWAY_CONVERSATION_2, true);
-                })
+                        player->CastSpell(player, SPELL_GETAWAY_CONVERSATION_2, true);
+                    })
                     .Schedule(25s, [player, vehicleBase](TaskContext /*context*/)
-                {
-                    DespawnAndTeleportPlayer(player, vehicleBase);
-                });
+                        {
+                            DespawnAndTeleportPlayer(player, vehicleBase);
+                        });
             }
         }
     }
@@ -554,97 +551,6 @@ private:
     }
 };
 
-// 5360 Intro
-// 5362 ferry
-// 5365 bank
-// 5366 fly
-// 5375 tavern
-// 9556 end
-// 7605 harbormaster office
-struct conversation_boralus_get_your_bearings : public ConversationScript
-{
-    conversation_boralus_get_your_bearings() : ConversationScript("conversation_boralus_get_your_bearings") { }
-
-  /*  void OnConversationCreate(Conversation* conversation, Unit* creator) override
-    {
-        if (Unit* taelia = creator->GetSummonedCreatureByEntry(NPC_TAELIA_GET_YOUR_BEARINGS))
-            conversation->AddActor(taelia->GetGUID(), 0);
-    }*/
-};
-
-// 124630 - Taelia (Get your bearings)
-struct npc_taelia_get_your_bearings : public FollowerAI
-{
-    npc_taelia_get_your_bearings(Creature* creature) : FollowerAI(creature) { }
-
-    struct ConvByKillStruct
-    {
-        ConvByKillStruct(uint8 objectiveIndex, uint32 killCreditID, uint32 conversationID) :
-            ObjectiveIndex(objectiveIndex), KillCreditID(killCreditID), ConversationID(conversationID) { }
-
-        uint8 ObjectiveIndex = 0;
-        uint32 KillCreditID = 0;
-        uint32 ConversationID = 0;
-    };
-
-    std::map<uint32, ConvByKillStruct> convByKillCredit =
-    {
-        { 124720, ConvByKillStruct(0, 124586, 5365) },
-        { 124725, ConvByKillStruct(1, 124587, 5366) },
-        { 135064, ConvByKillStruct(2, 124588, 5362) },
-        { 135153, ConvByKillStruct(3, 124768, 5375) },
-    };
-
-    void IsSummonedBy(WorldObject* unit) override
-    {
-        me->SetNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
-
-        if (Player* player = unit->ToPlayer())
-        {
-            player->PlayConversation(5360);
-            ObjectGuid playerGuid = player->GetGUID();
-
-            me->GetScheduler().Schedule(1s, [this, playerGuid](TaskContext context)
-            {
-                Player* player = ObjectAccessor::GetPlayer(*me, playerGuid);
-                if (!player)
-                    return;
-
-                if (player->GetQuestStatus(QUEST_GET_YOUR_BEARINGS) == QUEST_STATUS_INCOMPLETE)
-                {
-                    bool justCompletedObjective = false;
-                    for (auto itr : convByKillCredit)
-                        if (player->FindNearestCreature(itr.first, 10.f))
-                        //    if (!player->GetQuestObjectiveData(QUEST_GET_YOUR_BEARINGS, itr.second.ObjectiveIndex))
-                            {
-                                player->KilledMonsterCredit(itr.second.KillCreditID);
-                                player->PlayConversation(itr.second.ConversationID);
-                                justCompletedObjective = true;
-                            }
-
-                    if (justCompletedObjective && player->GetQuestStatus(QUEST_GET_YOUR_BEARINGS) == QUEST_STATUS_COMPLETE)
-                    {
-                        player->PlayConversation(9556);
-                        me->SetNpcFlag(UNIT_NPC_FLAG_QUESTGIVER);
-                    }
-                }
-
-                if (player->GetQuestStatus(QUEST_THE_OLD_KNIGHT) == QUEST_STATUS_INCOMPLETE)
-                 //   if (!player->GetQuestObjectiveData(QUEST_THE_OLD_KNIGHT, 0))
-                        if (player->FindNearestCreature(NPC_CYRUS_CRESTFALL, 20.f))
-                        {
-                            player->CastSpell(player, SPELL_SCENE_OLD_KNIGHT, true);
-                            player->KilledMonsterCredit(NPC_CYRUS_CRESTFALL);
-                            player->RemoveAurasDueToSpell(SPELL_MAINTAIN_TAELIA_SUMMON);
-                            return;
-                        }
-
-                context.Repeat();
-            });
-        }
-    }
-};
-
 // 1960
 class scene_boralus_old_knight : public SceneScript
 {
@@ -663,15 +569,16 @@ class npc_cyrus_crestfall : public ScriptedAI
 public:
     npc_cyrus_crestfall(Creature* creature) : ScriptedAI(creature) { }
 
-    bool OnGossipSelect(Player* plr, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* plr, uint32 /*sender*/, uint32 /*action*/) override
     {
-		if (plr->HasQuest(QUEST_THE_OLD_KNIGHT))
-		{
+        if (plr->HasQuest(QUEST_THE_OLD_KNIGHT))
+        {
             plr->KilledMonsterCredit(122370);
-			plr->KilledMonsterCredit(137009);
-			plr->PlayConversation(7653);
-			CloseGossipMenuFor(plr);
-		}
+            plr->KilledMonsterCredit(137009);
+            plr->PlayConversation(7653);
+            plr->ForceCompleteQuest(QUEST_THE_OLD_KNIGHT);
+            CloseGossipMenuFor(plr);
+        }
 
         /* quest - Send the Fleet 56043 */
         if (plr->HasQuest(56043))
@@ -680,15 +587,15 @@ public:
             plr->ForceCompleteQuest(56043);
             Talk(0);
 
-            plr->GetScheduler().Schedule(Seconds(3), [plr](TaskContext context)
-            {
-                // tele to nazjatar
-                WorldLocation location(1718, 166.361f, -476.148f, -29.146f, 6.267f);
-                plr->TeleportTo(location);
+            plr->GetScheduler().Schedule(Seconds(3), [plr](TaskContext /*context*/)
+                {
+                    // tele to nazjatar
+                    WorldLocation location(1718, 166.361f, -476.148f, -29.146f, 6.267f);
+                    plr->TeleportTo(location);
 
-                // boat ride movie
-                plr->SendMovieStart(883);
-            });
+                    // boat ride movie
+                    plr->SendMovieStart(883);
+                });
         }
 
         return true;
@@ -715,45 +622,6 @@ public:
     npc_boralus_portal_maga(Creature* creature) : ScriptedAI(creature) { }
 
     bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
-    {
-        KillCreditMe(player);
-
-        return true;
-    }
-};
-
-// 121235
-class npc_taelia_harbormaster : public ScriptedAI
-{
-public:
-    npc_taelia_harbormaster(Creature* creature) : ScriptedAI(creature) { }
-
-    void OnQuestAccept(Player* player, Quest const* quest) override
-    {
-        if (quest->GetQuestId() == QUEST_NATION_DIVIDED)
-        {
-            player->CastSpell(player, SPELL_SCENE_NATION_DIVIDED, true);
-            player->ForceCompleteQuest(QUEST_NATION_DIVIDED);
-        }
-        else if (quest->GetQuestId() == 47099)
-            player->CastSpell(player, 247528, true);
-    }
-
-    bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
-    {
-        player->CastSpell(player, SPELL_SCENE_NATION_DIVIDED, true);
-
-        return true;
-    }
-};
-
-// 139522
-class npc_boralus_adventure_map : public ScriptedAI
-{
-public:
-    npc_boralus_adventure_map(Creature* creature) : ScriptedAI(creature) { }
-
-    bool OnGossipHello(Player* player) override
     {
         KillCreditMe(player);
 
@@ -800,8 +668,8 @@ public:
 
     enum
     {
-        NPC_FLYNN_ENTRY    = 126158,
-        SPELL_LOVESTRUCK   = 245526,
+        NPC_FLYNN_ENTRY = 126158,
+        SPELL_LOVESTRUCK = 245526,
         SPELL_BROKEN_HEART = 250911
     };
 
@@ -835,67 +703,67 @@ public:
 
     void IsSummonedBy(WorldObject* summoner) override
     {
-        Start(false, true, summoner->GetGUID());
+        LoadPath(me->GetEntry());
+        Start(false, summoner->GetGUID());
         SetEscortPaused(true);
         me->GetScheduler().Schedule(5s, [this](TaskContext /*context*/)
-        {
-            me->CastSpell(me, SPELL_LOVESICK, true);
-        }).Schedule(8s, [this](TaskContext /*context*/)
-        {
-            //TalkToEscortPlayer(0);
-        }).Schedule(10s, [this](TaskContext /*context*/)
-        {
-            me->CastSpell(me, SPELL_FLYNN_FLASK, true);
-        }).Schedule(17s, [this](TaskContext /*context*/)
-        {
-            SetEscortPaused(false);
-        });
+            {
+                me->CastSpell(me, SPELL_LOVESICK, true);
+            }).Schedule(8s, [](TaskContext /*context*/)
+                {
+                    //TalkToEscortPlayer(0);
+                }).Schedule(10s, [this](TaskContext /*context*/)
+                    {
+                        me->CastSpell(me, SPELL_FLYNN_FLASK, true);
+                    }).Schedule(17s, [this](TaskContext /*context*/)
+                        {
+                            SetEscortPaused(false);
+                        });
     }
 
-    void WaypointReached(uint32 waypointId, uint32 pointId) override
+    void WaypointReached(uint32 /*waypointId*/, uint32 pointId) override
     {
         switch (pointId)
         {
         case 0:
-          //  TalkToEscortPlayer(1);
+            //  TalkToEscortPlayer(1);
             break;
         case 1:
             //TalkToEscortPlayer(2);
             SetEscortPaused(true);
             me->GetScheduler().Schedule(7s, [this](TaskContext /*context*/)
-            {
-                //TalkToEscortPlayer(3);
-                SetEscortPaused(false);
-            });
+                {
+                    //TalkToEscortPlayer(3);
+                    SetEscortPaused(false);
+                });
             break;
         case 6:
-          //  TalkToEscortPlayer(4);
-            SetRun(false);
+            //  TalkToEscortPlayer(4);
             break;
         case 12:
-        //    TalkToEscortPlayer(5);
+            //    TalkToEscortPlayer(5);
             SetEscortPaused(true);
             me->GetScheduler().Schedule(7s, [this](TaskContext /*context*/)
-            {
-                SetEscortPaused(false);
-              //  TalkToEscortPlayer(6);
-            });
+                {
+                    SetEscortPaused(false);
+                    //  TalkToEscortPlayer(6);
+                });
             me->CastSpell(me, SPELL_DRUNK, true);
             break;
         case 16:
-          //  TalkToEscortPlayer(7);
+            //  TalkToEscortPlayer(7);
             break;
         case 31:
-           // TalkToEscortPlayer(9);
+            // TalkToEscortPlayer(9);
             break;
         case 40:
-          //  TalkToEscortPlayer(10);
+            //  TalkToEscortPlayer(10);
             break;
         case 45:
-          //  TalkToEscortPlayer(11);
+            //  TalkToEscortPlayer(11);
             break;
         case 46:
-          //  TalkToEscortPlayer(12);
+            //  TalkToEscortPlayer(12);
             KillCreditMe(GetPlayerForEscort());
             break;
         default:
@@ -912,62 +780,6 @@ public:
     }
 };
 
-//128349 Hilde Firebreaker
-class npc_hilde_firebreaker_queststarter : public ScriptedAI
-{
-public:
-    enum
-    {
-        QUEST_BACKUP_WILL_I_PACK = 49260,
-        NPC_DEFEND_FIREBREAKER_KILLCREDIT = 128709
-    };
-
-    npc_hilde_firebreaker_queststarter(Creature* creature) : ScriptedAI(creature) { }
-
-    void OnQuestAccept(Player* player, Quest const* quest) override
-    {
-        if (quest->GetQuestId() != QUEST_BACKUP_WILL_I_PACK)
-            return;
-
-        players.push_back(player);
-
-        if (_ongoing)
-            return;
-
-        players.clear();
-        players.push_back(player);
-
-        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-        me->SummonCreature(129841, me->GetPosition(), TEMPSUMMON_CORPSE_DESPAWN);
-
-        _ongoing = true;
-    }
-
-    void SummonedCreatureDespawn(Creature* /*creature*/) override
-    {
-        // killcredit
-        for (Player* player : players)
-            if (player && player->IsInWorld() && player->IsInRange2d(me->GetPositionX(), me->GetPositionY(), 0, 50))
-                player->KilledMonsterCredit(NPC_DEFEND_FIREBREAKER_KILLCREDIT);
-
-        _ongoing = false;
-    }
-
-    void SummonedCreatureDies(Creature* /*creature*/, Unit* /*unit*/) override
-    {
-        // Fail the quest
-        for (Player* player : players)
-            if (player && player->IsInWorld())
-                player->FailQuest(QUEST_BACKUP_WILL_I_PACK);
-
-        _ongoing = false;
-    }
-
-private:
-    bool _ongoing = false;
-    std::vector<Player*> players;
-};
-
 //129841 Hilde Firebreaker
 class npc_hilde_firebreaker_protect : public EscortAI
 {
@@ -977,7 +789,8 @@ public:
         QUEST_BACKUP_WILL_I_PACK = 49260,
         NPC_LIVING_ARTEFACT = 128405,
         NPC_ANGERED_REVENANT = 128591,
-        NPC_FALLEN_KEEPER = 128608
+        NPC_FALLEN_KEEPER = 128608,
+        NPC_DEFEND_FIREBREAKER_KILLCREDIT = 128709
     };
 
     npc_hilde_firebreaker_protect(Creature* creature) : EscortAI(creature)
@@ -988,15 +801,28 @@ public:
         pos[3] = Position(1123.770020f, 275.671997f, 17.066000f, 3.344580f); // 128591
         pos[4] = Position(1123.689941f, 278.740997f, 18.338100f, 3.654940f); // 128405
         pos[5] = Position(1119.719971f, 265.915009f, 17.663000f, 2.204700f); // 128608
+        pos[6] = Position(1109.19f, 280.738f, 18.3761f, 2.2218f);            // hilde_first_pos
+        pos[7] = Position(1114.68f, 274.511f, 17.9051f, 4.3311f);            // hilde_second_pos
+    }
+
+    void Reset() override
+    {
+        m_playerGUID = ObjectGuid::Empty;
+        o_hildeGUID = ObjectGuid::Empty;
+    }
+
+
+    void SetGUID(ObjectGuid const& guid, int32 id) override
+    {
+        m_playerGUID = guid;
     }
 
     void IsSummonedBy(WorldObject* summoner) override
     {
-        _numberOfSummonsAlive = 2;
-        if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[0], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(me);
-        if (TempSummon* ts = me->SummonCreature(NPC_ANGERED_REVENANT, pos[1], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(me);
-      //  SetCanAttack(false);
-        Start(false, false, summoner->GetGUID(), NULL, false, false, true);
+        me->SetWalk(true);
+        me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
+        o_hildeGUID = summoner->GetGUID();
+        me->GetMotionMaster()->MovePoint(1001, pos[6], true, 2.2218f);
     }
 
     void SummonedCreatureDies(Creature* /*creature*/, Unit* /*unit*/) override
@@ -1011,16 +837,24 @@ public:
             {
             case 1:
                 _numberOfSummonsAlive = 3;
-                if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[2], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(me);
-                if (TempSummon* ts = me->SummonCreature(NPC_ANGERED_REVENANT, pos[3], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(me);
-                if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[4], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(me);
+                if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
+                {
+                    if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[2], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(player);
+                    if (TempSummon* ts = me->SummonCreature(NPC_ANGERED_REVENANT, pos[3], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(player);
+                    if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[4], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(player);
+                }
+                Talk(2);
+                me->AddDelayedEvent(15000, [this]() ->void { Talk(3); });
                 break;
             case 2:
                 _numberOfSummonsAlive = 1;
                 if (TempSummon* ts = me->SummonCreature(NPC_FALLEN_KEEPER, pos[5], TEMPSUMMON_CORPSE_DESPAWN)) ts->AI()->AttackStart(me);
+                Talk(4);
                 break;
             case 3:
-                me->ForcedDespawn();
+                Talk(5);
+                me->HandleEmoteCommand(EMOTE_STATE_NONE);
+                me->GetMotionMaster()->MovePoint(1002, pos[7], true, 4.3311f);
                 break;
             default:
                 break;
@@ -1028,20 +862,36 @@ public:
         }
     }
 
-    void WaypointReached(uint32 waypointId, uint32 pointId) override
+    void MovementInform(uint32 type, uint32 id) override
     {
-        if (pointId == 1)
+        if (id == 1001)
         {
             _numberOfSummonsAlive = 2;
-            if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[0], TEMPSUMMON_DEAD_DESPAWN)) ts->AI()->AttackStart(me);
-            if (TempSummon* ts = me->SummonCreature(NPC_ANGERED_REVENANT, pos[1], TEMPSUMMON_DEAD_DESPAWN)) ts->AI()->AttackStart(me);
+            me->HandleEmoteCommand(EMOTE_STATE_WORK);
+            if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
+            {
+                if (TempSummon* ts = me->SummonCreature(NPC_LIVING_ARTEFACT, pos[0], TEMPSUMMON_DEAD_DESPAWN)) ts->AI()->AttackStart(player);
+                if (TempSummon* ts = me->SummonCreature(NPC_ANGERED_REVENANT, pos[1], TEMPSUMMON_DEAD_DESPAWN)) ts->AI()->AttackStart(player);
+            }
+            Talk(0);
+            me->AddDelayedEvent(15000, [this]() ->void { Talk(1); });
+        }
+        if (id == 1002)
+        {
+            if (Creature* hilde = ObjectAccessor::GetCreature(*me, o_hildeGUID))
+                hilde->RemoveAura(65050);
+            if (Player* player = ObjectAccessor::GetPlayer(*me, m_playerGUID))
+                player->KilledMonsterCredit(NPC_DEFEND_FIREBREAKER_KILLCREDIT);
+            me->ForcedDespawn();
         }
     }
 
 private:
     int _numberOfWaveCleaned = 0;
     int _numberOfSummonsAlive = 0;
-    Position pos[6];
+    Position pos[8];
+    ObjectGuid m_playerGUID;
+    ObjectGuid o_hildeGUID;
 };
 
 // 131684
@@ -1098,7 +948,8 @@ public:
 
     void IsSummonedBy(WorldObject* summoner) override
     {
-        Start(false, false, summoner->GetGUID(), NULL, true);
+        LoadPath(me->GetEntry());
+        Start(false, summoner->GetGUID());
         SetDespawnAtFar(true);
         SetDespawnAtEnd(true);
     }
@@ -1131,7 +982,7 @@ public:
             player->CastSpell(player, SPELL_CANCEL_ESCORT_PENNY);
         }
     }
-   
+
 };
 
 //143068, Riding Macaw
@@ -1141,8 +992,8 @@ struct npc_riding_macaw : public ScriptedAI
 
     enum MyEnums
     {
-        QUEST_RODRIGOS_REVENGE      = 49403,
-        NPC_RIDING_MACAW_PATROL     = 143096
+        QUEST_RODRIGOS_REVENGE = 49403,
+        NPC_RIDING_MACAW_PATROL = 143096
     };
 
     bool OnGossipHello(Player* player) override
@@ -1161,8 +1012,8 @@ public:
     enum
     {
         SPELL_SUMMON_RIDING_MACAW = 279049,
-        QUEST_RODRIGO_REVENGE     = 49403,
-        PHASE_RIDING_MACAW        = 11659,
+        QUEST_RODRIGO_REVENGE = 49403,
+        PHASE_RIDING_MACAW = 11659,
     };
 
     npc_riding_macaw_patrol(Creature* creature) : EscortAI(creature)
@@ -1186,13 +1037,14 @@ public:
         {
             PhasingHandler::AddPhase(summoner, PHASE_RIDING_MACAW, true);
             me->AddAura(SPELL_SUMMON_RIDING_MACAW, me); // Add the phase shift aura
-            _scheduler.Schedule(Seconds(1s), [this, summoner](TaskContext task)
-            {
-                summoner->CastSpell(me, VEHICLE_SPELL_RIDE_HARDCODED);
-            }).Schedule(2s, [this, summoner](TaskContext /*context*/)
-            {
-                Start(false, true, summoner->GetGUID(), (const Quest *)0, false, false, true);
-            });
+            _scheduler.Schedule(Seconds(1s), [this, summoner](TaskContext /*task*/)
+                {
+                    summoner->CastSpell(me, VEHICLE_SPELL_RIDE_HARDCODED);
+                }).Schedule(2s, [this, summoner](TaskContext /*context*/)
+                    {
+                        LoadPath(me->GetEntry());
+                        Start(false, summoner->GetGUID());
+                    });
         }
     }
 
@@ -1213,14 +1065,14 @@ private:
 };
 
 // 142721 - Ralston Karn
-class npc_ralston_karn  : public ScriptedAI
+class npc_ralston_karn : public ScriptedAI
 {
 public:
     enum
     {
-        QUEST_TO_THE_FRONT            = 53194,
+        QUEST_TO_THE_FRONT = 53194,
         NPC_YVERA_DAWNWING_KILLCREDIT = 143380,
-        SPELL_TELEPORT_TO_STROMGARDE  = 279518
+        SPELL_TELEPORT_TO_STROMGARDE = 279518
     };
 
     npc_ralston_karn(Creature* creature) : ScriptedAI(creature) { }
@@ -1228,7 +1080,7 @@ public:
     void OnQuestAccept(Player* player, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_TO_THE_FRONT)
-		{
+        {
             player->KilledMonsterCredit(NPC_YVERA_DAWNWING_KILLCREDIT);
             player->CastSpell(player, SPELL_TELEPORT_TO_STROMGARDE);
         }
@@ -1244,7 +1096,7 @@ public:
 
     void OnUpdate(Player* plr, uint32 diff) override
     {
-        if (timer <= diff && plr->GetZoneId() == 8717 || plr->GetZoneId() == 8567 && plr->GetPhaseShift().HasPhase(180))
+        if (timer <= diff && (plr->GetZoneId() == 8717 || (plr->GetZoneId() == 8567 && plr->GetPhaseShift().HasPhase(180))))
         {
             PhasingHandler::RemovePhase(plr, 180, true);
             if (plr->HasAura(78517))
@@ -1255,35 +1107,19 @@ public:
     }
 };
 
-// @TODO Rewrite levels
-class old_knight_check : public PlayerScript
-{
-public:
-    old_knight_check() : PlayerScript("old_knight_check") { }
-
-    void OnLogin(Player* plr, bool /*firstLogin*/)
-    {
-        if (plr->GetZoneId() == 8717 || plr->GetZoneId() == 8567 && plr->GetQuestStatus(QUEST_THE_OLD_KNIGHT) != QUEST_STATUS_REWARDED && plr->GetLevel() >= 110 && plr->GetTeam() == ALLIANCE && plr->GetQuestStatus(QUEST_GET_YOUR_BEARINGS) == QUEST_STATUS_REWARDED)
-        {
-            if (const Quest* qu = sObjectMgr->GetQuestTemplate(QUEST_THE_OLD_KNIGHT))
-                plr->AddQuest(qu, nullptr);
-        }
-    }
-};
-
 enum ExposeAshvaneEnums
 {
-    QUEST_MAKE_OUR_CASE          = 50787,
+    QUEST_MAKE_OUR_CASE = 50787,
 };
 
 //121144
 class npc_katherine_proudmoore_121144 : public ScriptedAI
 {
 public:
-	npc_katherine_proudmoore_121144(Creature* c) : ScriptedAI(c) { }
+    npc_katherine_proudmoore_121144(Creature* c) : ScriptedAI(c) { }
 
-	void MoveInLineOfSight(Unit* u) override
-	{
+    void MoveInLineOfSight(Unit* u) override
+    {
         if (u->IsPlayer())
             if (Player* plr = u->ToPlayer())
             {
@@ -1297,7 +1133,7 @@ public:
                         plr->CastSpell(plr, SPELL_SCENE_EXPOSING_ASHVANE, true);
                     }
             }
-	}
+    }
 };
 
 enum WarCampaign80
@@ -1321,17 +1157,17 @@ struct npc_grand_admiral_jes_tereth_135681 : public ScriptedAI
         AddGossipItemFor(player, GossipOptionNpc::GlyphMaster, "Set sail for Vol'dun.!", GOSSIP_SENDER_MAIN, 0);
         AddGossipItemFor(player, GossipOptionNpc::GlyphMaster, "Set sail for Nazmir.!", GOSSIP_SENDER_MAIN, 1);
         AddGossipItemFor(player, GossipOptionNpc::GlyphMaster, "Set sail for Zuldazar.!", GOSSIP_SENDER_MAIN, 2);
-       
+
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
-        return true;     
+        return true;
     }
 
-    bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+    bool OnGossipSelect(Player* player, uint32 /*sender*/, uint32 action) override
     {
         switch (action)
         {
         case 0: //Set sail for Vol'dun.
-        
+
             player->TeleportTo(1642, 2831.0f, 4264.0f, 7.5f, 4.77f);
 
             if (player->HasQuest(QUEST_OVERSEAS_ASSASINATION))
@@ -1342,7 +1178,7 @@ struct npc_grand_admiral_jes_tereth_135681 : public ScriptedAI
             CloseGossipMenuFor(player);
             break;
         case 1: //Set sail for Nazmir.
-        
+
             player->TeleportTo(1642, 2130.0f, 193.0f, 0.19f, 2.48f);
 
             if (player->HasQuest(QUEST_HEART_OF_DARKNESS))
@@ -1350,9 +1186,9 @@ struct npc_grand_admiral_jes_tereth_135681 : public ScriptedAI
             CloseGossipMenuFor(player);
             break;
         case 2://Set sail for Zuldazar.
-        
+
             player->TeleportTo(1642, -2618.0f, 2269.0f, 12.9f, 4.98f);
-        
+
             CloseGossipMenuFor(player);
             break;
         }
@@ -1370,8 +1206,8 @@ struct npc_injured_marine : public ScriptedAI
 
     enum myEnums
     {
-        QUEST_PATCHING_UP_THE_REAR      = 49733,
-        NPC_KILL_CREDIT_MARINE_HEALED   = 130671,
+        QUEST_PATCHING_UP_THE_REAR = 49733,
+        NPC_KILL_CREDIT_MARINE_HEALED = 130671,
     };
 
     void Reset() override
@@ -1399,8 +1235,6 @@ struct npc_injured_marine : public ScriptedAI
 //254830, releasing
 class spell_releasing : public SpellScript
 {
-    PrepareSpellScript(spell_releasing);
-
     bool killed;
 
 public:
@@ -1411,8 +1245,8 @@ public:
 
     enum MyEnums
     {
-        QUEST_IM_A_DRUID_NOT_A_PRIEST   = 49233,
-        NPC_CURSED_RAIDER               = 128286,
+        QUEST_IM_A_DRUID_NOT_A_PRIEST = 49233,
+        NPC_CURSED_RAIDER = 128286,
         NPC_KILL_CREDIT_SKLETONS_TURNED = 128446
     };
 
@@ -1431,10 +1265,10 @@ public:
                         if (creature->GetEntry() == NPC_CURSED_RAIDER)
                         {
                             player->GetScheduler().Schedule(Milliseconds(3000), [](TaskContext context)
-                            {
-                                if (Player* player = GetContextPlayer())
-                                    player->KilledMonsterCredit(NPC_KILL_CREDIT_SKLETONS_TURNED);
-                            });
+                                {
+                                    if (Player* player = GetContextPlayer())
+                                        player->KilledMonsterCredit(NPC_KILL_CREDIT_SKLETONS_TURNED);
+                                });
 
                             creature->DespawnOrUnsummon(3s);
                             killed = true;
@@ -1454,15 +1288,15 @@ struct npc_stoat_den : public ScriptedAI
 
     enum myEnums
     {
-        QUEST_THE_STOAT_HUNT        = 48077,
-        NPC_FAINTSTEP_STOAT         = 125327,
+        QUEST_THE_STOAT_HUNT = 48077,
+        NPC_FAINTSTEP_STOAT = 125327,
     };
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
-            if (player->GetQuestStatus(QUEST_THE_STOAT_HUNT) == QUEST_STATUS_INCOMPLETE)
+            if (player->HasQuest(QUEST_THE_STOAT_HUNT))
             {
                 me->SummonCreature(NPC_FAINTSTEP_STOAT, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
                 me->SummonCreature(NPC_FAINTSTEP_STOAT, me->GetPositionX(), me->GetPositionY() + urand(2, 3), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
@@ -1476,13 +1310,11 @@ struct npc_stoat_den : public ScriptedAI
 //251902, shoot-bola
 class spell_shoot_bola : public SpellScript
 {
-    PrepareSpellScript(spell_shoot_bola);
-
     enum MyEnums
     {
-        QUEST_BOLAS_AND_BIRDS           = 48616,
-        NPC_HOLLOWBEAK_FALCON           = 126626,
-        NPC_FALCON_SHOT_KILL_CREDIT     = 127013,
+        QUEST_BOLAS_AND_BIRDS = 48616,
+        NPC_HOLLOWBEAK_FALCON = 126626,
+        NPC_FALCON_SHOT_KILL_CREDIT = 127013,
     };
 
     void HandleScript()
@@ -1515,7 +1347,7 @@ struct npc_be_our_guest_quest : public ScriptedAI
 
     enum MyEnums
     {
-        QUEST_BE_OUR_GUEST      = 48005,
+        QUEST_BE_OUR_GUEST = 48005,
     };
 
     bool OnGossipHello(Player* player) override
@@ -1529,11 +1361,11 @@ struct npc_be_our_guest_quest : public ScriptedAI
 
 enum QuestBeginnerEquitationEnums
 {
-    QUEST_BEGINNER_EQUITATION      = 48004,
-    QUEST_BEST_IN_SHOW             = 49036,
-    QUEST_SHOW_ME_WHAT_YOU_HAVE_GOT= 48939,
-    NPC_LORD_ALDARIUS_NORWINGTON   = 124802,
-    NPC_COOPER_MOUNT               = 124402
+    QUEST_BEGINNER_EQUITATION = 48004,
+    QUEST_BEST_IN_SHOW = 49036,
+    QUEST_SHOW_ME_WHAT_YOU_HAVE_GOT = 48939,
+    NPC_LORD_ALDARIUS_NORWINGTON = 124802,
+    NPC_COOPER_MOUNT = 124402
 };
 
 //127718, Cooper
@@ -1541,7 +1373,7 @@ struct npc_cooper_main : public ScriptedAI
 {
     npc_cooper_main(Creature* creature) : ScriptedAI(creature) { }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -1579,7 +1411,7 @@ struct npc_cooper_mount : public VehicleAI
         }
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -1618,7 +1450,7 @@ struct npc_lord_aldarius_norwington : public ScriptedAI
         }
     }
 
-    void OnQuestAccept(Player* player, Quest const* quest) override
+    void OnQuestAccept(Player* /*player*/, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_BEGINNER_EQUITATION)
             Talk(1);
@@ -1627,7 +1459,7 @@ struct npc_lord_aldarius_norwington : public ScriptedAI
 
 enum QuestEquineRetrievalEnums
 {
-    QUEST_EQUINE_RETRIEVAL      = 48087,
+    QUEST_EQUINE_RETRIEVAL = 48087,
 };
 
 //127534, Rose
@@ -1635,7 +1467,7 @@ struct npc_rose_main : public ScriptedAI
 {
     npc_rose_main(Creature* creature) : ScriptedAI(creature) { }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -1670,15 +1502,15 @@ public:
 
     enum QuestNoPartyEnums
     {
-        QUEST_NO_PARTY_LIKE_A_TROGG_PARTY      = 48088,
-        QUEST_TIRAGARDE_SOUND                  = 47960,
-        QUEST_RODRIGOS_REVENGE                 = 49403,
-        PHASE_ID_TROGGS_INTER_CITY             = 11659,
-        MAP_KULTIRAS_PHASING_AREA              = 9011,
-        HARBORMASTERS_OFFICE_AREA              = 9802
+        QUEST_NO_PARTY_LIKE_A_TROGG_PARTY = 48088,
+        QUEST_TIRAGARDE_SOUND = 47960,
+        QUEST_RODRIGOS_REVENGE = 49403,
+        PHASE_ID_TROGGS_INTER_CITY = 11659,
+        MAP_KULTIRAS_PHASING_AREA = 9011,
+        HARBORMASTERS_OFFICE_AREA = 9802
     };
 
-    uint32 PHASE_UPDATE_DELAY      = 5000; // phase update delay in milliseconds
+    uint32 PHASE_UPDATE_DELAY = 5000; // phase update delay in milliseconds
     uint32 PHASE_UPDATE_DELAY_DIFF = PHASE_UPDATE_DELAY;
 
     void OnUpdate(Player* player, uint32 diff) override
@@ -1703,14 +1535,11 @@ public:
             {
                 if (player->GetQuestStatus(QUEST_TIRAGARDE_SOUND) == QUEST_STATUS_NONE)
                 {
-                    if (player->GetLevel() >= 30)
-                    {
                         if (const Quest* quest_1 = sObjectMgr->GetQuestTemplate(QUEST_TIRAGARDE_SOUND))
                         {
                             player->AddQuest(quest_1, nullptr);
                             player->ForceCompleteQuest(QUEST_TIRAGARDE_SOUND);
                         }
-                    }
                 }
 
                 PHASE_UPDATE_DELAY_DIFF = PHASE_UPDATE_DELAY;
@@ -1724,17 +1553,15 @@ public:
 //253855, Battlehorn of the Mountain
 class spell_battlehorn_of_the_mountain : public SpellScript
 {
-    PrepareSpellScript(spell_battlehorn_of_the_mountain);
-
     enum MyEnums
     {
-        QUEST_MOUNTAIN_SOUNDS                         = 48089,
-        NPC_KULLTIRAS_EMPOWERED_KILL_CREDIT           = 127940,
-        NPC_KULLTIRAN_NOBLE_1                         = 127562,
-        NPC_KULLTIRAN_NOBLE_2                         = 127563,
-        NPC_KULLTIRAN_NOBLE_3                         = 127564,
-        NPC_KULLTIRAN_NOBLE_4                         = 127565,
-        NPC_KULLTIRAN_NOBLE_5                         = 127566,
+        QUEST_MOUNTAIN_SOUNDS = 48089,
+        NPC_KULLTIRAS_EMPOWERED_KILL_CREDIT = 127940,
+        NPC_KULLTIRAN_NOBLE_1 = 127562,
+        NPC_KULLTIRAN_NOBLE_2 = 127563,
+        NPC_KULLTIRAN_NOBLE_3 = 127564,
+        NPC_KULLTIRAN_NOBLE_4 = 127565,
+        NPC_KULLTIRAN_NOBLE_5 = 127566,
     };
 
     void HandleScript()
@@ -1769,8 +1596,6 @@ class spell_battlehorn_of_the_mountain : public SpellScript
 //256323, Shaving
 class spell_shaving : public SpellScript
 {
-    PrepareSpellScript(spell_shaving);
-
     bool shaved;
 
 public:
@@ -1781,9 +1606,9 @@ public:
 
     enum MyEnums
     {
-        QUEST_HOLD_STILL           = 49394,
-        NPC_GENTLE_GOAT            = 129110,
-        ITEM_GOAT_FUR              = 155681,
+        QUEST_HOLD_STILL = 49394,
+        NPC_GENTLE_GOAT = 129110,
+        ITEM_GOAT_FUR = 155681,
     };
 
     void HandleScript(SpellEffIndex /*effIndex*/)
@@ -1808,10 +1633,10 @@ public:
 
 enum QuestRoughneckRidersEnums
 {
-    QUEST_ROUGHNECK_RIDERS     = 49417,
-    NPC_GREATFEATHER           = 137128,
-    WAYPOINT_ID                = 13712801,
-    EVENT_START_FLY            = 1,
+    QUEST_ROUGHNECK_RIDERS = 49417,
+    NPC_GREATFEATHER = 137128,
+    WAYPOINT_ID = 13712801,
+    EVENT_START_FLY = 1,
     ACTION_FLY
 };
 
@@ -1871,11 +1696,11 @@ struct npc_greatfeather : public VehicleAI
         {
             switch (eventId)
             {
-                case EVENT_START_FLY:
-                    me->GetMotionMaster()->MovePath(WAYPOINT_ID, false);
-                    break;
-                default:
-                    break;
+            case EVENT_START_FLY:
+                me->GetMotionMaster()->MovePath(WAYPOINT_ID, false);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -1884,8 +1709,6 @@ struct npc_greatfeather : public VehicleAI
 //256465, Tether Shot
 class spell_tether_shot : public SpellScript
 {
-    PrepareSpellScript(spell_tether_shot);
-
     void HandleScript()
     {
         Unit* caster = GetCaster();
@@ -1918,7 +1741,7 @@ struct npc_cagney : public ScriptedAI
 
     enum MyEnums
     {
-        QUEST_SUSPICIOUS_SHIPMENTS     = 47486,
+        QUEST_SUSPICIOUS_SHIPMENTS = 47486,
     };
 
     void OnQuestAccept(Player* player, Quest const* quest) override
@@ -1935,7 +1758,7 @@ struct npc_beachcomber_bob : public ScriptedAI
 
     enum MyEnums
     {
-        QUEST_STOW_AND_GO     = 47489,
+        QUEST_STOW_AND_GO = 47489,
     };
 
     void MoveInLineOfSight(Unit* unit) override
@@ -1953,7 +1776,7 @@ struct npc_my_favorite_things_quest : public ScriptedAI
 
     enum MyEnums
     {
-        QUEST_MY_FAVORITE_THINGS      = 49178,
+        QUEST_MY_FAVORITE_THINGS = 49178,
     };
 
     bool OnGossipHello(Player* player) override
@@ -1967,11 +1790,11 @@ struct npc_my_favorite_things_quest : public ScriptedAI
 
 enum FlynnFairwindEnums
 {
-    QUEST_DRESS_TO_IMPRESS         = 49239,
-    QUEST_FAIRWINDS_FRIENDS        = 49404,
-    SPELL_IRONTIDE_REQRUIT         = 254873,
-    KILL_CREDIT_ENTER_ARENA        = 130102,
-    KILL_CREDIT_UNTIE_FLYNN        = 130081,
+    QUEST_DRESS_TO_IMPRESS = 49239,
+    QUEST_FAIRWINDS_FRIENDS = 49404,
+    SPELL_IRONTIDE_REQRUIT = 254873,
+    KILL_CREDIT_ENTER_ARENA = 130102,
+    KILL_CREDIT_UNTIE_FLYNN = 130081,
     KILL_CREDIT_GAMBLE_WITH_HARLAN = 130106,
 };
 
@@ -2012,7 +1835,7 @@ struct npc_flynn_fairwind_130081 : public ScriptedAI
                 }
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (!clicked)
             if (Player* player = clicker->ToPlayer())
@@ -2023,10 +1846,10 @@ struct npc_flynn_fairwind_130081 : public ScriptedAI
                     clicked = true;
 
                     me->GetScheduler().Schedule(Milliseconds(5000), [player](TaskContext context)
-                    {
-                        player->KilledMonsterCredit(KILL_CREDIT_GAMBLE_WITH_HARLAN);
-                        GetContextCreature()->DespawnOrUnsummon(100ms);
-                    });
+                        {
+                            player->KilledMonsterCredit(KILL_CREDIT_GAMBLE_WITH_HARLAN);
+                            GetContextCreature()->DespawnOrUnsummon(100ms);
+                        });
                 }
             }
     }
@@ -2041,7 +1864,7 @@ struct go_irontide_recruiting_poster : public GameObjectAI
 
     enum MyEnums
     {
-        QUEST_RECRUITING_EFFORTS      = 49400,
+        QUEST_RECRUITING_EFFORTS = 49400,
         GO_IRONTIDE_RECRUITING_POSTER = 278308
     };
 
@@ -2073,10 +1896,9 @@ struct npc_galeheart : public VehicleAI
 
     enum MyEnums
     {
-        QUEST_DEFENDERS_OF_DAELIN_GATE     = 49405,
-        NPC_GALEHEART                      = 130158,
-        WAYPOINT_ID                        = 14095801,
-        EVENT_START_FLY                    = 1
+        QUEST_DEFENDERS_OF_DAELIN_GATE = 49405,
+        NPC_GALEHEART = 130158,
+        WAYPOINT_ID_GALEHEART = 14095801
     };
 
     void Reset() override
@@ -2130,11 +1952,11 @@ struct npc_galeheart : public VehicleAI
         {
             switch (eventId)
             {
-                case EVENT_START_FLY:
-                    me->GetMotionMaster()->MovePath(WAYPOINT_ID, false);
-                    break;
-                default:
-                    break;
+            case EVENT_START_FLY:
+                me->GetMotionMaster()->MovePath(WAYPOINT_ID_GALEHEART, false);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -2156,10 +1978,10 @@ struct npc_vigil_hill_cannon : public VehicleAI
 
 enum ScratchyEnums
 {
-    QUEST_CAT_ON_A_HOT_COPPER_ROOF     = 49757,
-    NPC_SCRATCHY                       = 130746,
-    NPC_MEREDITH                       = 131654,
-    SPELL_SCRATCHED                    = 258718
+    QUEST_CAT_ON_A_HOT_COPPER_ROOF = 49757,
+    NPC_SCRATCHY = 130746,
+    NPC_MEREDITH = 131654,
+    SPELL_SCRATCHED = 258718
 };
 
 //131654, Meredith
@@ -2172,22 +1994,22 @@ struct npc_meredith : public ScriptedAI
         if (quest->GetQuestId() == QUEST_CAT_ON_A_HOT_COPPER_ROOF)
         {
             Talk(0);
-            me->GetScheduler().Schedule(Milliseconds(5000), [player](TaskContext context)
-            {
-                player->NearTeleportTo(-720.645f, 626.148f, 58.362f, 5.374f, false);
-            });
+            me->GetScheduler().Schedule(Milliseconds(5000), [player](TaskContext /*context*/)
+                {
+                    player->NearTeleportTo(-720.645f, 626.148f, 58.362f, 5.374f, false);
+                });
         }
     }
 
-    void OnQuestReward(Player* player, Quest const* quest, LootItemType /*type*/, uint32 /*opt*/) override
+    void OnQuestReward(Player* /*player*/, Quest const* quest, LootItemType /*type*/, uint32 /*opt*/) override
     {
         if (quest->GetQuestId() == QUEST_CAT_ON_A_HOT_COPPER_ROOF)
         {
             Talk(2);
             me->GetScheduler().Schedule(Milliseconds(4000), [](TaskContext context)
-            {
-                GetContextCreature()->AI()->Talk(3);
-            });
+                {
+                    GetContextCreature()->AI()->Talk(3);
+                });
         }
     }
 };
@@ -2204,7 +2026,7 @@ struct npc_scratchy : public ScriptedAI
         scratched = false;
     }
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
@@ -2233,11 +2055,11 @@ struct npc_scratchy : public ScriptedAI
 
 enum ProudmooreBattleStandardEnums
 {
-    QUEST_FOR_KUL_TIRAS                = 49736,
-    NPC_VIGIL_HILL_MARINE              = 131324,
-    NPC_VIGIL_HILL_MILITIA             = 131325,
-    KILL_CREDIT_INSPIRE_KUL_TIRANS     = 146407,
-    SPELL_RPOUDMOORE_BATTLE_STANDARD   = 259357
+    QUEST_FOR_KUL_TIRAS = 49736,
+    NPC_VIGIL_HILL_MARINE = 131324,
+    NPC_VIGIL_HILL_MILITIA = 131325,
+    KILL_CREDIT_INSPIRE_KUL_TIRANS = 146407,
+    SPELL_RPOUDMOORE_BATTLE_STANDARD = 259357
 };
 
 //156520, Proudmoore Battle Standard
@@ -2246,7 +2068,7 @@ class item_proudmoore_battle_standard : public ItemScript
 public:
     item_proudmoore_battle_standard() : ItemScript("item_proudmoore_battle_standard") { }
 
-    bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/, ObjectGuid /*castId*/) override
+    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/, ObjectGuid /*castId*/) override
     {
         if (player->GetAreaId() != 9378)
             return true;
@@ -2270,7 +2092,7 @@ struct npc_taelia_142393 : public ScriptedAI
 
     enum ProudmooreBattleStandardEnums
     {
-        QUEST_RIGHTEOUS_RETRIBUTION                = 49741,
+        QUEST_RIGHTEOUS_RETRIBUTION = 49741,
     };
 
     void OnQuestAccept(Player* player, Quest const* quest) override
@@ -2282,10 +2104,10 @@ struct npc_taelia_142393 : public ScriptedAI
 
 enum GaleheartEnums
 {
-    QUEST_BEARERS_OF_BAD_NEWS          = 50110,
-    NPC_GALEHEART                      = 142407,
-    WAYPOINT_ID_GALEHEART              = 14240701,
-    EVENT_START_FLY_GALEHEART          = 1
+    QUEST_BEARERS_OF_BAD_NEWS = 50110,
+    NPC_GALEHEART = 142407,
+    WAYPOINT_ID_GALEHEART = 142407,
+    EVENT_START_FLY_GALEHEART = 1
 };
 
 //124727, Galeheart
@@ -2295,7 +2117,7 @@ struct npc_galeheart_124727 : public ScriptedAI
 
     bool OnGossipHello(Player* player) override
     {
-        if (player->GetQuestStatus(QUEST_BEARERS_OF_BAD_NEWS) == QUEST_STATUS_INCOMPLETE)
+        if (player->HasQuest(QUEST_BEARERS_OF_BAD_NEWS))
             player->SummonCreature(NPC_GALEHEART, player->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
 
         return true;
@@ -2320,12 +2142,12 @@ struct npc_galeheart_142407 : public VehicleAI
     {
         if (Player* player = summoner->ToPlayer())
         {
-            if (player->GetQuestStatus(QUEST_BEARERS_OF_BAD_NEWS) == QUEST_STATUS_INCOMPLETE)
+            if (player->HasQuest(QUEST_BEARERS_OF_BAD_NEWS))
             {
                 me->GetVehicleKit();
                 player->EnterVehicle(me);
                 player->KilledMonsterCredit(NPC_GALEHEART);
-                m_events.ScheduleEvent(EVENT_START_FLY, 10s);
+                m_events.ScheduleEvent(EVENT_START_FLY_GALEHEART, 5s);
             }
         }
     }
@@ -2344,11 +2166,11 @@ struct npc_galeheart_142407 : public VehicleAI
         {
             switch (eventId)
             {
-                case EVENT_START_FLY_GALEHEART:
-                    me->GetMotionMaster()->MovePath(WAYPOINT_ID_GALEHEART, false);
-                    break;
-                default:
-                    break;
+            case EVENT_START_FLY_GALEHEART:
+                me->GetMotionMaster()->MovePath(WAYPOINT_ID_GALEHEART, false);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -2364,7 +2186,7 @@ public:
 
     enum MyEnums
     {
-        QUEST_PREPARE_FOR_TROUBLE          = 50795,
+        QUEST_PREPARE_FOR_TROUBLE = 50795,
     };
 
     void Reset() override
@@ -2382,9 +2204,9 @@ public:
                 CloseGossipMenuFor(player);
                 player->KilledMonsterCredit(me->GetEntry());
                 me->GetScheduler().Schedule(Milliseconds(120000), [](TaskContext context)
-                {
-                    GetContextCreature()->AI()->Reset();
-                });
+                    {
+                        GetContextCreature()->AI()->Reset();
+                    });
             }
 
         return true;
@@ -2393,8 +2215,8 @@ public:
 
 enum HotPursuitEnums
 {
-    QUEST_HOT_PURSUIT                  = 50790,
-    NPC_PROUDMOORE_CHARGER             = 135683
+    QUEST_HOT_PURSUIT = 50790,
+    NPC_PROUDMOORE_CHARGER = 135683
 };
 
 //135683, Proudmoore Charger
@@ -2422,21 +2244,21 @@ class npc_taelia_135259 : public ScriptedAI
 public:
     npc_taelia_135259(Creature* creature) : ScriptedAI(creature) { }
 
-    void OnQuestAccept(Player* player, Quest const* quest) override
+    void OnQuestAccept(Player* /*player*/, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_HOT_PURSUIT)
             Talk(0);
     }
 
-    void OnQuestReward(Player* player, Quest const* quest, LootItemType /*type*/, uint32 /*opt*/) override
+    void OnQuestReward(Player* /*player*/, Quest const* quest, LootItemType /*type*/, uint32 /*opt*/) override
     {
         if (quest->GetQuestId() == QUEST_HOT_PURSUIT)
         {
             Talk(1);
             me->GetScheduler().Schedule(Milliseconds(5000), [](TaskContext context)
-            {
-                GetContextCreature()->AI()->Talk(2);
-            });
+                {
+                    GetContextCreature()->AI()->Talk(2);
+                });
 
             if (Creature* proudmooreCharger = me->FindNearestCreature(NPC_PROUDMOORE_CHARGER, 100.0f))
                 proudmooreCharger->DespawnOrUnsummon(10ms);
@@ -2452,32 +2274,32 @@ public:
 
     enum MyEnums
     {
-        QUEST_ALGAE_SHAKES                  = 49292,
-        NPC_INFECTIOUS_GUTWORM              = 129046,
-        NPC_SICK_VILLAGER_PROXY             = 128960,
-        SPELL_SICK                          = 255503
+        QUEST_ALGAE_SHAKES = 49292,
+        NPC_INFECTIOUS_GUTWORM = 129046,
+        NPC_SICK_VILLAGER_PROXY = 128960,
+        SPELL_SICK = 255503
     };
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
             if (player->GetQuestStatus(QUEST_ALGAE_SHAKES) == QUEST_STATUS_INCOMPLETE)
             {
                 me->GetScheduler().Schedule(Milliseconds(2500), [player](TaskContext context)
-                {
-                    Creature* me = GetContextCreature();
+                    {
+                        Creature* me = GetContextCreature();
 
-                    me->AI()->Talk(0);
-                    me->SetAIAnimKitId(0);
-                    me->RemoveAurasDueToSpell(SPELL_SICK);
-                    player->KilledMonsterCredit(NPC_SICK_VILLAGER_PROXY);
-                    if (TempSummon* ts1 = me->SummonCreature(NPC_INFECTIOUS_GUTWORM, me->GetPositionX(), me->GetPositionY() + urand(2, 3), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
-                        ts1->AI()->AttackStart(player);
-                    if (TempSummon* ts2 = me->SummonCreature(NPC_INFECTIOUS_GUTWORM, me->GetPositionX(), me->GetPositionY() - urand(2, 3), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
-                        ts2->AI()->AttackStart(player);
-                    me->GetMotionMaster()->MoveFleeing(player, 3000);
-                });
+                        me->AI()->Talk(0);
+                        me->SetAIAnimKitId(0);
+                        me->RemoveAurasDueToSpell(SPELL_SICK);
+                        player->KilledMonsterCredit(NPC_SICK_VILLAGER_PROXY);
+                        if (TempSummon* ts1 = me->SummonCreature(NPC_INFECTIOUS_GUTWORM, me->GetPositionX(), me->GetPositionY() + urand(2, 3), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
+                            ts1->AI()->AttackStart(player);
+                        if (TempSummon* ts2 = me->SummonCreature(NPC_INFECTIOUS_GUTWORM, me->GetPositionX(), me->GetPositionY() - urand(2, 3), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
+                            ts2->AI()->AttackStart(player);
+                        me->GetMotionMaster()->MoveFleeing(player, 3s);
+                    });
                 me->DespawnOrUnsummon(5s);
             }
         }
@@ -2492,26 +2314,26 @@ public:
 
     enum MyEnums
     {
-        QUEST_TAINTED_SHIPMENTS             = 48354,
-        NPC_INFESTING_BRAINWORM             = 126135,
-        NPC_BARREL_CHECKED_KILL_CREDIT      = 126136,
+        QUEST_TAINTED_SHIPMENTS = 48354,
+        NPC_INFESTING_BRAINWORM = 126135,
+        NPC_BARREL_CHECKED_KILL_CREDIT = 126136,
     };
 
-    void OnSpellClick(Unit* clicker, bool result) override
+    void OnSpellClick(Unit* clicker, bool /*result*/) override
     {
         if (Player* player = clicker->ToPlayer())
         {
             if (player->GetQuestStatus(QUEST_TAINTED_SHIPMENTS) == QUEST_STATUS_INCOMPLETE)
             {
                 me->GetScheduler().Schedule(Milliseconds(1500), [player](TaskContext context)
-                {
-                    Creature* me = GetContextCreature();
+                    {
+                        Creature* me = GetContextCreature();
 
-                    me->DespawnOrUnsummon(100ms);
-                    player->KilledMonsterCredit(NPC_BARREL_CHECKED_KILL_CREDIT);
-                    if (TempSummon* ts1 = me->SummonCreature(NPC_INFESTING_BRAINWORM, me->GetPosition(), TEMPSUMMON_CORPSE_DESPAWN))
-                        ts1->AI()->AttackStart(player);
-                });
+                        me->DespawnOrUnsummon(100ms);
+                        player->KilledMonsterCredit(NPC_BARREL_CHECKED_KILL_CREDIT);
+                        if (TempSummon* ts1 = me->SummonCreature(NPC_INFESTING_BRAINWORM, me->GetPosition(), TEMPSUMMON_CORPSE_DESPAWN))
+                            ts1->AI()->AttackStart(player);
+                    });
             }
         }
     }
@@ -2525,10 +2347,10 @@ public:
 
     enum MyEnums
     {
-        QUEST_EVACUATE_THE_PREMISES         = 48355,
+        QUEST_EVACUATE_THE_PREMISES = 48355,
         NPC_ANGLEPOINT_FISHPACKER_EVACUATED = 125955,
-        NPC_SKITTERING_BRAINWORM            = 136927,
-        NPC_MERCILESS_MINDEATER             = 136938,
+        NPC_SKITTERING_BRAINWORM = 136927,
+        NPC_MERCILESS_MINDEATER = 136938,
     };
 
     bool OnGossipHello(Player* player) override
@@ -2541,7 +2363,7 @@ public:
                 ts1->AI()->AttackStart(player);
             if (TempSummon* ts2 = me->SummonCreature(NPC_MERCILESS_MINDEATER, me->GetPositionX(), me->GetPositionY() - urand(2, 3), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 ts2->AI()->AttackStart(player);
-            me->GetMotionMaster()->MoveFleeing(player, 3000);
+            me->GetMotionMaster()->MoveFleeing(player, 3s);
             me->DespawnOrUnsummon(3s);
         }
 
@@ -2557,11 +2379,11 @@ public:
 
     enum MyEnums
     {
-        QUEST_POSSESSIVE_HEADGEAR           = 48356,
-        NPC_POSSESSED_DOCKWORKER            = 125957,
+        QUEST_POSSESSIVE_HEADGEAR = 48356,
+        NPC_POSSESSED_DOCKWORKER = 125957,
     };
 
-   void DamageTaken(Unit* attacker, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* attacker, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (Player* player = attacker->ToPlayer())
             if (me->GetHealth() < me->CountPctFromMaxHealth(10)) // the intent is not to kill but to sparr
@@ -2583,7 +2405,7 @@ public:
                 player->KilledMonsterCredit(me->GetEntry());
             if (TempSummon* ts = me->SummonCreature(NPC_POSSESSED_DOCKWORKER, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN))
             {
-                ts->GetMotionMaster()->MoveFleeing(player, 3000);
+                ts->GetMotionMaster()->MoveFleeing(player, 3s);
                 ts->AI()->Talk(rand() % 3);
                 ts->DespawnOrUnsummon(3s);
             }
@@ -2594,9 +2416,9 @@ public:
 
 enum StormsongEnums
 {
-    QUEST_THE_YONG_LORD_STORMSONG       = 48365,
-    NPC_BRANNON_STORMSONG               = 126298,
-    NPC_BROTHER_THEROLD                 = 125922
+    QUEST_THE_YONG_LORD_STORMSONG = 48365,
+    NPC_BRANNON_STORMSONG = 126298,
+    NPC_BROTHER_THEROLD = 125922
 };
 
 //125961, Brother Conway
@@ -2626,7 +2448,7 @@ public:
                 }
     }
 
-   void DamageTaken(Unit* attacker, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* attacker, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (!talk1) {
             Talk(1);
@@ -2654,10 +2476,10 @@ public:
                     brannon->SetStandState(UNIT_STAND_STATE_STAND);
                     brannon->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
                     brannon->AI()->Talk(0);
-                    brannon->GetScheduler().Schedule(Milliseconds(10000), [player](TaskContext context)
-                    {
-                        GetContextCreature()->AI()->Talk(1);
-                    });
+                    brannon->GetScheduler().Schedule(Milliseconds(10000), [](TaskContext context)
+                        {
+                            GetContextCreature()->AI()->Talk(1);
+                        });
                 }
             }
     }
@@ -2689,30 +2511,30 @@ public:
                         talk = true;
                         if (Creature* brother = player->FindNearestCreature(NPC_BROTHER_THEROLD, 100.0f))
                         {
-                            brother->GetScheduler().Schedule(Milliseconds(1000), [player](TaskContext context)
-                            {
-                                GetContextCreature()->AI()->Talk(5);
-                            });
-                            brother->GetScheduler().Schedule(Milliseconds(15000), [player](TaskContext context)
-                            {
-                                GetContextCreature()->AI()->Talk(6);
-                            });
+                            brother->GetScheduler().Schedule(Milliseconds(1000), [](TaskContext context)
+                                {
+                                    GetContextCreature()->AI()->Talk(5);
+                                });
+                            brother->GetScheduler().Schedule(Milliseconds(15000), [](TaskContext context)
+                                {
+                                    GetContextCreature()->AI()->Talk(6);
+                                });
                         }
                         if (Creature* brannon = player->FindNearestCreature(NPC_BRANNON_STORMSONG, 100.0f))
                         {
-                            brannon->GetScheduler().Schedule(Milliseconds(6000), [player](TaskContext context)
-                            {
-                                GetContextCreature()->AI()->Talk(2);
-                            });
-                            brannon->GetScheduler().Schedule(Milliseconds(20000), [player](TaskContext context)
-                            {
-                                GetContextCreature()->DespawnOrUnsummon();
-                            });
+                            brannon->GetScheduler().Schedule(Milliseconds(6000), [](TaskContext context)
+                                {
+                                    GetContextCreature()->AI()->Talk(2);
+                                });
+                            brannon->GetScheduler().Schedule(Milliseconds(20000), [](TaskContext context)
+                                {
+                                    GetContextCreature()->DespawnOrUnsummon();
+                                });
                         }
                         me->GetScheduler().Schedule(Milliseconds(120000), [](TaskContext context)
-                        {
-                            GetContextCreature()->AI()->Reset();
-                        });
+                            {
+                                GetContextCreature()->AI()->Reset();
+                            });
                     }
                 }
     }
@@ -2725,11 +2547,11 @@ struct npc_escape_rowboat : public VehicleAI
 
     enum MyEnums
     {
-        QUEST_PADDLE_TO_SAFETY              = 48366,
-        NPC_ESCAPE_ROWBOAT                  = 126437,
-        ISLAND_REACHED_KILL_CREDIT          = 131348,
-        EVENT_START_PADDLE                  = 1,
-        WAYPOINT_ID                         = 12643101
+        QUEST_PADDLE_TO_SAFETY = 48366,
+        NPC_ESCAPE_ROWBOAT = 126437,
+        ISLAND_REACHED_KILL_CREDIT = 131348,
+        EVENT_START_PADDLE = 1,
+        WAYPOINT_ID_ROWBOAT = 12643101
     };
 
     ObjectGuid  m_playerGUID;
@@ -2784,11 +2606,11 @@ struct npc_escape_rowboat : public VehicleAI
         {
             switch (eventId)
             {
-                case EVENT_START_PADDLE:
-                    me->GetMotionMaster()->MovePath(WAYPOINT_ID, false);
-                    break;
-                default:
-                    break;
+            case EVENT_START_PADDLE:
+                me->GetMotionMaster()->MovePath(WAYPOINT_ID_ROWBOAT, false);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -2796,11 +2618,11 @@ struct npc_escape_rowboat : public VehicleAI
 
 enum OkriEnums
 {
-    QUEST_THE_DEADLIEST_CATCH          = 49302,
-    NPC_PLUMERIA                       = 129427,
-    NPC_GRYPHON_RIDE_KILL_CREDIT       = 129456,
-    EVENT_START_FLY_PLUMERIA           = 1,
-    WAYPOINT_ID_PLUMERIA               = 12942701
+    QUEST_THE_DEADLIEST_CATCH = 49302,
+    NPC_PLUMERIA = 129427,
+    NPC_GRYPHON_RIDE_KILL_CREDIT = 129456,
+    EVENT_START_FLY_PLUMERIA = 1,
+    WAYPOINT_ID_PLUMERIA = 12942701
 };
 
 // 128680, Okri Putterwrench
@@ -2879,11 +2701,11 @@ struct npc_plumeria : public VehicleAI
         {
             switch (eventId)
             {
-                case EVENT_START_FLY_PLUMERIA:
-                    me->GetMotionMaster()->MovePath(WAYPOINT_ID_PLUMERIA, false);
-                    break;
-                default:
-                    break;
+            case EVENT_START_FLY_PLUMERIA:
+                me->GetMotionMaster()->MovePath(WAYPOINT_ID_PLUMERIA, false);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -2893,7 +2715,7 @@ struct go_humming_ice_277262 : public GameObjectAI
 {
     go_humming_ice_277262(GameObject* go) : GameObjectAI(go) { }
 
-    bool OnReportUse(Player* player)
+    bool OnReportUse(Player* /*player*/)
     {
         me->SummonCreature(128062, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
         me->SummonCreature(128062, me->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN);
@@ -2917,18 +2739,13 @@ void AddSC_zone_tiragarde_sound()
     RegisterConversationScript(conversation_tol_dagor_inmate);
     RegisterConversationScript(conversation_tol_dagor_escape);
     RegisterSceneScript(scene_tol_dagor_getaway_boat);
-    RegisterConversationScript(conversation_boralus_get_your_bearings);
-    RegisterCreatureAI(npc_taelia_get_your_bearings);
     RegisterSceneScript(scene_boralus_old_knight);
     RegisterCreatureAI(npc_cyrus_crestfall);
     RegisterConversationScript(conversation_cyrus_story);
     RegisterCreatureAI(npc_boralus_portal_maga);
-    RegisterCreatureAI(npc_taelia_harbormaster);
-    RegisterCreatureAI(npc_boralus_adventure_map);
     RegisterCreatureAI(npc_flynn_allured);
     RegisterCreatureAI(npc_lugeia);
     RegisterCreatureAI(npc_flynn_lovesick_escort);
-    RegisterCreatureAI(npc_hilde_firebreaker_queststarter);
     RegisterCreatureAI(npc_hilde_firebreaker_protect);
     RegisterCreatureAI(npc_penny_hardwick);
     RegisterCreatureAI(npc_penny_hardwick_escort);
@@ -2936,7 +2753,6 @@ void AddSC_zone_tiragarde_sound()
     RegisterCreatureAI(npc_riding_macaw_patrol);
     RegisterCreatureAI(npc_ralston_karn);
     RegisterPlayerScript(boralus_harbor);
-    RegisterPlayerScript(old_knight_check);
     RegisterCreatureAI(npc_katherine_proudmoore_121144);
     RegisterCreatureAI(npc_grand_admiral_jes_tereth_135681);
     RegisterCreatureAI(npc_injured_marine);

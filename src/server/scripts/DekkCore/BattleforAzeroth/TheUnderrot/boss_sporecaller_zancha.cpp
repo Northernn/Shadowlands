@@ -51,7 +51,6 @@ enum Timers
 
 enum Creatures
 {
-    BOSS_SPORECALLER_ZANCHA = 131383,
 
     NPC_SPORE_POD_TRIGGER = 131597,
     NPC_VOLATILE_POD_TRIGGER = 139127,
@@ -76,13 +75,13 @@ struct checkSpec //: public std::unary_function<Unit*, bool>
     bool operator() (const Unit* pTarget)
     {
         Player* player = const_cast<Player*>(pTarget->ToPlayer());
-        uint32 specialization = player->GetSpecializationId();
-        return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-            || (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-            || (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-            || (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+        uint32 specialization = player->GetPrimarySpecialization();
+        return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+            || (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+            || (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+            || (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
     }
 };
 
@@ -231,15 +230,15 @@ public:
         void JustEngagedWith(Unit*) override
         {
             SelectSoundAndText(me, 1);
-          /*  events.ScheduleEvent(EVENT_SHOCKWAVE, TIMER_SHOCKWAVE);
-            events.ScheduleEvent(EVENT_UPHEAVAL, TIMER_UPHEAVAL);
-            events.ScheduleEvent(EVENT_SPAWN_SPORE, TIMER_SPAWN_SPORE);
-            events.ScheduleEvent(EVENT_ENERGY_REGEN, TIMER_ENERGY_REGEN);*/
+            events.ScheduleEvent(EVENT_SHOCKWAVE, 15s);
+            events.ScheduleEvent(EVENT_UPHEAVAL, 19s);
+            events.ScheduleEvent(EVENT_SPAWN_SPORE, 22s);
+            events.ScheduleEvent(EVENT_ENERGY_REGEN, 30s);
 
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-           // if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-           //     events.ScheduleEvent(EVENT_SPAWN_VOLATILE_SPORE, TIMER_SPAWN_VOLATILE_SPORE);
+            if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
+                events.ScheduleEvent(EVENT_SPAWN_VOLATILE_SPORE, 20s);
         }
 
         void OnSpellCast(SpellInfo const* spell) override
@@ -336,10 +335,10 @@ public:
                     me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 3);
                     if (me->GetPower(POWER_ENERGY) == 100)
                     {
-                       // events.ScheduleEvent(EVENT_FESTERING_HARVEST, 1000);
+                        events.ScheduleEvent(EVENT_FESTERING_HARVEST, 1s);
                         me->SetPower(POWER_ENERGY, 0);
                     }
-                 //   events.ScheduleEvent(EVENT_ENERGY_REGEN, TIMER_ENERGY_REGEN);
+                    events.ScheduleEvent(EVENT_ENERGY_REGEN, 20s);
                     break;
                 case EVENT_FESTERING_HARVEST:
                     SelectSoundAndText(me, 6);
@@ -348,7 +347,6 @@ public:
                 case EVENT_UPHEAVAL:
                 {
                     std::list<Unit*> targets;
-                   // SelectTargetList(targets, 5, SELECT_TARGET_RANDOM, 500.0f, true);
 
                     targets.remove_if(checkSpec());
 
@@ -364,17 +362,17 @@ public:
                         me->TextEmote(str.str().c_str(), 0, true);
                     }
 
-                //    events.ScheduleEvent(EVENT_UPHEAVAL, TIMER_UPHEAVAL);
+                    events.ScheduleEvent(EVENT_UPHEAVAL, 15s);
                     break;
                 }
                 case EVENT_SHOCKWAVE:
                     me->CastSpell(me, SPELL_SHOCKWAVE);
-                   // events.ScheduleEvent(EVENT_SHOCKWAVE, TIMER_SHOCKWAVE);
+                    events.ScheduleEvent(EVENT_SHOCKWAVE, 18s);
                     break;
                 case EVENT_SPAWN_SPORE:
                     SelectSoundAndText(me, 5);
                     HandleSpawnSpore();
-                  //  events.ScheduleEvent(EVENT_SPAWN_SPORE, TIMER_SPAWN_SPORE);
+                    events.ScheduleEvent(EVENT_SPAWN_SPORE, 20s);
                     break;
                 case EVENT_SPAWN_VOLATILE_SPORE:
                     SelectSoundAndText(me, 7);
@@ -382,7 +380,7 @@ public:
                     {
                         me->SummonCreature(NPC_VOLATILE_POD_TRIGGER, volatilePodsPositions[i], TEMPSUMMON_MANUAL_DESPAWN);
                     }
-                   // events.ScheduleEvent(EVENT_SPAWN_VOLATILE_SPORE, TIMER_SPAWN_VOLATILE_SPORE);
+                    events.ScheduleEvent(EVENT_SPAWN_VOLATILE_SPORE, 20s);
                     break;
                 }
             }
@@ -523,8 +521,6 @@ public:
 
     class bfa_spell_upheaval_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_upheaval_AuraScript);
-
         void HandleOnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();

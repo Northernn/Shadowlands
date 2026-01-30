@@ -713,8 +713,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_magma_barrage_AuraScript : public AuraScript
             {
-                PrepareAuraScript(spell_magma_barrage_AuraScript);
-
                 void OnPeriodic(AuraEffect const* aurEff)
                 {
                     Unit* caster = GetCaster();
@@ -745,8 +743,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_rough_smash_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_rough_smash_SpellScript);
-
                 class RoughSmashTargetFilter
                 {
                     public:
@@ -799,8 +795,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_shatter_earth_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_shatter_earth_SpellScript);
-
                 void OnSpellHit()
                 {
                     if (Unit* caster = GetCaster())
@@ -847,8 +841,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_dancing_flames_AuraScript : public AuraScript
             {
-                PrepareAuraScript(spell_dancing_flames_AuraScript);
-
                 void HandleApplyEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
                 {
                     m_Dispelled = false;
@@ -900,8 +892,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_withering_flames_AuraScript : public AuraScript
             {
-                PrepareAuraScript(spell_withering_flames_AuraScript);
-
                 void OnPeriodic(AuraEffect const*)
                 {
                     Unit* caster = GetCaster();
@@ -932,8 +922,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_molten_impact_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_molten_impact_SpellScript);
-
                 void HandleScript(SpellEffIndex)
                 {
                     SetHitDamage((float)GetHitDamage() * (30.f - std::min((float)GetHitDest()->GetExactDist(GetHitUnit()), 30.f)) / 30.f);
@@ -964,8 +952,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_magma_barrage_trigger_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_magma_barrage_trigger_SpellScript);
-
                 void OnSpellHit(SpellEffIndex)
                 {
                     Unit* caster = GetCaster();
@@ -1002,8 +988,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_magma_barrage_damage_AuraScript : public AuraScript
             {
-                PrepareAuraScript(spell_magma_barrage_damage_AuraScript);
-
                 void OnPeriodic(AuraEffect const* aurEff)
                 {
                     Unit* l_Owner = GetOwner()->ToPlayer();
@@ -1045,7 +1029,7 @@ namespace Instances { namespace Bloodmaul
         public:
             areatrigger_shatter_earth(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
 
-            void OnCreate() override
+       void OnCreate(Spell const* /*creatingSpell*/) override
             {
                 if (!at->GetCaster())
                     return;
@@ -1118,7 +1102,7 @@ namespace Instances { namespace Bloodmaul
         public:
             areatrigger_volcanic_trantum(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
 
-            void OnCreate() override
+       void OnCreate(Spell const* /*creatingSpell*/) override
             {
                 if (!at->GetCaster())
                     return;

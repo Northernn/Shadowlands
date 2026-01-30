@@ -230,29 +230,6 @@ private:
     ObjectGuid _summonerGUID;
 };
 
-// 70827 - Ice Shards
-class spell_pos_ice_shards : public SpellScript
-{
-    PrepareSpellScript(spell_pos_ice_shards);
-
-    bool Load() override
-    {
-        // This script should execute only in Pit of Saron
-        return InstanceHasScript(GetCaster(), PoSScriptName);
-    }
-
-    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-    {
-        if (GetHitPlayer())
-            GetCaster()->GetInstanceScript()->SetData(DATA_ICE_SHARDS_HIT, 1);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_pos_ice_shards::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
 enum TyrannusEventCavernEmote
 {
     SAY_TYRANNUS_CAVERN_ENTRANCE = 3
@@ -306,7 +283,6 @@ void AddSC_pit_of_saron()
     RegisterPitOfSaronCreatureAI(npc_iceborn_protodrake);
     RegisterPitOfSaronCreatureAI(npc_geist_ambusher);
     RegisterPitOfSaronCreatureAI(npc_pit_of_saron_icicle);
-    RegisterSpellScript(spell_pos_ice_shards);
     new at_pit_cavern_entrance();
     new at_pit_cavern_end();
 }

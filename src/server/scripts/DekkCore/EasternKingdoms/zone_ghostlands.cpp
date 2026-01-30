@@ -121,7 +121,7 @@ public:
             if (quest->GetQuestId() == QUEST_ESCAPE_FROM_THE_CATACOMBS)
             {
                 me->SetFaction(FACTION_ESCORTEE_N_NEUTRAL_PASSIVE);
-                Start(true, false, player->GetGUID());
+                Start(true, player->GetGUID());
             }
         }
     };

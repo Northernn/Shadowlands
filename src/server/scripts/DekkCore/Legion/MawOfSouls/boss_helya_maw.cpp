@@ -1025,154 +1025,6 @@ struct npc_helya_destructor_tentacle_veh : public ScriptedAI
     void UpdateAI(uint32 diff) override {}
 };
 
-//99307
-struct npc_skyal : public ScriptedAI
-{
-    npc_skyal(Creature* creature) : ScriptedAI(creature)
-    {
-        instance = me->GetInstanceScript();
-    }
-
-    void Reset() override
-    {
-        instance->SetBossState(DATA_SKJAL, NOT_STARTED);
-
-        if (instance->GetBossState(DATA_HARBARON) != DONE)
-        {
-            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-            me->SetUnitFlag(UNIT_FLAG_NOT_ATTACKABLE_1);
-            me->SetReactState(REACT_PASSIVE);
-            me->SetVisible(false);
-        }
-    }
-
-    void DoAction(int32 const action) override
-    {
-        if (action == ACTION_1)
-        {
-            me->SetVisible(true);
-            me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC);
-            me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-            me->RemoveUnitFlag(UNIT_FLAG_NOT_ATTACKABLE_1);
-            me->SetReactState(REACT_AGGRESSIVE);
-
-            for (uint8 i = 2; i < 18; ++i)
-            {
-                if (i < 6)
-                {
-                    if (auto summon = instance->instance->SummonCreature(NPC_HELARJAR_CHAMPION, me->GetPosition()))
-                    {
-                        summon->SetHomePosition(addsPos[i]);
-                        summon->GetMotionMaster()->MoveTargetedHome();
-                    }
-                }
-                else if (i < 10)
-                {
-                    if (auto summon = instance->instance->SummonCreature(NPC_SEACURSED_SWIFTBLADE, me->GetPosition()))
-                    {
-                        summon->SetHomePosition(addsPos[i]);
-                        summon->GetMotionMaster()->MoveTargetedHome();
-                    }
-                }
-                else if (i < 14)
-                {
-                    if (auto summon = instance->instance->SummonCreature(NPC_HELARJAR_MISTCALLER, me->GetPosition()))
-                    {
-                        summon->SetHomePosition(addsPos[i]);
-                        summon->GetMotionMaster()->MoveTargetedHome();
-                    }
-                }
-                else if (i < 16)
-                {
-                    if (auto summon = instance->instance->SummonCreature(NPC_SEACURSED_MISTMENDER, me->GetPosition()))
-                    {
-                        summon->SetHomePosition(addsPos[i]);
-                        summon->GetMotionMaster()->MoveTargetedHome();
-                    }
-                }
-                else if (i < 18)
-                {
-                    if (auto summon = instance->instance->SummonCreature(NPC_SEACURSED_SOULKEEPER, me->GetPosition()))
-                    {
-                        summon->SetHomePosition(addsPos[i]);
-                        summon->GetMotionMaster()->MoveTargetedHome();
-                    }
-                }
-            }
-        }
-    }
-
-    void JustEngagedWith(Unit* who) override
-    {
-        events.RescheduleEvent(EVENT_SUMMON_1, 1s);
-        events.RescheduleEvent(EVENT_SUMMON_2, 10s);
-        events.RescheduleEvent(EVENT_GIVE_NO, 7s);
-        events.RescheduleEvent(EVENT_DEBILITATING, 13s);
-        events.RescheduleEvent(EVENT_BIND, 17s);
-    }
-
-    void JustDied(Unit* /*killer*/) override
-    {
-        Talk(2);
-        instance->SetBossState(DATA_SKJAL, DONE);
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        if (!UpdateVictim())
-            return;
-
-        events.Update(diff);
-
-        if (me->HasUnitState(UNIT_STATE_CASTING))
-            return;
-
-        if (uint32 eventId = events.ExecuteEvent())
-        {
-            switch (eventId)
-            {
-            case EVENT_SUMMON_1:
-                for (uint8 i = 0; i < 2; ++i)
-                {
-                    if (auto sum = me->SummonCreature(98973, addsPos[i], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 4s))
-                        sum->AI()->DoZoneInCombat(sum);
-                }
-                Talk(1);
-                events.RescheduleEvent(EVENT_SUMMON_1, 18s);
-                break;
-            case EVENT_SUMMON_2:
-                for (uint8 i = 0; i < 2; ++i)
-                {
-                    if (auto sum = me->SummonCreature(99447, addsPos[i], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 4s))
-                        sum->AI()->DoZoneInCombat(sum);
-                }
-                Talk(1);
-                events.RescheduleEvent(EVENT_SUMMON_2, 18s);
-                break;
-            case EVENT_GIVE_NO:
-                if (auto target = SelectTarget(SelectTargetMethod::Random, 0))
-                    me->CastSpell(target, SPELL_GIVE_NO);
-                events.RescheduleEvent(EVENT_GIVE_NO, 13s);
-                break;
-            case EVENT_DEBILITATING:
-                DoCast(SPELL_DEBILITATING);
-                events.RescheduleEvent(EVENT_DEBILITATING, 13s);
-                break;
-            case EVENT_BIND:
-                DoCast(SPELL_BIND);
-                events.RescheduleEvent(EVENT_BIND, 13s);
-                break;
-            }
-
-        }
-        DoMeleeAttackIfReady();
-    }
-private:
-    EventMap events;
-    InstanceScript* instance;
-};
-
 //97365
 struct npc_mos_seacursed_mistmender : public ScriptedAI
 {
@@ -1318,8 +1170,6 @@ struct npc_mos_helarjar_mistcaller : public ScriptedAI
 //195309
 class spell_helya_swirling_water : public SpellScript
 {
-    PrepareSpellScript(spell_helya_swirling_water);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (auto caster = GetCaster()->ToPlayer())
@@ -1351,8 +1201,6 @@ class spell_helya_swirling_water : public SpellScript
 //200208
 class spell_brackwater : public AuraScript
 {
-    PrepareAuraScript(spell_brackwater);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (!GetTarget())
@@ -1371,8 +1219,6 @@ class spell_brackwater : public AuraScript
 //197752
 class spell_helya_turbulent_waters : public SpellScript
 {
-    PrepareSpellScript(spell_helya_turbulent_waters);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         PreventHitDefaultEffect(EFFECT_0);
@@ -1395,8 +1241,6 @@ class spell_helya_turbulent_waters : public SpellScript
 //197262
 class spell_helya_taint_of_the_sea : public AuraScript
 {
-    PrepareAuraScript(spell_helya_taint_of_the_sea);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (!GetCaster() || !GetTarget())
@@ -1416,8 +1260,6 @@ class spell_helya_taint_of_the_sea : public AuraScript
 //trash 199589
 class spell_whirpool_of_souls : public AuraScript
 {
-    PrepareAuraScript(spell_whirpool_of_souls);
-
     Position pos;
 
     void OnPereodic(AuraEffect const* aurEff)
@@ -1442,8 +1284,6 @@ class spell_whirpool_of_souls : public AuraScript
 //trash 199514
 class spell_torrent_of_souls : public AuraScript
 {
-    PrepareAuraScript(spell_torrent_of_souls);
-
     void OnPereodic(AuraEffect const* aurEff)
     {
         if (!GetCaster() || !GetTarget())
@@ -1465,7 +1305,6 @@ void AddSC_boss_helya_maw()
     RegisterCreatureAI(npc_helya_tentacle);
     RegisterCreatureAI(npc_helya_tentacle_veh);
     RegisterCreatureAI(npc_helya_destructor_tentacle_veh);
-    RegisterCreatureAI(npc_skyal);
     RegisterCreatureAI(npc_mos_seacursed_mistmender);
     RegisterCreatureAI(npc_mos_helarjar_mistcaller);
     RegisterSpellScript(spell_helya_swirling_water);

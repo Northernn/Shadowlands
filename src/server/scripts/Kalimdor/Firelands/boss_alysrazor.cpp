@@ -367,7 +367,7 @@ class npc_molten_barrage : public CreatureScript
             void AttackStart(Unit* target) override
             {
                 if (target)
-                    me->GetMotionMaster()->MoveFollow(target, 0.0f, 0.0f, MOTION_SLOT_DEFAULT);
+                    me->GetMotionMaster()->MoveFollow(target, 0.0f, 0.0f, {}, MOTION_SLOT_DEFAULT);
             }
 
             void IsSummonedBy(WorldObject* /*summoner*/) override
@@ -503,8 +503,6 @@ class spell_alysrazor_cosmetic_egg_xplosion : public SpellScriptLoader
 
         class spell_alysrazor_cosmetic_egg_xplosion_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_alysrazor_cosmetic_egg_xplosion_SpellScript);
-
             bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sCreatureDisplayInfoStore.LookupEntry(MODEL_INVISIBLE_STALKER))
@@ -539,8 +537,6 @@ class spell_alysrazor_turn_monstrosity : public SpellScriptLoader
 
         class spell_alysrazor_turn_monstrosity_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_alysrazor_turn_monstrosity_SpellScript);
-
             bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 return ValidateSpellInfo(
@@ -625,8 +621,6 @@ class spell_alysrazor_aggro_closest : public SpellScriptLoader
 
         class spell_alysrazor_aggro_closest_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_alysrazor_aggro_closest_SpellScript);
-
             bool Load() override
             {
                 return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -665,8 +659,6 @@ class spell_alysrazor_fieroblast : public SpellScriptLoader
 
         class spell_alysrazor_fieroblast_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_alysrazor_fieroblast_SpellScript);
-
             bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 return ValidateSpellInfo({ SPELL_FIRE_IT_UP });

@@ -159,7 +159,6 @@ private:
         me->SetPowerType(POWER_ENERGY);
         me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_ORANGE, me);
         me->SetVisible(true);
         SetCombatMovement(false);
     }
@@ -461,7 +460,6 @@ struct npc_dark_young : public ScriptedAI
         me->SetPowerType(POWER_ENERGY);
         me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_PURPLE, me);
     }
 
     void IsSummonedBy(WorldObject* summonerWO) override
@@ -513,8 +511,6 @@ private:
 //272504
 class spell_explosive_corruption_selector : public SpellScript
 {
-    PrepareSpellScript(spell_explosive_corruption_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -537,8 +533,6 @@ class spell_explosive_corruption_selector : public SpellScript
 //272506
 class spell_explosive_corruption : public AuraScript
 {
-    PrepareAuraScript(spell_explosive_corruption);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* target = GetTarget())
@@ -554,8 +548,6 @@ class spell_explosive_corruption : public AuraScript
 //270373
 class spell_wave_of_corruption_selector : public SpellScript
 {
-    PrepareSpellScript(spell_wave_of_corruption_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -577,8 +569,6 @@ class spell_wave_of_corruption_selector : public SpellScript
 //269455
 class spell_power_matrix_cast : public SpellScript
 {
-    PrepareSpellScript(spell_power_matrix_cast);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (Unit* caster = GetCaster())
@@ -630,62 +620,6 @@ private:
                     player->RemoveAura(SPELL_UNCLEAN_CONTAGION_AURA);
                 }
             }
-        }
-    }
-};
-
-//17350, 18108
-struct areatrigger_undulating_mass : AreaTriggerAI
-{
-    areatrigger_undulating_mass(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit)
-            unit->CastSpell(unit, SPELL_UNDULATING_MASS);
-    }
-
-    void OnUnitExit(Unit* unit)
-    {
-        if (unit)
-            unit->RemoveAura(SPELL_UNDULATING_MASS);
-    }
-
-    void OnPeriodicProc()
-    {
-        float scale = at->GetObjectScale();
-    }
-};
-
-//17948
-struct areatrigger_blighted_corruption : AreaTriggerAI
-{
-    areatrigger_blighted_corruption(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit)
-            unit->CastSpell(unit, SPELL_BLIGHTED_GROUND);
-    }
-    void OnUnitExit(Unit* unit)
-    {
-        if (unit)
-            unit->RemoveAura(SPELL_BLIGHTED_GROUND);
-    }
-};
-
-//?
-struct areatrigger_virulent_corruption : AreaTriggerAI
-{
-    areatrigger_virulent_corruption(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit)
-        {
-            unit->CastSpell(unit, SPELL_VIRULENT_CORRUPTION);
-            if (unit->GetInstanceScript()->instance->IsHeroic())
-                unit->CastSpell(unit, SPELL_EXPLOSIVE_CORRUPTION);
         }
     }
 };
@@ -853,7 +787,6 @@ private:
         me->SetPowerType(POWER_ENERGY);
         me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_ORANGE, me);
         me->AddAura(SPELL_PERIODIC_ENERGY_GAIN, me);
         events.ScheduleEvent(EVENT_EXPLOSIVE_CORRUPTION, 5s);
         events.ScheduleEvent(EVENT_CORRUPTING_BITE, 1500ms);
@@ -1193,9 +1126,6 @@ void AddSC_boss_ghuun()
     RegisterSpellScript(spell_power_matrix_cast);
     RegisterSpellScript(spell_explosive_corruption);
     RegisterPlayerScript(unclean_corruption);
-    RegisterAreaTriggerAI(areatrigger_undulating_mass);
-    RegisterAreaTriggerAI(areatrigger_blighted_corruption);
-    RegisterAreaTriggerAI(areatrigger_virulent_corruption);
     RegisterCreatureAI(npc_reorigination_drive);
     RegisterCreatureAI(boss_ghuun_non_static);
     RegisterCreatureAI(npc_blightspreader_tendril);

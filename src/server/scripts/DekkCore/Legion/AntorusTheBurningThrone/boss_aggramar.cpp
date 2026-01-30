@@ -642,8 +642,6 @@ struct npc_aggramar_flame_of_taeshalach : ScriptedAI
 //244792
 class spell_aggramar_energize_periodic : public AuraScript
 {
-    PrepareAuraScript(spell_aggramar_energize_periodic);
-
     uint8 tickCount = 0;
     uint8 powerCount = 0;
 
@@ -678,8 +676,6 @@ class spell_aggramar_energize_periodic : public AuraScript
 //245911
 class spell_aggramar_wrought_in_flame : public AuraScript
 {
-    PrepareAuraScript(spell_aggramar_wrought_in_flame);
-
     float powerCount = 0.0f;
     float tickCount = 0.0f;
     float scaleSize = 0.0f;
@@ -724,8 +720,6 @@ class spell_aggramar_wrought_in_flame : public AuraScript
 //244678
 class spell_aggramar_meteor_swarm : public AuraScript
 {
-    PrepareAuraScript(spell_aggramar_meteor_swarm);
-
     void OnTick(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -746,8 +740,6 @@ class spell_aggramar_meteor_swarm : public AuraScript
 //254452
 class spell_aggramar_ravenous_blaze : public AuraScript
 {
-    PrepareAuraScript(spell_aggramar_ravenous_blaze);
-
     uint8 counter = 0;
     uint32 spellId[4] = { SPELL_RAVENOUS_BLAZE_FILTER_5M, SPELL_RAVENOUS_BLAZE_FILTER_10M, SPELL_RAVENOUS_BLAZE_FILTER_15M, SPELL_RAVENOUS_BLAZE_FILTER_20M };
 
@@ -769,8 +761,6 @@ class spell_aggramar_ravenous_blaze : public AuraScript
 //245458, 255059
 class spell_aggramar_foe_breaker_filter : public SpellScript
 {
-    PrepareSpellScript(spell_aggramar_foe_breaker_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.remove_if([this](WorldObject* object) -> bool
@@ -794,8 +784,6 @@ class spell_aggramar_foe_breaker_filter : public SpellScript
 //244033, 247079
 class spell_aggramar_flame_rend_filter : public SpellScript
 {
-    PrepareSpellScript(spell_aggramar_flame_rend_filter);
-
     float jumpPct = 1.0f;
     float playerMod = 1.0f;
 
@@ -832,8 +820,6 @@ class spell_aggramar_flame_rend_filter : public SpellScript
 //245993
 class spell_aggramar_scorching_blaze_filter : public SpellScript
 {
-    PrepareSpellScript(spell_aggramar_scorching_blaze_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -883,8 +869,6 @@ class spell_aggramar_scorching_blaze_filter : public SpellScript
 //245983, 246037
 class spell_aggramar_flare_filter : public SpellScript
 {
-    PrepareSpellScript(spell_aggramar_flare_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -924,8 +908,6 @@ class spell_aggramar_flare_filter : public SpellScript
 //246054, 246055, 246056
 class spell_aggramar_command_empowered_flare : public SpellScript
 {
-    PrepareSpellScript(spell_aggramar_command_empowered_flare);
-
     void HandleScript(SpellEffIndex /*effectIndex*/)
     {
         if (!GetCaster() || !GetHitDest())

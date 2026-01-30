@@ -92,6 +92,18 @@ public:
             m_SceneTimer = 0;
         }
 
+        bool OnGossipHello(Player* player) override
+        {
+            if (me->IsQuestGiver())
+                player->PrepareQuestMenu(me->GetGUID());
+
+            if (player->HasQuest(TanaanQuests::QuestKillYourHundred))
+            player->ForceCompleteQuest(TanaanQuests::QuestKillYourHundred);
+
+            SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
+            return true;
+        }
+
         void SetData(uint32 /*id*/, uint32 value) override
         {
             m_SceneTimer = (uint16)value;
@@ -211,36 +223,12 @@ public:
         void MoveInLineOfSight(Unit* who) override
         {
             if (me->GetDistance(who) < 10.0f)
+            if (me->GetDistance(who) < 10.0f)
                 if (Player* player = who->ToPlayer())
                     if (player->HasQuest(TanaanQuests::QuestMastersOfShadowAlly) || player->HasQuest(TanaanQuests::QuestMastersOfShadowHorde))
                         who->CastSpell(who, SPELL_ANKOVA_CREDIT, true);
         }
     };
-};
-
-/// 78994 - Yrel
-class npc_tanaan_yrel : public CreatureScript
-{
-public:
-    npc_tanaan_yrel() : CreatureScript("npc_tanaan_yrel") { }
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_tanaan_yrelAI(creature);
-    }
-
-    struct npc_tanaan_yrelAI : public ScriptedAI
-    {
-        npc_tanaan_yrelAI(Creature* creature) : ScriptedAI(creature) { }
-    };
-
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest) override
-    {
-        if (quest->GetQuestId() == TanaanQuests::QuestYrelTanaan || quest->GetQuestId() == TanaanQuests::QuestYrelHorde)
-            player->SummonCreature(TanaanCreatures::NpcYrelSummon, creature->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0s);
-
-        return false;
-    }
 };
 
 /// 79794 - Yrel
@@ -394,6 +382,7 @@ public:
     {
         go_iron_cage_doorAI(GameObject* go) : GameObjectAI(go) { }
     };
+
     GameObjectAI* GetAI(GameObject* go) const override
     {
         return new go_iron_cage_doorAI(go);
@@ -401,7 +390,7 @@ public:
 
     uint32 checkTimer;
 
-    void OnUpdate(GameObject* p_Object, uint32 diff) //override
+    void OnUpdate(GameObject* p_Object, uint32 diff) override
     {
         if (checkTimer < diff)
         {
@@ -517,7 +506,6 @@ void AddSC_tanaan_intro_shadowmoon()
     new npc_taskmaster_gurran();
     new npc_ankova_the_fallen();
     RegisterCreatureAI(npc_tanaan_yrel_summon);
-    new npc_tanaan_yrel();
     new npc_maladaar_liadrin_tanaan_cave();
     new go_iron_cage_door();
     new npc_keli_dan_the_breaker();

@@ -83,6 +83,22 @@ namespace WorldPackets
             Optional<AreaTriggerMovementScriptInfo> AreaTriggerMovementScript;
             ObjectGuid TriggerGUID;
         };
+
+        //DekkCore 
+        class UpdateAreatriggerVisual final : public ClientPacket
+        {
+        public:
+            UpdateAreatriggerVisual(WorldPacket&& packet) : ClientPacket(CMSG_UPDATE_AREA_TRIGGER_VISUAL, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 AreaTriggerID = 0;
+            int32 unk1 = 0;
+            int32 unk2 = 0;
+            ObjectGuid TriggerGUID;
+        };
+
+        //DekkCore
     }
 }
 

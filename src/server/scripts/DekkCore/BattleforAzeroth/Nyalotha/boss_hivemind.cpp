@@ -61,7 +61,7 @@ enum Spells
 	//Mythic
 	SPELL_ACID_POOL_AT_DAMAGE = 316049,
 	SPELL_ENTROPIC_ECHO_MISSILE = 313689,
-	SPELL_ENTROPIC_ECHO_DAMAGE = 313692,	
+	SPELL_ENTROPIC_ECHO_DAMAGE = 313692,
 };
 
 enum Events
@@ -278,7 +278,7 @@ private:
 		case EVENT_SPAWN_ACIDIC_AQIR:
 			for (uint8 i = 0; i < 10; i++)
 			{
-				Position positions = me->GetRandomNearPosition(60.0f);	
+				Position positions = me->GetRandomNearPosition(60.0f);
 				me->CastSpell(positions, SPELL_SPAWN_ACIDIC_AQUIR_SUMMON, false);
 			}
 			events.Repeat(60s);
@@ -338,19 +338,24 @@ private:
 	{
 		switch (summon->GetEntry())
 		{
-		case NPC_AQIR_DRONE:
-		case NPC_AQIR_DARTER:
-		case NPC_AQIR_RAVAGER:
-			summon->AI()->DoZoneInCombat(nullptr);
-			if (this->hivemindControlTekris = 1)
-				summon->AddAura(SPELL_VOID_INFUSION, summon);
-			if (this->hivemindControlKazir = 1)
-				summon->AddAura(SPELL_REGENERATION, summon);
-			break;
+            case NPC_AQIR_DRONE:
+            case NPC_AQIR_DARTER:
+            case NPC_AQIR_RAVAGER:
+            {
+                summon->AI()->DoZoneInCombat(nullptr);
+
+                if (hivemindControlTekris == 1)
+                    summon->AddAura(SPELL_VOID_INFUSION, summon);
+
+                if (hivemindControlKazir == 1)
+                    summon->AddAura(SPELL_REGENERATION, summon);
+
+                break;
+            }
 		}
 	}
 
-	void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+	void DamageTaken(Unit* done_by, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 	{
 		switch (me->GetEntry())
 		{
@@ -370,7 +375,7 @@ private:
 
 		case NPC_TEKRIS:
 			if (me->GetHealthPct() == 1.0f)
-			{			
+			{
 				me->RemoveAllAurasExceptType(SPELL_AURA_PREVENT_INTERRUPT);
 				me->CastSpell(nullptr, SPELL_DARK_RECONSTRUCTION, false);
 				me->GetScheduler().Schedule(10000ms, [this, done_by](TaskContext /*context*/)
@@ -388,7 +393,7 @@ private:
 	{
 		switch (me->GetEntry())
 		{
-		case NPC_KAZIR:		
+		case NPC_KAZIR:
 			CleanEncounter(instance, me);
 			break;
 
@@ -400,7 +405,7 @@ private:
 		_DespawnAtEvade();
 	}
 
-	void CleanEncounter(InstanceScript* instance, Creature* me)
+	void CleanEncounter(InstanceScript* /*instance*/, Creature* me)
 	{
 		me->DespawnCreaturesInArea(NPC_AQIR_DRONE, 125.0f);
 		me->DespawnCreaturesInArea(NPC_AQIR_DARTER, 125.0f);
@@ -434,7 +439,7 @@ struct npc_acidic_aqir : public ScriptedAI
 		me->SetReactState(REACT_PASSIVE);
 		me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
 		me->SetUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
-		me->SetNativeDisplayId(16925, 1.0f);
+		me->SetDisplayId(16925, 1.0f);
 		me->CastSpell(nullptr, SPELL_ACIDIC_AQUIR_VISUAL, true);
 		me->SetWalk(false);
 		me->GetSpeed(MOVE_RUN);
@@ -474,7 +479,7 @@ struct npc_hivemind : public ScriptedAI
 		case NPC_AQIR_DARTER:
 		{
 			ScriptedAI::Reset();
-			Position position = me->GetRandomNearPosition(30.0f);			
+			Position position = me->GetRandomNearPosition(30.0f);
 			me->GetMotionMaster()->MoveJump(position, 25.0f, 25.0f, 0, true);
 			break;
 		}
@@ -485,7 +490,7 @@ struct npc_hivemind : public ScriptedAI
 		}
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit*) override
 	{
 		switch (me->GetEntry())
 		{
@@ -493,18 +498,16 @@ struct npc_hivemind : public ScriptedAI
 			me->CastSpell(nullptr, SPELL_MINDLESS, true);
 			events.ScheduleEvent(EVENT_FIXATE, 1s);
 			break;
-
 		case NPC_AQIR_DARTER:
 			events.ScheduleEvent(EVENT_PSIONIC_RESONANCE, 3s);
 			break;
-
 		case NPC_AQIR_RAVAGER:
 			events.ScheduleEvent(EVENT_RAVAGE, 3s);
 			break;
 		}
 	}
 
-	void ExecuteEvent(uint32 eventId) //override
+	void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{
@@ -512,7 +515,7 @@ struct npc_hivemind : public ScriptedAI
             if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 			{
 			//	me->AddThreat(target, 1000.0f, SpellSchoolMask::SPELL_SCHOOL_MASK_NORMAL);
-				me->CastSpell(target, SPELL_FIXATE, true);				
+				me->CastSpell(target, SPELL_FIXATE, true);
 			}
 			break;
 

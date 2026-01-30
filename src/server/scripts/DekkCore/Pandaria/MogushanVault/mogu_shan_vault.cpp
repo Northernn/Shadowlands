@@ -329,8 +329,6 @@ class mob_cursed_mogu_sculpture : public CreatureScript
 // Ghost Essence - 120764
 class spell_ghost_essence : public SpellScript
 {
-    PrepareSpellScript(spell_ghost_essence);
-
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Creature* target = GetHitCreature())
@@ -642,8 +640,6 @@ class spell_mogu_petrification : public SpellScriptLoader
 
         class spell_mogu_petrification_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_mogu_petrification_AuraScript);
-
             uint32 stack;
 
             void OnApply(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*mode*/)
@@ -836,7 +832,7 @@ class npc_lorewalker_cho : public CreatureScript
                 {
                     Talk(INTRO_01);
                     hasSaidIntro = true;
-                    Start(false, true, who->GetGUID());
+                    Start(false, who->GetGUID());
                 }
             }
 
@@ -861,7 +857,6 @@ class npc_lorewalker_cho : public CreatureScript
                         if (needToSayStoneGuardDone)
                             Talk(INTRO_03);
                         SetEscortPaused(true);
-                        SetRun(true);
                         if (pInstance->GetBossState(DATA_STONE_GUARD) == DONE)
                             DoAction(ACTION_OPEN_STONEGUARD_DOOR);
                         break;
@@ -1124,11 +1119,6 @@ class npc_lorewalker_cho : public CreatureScript
                     case ACTION_CONTINUE_ESCORT:
                     {
                         SetEscortPaused(false);
-                        break;
-                    }
-                    case ACTION_RUN:
-                    {
-                        SetRun(true);
                         break;
                     }
                     case ACTION_SAY_ZANDALARI_BEGIN:

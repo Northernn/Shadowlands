@@ -1,6 +1,16 @@
 #ifndef TrialOfValorH_
 #define TrialOfValorH_
 
+#include "CreatureAIImpl.h"
+
+enum TOVDataTypes
+{
+    // Encounters
+    DATA_ODYN = 0,
+    DATA_GUARM,
+    DATA_HELYA,
+};
+
 namespace Data
 {
     enum BossIDs
@@ -87,6 +97,14 @@ namespace Data
 }
 
 #define TrialOfValorScriptName "instance_trial_of_valor"
+
+template <class AI, class T>
+inline AI* GetTrialOfValorAI(T* obj)
+{
+    return GetInstanceAI<AI>(obj, TrialOfValorScriptName);
+}
+
+#define RegisterTrialOfValorCreatureAI(ai_name) RegisterCreatureAIWithFactory(ai_name, GetTrialOfValorAI)
 
 Position const NpcCosmeticOnePos = { 2417.55f, 548.087f, 749.078f, 5.21375f };
 Position const NpcCosmeticTwoPos = { 2417.54f, 510.002f, 749.078f, 1.09311f };

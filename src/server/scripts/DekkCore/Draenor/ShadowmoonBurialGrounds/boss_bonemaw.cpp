@@ -351,7 +351,7 @@ public:
                     events.ScheduleEvent(eBoneMawEvents::EventCorpseBreath, 20s);
                     events.ScheduleEvent(eBoneMawEvents::EventInhale, 60s);
                     events.ScheduleEvent(eBoneMawEvents::EventFetidSpit, 10s);
-                    events.ScheduleEvent(eBoneMawEvents::EventSubmerge, (30s, 70s));
+                    events.ScheduleEvent(eBoneMawEvents::EventSubmerge, 40s);
 
                     if (me->GetMap()->IsHeroic())
                         events.ScheduleEvent(eBoneMawEvents::EventCarrionWorm, 70s);
@@ -573,8 +573,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_inhale_SpellScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadowmoon_burial_grounds_inhale_SpellScript);
-
         void OnRemove(AuraEffect const* /*m_AurEff*/, AuraEffectHandleModes /*m_Mode*/)
         {
             if (Unit* caster = GetCaster())
@@ -613,8 +611,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_body_slam_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_body_slam_SpellScript);
-
         enum eSpell
         {
             TargetRestrict = 18748,
@@ -670,8 +666,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_corpse_breath_SpellScript : public AuraScript
     {
-        PrepareAuraScript(spell_shadowmoon_burial_grounds_corpse_breath_SpellScript);
-
         void OnApply(AuraEffect const* /*m_AurEff*/, AuraEffectHandleModes /*m_Mode*/)
         {
             if (Unit* caster = GetCaster())
@@ -718,8 +712,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_necrotic_pitch_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_necrotic_pitch_SpellScript);
-
         void HandleTriggerMissile(SpellEffIndex effectIndex)
         {
             PreventHitDefaultEffect(effectIndex);
@@ -755,8 +747,6 @@ public:
 
     class spell_shadowmoon_burial_grounds_drowned_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_burial_grounds_drowned_SpellScript);
-
         void HandleScript(SpellEffIndex /*effectIndex*/)
         {
             if (!GetCaster())

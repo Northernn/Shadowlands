@@ -61,15 +61,15 @@ void CharacterDatabaseCleaner::CleanDatabase()
 
     sWorld->SetCleaningFlags(flags);
 
-    TC_LOG_INFO("server.loading", ">> Cleaned character database in %u ms", GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Cleaned character database in {} ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
 void CharacterDatabaseCleaner::CheckUnique(char const* column, char const* table, bool (*check)(uint32))
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT DISTINCT %s FROM %s", column, table);
+    QueryResult result = CharacterDatabase.PQuery("SELECT DISTINCT {} FROM {}", column, table);
     if (!result)
     {
-        TC_LOG_INFO("misc", "Table %s is empty.", table);
+        TC_LOG_INFO("misc", "Table {} is empty.", table);
         return;
     }
 
@@ -93,8 +93,7 @@ void CharacterDatabaseCleaner::CheckUnique(char const* column, char const* table
 
             ss << id;
         }
-    }
-    while (result->NextRow());
+    } while (result->NextRow());
 
     if (found)
     {
@@ -145,7 +144,7 @@ bool CharacterDatabaseCleaner::TalentCheck(uint32 talent_id)
 
 void CharacterDatabaseCleaner::CleanCharacterTalent()
 {
-    CharacterDatabase.DirectPExecute("DELETE FROM character_talent WHERE talentGroup > %u", MAX_SPECIALIZATIONS);
+    CharacterDatabase.DirectPExecute("DELETE FROM character_talent WHERE talentGroup > {}", MAX_SPECIALIZATIONS);
     CheckUnique("talentId", "character_talent", &TalentCheck);
 }
 

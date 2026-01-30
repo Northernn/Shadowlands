@@ -269,8 +269,6 @@ private:
 //270449
 class spell_plasma_discharge : public SpellScript
 {
-    PrepareSpellScript(spell_plasma_discharge);
-
     void Damage()
     {
         if (Unit* caster = GetCaster())

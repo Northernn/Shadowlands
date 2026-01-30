@@ -13,11 +13,11 @@ enum Spells
     SPELL_SNAKE_CHARM = 268008,
     SPELL_JOLT = 279000,
     SPELL_TAINT_DEBUFF = 267944,
-  
+
     SPELL_TAINT_CHANNEL = 273677,
     SPELL_TAINT_VISUAL = 267759,
     SPELL_HEART_ATTACK = 268007,
-  
+
     SPELL_PULSE = 268024,
     SPELL_PLAGUE = 269686,
     SPELL_SPAWN_FRAGMENT = 278885,
@@ -131,7 +131,7 @@ public:
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
+        bool OnGossipSelect(Player* /*player*/, uint32 /*sender*/, uint32 action) override
         {
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
@@ -141,7 +141,7 @@ public:
 
             return true;
         }
-        
+
         void SelectSoundAndText(Creature* me, uint32  selectedTextSound = 0)
         {
             if (!me)
@@ -195,7 +195,7 @@ public:
                 me->SummonCreature(NPC_PLAGUE_DOCTOR_BFA, HoodooPos[i], TEMPSUMMON_MANUAL_DESPAWN);
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(Creature* summon) override
         {
             summons.Summon(summon);
 
@@ -213,7 +213,8 @@ public:
                 break;
             }
         }
-        void Reset()
+
+        void Reset() override
         {
             events.Reset();
             first = false;
@@ -226,7 +227,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void EnterEvadeMode(EvadeReason w)
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _DespawnAtEvade(15s);
         }
@@ -245,7 +246,7 @@ public:
             events.ScheduleEvent(EVENT_SUMMON_HEXER, 1s);
             events.ScheduleEvent(EVENT_SUMMON_GUARDIAN, 15s);
             events.ScheduleEvent(EVENT_SUMMON_TOADS, 25s);
-            
+
             events.ScheduleEvent(EVENT_PULSE, 30s);
             events.ScheduleEvent(EVENT_LIGHTNING_STRIKE, 15s);
 
@@ -282,7 +283,7 @@ public:
 
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -295,7 +296,7 @@ public:
             }
         }
 
-        void HealReceived(Unit* healer, uint32& heal)
+        void HealReceived(Unit* /*healer*/, uint32& heal) override
         {
             if (me->HasAura(SPELL_TAINT_DEBUFF))
                 heal = 0;
@@ -327,7 +328,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             events.Update(diff);
 
@@ -484,14 +485,12 @@ public:
         {
         }
 
-        EventMap events;
-
-        void Reset()
+        void Reset() override
         {
             events.Reset();
         }
 
-        void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*at*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (damage >= me->GetHealth())
             {
@@ -504,12 +503,12 @@ public:
             }
         }
 
-        void JustEngagedWith(Unit*)
+        void JustEngagedWith(Unit*) override
         {
             events.ScheduleEvent(EVENT_HEART_ATTACK, 5s);
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             events.Update(diff);
 
@@ -530,6 +529,7 @@ public:
                     break;
                 }
             }
+
             DoMeleeAttackIfReady();
         }
     };
@@ -569,7 +569,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 /*diff*/)
         {
             if (Unit* target = me->GetVictim())
             {
@@ -605,18 +605,18 @@ public:
 
         EventMap events;
 
-        void Reset()
+        void Reset() override
         {
             events.Reset();
         }
 
-        void JustEngagedWith(Unit* who) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 8s);
             events.ScheduleEvent(EVENT_SNAKE_CHARM, 25s);
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             events.Update(diff);
 

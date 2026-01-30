@@ -446,8 +446,6 @@ class spell_genesis_missile : public SpellScriptLoader
 
         class spell_genesis_missile_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_genesis_missile_SpellScript);
-
             void OnHit(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
@@ -582,8 +580,6 @@ class spell_genesis : public SpellScriptLoader
 
         class spell_genesis_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_genesis_SpellScript);
-
             void HandleDummy(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
@@ -710,8 +706,6 @@ public:
 
     class spell_font_life_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_font_life_AuraScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             switch (urand(0, 2))
@@ -841,8 +835,6 @@ class spell_entanglement_missile : public SpellScriptLoader
 
         class spell_entanglement_missile_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_entanglement_missile_SpellScript);
-
             void OnHit(SpellEffIndex /*effIndex*/)
             {
                 if (GetExplTargetUnit())
@@ -1165,60 +1157,9 @@ enum FlamestrikeEnums
     SPELL_FLAMSTRIKE_DAMAGE            = 169100,
 };
 
-class at_flamestrike : public AreaTriggerAI
-{
-public:
-    at_flamestrike(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-    /*void OnCreate() override
-    {
-        at->SetCustomRadius(6.0f);
-    }*/
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Creature* yalnu = GetClosestCreatureWithEntry(unit, NPC_YALNU, 100.0f))
-        {
-            if (yalnu->IsHostileTo(unit) && !unit->HasAura(SPELL_FLAMSTRIKE_DAMAGE))
-                yalnu->CastSpell(unit, SPELL_FLAMSTRIKE_DAMAGE, true);
-        }
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        unit->RemoveAurasDueToSpell(SPELL_FLAMSTRIKE_DAMAGE);
-    }
-};
-
 enum ArcaneOrbEnums
 {
     SPELL_ARCANE_ORB_DAMAGE = 170077,
-};
-
-class at_arcane_orb : public AreaTriggerAI
-{
-public:
-    at_arcane_orb(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-   /* void OnCreate() override
-    {
-        if (Creature* yalnu = GetClosestCreatureWithEntry(at, NPC_YALNU, 100.0f))
-          //  at->SetDestination(yalnu->GetPosition(), 2000);
-    }*/
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Creature* yalnu = GetClosestCreatureWithEntry(unit, NPC_YALNU, 100.0f))
-        {
-            if (yalnu->IsHostileTo(unit) && !unit->HasAura(SPELL_ARCANE_ORB_DAMAGE))
-                yalnu->CastSpell(unit, SPELL_ARCANE_ORB_DAMAGE, true);
-        }
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        unit->RemoveAurasDueToSpell(SPELL_ARCANE_ORB_DAMAGE);
-    }
 };
 
 enum NoxiousBreathEnums
@@ -1261,7 +1202,5 @@ void AddSC_boss_yalnu()
     new spell_entanglement_missile();
     new kirin_tor_mage();
     new lady_baihu();
-    RegisterAreaTriggerAI(at_flamestrike);
-    RegisterAreaTriggerAI(at_arcane_orb);
     RegisterAreaTriggerAI(at_noxious_breath);
 }

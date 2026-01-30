@@ -673,8 +673,6 @@ struct npc_skorpyron_arcane_tether : public ScriptedAI
 //204277
 class spell_skorpyron_periodic_energize : public AuraScript
 {
-    PrepareAuraScript(spell_skorpyron_periodic_energize);
-
     uint8 powerCount = 0;
     uint8 counter = 0;
 
@@ -707,8 +705,6 @@ class spell_skorpyron_periodic_energize : public AuraScript
 //204448
 class spell_skorpyron_chitinous_exoskeleton : public AuraScript
 {
-    PrepareAuraScript(spell_skorpyron_chitinous_exoskeleton);
-
     int8 stack = 0;
     uint8 healthPct = 100;
     uint8 healthLimit;
@@ -775,8 +771,6 @@ class spell_skorpyron_chitinous_exoskeleton : public AuraScript
 //204275
 class spell_skorpyron_arcanoslash : public SpellScript
 {
-    PrepareSpellScript(spell_skorpyron_arcanoslash);
-
     void HandleOnHit()
     {
         if (!GetCaster() || !GetHitUnit())
@@ -795,8 +789,6 @@ class spell_skorpyron_arcanoslash : public SpellScript
 //211659
 class spell_skorpyron_arcane_tether : public SpellScript
 {
-    PrepareSpellScript(spell_skorpyron_arcane_tether);
-
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit())

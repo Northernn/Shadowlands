@@ -382,8 +382,6 @@ public:
 
     class spell_medivh_mana_regen_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_medivh_mana_regen_AuraScript);
-
         uint8 counter = 0;
         uint8 manaPct = 0;
 
@@ -430,8 +428,6 @@ public:
 
     class spell_medivh_ceaseless_winter_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_medivh_ceaseless_winter_AuraScript);
-
         void OnTick(AuraEffect const* aurEff)
         {
             if (GetTarget() && GetTarget()->isMoving())

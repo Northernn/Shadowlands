@@ -1,3 +1,6 @@
+#include "AreaBoundary.h"
+#include "InstanceScript.h"
+#include "ScriptMgr.h"
 #include "trial_of_valor.h"
 #include "GameObject.h"
 #include "WorldPacket.h"
@@ -24,6 +27,11 @@ ObjectData const creatureData[] =
 ObjectData const objectData[] =
 {
     { 0,                    0, }
+};
+
+BossBoundaryData const boundaries =
+{
+    { DATA_GUARM, new RectangleBoundary(443.320f, 492.354f, 430.713f, 561.020f) }
 };
 
 class instance_trial_of_valor : public InstanceMapScript

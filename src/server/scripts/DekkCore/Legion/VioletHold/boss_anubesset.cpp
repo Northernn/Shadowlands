@@ -334,8 +334,6 @@ public:
 
     class spell_anubesset_impale_filter_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_anubesset_impale_filter_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (Unit* caster = GetCaster())

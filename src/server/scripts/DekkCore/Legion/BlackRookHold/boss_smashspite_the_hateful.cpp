@@ -273,8 +273,6 @@ struct npc_brh_fel_bat : public ScriptedAI
 //198114
 class spell_smashpite_brutality_proc : public AuraScript
 {
-    PrepareAuraScript(spell_smashpite_brutality_proc);
-
     void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         auto caster = GetCaster()->ToCreature();

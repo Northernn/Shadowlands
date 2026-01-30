@@ -48,11 +48,11 @@ CalendarMgr::CalendarMgr() : _maxEventId(0), _maxInviteId(0) { }
 CalendarMgr::~CalendarMgr()
 {
     for (CalendarEventStore::iterator itr = _events.begin(); itr != _events.end(); ++itr)
-        delete *itr;
+        delete* itr;
 
     for (CalendarEventInviteStore::iterator itr = _invites.begin(); itr != _invites.end(); ++itr)
         for (CalendarInviteStore::iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); ++itr2)
-            delete *itr2;
+            delete* itr2;
 }
 
 CalendarMgr* CalendarMgr::instance()
@@ -75,15 +75,15 @@ void CalendarMgr::LoadFromDB()
         {
             Field* fields = result->Fetch();
 
-            uint64 eventID          = fields[0].GetUInt64();
-            ObjectGuid ownerGUID    = ObjectGuid::Create<HighGuid::Player>(fields[1].GetUInt64());
-            std::string title       = fields[2].GetString();
+            uint64 eventID = fields[0].GetUInt64();
+            ObjectGuid ownerGUID = ObjectGuid::Create<HighGuid::Player>(fields[1].GetUInt64());
+            std::string title = fields[2].GetString();
             std::string description = fields[3].GetString();
-            CalendarEventType type  = CalendarEventType(fields[4].GetUInt8());
-            int32 textureID         = fields[5].GetInt32();
-            time_t date             = fields[6].GetInt64();
-            uint32 flags            = fields[7].GetUInt32();
-            time_t lockDate         = fields[8].GetInt64();
+            CalendarEventType type = CalendarEventType(fields[4].GetUInt8());
+            int32 textureID = fields[5].GetInt32();
+            time_t date = fields[6].GetInt64();
+            uint32 flags = fields[7].GetUInt32();
+            time_t lockDate = fields[8].GetInt64();
             ObjectGuid::LowType guildID = UI64LIT(0);
 
             if (flags & CALENDAR_FLAG_GUILD_EVENT || flags & CALENDAR_FLAG_WITHOUT_INVITES)
@@ -95,46 +95,44 @@ void CalendarMgr::LoadFromDB()
             _maxEventId = std::max(_maxEventId, eventID);
 
             ++count;
-        }
-        while (result->NextRow());
+        } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u calendar events in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    count = 0;
-    oldMSTime = getMSTime();
+        TC_LOG_INFO("server.loading", ">> Loaded {} calendar events in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
+        count = 0;
+        oldMSTime = getMSTime();
 
-    //                                                       0         1        2        3       4       5             6               7
-    if (QueryResult result = CharacterDatabase.Query("SELECT InviteID, EventID, Invitee, Sender, Status, ResponseTime, ModerationRank, Note FROM calendar_invites"))
-        do
-        {
-            Field* fields = result->Fetch();
+        //                                                       0         1        2        3       4       5             6               7
+        if (QueryResult result = CharacterDatabase.Query("SELECT InviteID, EventID, Invitee, Sender, Status, ResponseTime, ModerationRank, Note FROM calendar_invites"))
+            do
+            {
+                Field* fields = result->Fetch();
 
-            uint64 inviteId             = fields[0].GetUInt64();
-            uint64 eventId              = fields[1].GetUInt64();
-            ObjectGuid invitee          = ObjectGuid::Create<HighGuid::Player>(fields[2].GetUInt64());
-            ObjectGuid senderGUID       = ObjectGuid::Create<HighGuid::Player>(fields[3].GetUInt64());
-            CalendarInviteStatus status = CalendarInviteStatus(fields[4].GetUInt8());
-            time_t responseTime         = fields[5].GetInt64();
-            CalendarModerationRank rank = CalendarModerationRank(fields[6].GetUInt8());
-            std::string note            = fields[7].GetString();
+                uint64 inviteId = fields[0].GetUInt64();
+                uint64 eventId = fields[1].GetUInt64();
+                ObjectGuid invitee = ObjectGuid::Create<HighGuid::Player>(fields[2].GetUInt64());
+                ObjectGuid senderGUID = ObjectGuid::Create<HighGuid::Player>(fields[3].GetUInt64());
+                CalendarInviteStatus status = CalendarInviteStatus(fields[4].GetUInt8());
+                time_t responseTime = fields[5].GetInt64();
+                CalendarModerationRank rank = CalendarModerationRank(fields[6].GetUInt8());
+                std::string note = fields[7].GetString();
 
-            CalendarInvite* invite = new CalendarInvite(inviteId, eventId, invitee, senderGUID, responseTime, status, rank, note);
-            _invites[eventId].push_back(invite);
+                CalendarInvite* invite = new CalendarInvite(inviteId, eventId, invitee, senderGUID, responseTime, status, rank, note);
+                _invites[eventId].push_back(invite);
 
-            _maxInviteId = std::max(_maxInviteId, inviteId);
+                _maxInviteId = std::max(_maxInviteId, inviteId);
 
-            ++count;
-        }
-        while (result->NextRow());
+                ++count;
+            } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u calendar invites in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+            TC_LOG_INFO("server.loading", ">> Loaded {} calendar invites in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 
-    for (uint64 i = 1; i < _maxEventId; ++i)
-        if (!GetEvent(i))
-            _freeEventIds.push_back(i);
+            for (uint64 i = 1; i < _maxEventId; ++i)
+                if (!GetEvent(i))
+                    _freeEventIds.push_back(i);
 
-    for (uint64 i = 1; i < _maxInviteId; ++i)
-        if (!GetInvite(i))
-            _freeInviteIds.push_back(i);
+            for (uint64 i = 1; i < _maxInviteId; ++i)
+                if (!GetInvite(i))
+                    _freeInviteIds.push_back(i);
 }
 
 void CalendarMgr::AddEvent(CalendarEvent* calendarEvent, CalendarSendEventType sendType)
@@ -244,7 +242,7 @@ void CalendarMgr::RemoveInvite(uint64 inviteId, uint64 eventId, ObjectGuid /*rem
     //    MailDraft(calendarEvent->BuildCalendarMailSubject(remover), calendarEvent->BuildCalendarMailBody())
     //        .SendMailTo(trans, MailReceiver((*itr)->GetInvitee()), calendarEvent, MAIL_CHECK_MASK_COPIED);
 
-    delete *itr;
+    delete* itr;
     _invites[eventId].erase(itr);
 }
 
@@ -311,7 +309,7 @@ CalendarEvent* CalendarMgr::GetEvent(uint64 eventId) const
         if ((*itr)->GetEventId() == eventId)
             return *itr;
 
-    TC_LOG_DEBUG("calendar", "CalendarMgr::GetEvent: [" UI64FMTD "] not found!", eventId);
+    TC_LOG_DEBUG("calendar", "CalendarMgr::GetEvent: [{}] not found!", eventId);
     return nullptr;
 }
 
@@ -322,7 +320,7 @@ CalendarInvite* CalendarMgr::GetInvite(uint64 inviteId) const
             if ((*itr2)->GetInviteId() == inviteId)
                 return *itr2;
 
-    TC_LOG_DEBUG("calendar", "CalendarMgr::GetInvite: [" UI64FMTD "] not found!", inviteId);
+    TC_LOG_DEBUG("calendar", "CalendarMgr::GetInvite: [{}] not found!", inviteId);
     return nullptr;
 }
 
@@ -445,13 +443,13 @@ uint32 CalendarMgr::GetPlayerNumPending(ObjectGuid guid)
     {
         switch ((*itr)->GetStatus())
         {
-            case CALENDAR_STATUS_INVITED:
-            case CALENDAR_STATUS_TENTATIVE:
-            case CALENDAR_STATUS_NOT_SIGNED_UP:
-                ++pendingNum;
-                break;
-            default:
-                break;
+        case CALENDAR_STATUS_INVITED:
+        case CALENDAR_STATUS_TENTATIVE:
+        case CALENDAR_STATUS_NOT_SIGNED_UP:
+            ++pendingNum;
+            break;
+        default:
+            break;
         }
     }
 
@@ -673,13 +671,13 @@ void CalendarMgr::SendCalendarCommandResult(ObjectGuid guid, CalendarError err, 
 
         switch (err)
         {
-            case CALENDAR_ERROR_OTHER_INVITES_EXCEEDED:
-            case CALENDAR_ERROR_ALREADY_INVITED_TO_EVENT_S:
-            case CALENDAR_ERROR_IGNORING_YOU_S:
-                packet.Name = param;
-                break;
-            default:
-                break;
+        case CALENDAR_ERROR_OTHER_INVITES_EXCEEDED:
+        case CALENDAR_ERROR_ALREADY_INVITED_TO_EVENT_S:
+        case CALENDAR_ERROR_IGNORING_YOU_S:
+            packet.Name = param;
+            break;
+        default:
+            break;
         }
 
         player->SendDirectMessage(packet.Write());

@@ -58,8 +58,6 @@ public:
 // 251924
 class spell_garothi_obliterator_fiery_mortars : public SpellScript
 {
-    PrepareSpellScript(spell_garothi_obliterator_fiery_mortars);
-
     void HandleDummy(SpellEffIndex /* effIndex */)
     {
         GetCaster()->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
@@ -324,13 +322,13 @@ public:
                     break;
                 case EVENT_STEP_03:
                 {
-                    AddWaypoint(1, -4242.758301f, -11345.727539f, 8.943564f, 0);
-                    AddWaypoint(2, -4247.899902f, -11348.519742f, 10.034762f, 0);
-                    AddWaypoint(3, -4258.516602f, -11349.978516f, 4.728858f, 0);
-                    AddWaypoint(4, -4264.603027f, -11354.836914f, 4.856225f, 0);
-                    AddWaypoint(5, -4261.898926f, -11360.919922f, 5.132911f, 0);
+                    AddWaypoint(1, -4242.758301f, -11345.727539f, 8.943564f, true);
+                    AddWaypoint(2, -4247.899902f, -11348.519742f, 10.034762f, true);
+                    AddWaypoint(3, -4258.516602f, -11349.978516f, 4.728858f, true);
+                    AddWaypoint(4, -4264.603027f, -11354.836914f, 4.856225f, true);
+                    AddWaypoint(5, -4261.898926f, -11360.919922f, 5.132911f, true);
 
-                    Start(true, true, ObjectGuid::Empty, nullptr, false, false);
+                    Start(true, ObjectGuid::Empty, nullptr, false, false);
                     break;
                 }
                 case EVENT_STEP_04:
@@ -368,7 +366,7 @@ struct npc_lady_liadrin_122065 : public ScriptedAI
     {
         CloseGossipMenuFor(player);
 
-        if (player->HasQuest(QUEST_H_TWO_IF_BY_SEA) || player->GetQuestStatus(QUEST_H_TWO_IF_BY_SEA) == QUEST_STATUS_COMPLETE || player->GetQuestStatus(QUEST_H_TWO_IF_BY_SEA) == QUEST_STATUS_REWARDED)
+        if (player->HasQuest(QUEST_H_TWO_IF_BY_SEA))
         {
             player->KilledMonsterCredit(KILLED_MONSTER_CREDIT_TWO_IF_BY_SEA);
             player->TeleportTo(1750, -4295.41f, -11368.2f, 10.64f, 5.764124f);///SMSG_CUSTOM_LOAD_SCREEN TeleportSpellID: 247215 LoadingScreenID: 1377
@@ -381,40 +379,20 @@ struct npc_lady_liadrin_122065 : public ScriptedAI
         m_playerGUID = ObjectGuid::Empty;
     }
 
-    void AddPlayer()
-    {
-        if (!HasPlayer(m_playerGUID))
-            pList.insert(m_playerGUID);
-    }
-
-    bool HasPlayer(ObjectGuid guid)
-    {
-        return (pList.find(guid) != pList.end());
-    }
-
-    void RemovePlayer()
-    {
-        if (HasPlayer(m_playerGUID))
-            pList.erase(m_playerGUID);
-        m_playerGUID = ObjectGuid::Empty;
-    }
-
     void MoveInLineOfSight(Unit* who) override
     {
         if (!who || !who->IsInWorld())
             return;
         if (!me->IsWithinDist(who, 15.0f, false))
         {
-            RemovePlayer();
             return;
         }
         Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself();
         if (!player)
             return;
-        if (!HasPlayer(player->GetGUID()) && (player->HasQuest(QUEST_H_THE_HAND_OF_FATE)) && !player->GetQuestObjectiveProgress(QUEST_H_THE_HAND_OF_FATE, 0))
+        if ((player->HasQuest(QUEST_H_THE_HAND_OF_FATE)) && !player->GetQuestObjectiveProgress(QUEST_H_THE_HAND_OF_FATE, 0))
         {
             m_playerGUID = player->GetGUID();
-            AddPlayer();
             Conversation::CreateConversation(5335, player, player->GetPosition(), { player->GetGUID() });
             player->KilledMonsterCredit(KILLED_MONSTER_CREDIT_THE_HAND_OF_FATE); // QUEST_THE_HAND_OF_FATE storageIndex 0 KillCredit
             ///talk
@@ -437,7 +415,6 @@ struct npc_lady_liadrin_122065 : public ScriptedAI
     }
 private:
     TaskScheduler _scheduler;
-    std::set<ObjectGuid> pList;
     ObjectGuid   m_playerGUID;
 };
 

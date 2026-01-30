@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,17 +39,12 @@ public:
             SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
         }
-
-	    void OnPlayerEnter(Player* player)
-	    {
-	    }
     };
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
         return new instance_siege_of_boralus_InstanceMapScript(map);
     }
-
 };
 
 class blood_in_the_water : public PlayerScript
@@ -71,11 +66,11 @@ public:
 				player->CastSpell(player, BLOOD_IN_THE_WATER_SCREEN_EFFECT);
 				if (player->HasAura(BLOOD_IN_THE_WATER_SCREEN_EFFECT) && player->IsAlive() && player->IsInWater())
 				{
-					player->GetScheduler().Schedule(2s, [player](TaskContext context)
+					player->GetScheduler().Schedule(2s, [player](TaskContext /*context*/)
 					{
 						player->CastSpell(player, BLOOD_IN_THE_WATER_INSTAKILL);
 					});
-				}	
+				}
 			}
 			if (!player->IsInWater() && player->GetAreaId() == 9354)
 			{

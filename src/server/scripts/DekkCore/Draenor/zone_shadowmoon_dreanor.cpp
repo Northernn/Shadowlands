@@ -119,7 +119,7 @@ public:
         void SetGUID(ObjectGuid const& guid, int32 /*id*/) override
         {
             playerGuid = guid;
-            Start(false, true, guid);
+            Start(false, guid);
             SetDespawnAtFar(false);
             me->GetScheduler().Schedule(68s, [this](TaskContext context)
                 {
@@ -148,7 +148,7 @@ public:
 
         void SetGUID(ObjectGuid const& guid, int32 /*id*/) override
         {
-            Start(true, true, guid);
+            Start(true, guid);
         }
 
         void WaypointReached(uint32 waypointId, uint32 pathId) override
@@ -198,8 +198,6 @@ public:
 
     class spell_shadowmoon_claiming_spellscript : public SpellScript
     {
-        PrepareSpellScript(spell_shadowmoon_claiming_spellscript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (!GetCaster())
@@ -283,8 +281,8 @@ public:
             me->SummonCreature(81542, -880.42f, -1110.95f, 83.63f, 5.366850f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2s);
 
             events.ScheduleEvent(EVENT_WATER_BLAST, 5s);
-            events.ScheduleEvent(EVENT_SUBMERGE, (13s, 30s));
-            events.ScheduleEvent(EVENT_JETTISON, (8s, 18s));
+            events.ScheduleEvent(EVENT_SUBMERGE, 15s);
+            events.ScheduleEvent(EVENT_JETTISON, 12s);
 
             me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -326,7 +324,7 @@ public:
                 {
                     if (Unit* victim = me->GetVictim())
                         me->CastSpell(victim, SPELL_JETTISON, false);
-                    events.ScheduleEvent(EVENT_JETTISON, (8s, 18s));
+                    events.ScheduleEvent(EVENT_JETTISON, 13s);
                     break;
                 }
 
@@ -334,7 +332,7 @@ public:
                 {
 
                     me->CastSpell(me, SPELL_SUBMERGE, false);
-                    events.ScheduleEvent(EVENT_SUBMERGE, (13s, 30s));
+                    events.ScheduleEvent(EVENT_SUBMERGE, 15s);
                     break;
                 }
 
@@ -474,7 +472,7 @@ struct npc_gara : public ScriptedAI
 
     bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
     {
-        if (player->GetClass() != CLASS_HUNTER || player->GetSpecializationId() != TALENT_SPEC_HUNTER_BEASTMASTER)
+        if (player->GetClass() != CLASS_HUNTER || player->GetPrimarySpecialization() != ChrSpecialization::HunterBeastMastery)
             return false;
 
         uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
@@ -502,8 +500,6 @@ public:
 
     class spell_use_effigy_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_use_effigy_SpellScript);
-
         SpellCastResult CheckCast()
         {
             if (Unit* unt = GetCaster())
@@ -716,7 +712,7 @@ struct go_shadowmoon_voidblade : public GameObjectAI
     bool OnGossipHello(Player* player) override
     {
         if ((player->HasAura(SPELL_VOID_LANTERN) && player->GetQuestStatus(37426) == QUEST_STATUS_REWARDED) || player->GetQuestStatus(37427) == QUEST_STATUS_REWARDED)
-            if (player->GetClass() == CLASS_HUNTER && player->GetSpecializationId() == TALENT_SPEC_HUNTER_BEASTMASTER)
+            if (player->GetClass() == CLASS_HUNTER && player->GetPrimarySpecialization() != ChrSpecialization::HunterBeastMastery)
                 player->CastSpell(player, SPELL_TRACKING_QUEST_3);
 
         CloseGossipMenuFor(player);
@@ -732,8 +728,6 @@ public:
 
     class spell_aura_void_realm_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_aura_void_realm_AuraScript);
-
         void HandlePhasing(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (!GetCaster()->IsPlayer())
@@ -944,15 +938,15 @@ public:
 
             if (me->GetEntry() == NPC_ELDER_VOIDCALLER)
             {
-                events.ScheduleEvent(EVENT_NEGATE, (30s, 40s));
-                events.ScheduleEvent(EVENT_TWIST_REALITY, (2s, 10s));
-                events.ScheduleEvent(EVENT_VOID_BOLT, (2s, 5s));
+                events.ScheduleEvent(EVENT_NEGATE, 35s);
+                events.ScheduleEvent(EVENT_TWIST_REALITY, 7s);
+                events.ScheduleEvent(EVENT_VOID_BOLT, 3s);
             }
             else
             {
-                events.ScheduleEvent(EVENT_CONSUMING_VOID, (40s, 60s));
-                events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, (10s, 20s));
-                events.ScheduleEvent(EVENT_SINGULARITY, (5s, 15s));
+                events.ScheduleEvent(EVENT_CONSUMING_VOID, 50s);
+                events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, 13s);
+                events.ScheduleEvent(EVENT_SINGULARITY, 9s);
             }
         }
 
@@ -975,7 +969,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
                         me->CastSpell(victim, SPELL_CONSUMING_VOID);
 
-                    events.ScheduleEvent(EVENT_CONSUMING_VOID, (40s, 60s));
+                    events.ScheduleEvent(EVENT_CONSUMING_VOID, 45s);
                     break;
                 }
                 case EVENT_GRIP_OF_THE_VOID:
@@ -983,7 +977,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                         me->CastSpell(victim, SPELL_GRIP_OF_THE_VOID);
 
-                    events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, (20s, 30s));
+                    events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, 25s);
                     break;
                 }
                 case EVENT_NEGATE:
@@ -991,7 +985,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 10.0f, true))
                         me->CastSpell(victim, SPELL_NEGATE);
 
-                    events.ScheduleEvent(EVENT_NEGATE, (10s, 25s));
+                    events.ScheduleEvent(EVENT_NEGATE, 15s);
                     break;
                 }
                 case EVENT_SINGULARITY:
@@ -1003,13 +997,13 @@ public:
                     for (auto player : players)
                         player->CastSpell(me, SPELL_SINGULARITY_PULL);
 
-                    events.ScheduleEvent(EVENT_SINGULARITY, (5s, 15s));
+                    events.ScheduleEvent(EVENT_SINGULARITY, 8s);
                     break;
                 }
                 case EVENT_TWIST_REALITY:
                 {
                     DoCast(SPELL_TWIST_REALITY);
-                    events.ScheduleEvent(EVENT_TWIST_REALITY, (2s, 6s));
+                    events.ScheduleEvent(EVENT_TWIST_REALITY, 4s);
                     break;
                 }
                 case EVENT_VOID_BOLT:
@@ -1017,7 +1011,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 40.0f))
                         me->CastSpell(victim, SPELL_VOID_BOLT);
 
-                    events.ScheduleEvent(EVENT_VOID_BOLT, (2s, 6s));
+                    events.ScheduleEvent(EVENT_VOID_BOLT, 4s);
                     break;
                 }
                 }
@@ -1053,12 +1047,12 @@ public:
 
         void JustEngagedWith(Unit* /*who*/) override
         {
-            events.ScheduleEvent(EVENT_CONSUMING_VOID, (40s, 60s));
-            events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, (10s, 20s));
-            events.ScheduleEvent(EVENT_NEGATE, (5s, 10s));
-            events.ScheduleEvent(EVENT_SINGULARITY, (15s, 30s));
-            events.ScheduleEvent(EVENT_TWIST_REALITY, (5s, 10s));
-            events.ScheduleEvent(EVENT_VOID_BOLT, (2s, 5s));
+            events.ScheduleEvent(EVENT_CONSUMING_VOID, 45s);
+            events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, 15s);
+            events.ScheduleEvent(EVENT_NEGATE, 8s);
+            events.ScheduleEvent(EVENT_SINGULARITY, 20s);
+            events.ScheduleEvent(EVENT_TWIST_REALITY, 8s);
+            events.ScheduleEvent(EVENT_VOID_BOLT, 3s);
         }
 
         void UpdateAI(uint32 diff) override
@@ -1080,7 +1074,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
                         me->CastSpell(victim, SPELL_CONSUMING_VOID);
 
-                    events.ScheduleEvent(EVENT_CONSUMING_VOID, (40s, 60s));
+                    events.ScheduleEvent(EVENT_CONSUMING_VOID, 45s);
                     break;
                 }
                 case EVENT_GRIP_OF_THE_VOID:
@@ -1088,7 +1082,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                         me->CastSpell(victim, SPELL_GRIP_OF_THE_VOID);
 
-                    events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, (30s, 35s));
+                    events.ScheduleEvent(EVENT_GRIP_OF_THE_VOID, 33s);
                     break;
                 }
                 case EVENT_NEGATE:
@@ -1096,7 +1090,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 10.0f, true))
                         me->CastSpell(victim, SPELL_NEGATE);
 
-                    events.ScheduleEvent(EVENT_NEGATE, (20s, 25s));
+                    events.ScheduleEvent(EVENT_NEGATE, 22s);
                     break;
                 }
                 case EVENT_SINGULARITY:
@@ -1108,13 +1102,13 @@ public:
                     for (auto player : players)
                         player->CastSpell(me, SPELL_SINGULARITY_PULL);
 
-                    events.ScheduleEvent(EVENT_SINGULARITY, (15s, 40s));
+                    events.ScheduleEvent(EVENT_SINGULARITY, 22s);
                     break;
                 }
                 case EVENT_TWIST_REALITY:
                 {
                     DoCast(SPELL_TWIST_REALITY);
-                    events.ScheduleEvent(EVENT_TWIST_REALITY, (2s, 9s));
+                    events.ScheduleEvent(EVENT_TWIST_REALITY, 5s);
                     break;
                 }
                 case EVENT_VOID_BOLT:
@@ -1122,7 +1116,7 @@ public:
                     if (Unit* victim = SelectTarget(SelectTargetMethod::Random, 0, 40.0f))
                         me->CastSpell(victim, SPELL_VOID_BOLT);
 
-                    events.ScheduleEvent(EVENT_VOID_BOLT, (2s, 5s));
+                    events.ScheduleEvent(EVENT_VOID_BOLT, 3s);
                     break;
                 }
                 }
@@ -1147,8 +1141,6 @@ public:
 
     class spell_garrison_cache_loot_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_garrison_cache_loot_SpellScript);
-
         enum data
         {
             NPC__ = 80223,
@@ -1169,7 +1161,7 @@ public:
                 if (!garr)
                     return;
 
-                plr->ModifyCurrency(CURRENCY_TYPE_GARRISON_RESOURCES, false, true, true);
+                plr->AddCurrency(CURRENCY_TYPE_GARRISON_RESOURCES, false, CurrencyGainSource::GarrisonBuildingRefund);
 
                 if (plr->GetQuestStatus(QUESTA) == QUEST_STATUS_INCOMPLETE ||
                     plr->GetQuestStatus(QUESTH) == QUEST_STATUS_INCOMPLETE)
@@ -1223,8 +1215,6 @@ struct npc_baros_alexston : public ScriptedAI
 // 160938 - Despawn All Summons (Garrison Intro Only)
 class spell_despawn_all_summons_garrison_intro_only : public SpellScript
 {
-    PrepareSpellScript(spell_despawn_all_summons_garrison_intro_only);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (Creature* hitCreature = GetHitCreature())

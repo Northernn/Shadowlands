@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,9 +39,9 @@ enum KraggSpells
     VileBombadment = 256005,
     VileCoating = 256016,
     ///Boss SkyCap Kragg
-    Charrrrrge = 255952, /// With Mount 
-    PistolShot = 255966, /// With Mount 
-    AzeritePowderShot = 256106, /// Without Mount 
+    Charrrrrge = 255952, /// With Mount
+    PistolShot = 255966, /// With Mount
+    AzeritePowderShot = 256106, /// Without Mount
     RevitalizingBrewSkyCap = 256060, /// Without Mount
     RevitalizingBrewPlayer = 263297,
     ///Heroic
@@ -91,7 +91,7 @@ enum KraggTalk
 
 Position const MiddlePos = { -1768.29f, -1009.25f, 110.0f, 0.418879f };
 
-///Todo Add damage on mechanic Dive Bombs, is necesary make  SPELL_EFFECT_254 is something related about charge effect and target front the trajectory 
+///Todo Add damage on mechanic Dive Bombs, is necesary make  SPELL_EFFECT_254 is something related about charge effect and target front the trajectory
 
 Position GetRandomPositionAround(Unit* unit, float distMin, float distMax)
 {
@@ -103,7 +103,7 @@ Position GetRandomPositionAround(Unit* unit, float distMin, float distMax)
     return { x, y, z };
 }
 
-///126832 - Skycap Kragg 
+///126832 - Skycap Kragg
 struct boss_skycap_kragg : public BossAI
 {
     boss_skycap_kragg(Creature* creature) : BossAI(creature, FreeholdData::DataSkycapKragg)
@@ -163,7 +163,7 @@ struct boss_skycap_kragg : public BossAI
         Reset();
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit*) override
     {
         if (instance)
         {
@@ -173,6 +173,7 @@ struct boss_skycap_kragg : public BossAI
                 EnterEvadeMode(EVADE_REASON_SEQUENCE_BREAK);
                 return;
             }
+
             instance->SetBossState(FreeholdData::DataSkycapKragg, IN_PROGRESS);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me, 1);
         }
@@ -187,6 +188,7 @@ struct boss_skycap_kragg : public BossAI
         me->setActive(true);
         DoZoneInCombat();
         fightStarted = true;
+
         if (Creature* mount = ObjectAccessor::GetCreature(*me, mountGUID))
             mount->AI()->SetData(KraggDatas::DataMountInCombat, true);
 
@@ -211,7 +213,7 @@ struct boss_skycap_kragg : public BossAI
             instance->SetBossState(FreeholdData::DataSkycapKragg, DONE);
     }
 
-void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
      //   if (me->HealthWillBeBelowPctDamaged(75, damage) && phase == PhaseMount)
         {
@@ -232,7 +234,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
         }
     }
 
-    void SetData(uint32 id, uint32 value)
+    void SetData(uint32 id, uint32 value) override
     {
         if (id == KraggDatas::DataCharge)
             charge = value;
@@ -363,7 +365,7 @@ struct npc_sharkbait : public ScriptedAI
         me->DespawnOrUnsummon();
     }
 
-    void SetData(uint32 id, uint32 value)
+    void SetData(uint32 id, uint32 value) override
     {
         if (id == KraggDatas::DataMountInCombat)
             InCombat = value;
@@ -482,8 +484,6 @@ struct at_vile_bombardment : AreaTriggerAI
 ///272046 Dive Bomb
 class spell_dive_bomb : public SpellScript
 {
-    PrepareSpellScript(spell_dive_bomb);
-
     void HandleOnCast()
     {
         if (Unit* caster = GetCaster())

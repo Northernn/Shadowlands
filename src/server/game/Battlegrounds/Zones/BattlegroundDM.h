@@ -18,21 +18,21 @@
 //! От, количества игроков, подключаются дополнительные точки ресса. Кд на спеллы после смерти сбрасывается.
 //! 3. Система мега киллов
 
-//! Каждй раз при убийстве нескольких героев подряд, без собственной смерти, увеличивается размер получаемо хонора за его убийство. 
+//! Каждй раз при убийстве нескольких героев подряд, без собственной смерти, увеличивается размер получаемо хонора за его убийство.
 //! Стандартная награда 1-5 хонора.
-//! При убийстве игрока со стриком >5 (Mega Kill), награда 5-10 хонора. 
-//! При убийстве игрока со стриком >10 (Beyond Godlike), награда 10-30 хонора. 
+//! При убийстве игрока со стриком >5 (Mega Kill), награда 5-10 хонора.
+//! При убийстве игрока со стриком >10 (Beyond Godlike), награда 10-30 хонора.
 //! Анонсы в чат
-//! 3 кила – “Killing Spree” 
-//! 4 – “Dominating” 
-//! 5 – “Mega Kill” 
-//! 6 – “Unstoppable” 
-//! 7 – “Wicked Sick” 
-//! 8 – “Monster Kill” 
-//! 9 – “Godlike” 
-//! 10 – “Beyond Godlike” 
+//! 3 кила – “Killing Spree”
+//! 4 – “Dominating”
+//! 5 – “Mega Kill”
+//! 6 – “Unstoppable”
+//! 7 – “Wicked Sick”
+//! 8 – “Monster Kill”
+//! 9 – “Godlike”
+//! 10 – “Beyond Godlike”
 
-//! Если же вражеские герои умирают почти одновременно от вашей руки вы услышите 
+//! Если же вражеские герои умирают почти одновременно от вашей руки вы услышите
 //! “Double Kill!” за двух героев
 //! “Triple Kill!” за троих
 //! “Ultra Kill!” за четверых и
@@ -48,8 +48,8 @@ enum SomeValues
     KILLS_FOR_HIGH_COST         = 5,
     BASE_TIME_FOR_STRIKE        = 10000,
     SPELL_FOCUSED_ASSAULT       = 46392, // for increasing damage taken
-    
-    GOB_BUFF_EYE                = 184663,    
+
+    GOB_BUFF_EYE                = 184663,
 };
 
 
@@ -61,7 +61,7 @@ enum Texts
     TEXT_TRIPLE_KILL            = 20203,
     TEXT_ULTRA_KILL             = 20204,
     TEXT_RAMPAGE                = 20205,
-    
+
     TEXT_KILLING_SPREE          = 20206,
     TEXT_DOMINATING             = 20207,
     TEXT_MEGA_KILL              = 20208,
@@ -79,7 +79,7 @@ uint32 const DM_Buffs[3]
     BG_OBJECTID_BERSERKERBUFF_ENTRY,
     // GOB_BUFF_EYE
  };
- 
+
 Position const dm_buf_pos[6]
 {
     {731.42f, 301.24f, 1.55f, 1.92f},
@@ -87,9 +87,9 @@ Position const dm_buf_pos[6]
     {761.47f, 604.40f, 32.43f, 0.92f},
     {1297.98f, 562.80f, 40.51f, 6.12f},
     {1062.31f, 468.56f, 0.91f, 3.38f},
-    
+
     {1036.84f, 160.94f, 83.32f, 5.01f}
-    
+
 };
 
 struct BattlegroundDMScore final : BattlegroundScore
@@ -104,9 +104,8 @@ protected:
         BattlegroundScore::UpdateScore(type, value);
     }
 
-    void BuildObjectivesBlock(std::vector<int32>& stats) /*override*/ {}
+    void BuildObjectivesBlock(std::vector<int32>& /*stats*/) { }
 };
-
 
 #define MIDDLE_HP   4500000
 #define STEP_RATING 20
@@ -117,32 +116,32 @@ class BattlegroundDeathMatch : public Battleground
 public:
     BattlegroundDeathMatch(BattlegroundTemplate const* battlegroundTemplate);
     ~BattlegroundDeathMatch();
-    
+
     void Reset() override;
     void StartingEventCloseDoors() override;
     void StartingEventOpenDoors() override;
     bool SetupBattleground() override;
 
-    void AddPlayer(Player* player) override;
+    void AddPlayer(Player* player, BattlegroundQueueTypeId queueId) override;
     void OnPlayerEnter(Player* player);
     void RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket) override;
     WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
     void HandleKillPlayer(Player*, Player*) override;
   //  void HandleStartTimer(TimerType type) override {}; // not needed
     void EndBattleground(uint32 winner) override;
-    
+
     void PostUpdateImpl(uint32 diff) override;
-    
+
 private:
     int32 CalculateRating(uint32 kills, uint32 dies, uint64 dmg) const ;
    // int32 CalculateRating(BattlegroundScore* bs) const {return CalculateRating(bs->GetScore(SCORE_KILLING_BLOWS), bs->GetScore(SCORE_DEATHS), bs->GetScore(SCORE_DAMAGE_DONE)); }
     void SendSysMessageToAll(uint32 textid, Player* first = nullptr, Player* second = nullptr);
     void SendDirectMessageToAll(uint32 textid, Player* first);
-    
+
     uint32 DMTeam;
     std::map<ObjectGuid, uint32> strike;
     std::map<ObjectGuid, std::pair<uint32, uint32>> temp_strike;  // guid, kills, last time
-    
+
     uint32 timer_for_end;
     uint32 small_delayed_timer;
 };

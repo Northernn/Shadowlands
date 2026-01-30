@@ -38,8 +38,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void HandleDummy(SpellEffIndex /*effIndex*/)
                 {
                     Unit* caster = GetCaster();
@@ -78,8 +76,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void HandleDummy(SpellEffIndex /*effIndex*/)
                 {
                     Unit* caster = GetCaster();
@@ -115,8 +111,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void CheckTarget(std::list<WorldObject*>& unitList)
                 {
                     Trinity::Containers::RandomResize(unitList, 1);
@@ -160,8 +154,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void HandleDummy(SpellEffIndex /*effIndex*/)
                 {
                     Unit* caster = GetCaster();
@@ -192,8 +184,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void CheckTarget(std::list<WorldObject*>& unitList)
                 {
                     unitList.remove_if([](WorldObject* obj) {
@@ -231,8 +221,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void HandleDummy(SpellEffIndex /*effIndex*/)
                 {
                     Unit* caster = GetCaster();
@@ -272,8 +260,6 @@ namespace Instances
 
             class spell_SpellScript : public SpellScript
             {
-                PrepareSpellScript(spell_SpellScript);
-
                 void HandleDummy(SpellEffIndex /*effIndex*/)
                 {
                     Unit* caster = GetCaster();

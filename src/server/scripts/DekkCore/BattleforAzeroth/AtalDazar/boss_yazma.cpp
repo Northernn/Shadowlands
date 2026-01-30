@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -42,13 +42,13 @@ enum Spells {
     SPELL_WRACKING_PAIN = 250096,
     SPELL_SKEWER = 249919,
     //Echoes of Shadra
-    //SPELL_TARGET_SELECTOR = 257066, //HITS ALL UNITS IN RANGE
+    SPELL_TARGET_SELECTOR = 257066, //HITS ALL UNITS IN RANGE
     SPELL_ECHOES_OF_SHADOW = 250050,
     SPELL_ECHOES_OF_SHADOW_EMPOWERED = 258612,
     SPELL_ECHOES_OF_SHADOW_EMPOWERED2 = 256036,
     SPELL_ECHOES_OF_SHADOW_SPAWN = 257291,
     SPELL_ECHOES_OF_SHADOW_SPAWN_SMALL = 263092, // ?
-    //SPELL_ECHOES_OF_SHAODW_AREATRIGGER = 263096, // the spiders on the stairs
+    SPELL_ECHOES_OF_SHAODW_AREATRIGGER = 263096, // the spiders on the stairs
     SPELL_ECHOES_OF_SHADOW_AREATRIGGER = 250022, //Bigger
 };
 
@@ -243,7 +243,7 @@ struct npc_ataldazar_soulspawn : public ScriptedAI
 //            }
 //    }
 
-    void UpdateAI(uint32 diff) override
+    void UpdateAI(uint32 /*diff*/) override
     {
         if (Creature* yazma = me->FindNearestCreature(NPC_YAZMA, 100))
             if (me->GetDistance(yazma) < 1)
@@ -273,12 +273,12 @@ struct npc_ataldazar_echo_of_shadra : public ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         events.ScheduleEvent(EVENT_SHADOW_EMPOWERED, 5s);
     }
 
-    void MovementInform(uint32 type, uint32 id) override
+    void MovementInform(uint32 /*type*/, uint32 /*id*/) override
     {
         me->GetMotionMaster()->MoveRandom(urand(5, 15));
     }

@@ -32,8 +32,6 @@ enum MosshideRep
 
 class spell_murloc_pheromone : public SpellScript
 {
-    PrepareSpellScript(spell_murloc_pheromone);
-
     SpellCastResult CheckRequirement()
     {
         if (!GetCaster()->FindNearestCreature(NPC_MOSSHIDE_REP, 25.0f, true))

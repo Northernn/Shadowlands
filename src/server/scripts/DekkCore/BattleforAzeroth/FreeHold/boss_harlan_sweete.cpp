@@ -111,7 +111,7 @@ struct boss_harlan_sweete : public BossAI
             instance->DoCompleteAchievement(12833);
     }
 
-void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
      //   if (me->HealthWillBeBelowPctDamaged(60, damage) && !sixtyPercent)
         {
@@ -217,23 +217,23 @@ struct npc_irontide_granadier : public ScriptedAI
 {
     npc_irontide_granadier(Creature* creature) : ScriptedAI(creature) { }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetReactState(REACT_PASSIVE);
         targetGUID.Clear();
-        AddTimedDelayedOperation(800, [this]() -> void
+        AddTimedDelayedOperation(800, [this]()
+        {
+            if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 0, true))
             {
-                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 0, true))
-                {
-                    me->CastSpell(target, HarlanSweeteSpells::BlackPowderBombAura, true);
-                    me->GetThreatManager().ResetAllThreat();
-                  //  me->GetThreatManager().addThreat(target, 1000000.0f);
-                    me->GetMotionMaster()->MoveChase(target);
-                    targetGUID = target->GetGUID();
-                }
+                me->CastSpell(target, HarlanSweeteSpells::BlackPowderBombAura, true);
+                me->GetThreatManager().ResetAllThreat();
+              //  me->GetThreatManager().addThreat(target, 1000000.0f);
+                me->GetMotionMaster()->MoveChase(target);
+                targetGUID = target->GetGUID();
+            }
 
-                events.ScheduleEvent(HarlanSweeteEvents::EventCheckPlayer, 5s);
-            });
+            events.ScheduleEvent(HarlanSweeteEvents::EventCheckPlayer, 5s);
+        });
     }
 
     void UpdateAI(uint32 diff) override
@@ -272,20 +272,20 @@ struct npc_swiftwind_saber : public ScriptedAI
 {
     npc_swiftwind_saber(Creature* creature) : ScriptedAI(creature) { }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetReactState(REACT_PASSIVE);
-        float orientation = me->GetOrientation();
+//        float orientation = me->GetOrientation();
 
-        AddTimedDelayedOperation(2 * TimeConstants::IN_MILLISECONDS, [this, orientation]() -> void
-            {
-                float x = 0, y = 0;
-               // GetPositionWithDistInOrientation(me, 100.0f, orientation, x, y);
-                me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f);
-            });
+        AddTimedDelayedOperation(2 * TimeConstants::IN_MILLISECONDS, [this /*,orientation*/]()
+        {
+            float x = 0, y = 0;
+           // GetPositionWithDistInOrientation(me, 100.0f, orientation, x, y);
+            me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f);
+        });
     }
 
-    void UpdateAI(uint32 diff) override
+    void UpdateAI(uint32 /*diff*/) override
     {
        // UpdateOperations(diff);
     }
@@ -294,9 +294,7 @@ struct npc_swiftwind_saber : public ScriptedAI
 ///257305 Cannon Barrage Aura
 class spell_cannon_barrage_aura : public AuraScript
 {
-    PrepareAuraScript(spell_cannon_barrage_aura);
-
-    void OnPeriodic(AuraEffect const* aurEff)
+    void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* caster = GetCaster())
             if (Unit* target = GetTarget())
@@ -312,8 +310,6 @@ class spell_cannon_barrage_aura : public AuraScript
 ///258850 Cannon Barrage
 class spell_cannon_barrage_target : public SpellScript
 {
-    PrepareSpellScript(spell_cannon_barrage_target);
-
     void FilterTargets(std::list<WorldObject*>& unitList)
     {
         unitList.remove_if([](WorldObject* object) -> bool
@@ -354,8 +350,6 @@ class spell_cannon_barrage_target : public SpellScript
 ///257454 Swiftwind Saber
 class spell_swiftwind_saber : public SpellScript
 {
-    PrepareSpellScript(spell_swiftwind_saber);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -403,10 +397,10 @@ struct at_swiftwind_saber : AreaTriggerAI
 
     void OnInitialize() override
     {
-      //  at->SetPeriodicProcTimer(1000);
+        at->SetPeriodicProcTimer(1000);
     }
 
-    void OnPeriodicProc() //override
+    void OnPeriodicProc() override
     {
         if (Unit* caster = at->GetCaster())
         {

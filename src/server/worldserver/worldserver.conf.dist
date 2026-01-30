@@ -41,6 +41,18 @@
 #    PACKET SPOOF PROTECTION SETTINGS
 #    METRIC SETTINGS
 #    PVP SETTINGS
+############################------ CUSTOM OPTIONS ------###########################################
+#
+#	 AUTO RESTART WORLDSERVER
+#    SOLO LFG
+#    Mythic+ System
+#    BattlePay
+#    REWARD system
+#    ELUNA SETTINGS
+#    WORLDQUEST
+#    FluxPhaseMgr
+#    SOLOCRAFT
+#    Announcer
 #
 ###################################################################################################
 
@@ -76,7 +88,7 @@ RealmID = 1
 #        Example:     "@prefix@/share/trinitycore"
 #        Default:     "."
 
-DataDir = "."
+DataDir = ".\ClientData"
 
 #
 #    LogsDir
@@ -85,7 +97,7 @@ DataDir = "."
 #                     Logs directory must exists, or log file creation will be disabled.
 #        Default:     "" - (Log files will be stored in the current path)
 
-LogsDir = ""
+LogsDir = ".\Logs"
 
 #
 #    LoginDatabaseInfo
@@ -112,10 +124,10 @@ LogsDir = ""
 #    The SSL option will enable TLS when connecting to the specified database. If not provided or
 #    any value other than 'ssl' is set, TLS will not be used.
 
-LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
-WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
-CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
-HotfixDatabaseInfo    = "127.0.0.1;3306;trinity;trinity;hotfixes"
+LoginDatabaseInfo     = "127.0.0.1;3306;root;admin;auth"
+WorldDatabaseInfo     = "127.0.0.1;3306;root;admin;world"
+CharacterDatabaseInfo = "127.0.0.1;3306;root;admin;characters"
+HotfixDatabaseInfo    = "127.0.0.1;3306;root;admin;hotfixes"
 
 #
 #    LoginDatabase.WorkerThreads
@@ -418,12 +430,12 @@ DisconnectToleranceInterval = 0
 #        Default:     1 - (Enabled)
 #                     0 - (Disabled)
 
-mmap.enablePathFinding = 1
+mmap.enablePathFinding = 0
 
 #
 #    vmap.enableLOS
 #    vmap.enableHeight
-#        Description: VMmap support for line of sight and height calculation.
+#        Description: Vmap support for line of sight and height calculation.
 #        Default:     1 - (Enabled, vmap.enableLOS)
 #                     1 - (Enabled, vmap.enableHeight)
 #                     0 - (Disabled)
@@ -699,7 +711,8 @@ DeclinedNames = 0
 #    Expansion
 #        Description: Allow server to use content from expansions. Checks for expansion-related
 #                     map files, client compatibility and class/race character creation.
-#        Default:     8 - (Expansion 8)
+#        Default:     9 - (Expansion 9)
+#                     8 - (Expansion 8)
 #                     7 - (Expansion 7)
 #                     6 - (Expansion 6)
 #                     5 - (Expansion 5)
@@ -709,7 +722,7 @@ DeclinedNames = 0
 #                     1 - (Expansion 1)
 #                     0 - (Disabled, Ignore and disable expansion content (maps, races, classes)
 
-Expansion = 8
+Expansion = 9
 
 #
 #    MinPlayerName
@@ -826,17 +839,25 @@ CharacterCreating.Disabled.ClassMask = 0
 #    CharactersPerAccount
 #        Description: Limit number of characters per account on all realms on this realmlist.
 #        Important:   Number must be >= CharactersPerRealm
-#        Default:     50
+#        Default:     60
 
-CharactersPerAccount = 50
+CharactersPerAccount = 60
 
 #
 #    CharactersPerRealm
 #        Description: Limit number of characters per account on this realm.
 #        Range:       1-200
-#        Default:     50
+#        Default:     60
 
-CharactersPerRealm = 50
+CharactersPerRealm = 60
+
+#
+#    CharacterCreating.EvokersPerRealm
+#        Description: Limit number of death knight characters per account on this realm.
+#        Range:       1-60
+#        Default:     1
+
+CharacterCreating.EvokersPerRealm = 1
 
 #
 #    CharacterCreating.MinLevelForDemonHunter
@@ -848,12 +869,21 @@ CharactersPerRealm = 50
 CharacterCreating.MinLevelForDemonHunter = 0
 
 #
+#    CharacterCreating.MinLevelForEvoker
+#        Description: Limit creating demon hunters only for account with another
+#                     character of specific level.
+#        Default:     50  - (Enabled, Requires at least another level 50 character)
+#                     0  - (Disabled, No requirement)
+
+CharacterCreating.MinLevelForEvoker = 0
+
+#
 #    CharacterCreating.DisableAlliedRaceAchievementRequirement
 #        Description: Disable achievement requirements for allied race character creation
 #        Default:     0 (Keep requirements active)
 #                     1 (Disable requirements)
 
-CharacterCreating.DisableAlliedRaceAchievementRequirement = 0
+CharacterCreating.DisableAlliedRaceAchievementRequirement = 1
 
 #
 #    SkipCinematics
@@ -870,9 +900,9 @@ SkipCinematics = 0
 #        Description: Maximum level that can be reached by players.
 #        Important:   Levels beyond 110 are not recommended at all.
 #        Range:       1-255
-#        Default:     60
+#        Default:     70
 
-MaxPlayerLevel = 60
+MaxPlayerLevel = 70
 
 #
 #    MinDualSpecLevel
@@ -904,6 +934,14 @@ StartDeathKnightPlayerLevel = 8
 #        Default:     8
 
 StartDemonHunterPlayerLevel = 8
+
+#
+#    StartEvokerPlayerLevel
+#        Description: Staring level for evokers after creation.
+#        Range:       1-MaxPlayerLevel
+#        Default:     58
+
+StartEvokerPlayerLevel = 58
 
 #
 #    StartAlliedRacePlayerLevel
@@ -1128,10 +1166,6 @@ Guild.EventLogRecordsCount = 100
 Guild.ResetHour = 6
 
 #
-
-Guild.SaveInterval = 15
-
-#
 #    Guild.BankEventLogRecordsCount
 #        Description: Number of log entries for guild bank events that are stored per guild. Old
 #                     entries will be overwritten if the number of log entries exceed the
@@ -1296,7 +1330,7 @@ FlashAtStart = 1
 #        Example:     "Welcome to John's Server!@This server is proud to be powered by Trinity Core."
 #        Default:     "Welcome to a Trinity Core server."
 
-Motd = "Welcome to a DekkCore server."
+Motd = "This server is using DekkCore Repack."
 
 #
 #    Server.LoginInfo
@@ -1366,6 +1400,14 @@ BirthdayTime = 1222964635
 #
 
  CacheDataQueries = 1
+
+#
+#   FeatureSystem.BpayStore.Enabled
+#        Description: Not yet implemented
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+FeatureSystem.BpayStore.Enabled = 1
 
 #
 #   FeatureSystem.CharacterUndelete.Enabled
@@ -2058,8 +2100,23 @@ ChatFlood.MessageCount = 10
 ChatFlood.MessageDelay = 1
 
 #
+#    ChatFlood.AddonMessageCount
+#        Description: Chat flood protection, number of addon messages before player gets muted.
+#        Default:     100 - (Enabled)
+#                     0  - (Disabled)
+
+ChatFlood.AddonMessageCount = 100
+
+#
+#    ChatFlood.AddonMessageDelay
+#        Description: Time (in seconds) between addon messages to be counted into ChatFlood.AddonMessageCount.
+#        Default:     1
+
+ChatFlood.AddonMessageDelay = 1
+
+#
 #    ChatFlood.MuteTime
-#        Description: Time (in seconds) characters get muted for violating ChatFlood.MessageCount.
+#        Description: Time (in seconds) characters get muted for violating ChatFlood.MessageCount / ChatFlood.AddonMessageCount.
 #        Default:     10
 
 ChatFlood.MuteTime = 10
@@ -2369,6 +2426,7 @@ Rate.Insanity.Loss     = 1
 Rate.ArcaneCharges.Loss= 1
 Rate.Fury.Loss         = 1
 Rate.Pain.Loss         = 1
+Rate.Essence.Loss      = 1
 
 #
 #    Rate.Skill.Discovery
@@ -3984,10 +4042,10 @@ BlackMarket.Enabled = 1
 #
 #    BlackMarket.MaxAuctions
 #       Description: Maximum amount of auctions present at the same time.
-#       Default:     12
+#       Default:     8
 #
 
-BlackMarket.MaxAuctions = 12
+BlackMarket.MaxAuctions = 8
 
 #
 #    BlackMarket.UpdatePeriod
@@ -4068,7 +4126,7 @@ BlackMarket.UpdatePeriod = 24
 #                         Example:  536870912 (512 MB)
 #
 
-Appender.Console=1,3,6,1 1 9 10 3 8
+Appender.Console=1,3,0
 Appender.Server=2,2,0,Server.log,w
 Appender.GM=2,2,1,GM.log
 Appender.DBErrors=2,2,0,DBErrors.log
@@ -4095,7 +4153,7 @@ Logger.root=5,Console Server
 Logger.server=3,Console Server
 Logger.commands.gm=3,Console GM
 Logger.scripts.hotswap=3,Console Server
-Logger.sql.sql=5,Console DBErrors
+Logger.sql.sql=0,Console DBErrors
 Logger.sql.updates=3,Console Server
 Logger.mmaps=3,Server
 
@@ -4183,15 +4241,6 @@ Log.Async.Enable = 0
 Allow.IP.Based.Action.Logging = 0
 
 #
-#    ConsoleErrorLogging
-#        Description: Show errors on console on/off.
-#                     If disabled, errors will still be saved to log files.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-ConsoleErrorLogging = 0
-
-#
 ###################################################################################################
 
 ###################################################################################################
@@ -4219,38 +4268,6 @@ Currency.ResetDay = 3
 #
 
 Currency.ResetHour = 6
-
-#
-#    Currency.StartApexisCrystals
-#        Amount of Apexis Crystals that new players will start with
-#        Default: 0 (with precision)
-#
-
-Currency.StartApexisCrystals = 0
-
-#
-#    Currency.MaxApexisCrystals
-#        Amount Apexis Crystals a player can have
-#        Default: 20000
-#
-
-Currency.MaxApexisCrystals = 20000
-
-#
-#    Currency.StartJusticePoints
-#        Amount of justice points that new players will start with
-#        Default: 0 (with precision)
-#
-
-Currency.StartJusticePoints = 0
-
-#
-#    Currency.MaxJusticePoints
-#        Amount justice points a player can have
-#        Default: 4000
-#
-
-Currency.MaxJusticePoints = 4000
 
 #
 ###################################################################################################
@@ -4381,6 +4398,142 @@ Pvp.FactionBalance.Pct20 = 0.8
 ###################################################################################################
 
 ###################################################################################################
+############################------ CUSTOM OPTIONS ------###########################################
+###################################################################################################
+
+###################################################################################################
+# AUTO RESTART WORLDSERVER
+#
+#	AutoRestartWorldserver.Timer
+#		Automatic server restart by timer. It works when started via a restart,
+#                               otherwise it shuts down the server (instead of restarting).
+#		Default: 0 - disable
+#				 60 - restart 60 seconds after starting the server
+#				 3600 - restart 1 hour after starting the server
+#				 86400 - restart 24 hours after launch
+#
+
+AutoRestartWorldserver.Timer = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# SOLO LFG
+#
+#    SoloLFG.Enable
+#        Description: Enable the module.
+#        Default:     1  - (Enabled)
+#                     0  - (Disabled)
+
+SoloLFG.Enable = 1
+
+#    SoloLFG.Announce
+#        Description: Announce the module.
+#        Default:     1  - (Enabled)
+#                     0  - (Disabled)
+
+SoloLFG.Announce = 1
+
+#
+#     DungeonFinder.ForceMinplayers
+#        Description: Force the minimum player count to enter dungeons trough dungeon finder.
+#        Default:     0
+
+DungeonFinder.ForceMinplayers = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# Mythic+ System #
+##################
+#
+#    	 Mythic.Tab
+#        Description: This setting activates the Mythic window
+#        Default:     1 activate
+
+Mythic.Pluss = 1
+Mythic.Plus.Enabled = 1
+ArgusWowEnable = 1
+Challenge.Enabled = 1
+MythicPlus.CurrentSeason = 97
+MythicPlus.CurrentDisplaySeason = 21
+
+#        Challenge.Key.Reset
+#        Description: How often should Challenge Key reset (days)
+#        Default:     7
+
+Challenge.Key.Reset = 7
+Challenge.LevelLimit = 30
+Challenge.LevelMax = 15
+Challenge.LevelStep = 2
+Challenge.AddItem = 1533
+Challenge.AddItemType = 1
+Challenge.AddItemCount = 120
+
+# MANUAL MYTHIC AFFIXES
+#
+# To disable this feature all affixes need to be set to 0 or less
+#
+#   Overflowing     = 1,  Healing in excess of a target's maximum health is instead converted to a heal absorption effect.
+#   Skittish        = 2,  Enemies pay far less attention to threat generated by tanks.
+#   Volcanic        = 3,  While in combat, enemies periodically cause gouts of flame to erupt beneath the feet of distant players.
+#   Necrotic        = 4,  All enemies' melee attacks apply a stacking blight that inflicts damage over time and reduces healing received.
+#   Teeming         = 5,  Additional non-boss enemies are present throughout the dungeon.
+#   Raging          = 6,  Non-boss enemies enrage at 30% health remaining, dealing 100% increased damage until defeated.
+#   Bolstering      = 7,  When any non-boss enemy dies, its death cry empowers nearby allies, increasing their maximum health and damage by 20%.
+#   Sanguine        = 8,  When slain, non-boss enemies leave behind a lingering pool of ichor that heals their allies and damages players.
+#   Tyrannical      = 9,  Boss enemies have 40% more health and inflict up to 15% increased damage.
+#   Fortified       = 10, Non-boss enemies have 20% more health and inflict up to 30% increased damage.
+#   Bursting        = 11, When slain, non-boss enemies explode, causing all players to suffer 14% of their max health in damage over 4 sec. This effect stacks.
+#   Grievous        = 12, When injured below 90% health, players will suffer increasing damage over time until healed above 90% health
+#   FelExplosives   = 13, While in combat, enemies periodically summon Explosive Orbs that will detonate if not destroyed.
+#   Quaking         = 14, Periodically, all players emit a shockwave, inflicting damage and interrupting nearby allies.
+#   Relentless      = 15, Non-boss enemies are granted temporary immunity to Loss of Control effects.
+#   Infested        = 16, Some non-boss enemies have been infested with a Spawn of G'huun.
+#   Reaping         = 117, Non-boss enemies are empowered by Bwonsamdi and periodically seek vengeance from beyond the grave.
+#   Beguiling       = 118, Azshara's Emissaries are present throughout the dungeon.
+#   Awakened        = 119, Obelisks throughout the dungeon allow players to enter Ny'alotha and confront powerful servants of N'Zoth. If a servant is not dealt with, they must be faced during the final boss encounter.
+
+Challenge.Manual.Affix1 = 0
+Challenge.Manual.Affix2 = 0
+Challenge.Manual.Affix3 = 0
+Challenge.Manual.Affix4 = 0
+
+#   Great secret affix
+#	KeyStoneAffix.Status
+#        Default:     0 (Load database settings)
+#                     1 (Load configuration file settings)
+#                     2 (Load random settings)
+#
+#   Overflowing     = 1,
+#   Skittish        = 2,
+#   Volcanic        = 3,
+#   Necrotic        = 4,
+#   Teeming         = 5,
+#   Raging          = 6,
+#   Bolstering      = 7,
+#   Sanguine        = 8,
+#   Tyrannical      = 9,
+#   Fortified       = 10,
+#   Bursting        = 11,
+#   Grievous        = 12,
+#   FelExplosives   = 13,
+#   Quaking         = 14,
+
+KeyStoneAffix.Status = 0
+KeyStoneAffix.Affix1 = 0
+KeyStoneAffix.Affix2 = 0
+KeyStoneAffix.Affix3 = 0
+
+Dungeon.ActiveStep = 1
+Dungeon.WeightedMythicKeystone.Enabled = 1
+
+#
+###################################################################################################
+
+###################################################################################################
 # Ingame Shop (BattlePay)
 #
 #   IngameShop.Enabled
@@ -4388,7 +4541,7 @@ Pvp.FactionBalance.Pct20 = 0.8
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-IngameShop.Enabled = 1
+IngameShop.Enabled = 0
 
 #
 #   IngameShop.Currency
@@ -4414,76 +4567,144 @@ IngameShop.Currency = 1
 
 #
 ###################################################################################################
-
 ###################################################################################################
-# Mythic+ System #
-##################
+# DisplayPromotion #
+####################
+#
+# Option for display promo modal windows on the character selection screen (only once / client start).
+# PromotionID can be found at:
+#  https://wow.tools/dbc/?dbc=marketingpromotionsxlocale
+# To disable set it to 0.
 #
 
-Mythic.Plus.Enabled = 1
-Challenge.Enabled = 1
-Challenge.Key.Reset = 7
-Challenge.LevelLimit = 30
-Challenge.LevelMax = 15
-Challenge.LevelStep = 2
-Challenge.AddItem = 1533
-Challenge.AddItemType = 1
-Challenge.AddItemCount = 120
-Challenge.Manual.Affix1 = 0
-Challenge.Manual.Affix2 = 0
-Challenge.Manual.Affix3 = 0
-KeyStoneAffix.Status = 0
-KeyStoneAffix.Affix1 = 0
-KeyStoneAffix.Affix2 = 0
-KeyStoneAffix.Affix3 = 0
-ArgusWowEnable = 1
-Dungeon.ActiveStep = 0
-Dungeon.WeightedMythicKeystone.Enabled = 1
+DisplayPromotion.PromotionID = 135
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# Auto Restarter #
-##################
-#
-# Server will be restarted in every second of the Timer value.
-#	Example: AutoRestartWorldserver.Timer = 86400
-#			 Restarts the server daily.
+# Reward System #
+# - Rewards the player with the selected option and repeats the process within the interval.
 #
 
-AutoRestartWorldserver.Timer = 0
+#    PlayedTimeReward.Interval
+#		 Description: Time (in minutes) for Reward interval.
+#        Default:     30
+
+PlayedTimeReward.Interval         = 30
+
+#    PlayedTimeReward.Gold
+#		 Description: Amount of money the Player will get
+#        Default:     50
+
+PlayedTimeReward.Gold             = 50
+
+#    PlayedTimeReward.Currency_ID
+#        Description: Item characters will receive 
+#        Default:     1166 (Timewarped Badge)
+#                     2009 (Cosmic Flux
+#                     1813 (Reservoir Anima)
+#                     1191 (Valor)
+
+PlayedTimeReward.Currency_ID      = 1166
+
+#    PlayedTimeReward.Currency_Count
+#		 Description: Amount of Currency the Player will get
+#        Default:     50
+
+PlayedTimeReward.Currency_Count   = 50
+
+#    PlayedTimeReward.BattleCoins
+#		 Description: Amount of BattleCoins the Player will get
+#        Default:     5
+
+PlayedTimeReward.BattleCoins      = 5
 
 #
 ###################################################################################################
 
 ###################################################################################################
-############################------ CUSTOM OPTIONS ------###########################################
+#  ELUNA SETTINGS
+#
+#    Eluna.Enabled
+#       Enable Eluna LuaEngine
+#       Default: 1 (Enabled)
+#                0 (Disabled)
+#
+
+Eluna.Enabled = 1
+
+#   Eluna.TraceBack
+#       Description: Sets whether to use debug.traceback function on a lua error or not.
+#                    Notice that you can redefine the function.
+#       Default:     false - (use default error output)
+#                    true  - (use debug.traceback function)
+
+Eluna.TraceBack = 0
+
+#
+#   Eluna.ScriptPath
+#       Description: Sets the location of the script folder to load scripts from
+#                    The path can be relative or absolute.
+#       Default:     "lua_scripts"
+#
+
+Eluna.ScriptPath = lua_scripts
+
+#
 ###################################################################################################
 
 ###################################################################################################
-# SOLO LFG
+#  WORLDQUEST
 #
-#    SoloLFG.Enable
-#        Description: Enable the module.
+#
+#    WorldQuest.DailyReset
+#        Description: Enable or disable daily WorldQuest reset occurs.
 #        Default:     1  - (Enabled)
 #                     0  - (Disabled)
+#
 
-SoloLFG.Enable = 1
-
-#    SoloLFG.Announce
-#        Description: Announce the module.
-#        Default:     1  - (Enabled)
-#                     0  - (Disabled)
-
-SoloLFG.Announce = 0
+WorldQuest.DailyReset = 1
 
 #
-#     DungeonFinder.ForceMinplayers
-#        Description: Force the minimum player count to enter dungeons trough dungeon finder.
-#        Default:     0
+#    WorldQuest.ResetTimeHour
+#        Description: Hour of the day when WorldQuest Reset daily reset occurs.
+#        Range:       0-23
+#        Default:     8 - (08:00 AM))
 
-DungeonFinder.ForceMinplayers = 0
+WorldQuest.ResetTimeHour = 4
+
+#
+###################################################################################################
+
+###################################################################################################
+# FluxPhaseMgr 
+#
+# Custom phase shifting system using database (flux_phasing table).
+#
+# - Quick info:
+# - ID is an identifier with auto increment to separate custom flux_phasings
+# - Method, 0 does nothing, 1 for add phase, 2 for remove phase
+# - PhaseID where creatures or gameobject are visible (phase can be modified in creature/gameobject table)
+# - ActiveQuestID, phase will be activated only when the player has this quest but not completed yet.
+# - QuestObjectiveIndex is the id of quest objective which can be located in quest_objectives table.
+# - QuestObjectiveAmount is the specified progress of quest objective where the phase change will be activated.
+# - CompletedQuestID, phase will be activated only when the player completed this quest.
+# - RewardedQuestID, phase will be activated only when the player turned in this quest and got the reward.
+# - MapID, phase change will occur only on this map. If you leave it on 0 phase will be changed everywhere.
+# - ZoneID, phase change will occur only on this zone. If you leave it on 0 phase will be changed everywhere.
+# - AreaID, phase change will occur only on this area. If you leave it on 0 phase will be changed everywhere.
+# - Phase Check will happen at the following events:
+#    OnMovieComplete, OnSceneComplete, OnSceneCancel, OnUpdateArea, OnQuestStatusChange,
+#    OnPlayerEnterVehicle, OnPlayerExitVehicle, OnPlayerRepop, OnPlayerResurrect, OnLogin, OnGMOff
+# - Comment, where you can add some info about the phase change.
+#
+#        Default:     0  - (Disabled)
+#                     1  - (Enabled)
+#
+
+FluxPhaseMgr.Enable = 0
+FluxPhaseMgr.ConsoleDebug = 0
 
 #
 ###################################################################################################
@@ -4523,30 +4744,69 @@ ZoloCraft.TeachForGMs = 1
 ###################################################################################################
 
 ###################################################################################################
-# Start Zone Quest Skipper Npc
+# Announcer
 #
-#    StartZone.QuestSkipper.Npc.Enable
-#        Description: DH, DK, Pandaren, Goblin, Worgen start zone quest skipper npc.
-#                     Give quest rewards, levels and teleport the player out from startzone.
-#        Default:     1  - (Enabled) (Makes the npc visible.)
-#                     0  - (Disabled) (Makes the npc invisible.)
+#     Login.Announcer.Enable
+#        Description: Announce every player and bots login
+#        Default:     0 (disabled)
+#                     1 (enabled)
 
-StartZone.QuestSkipper.Npc.Enable = 0
+Login.Announcer.Enable = 1
+
+#
+#     Boss.Announcer.Enable
+#        Description: System announce who killed a world boss in global.
+#        Default:     0 (disabled)
+#                     1 (enabled)
+
+Boss.Announcer.Enable = 1
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# Login Announcer Custom Script #
-#################################
+# Flux Taxi #
+#############
 #
-# System message tells everyone when a player enters the world
-# with information about name, level, race, class. (fancy icons included)
+# Custom FlightPath Effect simulates oribos in between tunnel in the open world.
 #
-#        Default:     1  - (Enabled)
-#                     0  - (Disabled)
+#        Default:     0  - (Disabled)
+#                     1  - (Enabled)
 
-Login.Announcer.Enable = 0
+Flux.Taxi.Enable = 0
+Flux.Taxi.Mount = 94451
+Flux.Taxi.Speed = 32
+Flux.Taxi.ScreenEffect.Enable = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+# Covenant Test Custom Npc #
+############################
+#
+# Custom npc for the purpose of testing Covenant previews and choice.
+#	You can spawn it or you can summon it with .covenanttest command.
+#
+#        Default:     0  - (Disabled)
+#                     1  - (Enabled)
+
+CovenantTest.Enable = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# Guardian Angel Custom Npc #
+#############################
+#
+# Guardian Angel Custom Script - Calling an angel to ress & heal you on the specified maps.
+# 	e.g.: 2175, 2261, 2369 are Exile's Reach
+#
+
+GuardianAngel.Enable = 0
+GuardianAngel.Minutes.For.Assist = 1
+GuardianAngel.AllowedMapIDs = "2175, 2261, 2369"
 
 #
 ###################################################################################################
@@ -4559,147 +4819,186 @@ Login.Announcer.Enable = 0
 # To summon this creature use command: .lupmaster
 # At this moment only usable by GM's
 #
-#        Default:     1  - (Enabled)
-#                     0  - (Disabled)
 
-LevelMaster.Enable = 0
+LevelMaster.Enable = 1
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# Guardian Angel Custom Npc #
-#############################
+# Start Zone Quest Skipper Npc
 #
-# Guardian Angel Custom Script - Calling an angel to ress & heal you on the specified maps
-# e.g.: 2175, 2261, 2369 are Exile Reach
-#
-#        Default:     1  - (Enabled)
-#                     0  - (Disabled)
+#    StartZone.QuestSkipper.Npc.Enable
+#        Description: DH, DK, Pandaren, Goblin, Worgen start zone quest skipper npc.
+#                     Give quest rewards, levels and teleport the player out from startzone.
+#        Default:     1  - (Enabled) (Makes the npc visible.)
+#                     0  - (Disabled) (Makes the npc invisible.)
 
-GuardianAngel.Enable = 0
-GuardianAngel.Minutes.For.Assist = 1
-GuardianAngel.AllowedMapIDs = "2175, 2261, 2369"
+StartZone.QuestSkipper.Npc.Enable = 1
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# Played Time Reward Custom Script #
-####################################
+# Console message flood #
+#########################
 #
-# - Rewards the player with the selected option and repeats the process within the interval.
-# - Interval is in minute. Gold is in gold, not copper. BattleCoin is the ingame shop currency.
-# - Example currencyIDs: 1191 Valor, 1813 Reservoir Anima, 2009 Cosmic Flux, 1166 Timewarped Badge
-#
-
-PlayedTimeReward.Interval         = 30
-PlayedTimeReward.Gold             = 50
-PlayedTimeReward.Currency_ID      = 1166
-PlayedTimeReward.Currency_Count   = 50
-PlayedTimeReward.BattleCoins      = 5
-
-#
-###################################################################################################
-
-###################################################################################################
-# FluxPhaseMgr #
-################
-#
-# Custom phase shifting system using database (flux_phasing table).
-#
-# - Quick info:
-# - ID is an identifier with auto increment to separate custom flux_phasings
-# - Method, 0 does nothing, 1 for add phase, 2 for remove phase
-# - PhaseID where creatures or gameobject are visible (phase can be modified in creature/gameobject table)
-# - ActiveQuestID, phase will be activated only when the player has this quest but not completed yet.
-# - QuestObjectiveIndex is the id of quest objective which can be located in quest_objectives table.
-# - QuestObjectiveAmount is the specified progress of quest objective where the phase change will be activated.
-# - CompletedQuestID, phase will be activated only when the player completed this quest.
-# - RewardedQuestID, phase will be activated only when the player turned in this quest and got the reward.
-# - MapID, phase change will occur only on this map. If you leave it on 0 phase will be changed everywhere.
-# - ZoneID, phase change will occur only on this zone. If you leave it on 0 phase will be changed everywhere.
-# - AreaID, phase change will occur only on this area. If you leave it on 0 phase will be changed everywhere.
-# - Phase Check will happen at the following events:
-#    OnMovieComplete, OnSceneComplete, OnSceneCancel, OnUpdateArea, OnQuestStatusChange,
-#    OnPlayerEnterVehicle, OnPlayerExitVehicle, OnPlayerRepop, OnPlayerResurrect, OnLogin, OnGMOff
-# - Comment, where you can add some info about the phase change.
+# You can disable console messages of "prevented sending" packets or "unimplemented server methods".
 #
 #        Default:     0  - (Disabled)
 #                     1  - (Enabled)
 #
 
-FluxPhaseMgr.Enable = 1
-FluxPhaseMgr.ConsoleDebug = 0
+Console.Packet.Messages.Enabled = 0
+Console.NIM.Messages.Enabled = 0
+
+#
+###################################################################################################
+
+Accountwide.Achievements = 0
+
+###################################################################################################
+# Advanced flying #
+#############
+#
+# Customize advanced flying rates
+#
+
+AdvFly.AirFriction = 1.5
+AdvFly.MaxVel = 65.0
+AdvFly.LiftCoef = 0.7
+AdvFly.DoubleJumpVelMod = 5.0
+AdvFly.GlideStartMinHeight = 7.5
+AdvFly.AddImpulseMaxSpeed = 100.0
+AdvFly.MinBankingRate = 140.0
+AdvFly.MaxBankingRate = 270.0
+AdvFly.MinPitchingRateDown = 180.0
+AdvFly.MaxPitchingRateDown = 360.0
+AdvFly.MinPitchingRateUp = 180.0
+AdvFly.MaxPitchingRateUp = 360.0
+AdvFly.MinTurnVelocityThreshold = 45.0
+AdvFly.MaxTurnVelocityThreshold = 65.0
+AdvFly.SurfaceFriction = 2.75
+AdvFly.OverMaxDeceleration = 7.0
+AdvFly.LaunchSpeedCoefficient = 0.4
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# DisplayPromotion #
-####################
+# NPCBOT CONFIGURATION
 #
-# Option for display promo modal windows on the character selection screen (only once / client start).
-# PromotionID can be found at:
-#  https://wow.tools/dbc/?dbc=marketingpromotionsxlocale
-# To disable set it to 0.
-#
+#     Bot.EnableNpcBots
+#        Enable NpcBot system
+#        Default: 1 - enable
+#                       0 - disable
 
-DisplayPromotion.PromotionID = 135
+Bot.EnableNpcBots = 1
+
+#    Bot.MaxNpcBots
+#        Maximum number of Npc Bots allowed per character (disabled for GM accounts)
+#        Default: 1
+#        Recomended: 4
+#        Max: 9
+#        Absolute Max: 39
+
+Bot.MaxNpcBots = 1
+
+#    Bot.MaxNpcBotsPerClass
+#        Maximum Npc Bots of each class allowed per character
+#        If set to 0, no restriction
+#        Default: 1
+
+Bot.MaxNpcBotsPerClass = 1
+
+#    Bot.BaseFollowDistance
+#        Default follow distance set at login
+#        Default: 30
+
+Bot.BaseFollowDistance = 30
+
+#    Bot.XpReductionPercent
+#        Since bot party can be pretty large, it can become an exploit to farm xp so you can reduce xp gain here
+#        PERCENT of  'XP.KILL'  reward reduction from each Npc Bots used (Starting with second)
+#        Example:
+#            You have 3 bots, xp reduction is 20 then reduction will be ((3-1)*20) = 40%; 60% exp gained only
+#        Note: Minimum xp rate will be 10%
+#        Min: 0
+#        Max: 90
+#        Default: 0
+
+Bot.XpReductionPercent = 0
+
+#    Bot.HealTargetIconsMask
+#        Icon number bitmask which bots are using to search for additional targets to heal (out of party)
+#        1 - Star
+#        2 - Circle
+#        4 - Diamond
+#        8 - Triangle
+#        16 - Moon
+#        32 - Square
+#        64 - Cross
+#        128 - Skull
+#        Example: to check Star, Triangle and Square we need 1832 = 41
+#        Note that many creatures cannot accept heal
+#        Min: 0 (Disable)
+#        Max: 255 (Any Icon)
+#        Default: 8 (Triangle)
+
+Bot.HealTargetIconsMask = 8
+
+#    Bot.DamageMult
+#        Myltiplier for bot's damage dealt. Allows to balance bots' compared to players' damage
+#        Any damage done by bots will be modified
+#        Range: 0.01 - 10.0
+#        Default: 1.0
+
+Bot.DamageMult.Melee = 1.0
+Bot.DamageMult.Spell = 1.0
+
+#    Bot.EnableIn... Arenas/BGs/Dungeons/Raids
+#        Allows to restrict bots usage in PvE and/or PvP
+#        Default: true for all
+
+Bot.EnableInArenas = 1
+Bot.EnableInBGs = 1
+Bot.EnableInDungeons = 1
+Bot.EnableInRaids = 1
+
+#    Bot.InstanceLimit... Dungeons/Raids
+#        If set to 1 will apply instance players limitation to bots
+#        Default: false for all
+
+Bot.InstanceLimit.Dungeons = 0
+Bot.InstanceLimit.Raids = 0
+
+#    Bot.Cost
+#        Bot recruitment cost (in copper)
+#        Note: this value is set for lvl 80 characters. Cost will be reduced for lower levels
+#        Default: 0
+
+Bot.Cost = 0
+
+#    Bot.PvP
+#        If set to 0 bots will not attack  players or other bots
+#        Default: 1
+
+Bot.PvP = 1
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# Boss Kill Announcer #
+# Gear Update Feature #
 #######################
 #
-#        Default:     0  - (Disabled)
-#                     1  - (Enabled)
+# A new system which give a full set of appropriate item level gear to every eligible character.
+# In retail 2 months of logged out characters are eligible.
+# You can set this logout time requirement by days with theGearUpdateRequiredDays value.
+# If you set it to 0 every character can upgrade their gear anytime.
 #
 
-Boss.Announcer.Enable = 1
+GearUpdateRequiredDays = 0
 
 #
-###################################################################################################
-
-###################################################################################################
-# WorldQuest System #
-#####################
-#
-#       Default:     0  - (Disabled)
-#                    1  - (Enabled)
-#
-#		*If a World Quest has corrupted data and makes the client crash:
-#			You can disable it by adding the quest id to the black list.
-#			Example: "60567, 54898, 44568"
-#
-
-WorldQuests.Enable = 1
-WorldQuests.BlackList = ""
-
-#
-###################################################################################################
-###################################################################################################
-# Missing options (Causing errors and crash sometimes) > 11/12/22
-###################################################################################################
-ResetSchedule.WeekDay = 2
-
-ResetSchedule.Hour = 8
-
-ChatFlood.AddonMessageCount = 100
-
-ChatFlood.AddonMessageDelay = 1
-
-AutoRestartWorldserver.Timer = 0
-
-WorldQuest.ResetTimeHour = 4
-
-WorldQuest.DailyReset = 1
-
-MinWorldUpdateTime = 1
-
-Boss.Announcer.Enable = 1
-
-DisplayPromotion.PromotionID = 0
 ###################################################################################################

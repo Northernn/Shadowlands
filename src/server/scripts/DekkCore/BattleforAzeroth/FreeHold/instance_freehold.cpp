@@ -23,11 +23,12 @@
 #include "World.h"
 #include "InstanceScript.h"
 #include "freehold.h"
+#include <ChallengeMode.h>
 
-class instance_free_hold : public InstanceMapScript
+class instance_free_hold : public InstanceScript
 {
 public:
-    instance_free_hold() : InstanceMapScript("instance_free_hold", 1754) { }
+    instance_free_hold(InstanceMap* map) : InstanceScript(map) { } 
 
     struct instance_free_hold_InstanceMapScript : public InstanceScript
     {
@@ -103,7 +104,7 @@ public:
             }
         }
 
-        void OnPlayerEnter(Player* player) override
+        void OnPlayerEnter(Player* /*player*/) override
         {
             if (GetData(FreeholdData::DataCounciloCaptains) != DONE)
             {
@@ -188,6 +189,24 @@ public:
             return ObjectGuid::Empty;
         }
 
+        bool HandleGetStartPosition(Position& entrancePosition) const override
+        {
+            entrancePosition.Relocate(-1587.992188f, -997.100159f, 73.299355f, 2.503593f);
+            return true;
+        }
+
+        void SummonChallengeGameObject(bool door) override
+        {
+            if (door)
+            {
+                if (auto go = instance->SummonGameObject(MYTHIC_DOOR_4, { -1587.992188f, -997.100159f, 73.299355f, 2.503593f }, {}, 0))
+                {
+                    go->SetGoState(GOState::GO_STATE_READY);
+                    go->SetFlag(GameObjectFlags::GO_FLAG_NOT_SELECTABLE);
+                }
+            }
+        }
+
         ObjectGuid skycapGuid;
         ObjectGuid sharkbaitGuid;
         ObjectGuid jollyGuid;
@@ -204,12 +223,6 @@ public:
         uint8 countRaoul;
 
     };
-
-    InstanceScript* GetInstanceScript(InstanceMap* map) const override
-    {
-        return new instance_free_hold_InstanceMapScript(map);
-    }
-   
 };
 
 // 9000000 - NPC Teleporter Free Hold
@@ -224,7 +237,7 @@ public:
             instance = me->GetInstanceScript();
         }
 
-        void UpdateAI(uint32 diff) override
+        void UpdateAI(uint32 /*diff*/) override
         {
             std::list<Player*> targetList;
             GetPlayerListInGrid(targetList, me, 8.0f);
@@ -268,6 +281,6 @@ public:
 
 void AddSC_instance_freehold()
 {
-    new instance_free_hold();
+    RegisterInstanceScript(instance_free_hold, 1754);
     new npc_free_hold_entrance_teleporter();
 }

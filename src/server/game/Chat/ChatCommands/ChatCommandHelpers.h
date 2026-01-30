@@ -22,6 +22,7 @@
 #include "Language.h"
 #include "Optional.h"
 #include "StringFormat.h"
+#include <fmt/printf.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -80,7 +81,7 @@ namespace Trinity::Impl::ChatCommands
     };
 
     template <std::size_t index, typename T1, typename... Ts>
-    struct get_nth : get_nth<index-1, Ts...> { };
+    struct get_nth : get_nth<index - 1, Ts...> { };
 
     template <typename T1, typename... Ts>
     struct get_nth<0, T1, Ts...>
@@ -116,8 +117,8 @@ namespace Trinity::Impl::ChatCommands
         bool HasErrorMessage() const { return std::holds_alternative<std::string>(_storage); }
         std::string const& GetErrorMessage() const { return std::get<std::string>(_storage); }
 
-        private:
-            std::variant<std::monostate, std::string_view, std::string> _storage;
+    private:
+        std::variant<std::monostate, std::string_view, std::string> _storage;
     };
 
     TC_GAME_API void SendErrorMessageToHandler(ChatHandler* handler, std::string_view str);
@@ -125,7 +126,7 @@ namespace Trinity::Impl::ChatCommands
     template <typename... Ts>
     std::string FormatTrinityString(ChatHandler const* handler, TrinityStrings which, Ts&&... args)
     {
-        return Trinity::StringFormat(GetTrinityString(handler, which), std::forward<Ts>(args)...);
+        return fmt::sprintf(GetTrinityString(handler, which), std::forward<Ts>(args)...);
     }
 }
 

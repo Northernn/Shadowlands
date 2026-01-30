@@ -63,29 +63,6 @@ namespace WorldPackets
             std::vector<uint32> FavoriteAppearances;
             std::vector<uint32> NewAppearances;
         };
-
-        class TransmogrifyNPC final : public ServerPacket
-        {
-        public:
-            TransmogrifyNPC(ObjectGuid const& guid) : ServerPacket(SMSG_TRANSMOGRIFY_NPC, 16), Guid(guid) { }
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid Guid;
-        };
-
-        //DekkCore
-        class TransmogSetFavoritesUpdate final : public ServerPacket
-        {
-        public:
-            TransmogSetFavoritesUpdate() : ServerPacket(SMSG_ACCOUNT_TRANSMOG_SET_FAVORITES_UPDATE) { }
-
-            WorldPacket const* Write() override;
-
-            bool IsFullUpdate = false;
-            bool IsSetFavorite = false;
-        };
-        //DekkCore
     }
 }
 

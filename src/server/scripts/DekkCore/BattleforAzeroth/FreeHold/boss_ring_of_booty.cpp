@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -38,7 +38,7 @@ enum RingOfBootySpells
     Slippery = 257949,
     Greasy = 257829,
     GreasyDummy = 257950,
-    ///Ludwig Von Tortollan 
+    ///Ludwig Von Tortollan
     ShellBounce = 257904,
     ShellBounceDmg = 257902,
     ///Trothak
@@ -173,7 +173,7 @@ struct npc_gukguk : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-      //  UpdateOperations(diff);
+        events.Update(diff);
     }
 
 private:
@@ -214,7 +214,6 @@ struct npc_davey : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-      //  UpdateOperations(diff);
         events.Update(diff);
 
         while (uint32 eventId = events.ExecuteEvent())
@@ -338,8 +337,6 @@ struct npc_gurgthock : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-        //UpdateOperations(diff);
-
         events.Update(diff);
 
         while (uint32 eventId = events.ExecuteEvent())
@@ -473,7 +470,6 @@ struct npc_lightning : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-      //  UpdateOperations(diff);
         events.Update(diff);
 
         while (uint32 eventId = events.ExecuteEvent())
@@ -924,10 +920,10 @@ struct at_shell_bounce : AreaTriggerAI
 {
     at_shell_bounce(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
-    void OnCreate() override
+    void OnCreate(Spell const* /*creatingSpell*/) override
     {
-        float rotation;
-        float range;
+        float rotation{};
+        float range{};
 
         std::list<Player*> listPlayer;
         GetPlayerListInGrid(listPlayer, at, 100.0f);
@@ -952,10 +948,10 @@ struct at_shell_bounce : AreaTriggerAI
 
     void OnInitialize() override
     {
-   //     at->SetPeriodicProcTimer(500);
+        at->SetPeriodicProcTimer(500);
     }
 
-    void OnPeriodicProc()// override
+    void OnPeriodicProc() override
     {
         if (Unit* caster = at->GetCaster())
         {
@@ -1009,10 +1005,10 @@ struct at_rearm_trothak : AreaTriggerAI
 
     void OnInitialize() override
     {
-      //  at->SetPeriodicProcTimer(500);
+        at->SetPeriodicProcTimer(500);
     }
 
-    void OnPeriodicProc()// override
+    void OnPeriodicProc() override
     {
         if (Unit* caster = at->GetCaster())
         {

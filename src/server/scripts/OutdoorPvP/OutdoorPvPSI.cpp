@@ -66,9 +66,8 @@ bool OutdoorPvPSI::SetupOutdoorPvP()
     return true;
 }
 
-bool OutdoorPvPSI::Update(uint32 /*diff*/)
+void OutdoorPvPSI::Update(uint32 /*diff*/)
 {
-    return false;
 }
 
 void OutdoorPvPSI::HandlePlayerEnterZone(Player* player, uint32 zone)
@@ -191,13 +190,13 @@ bool OutdoorPvPSI::HandleCustomSpell(Player* player, uint32 spellId, GameObject*
 
 class OutdoorPvP_silithus : public OutdoorPvPScript
 {
-    public:
-        OutdoorPvP_silithus() : OutdoorPvPScript("outdoorpvp_si") { }
+public:
+    OutdoorPvP_silithus() : OutdoorPvPScript("outdoorpvp_si") { }
 
-        OutdoorPvP* GetOutdoorPvP(Map* map) const override
-        {
-            return new OutdoorPvPSI(map);
-        }
+    OutdoorPvP* GetOutdoorPvP(Map* map) const override
+    {
+        return new OutdoorPvPSI(map);
+    }
 };
 
 void AddSC_outdoorpvp_si()

@@ -18,7 +18,7 @@
 #include "TemporarySummon.h"
 #include "CellImpl.h"
 #include "CreatureAI.h"
-#include "DB2Structure.h"
+#include "DB2Stores.h"
 #include "GameObject.h"
 #include "GameObjectAI.h"
 #include "GridNotifiers.h"
@@ -29,8 +29,12 @@
 #include "Pet.h"
 #include "Player.h"
 #include "SmoothPhasing.h"
+#include "SpellMgr.h"
 #include <boost/container/small_vector.hpp>
 #include <sstream>
+ //npcbot
+#include "botmgr.h"
+//end npcbot
 
 TempSummon::TempSummon(SummonPropertiesEntry const* properties, WorldObject* owner, bool isWorldObject) :
 Creature(isWorldObject), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN),
@@ -41,6 +45,8 @@ m_timer(0), m_lifetime(0), m_canFollowOwner(true)
 
     m_unitTypeMask |= UNIT_MASK_SUMMON;
 }
+
+TempSummon::~TempSummon() = default;
 
 WorldObject* TempSummon::GetSummoner() const
 {
@@ -174,12 +180,12 @@ void TempSummon::Update(uint32 diff)
         }
         default:
             UnSummon();
-            TC_LOG_ERROR("entities.unit", "Temporary summoned creature (entry: %u) have unknown type %u of ", GetEntry(), m_type);
+            TC_LOG_ERROR("entities.unit", "Temporary summoned creature (entry: {}) have unknown type {} of ", GetEntry(), m_type);
             break;
     }
 }
 
-void TempSummon::InitStats(uint32 duration)
+void TempSummon::InitStats(WorldObject* summoner, uint32 duration)
 {
     ASSERT(!IsPet());
 
@@ -189,14 +195,11 @@ void TempSummon::InitStats(uint32 duration)
     if (m_type == TEMPSUMMON_MANUAL_DESPAWN)
         m_type = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
 
-    Unit* owner = GetSummonerUnit();
-
-    if (owner && IsTrigger() && m_spells[0])
-        if (owner->GetTypeId() == TYPEID_PLAYER)
+    if (summoner && summoner->IsPlayer())
+    {
+        if (IsTrigger() && m_spells[0])
             m_ControlledByPlayer = true;
 
-    if (owner && owner->IsPlayer())
-    {
         if (CreatureSummonedData const* summonedData = sObjectMgr->GetCreatureSummonedData(GetEntry()))
         {
             m_creatureIdVisibleToSummoner = summonedData->CreatureIDVisibleToSummoner;
@@ -211,27 +214,36 @@ void TempSummon::InitStats(uint32 duration)
     if (!m_Properties)
         return;
 
-    if (owner)
+    //npcbot: skip deleting/reassigning player totems
+    //normally no creatorGUID is assigned at this point, perform full check anyway for compatibilty reasons
+    if (!(m_Properties->Slot && m_Properties->Slot < MAX_TOTEM_SLOT && GetCreatorGUID().IsCreature() && summoner->GetTypeId() == TYPEID_PLAYER &&
+        summoner->ToPlayer()->HaveBot() && summoner->ToPlayer()->GetBotMgr()->GetBot(GetCreatorGUID())))
+        //end npcbot
+
+    if (Unit* unitSummoner = ToUnit(summoner))
     {
-        int32 slot = m_Properties->Slot;
-        if (slot > 0)
+        std::ptrdiff_t slot = m_Properties->Slot;
+        if (slot == SUMMON_SLOT_ANY_TOTEM)
+            slot = FindUsableTotemSlot(unitSummoner);
+
+        if (slot != 0)
         {
-            if (!owner->m_SummonSlot[slot].IsEmpty() && owner->m_SummonSlot[slot] != GetGUID())
+            if (!unitSummoner->m_SummonSlot[slot].IsEmpty() && unitSummoner->m_SummonSlot[slot] != GetGUID())
             {
-                Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]);
+                Creature* oldSummon = GetMap()->GetCreature(unitSummoner->m_SummonSlot[slot]);
                 if (oldSummon && oldSummon->IsSummon())
                     oldSummon->ToTempSummon()->UnSummon();
             }
-            owner->m_SummonSlot[slot] = GetGUID();
+            unitSummoner->m_SummonSlot[slot] = GetGUID();
         }
 
         if (!m_Properties->GetFlags().HasFlag(SummonPropertiesFlags::UseCreatureLevel))
-            SetLevel(owner->GetLevel());
+            SetLevel(unitSummoner->GetLevel());
     }
 
     uint32 faction = m_Properties->Faction;
-    if (owner && m_Properties->GetFlags().HasFlag(SummonPropertiesFlags::UseSummonerFaction)) // TODO: Determine priority between faction and flag
-        faction = owner->GetFaction();
+    if (summoner && m_Properties->GetFlags().HasFlag(SummonPropertiesFlags::UseSummonerFaction)) // TODO: Determine priority between faction and flag
+        faction = summoner->GetFaction();
 
     if (faction)
         SetFaction(faction);
@@ -240,23 +252,27 @@ void TempSummon::InitStats(uint32 duration)
         RemoveNpcFlag(UNIT_NPC_FLAG_WILD_BATTLE_PET);
 }
 
-void TempSummon::InitSummon()
+void TempSummon::InitSummon(WorldObject* summoner)
 {
-    WorldObject* owner = GetSummoner();
-    if (owner)
+    if (summoner)
     {
-        if (owner->GetTypeId() == TYPEID_UNIT)
+        // DekkCore >
+        if (Unit* unitSummoner = summoner->ToUnit())
+            unitSummoner->AddSummonedCreature(GetGUID(), GetEntry());
+        // < DekkCore
+
+        if (summoner->GetTypeId() == TYPEID_UNIT)
         {
-            if (owner->ToCreature()->IsAIEnabled())
-                owner->ToCreature()->AI()->JustSummoned(this);
+            if (summoner->ToCreature()->IsAIEnabled())
+                summoner->ToCreature()->AI()->JustSummoned(this);
         }
-        else if (owner->GetTypeId() == TYPEID_GAMEOBJECT)
+        else if (summoner->GetTypeId() == TYPEID_GAMEOBJECT)
         {
-            if (owner->ToGameObject()->AI())
-                owner->ToGameObject()->AI()->JustSummoned(this);
+            if (summoner->ToGameObject()->AI())
+                summoner->ToGameObject()->AI()->JustSummoned(this);
         }
         if (IsAIEnabled())
-            AI()->IsSummonedBy(owner);
+            AI()->IsSummonedBy(summoner);
     }
 }
 
@@ -332,6 +348,11 @@ void TempSummon::UnSummon(uint32 msTime)
 
     if (WorldObject * owner = GetSummoner())
     {
+        // DekkCore >
+        if (Unit* unitSummoner = owner->ToUnit())
+            unitSummoner->RemoveSummonedCreature(GetGUID());
+        // < DekkCore
+
         if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled())
             owner->ToCreature()->AI()->SummonedCreatureDespawn(this);
         else if (owner->GetTypeId() == TYPEID_GAMEOBJECT && owner->ToGameObject()->AI())
@@ -352,19 +373,76 @@ void TempSummon::RemoveFromWorld()
     if (!IsInWorld())
         return;
 
-    if (m_Properties)
-    {
-        int32 slot = m_Properties->Slot;
-        if (slot > 0)
-            if (Unit* owner = GetSummonerUnit())
-                if (owner->m_SummonSlot[slot] == GetGUID())
-                    owner->m_SummonSlot[slot].Clear();
-    }
+    if (m_Properties && m_Properties->Slot != 0)
+        if (Unit* owner = GetSummonerUnit())
+            for (ObjectGuid& summonSlot : owner->m_SummonSlot)
+                if (summonSlot == GetGUID())
+                    summonSlot.Clear();
 
     //if (GetOwnerGUID())
-    //    TC_LOG_ERROR("entities.unit", "Unit %u has owner guid when removed from world", GetEntry());
+     //    TC_LOG_ERROR("entities.unit", "Unit {} has owner guid when removed from world", GetEntry());
 
     Creature::RemoveFromWorld();
+}
+
+std::ptrdiff_t TempSummon::FindUsableTotemSlot(Unit const* summoner) const
+{
+    auto totemBegin = summoner->m_SummonSlot.begin() + SUMMON_SLOT_TOTEM;
+    auto totemEnd = summoner->m_SummonSlot.begin() + MAX_TOTEM_SLOT;
+
+    // first try exact guid match
+    auto totemSlot = std::find_if(totemBegin, totemEnd, [&](ObjectGuid const& otherTotemGuid)
+        {
+            return otherTotemGuid == GetGUID();
+        });
+
+    // then a slot that shares totem category with this new summon
+    if (totemSlot == totemEnd)
+        totemSlot = std::find_if(totemBegin, totemEnd, [&](ObjectGuid const& otherTotemGuid) { return IsSharingTotemSlotWith(otherTotemGuid); });
+
+    // any empty slot...?
+    if (totemSlot == totemEnd)
+        totemSlot = std::find_if(totemBegin, totemEnd, [](ObjectGuid const& otherTotemGuid) { return otherTotemGuid.IsEmpty(); });
+
+    // if no usable slot was found, try used slot by a summon with the same creature id
+    // we must not despawn unrelated summons
+    if (totemSlot == totemEnd)
+        totemSlot = std::find_if(totemBegin, totemEnd, [&](ObjectGuid const& otherTotemGuid) { return GetEntry() == otherTotemGuid.GetEntry(); });
+
+    // if no slot was found, this summon gets no slot and will not be stored in m_SummonSlot
+    if (totemSlot == totemEnd)
+        return 0;
+
+    return totemSlot - summoner->m_SummonSlot.begin();
+}
+
+bool TempSummon::IsSharingTotemSlotWith(ObjectGuid objectGuid) const
+{
+    Creature const* otherSummon = GetMap()->GetCreature(objectGuid);
+    if (!otherSummon)
+        return false;
+
+    SpellInfo const* mySummonSpell = sSpellMgr->GetSpellInfo(m_unitData->CreatedBySpell, DIFFICULTY_NONE);
+    if (!mySummonSpell)
+        return false;
+
+    SpellInfo const* otherSummonSpell = sSpellMgr->GetSpellInfo(otherSummon->m_unitData->CreatedBySpell, DIFFICULTY_NONE);
+    if (!otherSummonSpell)
+        return false;
+
+    for (uint16 myTotemCategory : mySummonSpell->TotemCategory)
+        if (myTotemCategory)
+            for (uint16 otherTotemCategory : otherSummonSpell->TotemCategory)
+                if (otherTotemCategory && DB2Manager::IsTotemCategoryCompatibleWith(myTotemCategory, otherTotemCategory, false))
+                    return true;
+
+    for (int32 myTotemId : mySummonSpell->Totem)
+        if (myTotemId)
+            for (int32 otherTotemId : otherSummonSpell->Totem)
+                if (otherTotemId && myTotemId == otherTotemId)
+                    return true;
+
+    return false;
 }
 
 std::string TempSummon::GetDebugInfo() const
@@ -382,16 +460,24 @@ Minion::Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorl
 {
     ASSERT(m_owner);
     m_unitTypeMask |= UNIT_MASK_MINION;
-    m_followAngle = PET_FOLLOW_ANGLE;
-    /// @todo: Find correct way
+    // m_followAngle = PET_FOLLOW_ANGLE; // < Fluxurion - No need leave it commentedy
+    /// @todo: Find correct way // Fluxurion found a correct way
     InitCharmInfo();
 }
 
-void Minion::InitStats(uint32 duration)
+void Minion::InitStats(WorldObject* summoner, uint32 duration)
 {
-    TempSummon::InitStats(duration);
+    TempSummon::InitStats(summoner, duration);
 
     SetReactState(REACT_PASSIVE);
+
+    //npcbot
+   //do not add bot totem to player's controlled list
+   //client indicator will be OwnerGUID
+    if (m_Properties && m_Properties->Slot && m_Properties->Slot < MAX_TOTEM_SLOT && GetCreatorGUID().IsCreature() && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER &&
+        GetOwner()->ToPlayer()->HaveBot() && GetOwner()->ToPlayer()->GetBotMgr()->GetBot(GetCreatorGUID()))
+        return;
+    //end npcbot
 
     SetCreatorGUID(GetOwner()->GetGUID());
     SetFaction(GetOwner()->GetFaction()); // TODO: Is this correct? Overwrite the use of SummonPropertiesFlags::UseSummonerFaction
@@ -456,9 +542,9 @@ Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool is
     }
 }
 
-void Guardian::InitStats(uint32 duration)
+void Guardian::InitStats(WorldObject* summoner, uint32 duration)
 {
-    Minion::InitStats(duration);
+    Minion::InitStats(summoner, duration);
 
     InitStatsForLevel(GetOwner()->GetLevel());
 
@@ -468,9 +554,9 @@ void Guardian::InitStats(uint32 duration)
     SetReactState(REACT_AGGRESSIVE);
 }
 
-void Guardian::InitSummon()
+void Guardian::InitSummon(WorldObject* summoner)
 {
-    TempSummon::InitSummon();
+    TempSummon::InitSummon(summoner);
 
     if (GetOwner()->GetTypeId() == TYPEID_PLAYER
             && GetOwner()->GetMinionGUID() == GetGUID()
@@ -494,15 +580,15 @@ Puppet::Puppet(SummonPropertiesEntry const* properties, Unit* owner)
     m_unitTypeMask |= UNIT_MASK_PUPPET;
 }
 
-void Puppet::InitStats(uint32 duration)
+void Puppet::InitStats(WorldObject* summoner, uint32 duration)
 {
-    Minion::InitStats(duration);
+    Minion::InitStats(summoner, duration);
     SetReactState(REACT_PASSIVE);
 }
 
-void Puppet::InitSummon()
+void Puppet::InitSummon(WorldObject* summoner)
 {
-    Minion::InitSummon();
+    Minion::InitSummon(summoner);
     if (!SetCharmedBy(GetOwner(), CHARM_TYPE_POSSESS))
         ABORT();
 }

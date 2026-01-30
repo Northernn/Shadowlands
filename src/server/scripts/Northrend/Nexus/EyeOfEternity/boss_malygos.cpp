@@ -1475,8 +1475,6 @@ struct npc_static_field : public ScriptedAI
 // 56046 - Portal Beam
 class spell_malygos_portal_beam : public AuraScript
 {
-    PrepareAuraScript(spell_malygos_portal_beam);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1509,8 +1507,6 @@ class spell_malygos_portal_beam : public AuraScript
 // 56047 - Random Portal
 class spell_malygos_random_portal : public SpellScript
 {
-    PrepareSpellScript(spell_malygos_random_portal);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1555,8 +1551,6 @@ class IsCreatureVehicleCheck
 // 57459, 61693, 61694 - Arcane Storm
 class spell_malygos_arcane_storm : public SpellScript
 {
-    PrepareSpellScript(spell_malygos_arcane_storm);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1602,8 +1596,6 @@ class spell_malygos_arcane_storm : public SpellScript
 // 56105 - Vortex
 class spell_malygos_vortex_dummy : public SpellScript
 {
-    PrepareSpellScript(spell_malygos_vortex_dummy);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1629,8 +1621,6 @@ class spell_malygos_vortex_dummy : public SpellScript
 // 55873 - Vortex
 class spell_malygos_vortex_visual : public AuraScript
 {
-    PrepareAuraScript(spell_malygos_vortex_visual);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1693,8 +1683,6 @@ class ExactDistanceCheck
 // 56438 - Arcane Overload
 class spell_arcane_overload : public SpellScript
 {
-    PrepareSpellScript(spell_arcane_overload);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1716,8 +1704,6 @@ class spell_arcane_overload : public SpellScript
 // 61210 - Align Disk Aggro
 class spell_nexus_lord_align_disk_aggro : public SpellScript
 {
-    PrepareSpellScript(spell_nexus_lord_align_disk_aggro);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1757,8 +1743,6 @@ class IsPlayerOnHoverDisk
 // 56397 - Arcane Barrage
 class spell_scion_of_eternity_arcane_barrage : public SpellScript
 {
-    PrepareSpellScript(spell_scion_of_eternity_arcane_barrage);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT && GetCaster()->GetInstanceScript() != nullptr;
@@ -1828,8 +1812,6 @@ class spell_scion_of_eternity_arcane_barrage : public SpellScript
 // 58842 - Destroy Platform Channel
 class spell_malygos_destroy_platform_channel : public AuraScript
 {
-    PrepareAuraScript(spell_malygos_destroy_platform_channel);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1857,8 +1839,6 @@ class spell_malygos_destroy_platform_channel : public AuraScript
 // 59084 - Destroy Platform Boom Visual
 class spell_alexstrasza_bunny_destroy_platform_boom_visual : public SpellScript
 {
-    PrepareSpellScript(spell_alexstrasza_bunny_destroy_platform_boom_visual);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1884,8 +1864,6 @@ class spell_alexstrasza_bunny_destroy_platform_boom_visual : public SpellScript
 // 59099 - Destroy Platform Event
 class spell_alexstrasza_bunny_destroy_platform_event : public SpellScript
 {
-    PrepareSpellScript(spell_alexstrasza_bunny_destroy_platform_event);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1914,8 +1892,6 @@ class spell_alexstrasza_bunny_destroy_platform_event : public SpellScript
 // 56070 - Summon Red Dragon Buddy
 class spell_wyrmrest_skytalon_summon_red_dragon_buddy : public SpellScript
 {
-    PrepareSpellScript(spell_wyrmrest_skytalon_summon_red_dragon_buddy);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -1937,8 +1913,6 @@ class spell_wyrmrest_skytalon_summon_red_dragon_buddy : public SpellScript
 // 56072 - Ride Red Dragon Buddy
 class spell_wyrmrest_skytalon_ride_red_dragon_buddy_trigger : public SpellScript
 {
-    PrepareSpellScript(spell_wyrmrest_skytalon_ride_red_dragon_buddy_trigger);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -1959,8 +1933,6 @@ class spell_wyrmrest_skytalon_ride_red_dragon_buddy_trigger : public SpellScript
 // 60939 - Surge of Power
 class spell_malygos_surge_of_power_warning_selector_25 : public SpellScript
 {
-    PrepareSpellScript(spell_malygos_surge_of_power_warning_selector_25);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -2012,8 +1984,6 @@ class spell_malygos_surge_of_power_warning_selector_25 : public SpellScript
 // 60936 - Surge of Power
 class spell_malygos_surge_of_power_25 : public SpellScript
 {
-    PrepareSpellScript(spell_malygos_surge_of_power_25);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -2053,8 +2023,6 @@ class spell_malygos_surge_of_power_25 : public SpellScript
 // 61028 - Alexstrasza's Gift Beam
 class spell_alexstrasza_gift_beam : public AuraScript
 {
-    PrepareAuraScript(spell_alexstrasza_gift_beam);
-
     bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_UNIT;
@@ -2087,8 +2055,6 @@ class spell_alexstrasza_gift_beam : public AuraScript
 // 61023 - Alexstrasza's Gift Visual
 class spell_alexstrasza_gift_beam_visual : public AuraScript
 {
-    PrepareAuraScript(spell_alexstrasza_gift_beam_visual);
-
 public:
     spell_alexstrasza_gift_beam_visual()
     {

@@ -136,8 +136,6 @@ public:
     class spell_apocron_felfir_missiles_SpellScript : public SpellScript
     {
     public:
-        PrepareSpellScript(spell_apocron_felfir_missiles_SpellScript);
-
         void HandleDummy(SpellEffIndex)
         {
             if (!GetCaster() || !GetHitUnit())

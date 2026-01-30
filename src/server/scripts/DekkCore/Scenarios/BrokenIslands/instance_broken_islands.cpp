@@ -445,7 +445,7 @@ public:
                             if (quest && player->GetClass() == CLASS_DEMON_HUNTER)
                             {
                                 player->AddQuest(quest, NULL);
-                                //    player->CompleteQuest(quest->id);
+                            //    player->CompleteQuest(quest->id);
                                   // player->RewardQuest(quest, 0, player);
                             }
                         }
@@ -578,8 +578,6 @@ public:
             creature->SetUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
             creature->SetVisible(false);
             creature->SetDisplayId(13069);
-            // creature->SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, 0.005f);
-            // creature->SetFloatValue(UNIT_FIELD_COMBAT_REACH, 0.01f);
         }
         void releaseWaveCre(Creature* creature, bool Final)
         {
@@ -587,8 +585,6 @@ public:
 
             creature->SetVisible(true);
             creature->SetDisplayId(creature->GetNativeDisplayId());
-            //    creature->SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, 0.8829392f);
-              //  creature->SetFloatValue(UNIT_FIELD_COMBAT_REACH, 1.5f);
             creature->CastSpell(creature, 200312, true);
 
             if (!Final)
@@ -774,7 +770,7 @@ public:
                     Creature* sylv = instance->GetCreature(GetGuidData(NPC_SYLVANA));
                     if (!sylv)
                         return;
-                    //  sylv = instance->SummonCreature(NPC_SYLVANA, 1427.27f, 1776.18f, 34.23f, 0.0f);
+                  //  sylv = instance->SummonCreature(NPC_SYLVANA, 1427.27f, 1776.18f, 34.23f, 0.0f);
 
                     sylv->GetMotionMaster()->Clear();
 
@@ -786,7 +782,7 @@ public:
                     GetCreatureListWithEntryInGrid(guards, sylv, 90708, 90.0f);
                     GetCreatureListWithEntryInGrid(guards, sylv, 90710, 90.0f);
                     if (!guards.empty())
-                        for (std::list<Creature*>::iterator itr = guards.begin(); itr != guards.end(); ++itr) // те, кто остаются снизу и "дефают"
+                        for (std::list<Creature*>::iterator itr = guards.begin(); itr != guards.end(); ++itr) // ??, ??? ???????? ????? ? "??????"
                         {
                             (*itr)->SetReactState(REACT_AGGRESSIVE);
                             (*itr)->GetMotionMaster()->Clear();
@@ -799,14 +795,14 @@ public:
                     std::list<Creature*> guardss;
                     GetCreatureListWithEntryInGrid(guardss, sylv, 112920, 90.0f);
                     if (!guardss.empty())
-                        for (std::list<Creature*>::iterator itr = guardss.begin(); itr != guardss.end(); ++itr) // те, кто бегут с Сильвой и дефают верх
+                        for (std::list<Creature*>::iterator itr = guardss.begin(); itr != guardss.end(); ++itr) // ??, ??? ????? ? ??????? ? ?????? ????
                         {
                             (*itr)->SetReactState(REACT_AGGRESSIVE);
                             (*itr)->GetMotionMaster()->Clear();
                             //(*itr)->GetMotionMaster()->MovePath(439154, false, irand(-3, 3), irand(-3, 3));
 
                         }
-                    sylv->GetMotionMaster()->MovePath(439154, false); // 5   те, кто бегут с Сильвой и дефают верх
+                    sylv->GetMotionMaster()->MovePath(439154, false); // 5   ??, ??? ????? ? ??????? ? ?????? ????
                     sylv->SetHomePosition(1612.035f, 1706.058f, 77.55668f, sylv->GetOrientation());
                 }
             }

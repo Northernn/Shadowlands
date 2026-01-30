@@ -792,8 +792,6 @@ private:
 // 42432 - Headless Horseman Yell Timer
 class spell_headless_horseman_yell_timer : public AuraScript
 {
-    PrepareAuraScript(spell_headless_horseman_yell_timer);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Creature* horseman = GetTarget()->ToCreature();
@@ -812,8 +810,6 @@ class spell_headless_horseman_yell_timer : public AuraScript
 // 43893 - Headless Horseman - Maniacal Laugh, Maniacal, Delayed 8
 class spell_headless_horseman_maniacal_laugh : public AuraScript
 {
-    PrepareAuraScript(spell_headless_horseman_maniacal_laugh);
-
     void HandleSound(AuraEffect const* /*aurEff*/)
     {
         GetTarget()->PlayDirectSound(SOUNDID_MANIACAL_LAUGH);
@@ -828,8 +824,6 @@ class spell_headless_horseman_maniacal_laugh : public AuraScript
 // 42410 - Headless Horseman Climax - Command, Head Repositions
 class spell_headless_horseman_head_reposition : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_head_reposition);
-
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
         Position random = GetCaster()->GetRandomNearPosition(30.0f);
@@ -845,8 +839,6 @@ class spell_headless_horseman_head_reposition : public SpellScript
 // 42399 - Headless Horseman Climax - Send Head
 class spell_headless_horseman_send_head : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_send_head);
-
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
         Unit* head = GetHitUnit();
@@ -863,8 +855,6 @@ class spell_headless_horseman_send_head : public SpellScript
 // 42603 - Headless Horseman Climax, Head: Periodic
 class spell_headless_horseman_head_periodic : public AuraScript
 {
-    PrepareAuraScript(spell_headless_horseman_head_periodic);
-
     void HandleHPCheck(AuraEffect const* /*aurEff*/)
     {
         Unit* target = GetTarget();
@@ -885,8 +875,6 @@ class spell_headless_horseman_head_periodic : public AuraScript
 // 43101 - Headless Horseman Climax - Command, Head Requests Body
 class spell_headless_horseman_command_head_request_body : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_command_head_request_body);
-
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
         Unit* horseman = GetHitUnit();
@@ -903,8 +891,6 @@ class spell_headless_horseman_command_head_request_body : public SpellScript
 // 42401 - Headless Horseman Climax - Return Head
 class spell_headless_horseman_return_head : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_return_head);
-
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
         Unit* horseman = GetHitUnit();
@@ -921,8 +907,6 @@ class spell_headless_horseman_return_head : public SpellScript
 // 52236 - Summon Pumpkin Burst Delay
 class spell_summon_pumpkin_burst_delay : public AuraScript
 {
-    PrepareAuraScript(spell_summon_pumpkin_burst_delay);
-
     void HandleText(AuraEffect const* /*aurEff*/)
     {
         if (Creature* horseman = GetTarget()->ToCreature())
@@ -938,8 +922,6 @@ class spell_summon_pumpkin_burst_delay : public AuraScript
 // 42428 - Headless Horseman Climax - Head Is Dead
 class spell_headless_horseman_head_is_dead : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_head_is_dead);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Creature* target = GetHitCreature();
@@ -969,8 +951,6 @@ class spell_headless_horseman_head_is_dead : public SpellScript
 // 42879 - Headless Horseman Climax - Summoning Rhyme Aura
 class spell_headless_horseman_summoning_rhyme_aura : public AuraScript
 {
-    PrepareAuraScript(spell_headless_horseman_summoning_rhyme_aura);
-
     void PeriodicTick(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -1012,8 +992,6 @@ class spell_headless_horseman_summoning_rhyme_aura : public AuraScript
 // 42281 - Sprouting
 class spell_headless_horseman_sprouting : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_sprouting);
-
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
         Unit* pumpkin = GetHitUnit();
@@ -1031,8 +1009,6 @@ class spell_headless_horseman_sprouting : public SpellScript
 // 42818 - Headless Horseman - Wisp Flight Port
 class spell_headless_horseman_wisp_teleport : public SpellScript
 {
-    PrepareSpellScript(spell_headless_horseman_wisp_teleport);
-
     void SetDest(SpellDestination& dest)
     {
         dest.Relocate(EarthBunnySpawnPosition);

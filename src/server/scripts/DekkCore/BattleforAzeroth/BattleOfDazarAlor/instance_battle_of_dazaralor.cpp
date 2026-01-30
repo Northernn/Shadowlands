@@ -59,7 +59,7 @@ public:
             LoadDoorData(doorData);
         }
 
-        void OnPlayerEnter(Player* player)
+        void OnPlayerEnter(Player* player) override
         {
             if (isHorde == true || isAlliance == true)
             {

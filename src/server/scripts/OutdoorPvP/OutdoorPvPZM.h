@@ -22,16 +22,16 @@
 
 enum DefenseMessages
 {
-    TEXT_WEST_BEACON_TAKEN_ALLIANCE         = 15541, // '|cffffff00The Alliance has taken control of the West Beacon!|r'
-    TEXT_WEST_BEACON_TAKEN_HORDE            = 15543, // '|cffffff00The Horde has taken control of the West Beacon!|r'
-    TEXT_EAST_BEACON_TAKEN_ALLIANCE         = 15546, // '|cffffff00The Alliance has taken control of the East Beacon!|r'
-    TEXT_EAST_BEACON_TAKEN_HORDE            = 15545, // '|cffffff00The Horde has taken control of the East Beacon!|r'
-    TEXT_TWIN_SPIRE_RUINS_TAKEN_ALLIANCE    = 15591, // '|cffffff00The Alliance has taken control of Twin Spire Ruins!|r'
-    TEXT_TWIN_SPIRE_RUINS_TAKEN_HORDE       = 15590, // '|cffffff00The Horde has taken control of Twin Spire Ruins!|r'
-    TEXT_BOTH_BEACONS_TAKEN_ALLIANCE        = 16284, // (NYI) '|cffffff00The Alliance has taken control of both beacons!|r'
-    TEXT_BOTH_BEACONS_TAKEN_HORDE           = 16285, // (NYI) '|cffffff00The Horde has taken control of both beacons!|r'
-    TEXT_BATTLE_STANDARDS_ALLIANCE          = 16287, // (NYI) '|cffffff00The Alliance Field Scout is now issuing battle standards.|r'
-    TEXT_BATTLE_STANDARDS_HORDE             = 16288  // (NYI) '|cffffff00The Horde Field Scout is now issuing battle standards.|r'
+    TEXT_WEST_BEACON_TAKEN_ALLIANCE = 15541, // '|cffffff00The Alliance has taken control of the West Beacon!|r'
+    TEXT_WEST_BEACON_TAKEN_HORDE = 15543, // '|cffffff00The Horde has taken control of the West Beacon!|r'
+    TEXT_EAST_BEACON_TAKEN_ALLIANCE = 15546, // '|cffffff00The Alliance has taken control of the East Beacon!|r'
+    TEXT_EAST_BEACON_TAKEN_HORDE = 15545, // '|cffffff00The Horde has taken control of the East Beacon!|r'
+    TEXT_TWIN_SPIRE_RUINS_TAKEN_ALLIANCE = 15591, // '|cffffff00The Alliance has taken control of Twin Spire Ruins!|r'
+    TEXT_TWIN_SPIRE_RUINS_TAKEN_HORDE = 15590, // '|cffffff00The Horde has taken control of Twin Spire Ruins!|r'
+    TEXT_BOTH_BEACONS_TAKEN_ALLIANCE = 16284, // (NYI) '|cffffff00The Alliance has taken control of both beacons!|r'
+    TEXT_BOTH_BEACONS_TAKEN_HORDE = 16285, // (NYI) '|cffffff00The Horde has taken control of both beacons!|r'
+    TEXT_BATTLE_STANDARDS_ALLIANCE = 16287, // (NYI) '|cffffff00The Alliance Field Scout is now issuing battle standards.|r'
+    TEXT_BATTLE_STANDARDS_HORDE = 16288  // (NYI) '|cffffff00The Horde Field Scout is now issuing battle standards.|r'
 };
 
 enum OutdoorPvPZMSpells
@@ -51,7 +51,7 @@ enum OutdoorPvPZMSpells
 enum ZMCreatureTypes
 {
     ZM_ALLIANCE_FIELD_SCOUT = 18581,
-    ZM_HORDE_FIELD_SCOUT    = 18564,
+    ZM_HORDE_FIELD_SCOUT = 18564,
 };
 
 enum ZM_BeaconType
@@ -93,18 +93,17 @@ enum ZM_TowerStateMask
     ZM_TOWERSTATE_H = 4
 };
 
-class OPvPCapturePointZM_Beacon : public OPvPCapturePoint
+enum ZM_WorldEvents
 {
-    public:
-        OPvPCapturePointZM_Beacon(OutdoorPvP* pvp, ZM_BeaconType type, GameObject* go);
+    ZM_EVENT_BEACON_EAST_PROGRESS_HORDE = 11807,
+    ZM_EVENT_BEACON_EAST_PROGRESS_ALLIANCE = 11806,
+    ZM_EVENT_BEACON_EAST_NEUTRAL_HORDE = 11814,
+    ZM_EVENT_BEACON_EAST_NEUTRAL_ALLIANCE = 11815,
 
-        void ChangeState() override;
-
-        void UpdateTowerState();
-
-    protected:
-        ZM_BeaconType m_TowerType;
-        uint32 m_TowerState;
+    ZM_EVENT_BEACON_WEST_PROGRESS_HORDE = 11805,
+    ZM_EVENT_BEACON_WEST_PROGRESS_ALLIANCE = 11804,
+    ZM_EVENT_BEACON_WEST_NEUTRAL_HORDE = 11808,
+    ZM_EVENT_BEACON_WEST_NEUTRAL_ALLIANCE = 11809
 };
 
 enum ZM_GraveyardState
@@ -114,53 +113,92 @@ enum ZM_GraveyardState
     ZM_GRAVEYARD_H = 4
 };
 
+enum ZM_GameObjectEntries
+{
+    ZM_GO_ENTRY_BEACON_WEST = 182522,
+    ZM_GO_ENTRY_BEACON_EAST = 182523
+};
+
+class OutdoorPvPZM;
+
+class ZMControlZoneHandler : public OutdoorPvPControlZoneHandler
+{
+public:
+    ZMControlZoneHandler(OutdoorPvPZM* pvp, uint32 textBeaconTakenHorde, uint32 textBeaconTakenAlliance, uint32 worldstateNeutralUi, uint32 worldstateNeutralMap, uint32 worldstateHordeUi, uint32 worldstateHordeMap, uint32 worldstateAllianceUi, uint32 worldstateAllianceMap);
+
+    void HandleProgressEventHorde([[maybe_unused]] GameObject* controlZone) override;
+    void HandleProgressEventAlliance([[maybe_unused]] GameObject* controlZone) override;
+    void HandleNeutralEventHorde([[maybe_unused]] GameObject* controlZone) override;
+    void HandleNeutralEventAlliance([[maybe_unused]] GameObject* controlZone) override;
+    void HandleNeutralEvent([[maybe_unused]] GameObject* controlZone) override;
+
+    uint32 GetWorldStateNeutralUI() { return _worldstateNeutralUi; }
+    uint32 GetWorldStateNeutralMap() { return _worldstateNeutralMap; }
+    uint32 GetWorldStateHordeUI() { return _worldstateHordeUi; }
+    uint32 GetWorldStateHordeMap() { return _worldstateHordeMap; }
+    uint32 GetWorldStateAllianceUI() { return _worldstateAllianceUi; }
+    uint32 GetWorldStateAllianceMap() { return _worldstateAllianceMap; }
+
+    OutdoorPvPZM* GetOutdoorPvpZM();
+
+private:
+    uint32 _textBeaconTakenHorde;
+    uint32 _textBeaconTakenAlliance;
+    uint32 _worldstateNeutralUi;
+    uint32 _worldstateNeutralMap;
+    uint32 _worldstateHordeUi;
+    uint32 _worldstateHordeMap;
+    uint32 _worldstateAllianceUi;
+    uint32 _worldstateAllianceMap;
+};
+
 class OPvPCapturePointZM_Graveyard : public OPvPCapturePoint
 {
-    public:
-        OPvPCapturePointZM_Graveyard(OutdoorPvP* pvp);
+public:
+    OPvPCapturePointZM_Graveyard(OutdoorPvP* pvp);
 
-        bool Update(uint32 diff) override;
-        void ChangeState() override { }
-        int32 HandleOpenGo(Player* player, GameObject* go) override;
-        bool HandleDropFlag(Player* player, uint32 spellId) override;
+    void Update(uint32 diff) override;
+    void ChangeState() override { }
+    int32 HandleOpenGo(Player* player, GameObject* go) override;
+    bool HandleDropFlag(Player* player, uint32 spellId) override;
 
-        void UpdateTowerState();
-        void SetBeaconState(uint32 controlling_team); // not good atm
-        uint32 GetGraveyardState() const;
+    void UpdateTowerState();
+    void SetBeaconState(uint32 controlling_team); // not good atm
+    uint32 GetGraveyardState() const;
 
-        ObjectGuid GetFlagCarrierGUID() const { return m_FlagCarrierGUID; }
-        void SetFlagCarrierGUID(ObjectGuid guid) { m_FlagCarrierGUID = guid; }
+    ObjectGuid GetFlagCarrierGUID() const { return m_FlagCarrierGUID; }
+    void SetFlagCarrierGUID(ObjectGuid guid) { m_FlagCarrierGUID = guid; }
 
-    protected:
-        uint32 m_BothControllingFaction;
-        ObjectGuid m_FlagCarrierGUID;
-        uint32 m_GraveyardState;
+protected:
+    uint32 m_BothControllingFaction;
+    ObjectGuid m_FlagCarrierGUID;
+    uint32 m_GraveyardState;
 };
 
 /// @todo flag carrier death/leave/mount/activitychange should give back the gossip options
 class OutdoorPvPZM : public OutdoorPvP
 {
-    public:
-        OutdoorPvPZM(Map* map);
+public:
+    OutdoorPvPZM(Map* map);
 
-        bool SetupOutdoorPvP() override;
-        void OnGameObjectCreate(GameObject* go) override;
-        void HandlePlayerEnterZone(Player* player, uint32 zone) override;
-        void HandlePlayerLeaveZone(Player* player, uint32 zone) override;
-        bool Update(uint32 diff) override;
-        void SendRemoveWorldStates(Player* player) override;
-        void HandleKillImpl(Player* player, Unit* killed) override;
+    bool SetupOutdoorPvP() override;
+    void HandlePlayerEnterZone(Player* player, uint32 zone) override;
+    void HandlePlayerLeaveZone(Player* player, uint32 zone) override;
+    void Update(uint32 diff) override;
+    void SendRemoveWorldStates(Player* player) override;
+    void HandleKillImpl(Player* player, Unit* killed) override;
 
-        uint32 GetAllianceTowersControlled() const;
-        void SetAllianceTowersControlled(uint32 count);
-        uint32 GetHordeTowersControlled() const;
-        void SetHordeTowersControlled(uint32 count);
-        OPvPCapturePointZM_Graveyard* GetGraveyard() { return m_Graveyard; }
+    uint32 GetAllianceTowersControlled() const;
+    void SetAllianceTowersControlled(uint32 count);
+    uint32 GetHordeTowersControlled() const;
+    void SetHordeTowersControlled(uint32 count);
 
-    private:
-        OPvPCapturePointZM_Graveyard* m_Graveyard;
-        uint32 m_AllianceTowersControlled;
-        uint32 m_HordeTowersControlled;
+    OPvPCapturePointZM_Graveyard* GetGraveyard() { return m_Graveyard; }
+
+private:
+    OPvPCapturePointZM_Graveyard* m_Graveyard;
+    uint32 m_AllianceTowersControlled;
+    uint32 m_HordeTowersControlled;
 };
 
 #endif

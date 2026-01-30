@@ -101,8 +101,6 @@ struct boss_tzane : public BossAI
 //261600 SPELL_COALESCED_ESSENCE
 class spell_coalseced_essence : public SpellScript
 {
-    PrepareSpellScript(spell_coalseced_essence);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -124,8 +122,6 @@ class spell_coalseced_essence : public SpellScript
 //261552
 class spell_terror_wall : public SpellScript
 {
-    PrepareSpellScript(spell_terror_wall);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -144,8 +140,6 @@ class spell_terror_wall : public SpellScript
 //261560
 class spell_terror_wall_visual : public SpellScript
 {
-    PrepareSpellScript(spell_terror_wall_visual);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -164,8 +158,6 @@ class spell_terror_wall_visual : public SpellScript
 //261718
 class spell_terror_wall_visual_back : public SpellScript
 {
-    PrepareSpellScript(spell_terror_wall_visual_back);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();

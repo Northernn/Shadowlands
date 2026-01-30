@@ -67,7 +67,7 @@ ArenaTeam* ArenaTeamMgr::GetArenaTeamByCaptain(ObjectGuid guid) const
 void ArenaTeamMgr::AddArenaTeam(ArenaTeam* arenaTeam)
 {
     ArenaTeam*& team = ArenaTeamStore[arenaTeam->GetId()];
-    ASSERT((team == nullptr) || (team == arenaTeam), "Duplicate arena team with ID %u", arenaTeam->GetId());
+    ASSERT((team == nullptr) || (team == arenaTeam), "Duplicate arena team with ID {}", arenaTeam->GetId());
     team = arenaTeam;
 }
 
@@ -130,5 +130,34 @@ void ArenaTeamMgr::LoadArenaTeams()
     }
     while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u arena teams in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} arena teams in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
+//DekkCore
+bool ArenaTeamMgr::ExistArenaTeamByType(ObjectGuid& guid, ArenaTeamTypes type)
+{
+    for (ArenaTeamContainer::iterator teamItr = GetArenaTeamMapBegin(); teamItr != GetArenaTeamMapEnd(); ++teamItr)
+    {
+        if (ArenaTeam* arenaTeam = teamItr->second)
+        {
+            if (ArenaTeamTypes(arenaTeam->GetType()) != type)
+                continue;
+            if (arenaTeam->IsMember(guid))
+                return true;
+        }
+    }
+    return false;
+}
+
+ArenaTeam* ArenaTeamMgr::GetArenaTypeTeamByGUID(ObjectGuid playerGuid, uint32 arenaType) const
+{
+	for (ArenaTeamContainer::const_iterator itr = ArenaTeamStore.begin(); itr != ArenaTeamStore.end(); ++itr)
+	{
+		if (itr->second->GetType() != arenaType)
+			continue;
+		if (itr->second->IsMember(playerGuid))
+			return itr->second;
+	}
+
+	return NULL;
+}
+//DekkCOre

@@ -93,7 +93,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void EnterEvadeMode(EvadeReason w) override
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _DespawnAtEvade(15s);
         }
@@ -103,9 +103,9 @@ public:
             me->SetPower(POWER_ENERGY, 0);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-            //events.ScheduleEvent(EVENT_CHECK_ENERGY, TIMER_CHECK_ENERGY);
-            //events.ScheduleEvent(EVENT_INDUCTION, TIMER_INDUCTION);
-            //events.ScheduleEvent(EVENT_ENERGY_CORE, TIMER_ENERGY_CORE);
+            events.ScheduleEvent(EVENT_CHECK_ENERGY, 12s);
+            events.ScheduleEvent(EVENT_INDUCTION, 9s);
+            events.ScheduleEvent(EVENT_ENERGY_CORE, 11s);
         }
 
         void UpdateAI(uint32 diff) override
@@ -129,7 +129,7 @@ public:
                         me->SetPower(POWER_ENERGY, 0);
                     }
 
-                    //events.ScheduleEvent(EVENT_CHECK_ENERGY, TIMER_CHECK_ENERGY);
+                    events.ScheduleEvent(EVENT_CHECK_ENERGY, 15s);
                     break;
                 case EVENT_INDUCTION:
                 {
@@ -141,7 +141,7 @@ public:
                             me->CastSpell(player, SPELL_INDUCTION, true);
                     }
 
-                   // events.ScheduleEvent(EVENT_INDUCTION, TIMER_INDUCTION);
+                    events.ScheduleEvent(EVENT_INDUCTION, 12s);
                     break;
                 }
                 case EVENT_ENERGY_CORE:
@@ -149,7 +149,7 @@ public:
                     pos = me->GetRandomNearPosition(20.0f);
                     me->SummonCreature(NPC_ENERGY_CORE_BFA, pos, TEMPSUMMON_TIMED_DESPAWN);
 
-                  //  events.ScheduleEvent(EVENT_ENERGY_CORE, TIMER_ENERGY_CORE);
+                    events.ScheduleEvent(EVENT_ENERGY_CORE, 9s);
                     break;
                 }
             }

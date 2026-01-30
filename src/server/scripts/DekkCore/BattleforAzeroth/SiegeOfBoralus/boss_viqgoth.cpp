@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -59,39 +59,43 @@ struct boss_viqgoth : public BossAI
 
 	void Reset() override
 	{
-		BossAI::Reset();		
+		BossAI::Reset();
 		me->SetReactState(REACT_PASSIVE);
-		me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);		
+		me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 		me->SetSwim(true);
 		this->encountered = 0;
 	}
 
-	void EnterEvadeMode(EvadeReason why) override
+	void EnterEvadeMode(EvadeReason /*why*/) override
 	{
-		if (me->GetThreatManager().IsThreatListEmpty() && this->encountered == 1 && me->HealthAbovePct(1) && instance->GetBossState(DATA_VIQGOTH == IN_PROGRESS))
+		if (me->GetThreatManager().IsThreatListEmpty() && this->encountered == 1 && me->HealthAbovePct(1) && instance->GetBossState(DATA_VIQGOTH) == IN_PROGRESS)
 		{
 			if (Creature* viqgoth = me->FindNearestCreature(NPC_VIQGOTH, 100.0f, true))
 			{
-				viqgoth->GetScheduler().Schedule(1s, [viqgoth] (TaskContext context)
+				viqgoth->GetScheduler().Schedule(1s, [viqgoth] (TaskContext /*context*/)
 				{
 					viqgoth->AI()->JustReachedHome();
 					viqgoth->ForcedDespawn(1, 5s);
 					std::list<Creature*> c_list;
 					viqgoth->GetCreatureListWithEntryInGrid(c_list, NPC_DEMOLISHING_TERROR, 250.0f);
 					viqgoth->GetCreatureListWithEntryInGrid(c_list, NPC_GRIPPING_TERROR, 250.0f);
-					for (auto & creatures : c_list)
-					{						
+
+                    for (auto& creatures : c_list)
+					{
 						creatures->AI()->EnterEvadeMode();
-					}					
-				});					
-				std::list<Creature*> c_list;
+					}
+				});
+
+                std::list<Creature*> c_list;
 				viqgoth->GetCreatureListWithEntryInGrid(c_list, NPC_DEMOLISHING_TERROR, 250.0f);
 				viqgoth->GetCreatureListWithEntryInGrid(c_list, NPC_GRIPPING_TERROR, 250.0f);
-				for (auto & creatures : c_list)
-				instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, creatures);
-				this->encountered = 0;
+
+                for (auto& creatures : c_list)
+				    instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, creatures);
+
+                encountered = 0;
 			}
-		}		
+		}
 	}
 
 	void JustEngagedWith(Unit* u) override
@@ -100,21 +104,21 @@ struct boss_viqgoth : public BossAI
 		events.ScheduleEvent(EVENT_ERADICATION, 3s);
 		events.ScheduleEvent(EVENT_PUTRID_WATERS, 6s);
 		instance->SetBossState(DATA_VIQGOTH, IN_PROGRESS);
-		this->encountered = 1;
+		encountered = 1;
 	}
 
 	void ExecuteEvent(uint32 eventid) override
 	{
 		switch (eventid)
 		{
-		case EVENT_ERADICATION:		
+		case EVENT_ERADICATION:
 		{
 			std::list<Player*> p_list;
 			me->GetPlayerListInGrid(p_list, 250.0f);
 			for (auto & players : p_list)
 			me->AI()->DoCast(players, ERADICATION_MISSILE);
 		}
-		events.Repeat(15s);		
+		events.Repeat(15s);
 		break;
 
 		case EVENT_PUTRID_WATERS:
@@ -132,8 +136,8 @@ struct boss_viqgoth : public BossAI
 		}
 	}
 
-	void JustDied(Unit* u) override
-	{	
+	void JustDied(Unit*) override
+	{
 		_JustDied();
 	};
 
@@ -164,7 +168,7 @@ struct npc_demolishing_terror : public ScriptedAI
 		events.ScheduleEvent(EVENT_HULLCRACKER, 1s);
 	}
 
-	void JustEngagedWith(Unit* u) override
+	void JustEngagedWith(Unit* /*u*/) override
 	{
 		instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 		events.ScheduleEvent(EVENT_SLAM, 1s);
@@ -183,13 +187,13 @@ struct npc_demolishing_terror : public ScriptedAI
 					if (gripping_terror->GetDistance(me) > 45.0f && gripping_terror->GetDistance(me) < 50.0f)
 					{
 						instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gripping_terror);
-					}					
+					}
 				}
 			}
 		}
 	}
 
-	void ExecuteEvent(uint32 eventid) //override
+	void ExecuteEvent(uint32 eventid) override
 	{
 		switch (eventid)
 		{
@@ -198,7 +202,7 @@ struct npc_demolishing_terror : public ScriptedAI
 			{
 				DoCastAOE(SLAM, false);
 			}
-			events.Repeat(15s);	
+			events.Repeat(15s);
 			break;
 
 		case EVENT_HULLCRACKER:
@@ -207,20 +211,17 @@ struct npc_demolishing_terror : public ScriptedAI
 				DoCast(HULLCRACKER);
 			}
 			events.Repeat(17s);
-			break;	
+			break;
 
 		default:
 			break;
 		}
 	}
 
-	void JustDied(Unit* u) override
-	{		
+	void JustDied(Unit* /*u*/) override
+	{
 		instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 	}
-private:
-    EventMap events;
-    InstanceScript* instance;
 };
 
 //137123
@@ -229,18 +230,18 @@ struct npc_cannon_viq : public ScriptedAI
 	npc_cannon_viq(Creature* c) : ScriptedAI(c) { }
 
 	void Reset() override
-	{		
+	{
 
 	}
 
 	bool OnGossipHello(Player* player) override
-	{	
+	{
 		CloseGossipMenuFor(player);
 		//me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
 		if (Creature* viqgoth = me->FindNearestCreature(NPC_VIQGOTH, 100.0f, true))
 		{
 			if (viqgoth->IsAlive() && viqgoth->IsInCombat())
-			{				
+			{
 				me->CastSpell(viqgoth, BLAST_SS, true);
 				me->CastSpell(viqgoth, BLAST_MISSILE, true);
 				float viqGothPct = (float)(this->cannon_count * 33) / 100;
@@ -251,17 +252,17 @@ struct npc_cannon_viq : public ScriptedAI
 			}
 
 			if (this->cannon_count == 3)
-			{				
+			{
 				events.CancelEvent(EVENT_PUTRID_WATERS);
 				if (Creature* viqgoth = me->FindNearestCreature(NPC_VIQGOTH, 100.0f, true))
-				{					
+				{
 					if (viqgoth->IsAlive())
-					{	
+					{
 						viqgoth->AI()->JustDied(nullptr);
 						events.CancelEvent(EVENT_PUTRID_WATERS);
 						events.CancelEvent(EVENT_ERADICATION);
 						viqgoth->SetReactState(REACT_PASSIVE);
-						instance->SetBossState(DATA_VIQGOTH, DONE);	
+						instance->SetBossState(DATA_VIQGOTH, DONE);
 						instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, viqgoth);
 						viqgoth->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 						viqgoth->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
@@ -270,10 +271,10 @@ struct npc_cannon_viq : public ScriptedAI
 						viqgoth->SetSwim(true);
 						viqgoth->SetSpeedRate(MOVE_SWIM, 1.5f);
 						viqgoth->UpdateSpeed(MOVE_SWIM);
-						viqgoth->GetMotionMaster()->MovePoint(1, 84.71f, -268.0f, -3.48f, true);				
+						viqgoth->GetMotionMaster()->MovePoint(1, 84.71f, -268.0f, -3.48f, true);
 						viqgoth->DespawnCreaturesInArea(NPC_DEMOLISHING_TERROR);
 						viqgoth->DespawnCreaturesInArea(NPC_GRIPPING_TERROR);
-						viqgoth->DespawnCreaturesInArea(NPC_CANNON_VIQ_ENCOUNTER);						
+						viqgoth->DespawnCreaturesInArea(NPC_CANNON_VIQ_ENCOUNTER);
 						instance->SendBossKillCredit(ENCOUNTER_ID);
 						viqgoth->DespawnOrUnsummon(20s);
 						std::list<Player*> p_li;
@@ -281,30 +282,30 @@ struct npc_cannon_viq : public ScriptedAI
 						for (auto & players : p_li)
 						{
 							players->KilledMonsterCredit(viqgoth->GetEntry());
-						}						
+						}
 						if (Creature* jaina = me->FindNearestCreature(NPC_JAINA_SOB_ALI_OUTRO_ALI, 100.0f, true))
 						{
 							jaina->SetVisible(true);
 							if (jaina->IsAlive())
 							{
-								jaina->GetScheduler().Schedule(3s, [jaina] (TaskContext context)
+								jaina->GetScheduler().Schedule(3s, [jaina] (TaskContext /*context*/)
 								{
 									jaina->AI()->Talk(SAY_OUTRO_1);
 								});
-								
-								jaina->GetScheduler().Schedule(9s, [jaina] (TaskContext context)
+
+								jaina->GetScheduler().Schedule(9s, [jaina] (TaskContext /*context*/)
 								{
 									jaina->AI()->Talk(SAY_OUTRO_2);
 								});
 
-								jaina->GetScheduler().Schedule(10s, [jaina] (TaskContext context)
-								{								
+								jaina->GetScheduler().Schedule(10s, [jaina] (TaskContext /*context*/)
+								{
 									jaina->SummonGameObject(GO_TREASURE_RICH_FLOTSAM, 226.745f, -180.668f, 0.607619f, 0.0166253f, QuaternionData(), 0s);
 								});
 
 								/*if (IsMythic() && instance->IsChallengeModeStarted())
 								{
-									jaina->SummonGameObject(GO_CHALLENGERS_CACHE_BORALUS, 230.170f, -181.269f, 0.581000f, 3.05467f, QuaternionData(), 0s);								
+									jaina->SummonGameObject(GO_CHALLENGERS_CACHE_BORALUS, 230.170f, -181.269f, 0.581000f, 3.05467f, QuaternionData(), 0s);
 								}*/
 							}
 						}
@@ -337,7 +338,7 @@ struct npc_jaina_sob_outro_ali : public ScriptedAI
 	bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
 	{
 		if (player->GetTeam() != HORDE)
-		{			
+		{
 			CloseGossipMenuFor(player);
 			player->TeleportTo(1643, 1080.0f, -623.0f, 17.55f, 1.67f);
 		}

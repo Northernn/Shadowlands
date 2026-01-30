@@ -4,6 +4,8 @@
 #include "AreaTriggerAI.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "TemporarySummon.h"
+#include "GameEventMgr.h"
 #include "SpellScript.h"
 
 enum Misc
@@ -165,11 +167,8 @@ public:
         }
     }
 
-    bool Update(uint32 diff) override
+    void Update(uint32 diff) override
     {
-        if (!m_needTimer)
-            return true;
-
         if (m_startTimer <= diff)
         {
             switch (m_stage)
@@ -257,7 +256,6 @@ public:
         }
         else
             m_startTimer -= diff;
-        return true;
     }
 
 public:
@@ -273,14 +271,17 @@ public:
 //class OutdoorPvP_Paraxis : public OutdoorPvPScript
 //{
 //public:
-//    OutdoorPvP_Paraxis() : OutdoorPvPScript("outdoorpvp_paraxis") {}
 //
-//    OutdoorPvP* GetOutdoorPvP() const override
+//    OutdoorPvP_Paraxis()
+//        : OutdoorPvPScript("outdoorpvp_paraxis")
 //    {
-//        return new OutdoorPVPParaxis();
+//    }
+//
+//    OutdoorPvP* GetOutdoorPvP(Map* map) const override
+//    {
+//        return new OutdoorPvP_Paraxis(map);
 //    }
 //};
-
 
 // 127190
 struct npc_paraxis : ScriptedAI
@@ -320,22 +321,20 @@ struct npc_paraxis : ScriptedAI
 // 246313
 class spell_paraxis_artillery : public SpellScript
 {
-    PrepareSpellScript(spell_paraxis_artillery);
-
     void FilterTargetsDamage(std::list<WorldObject*>& targets)
     {
         Unit* caster = GetCaster();
         if (!caster)
             return;
 
-       /* OutdoorPvP* pvp = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(caster->GetCurrentZoneID());
+        OutdoorPvP* pvp = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(caster->GetMap(), caster->GetCurrentZoneID());
         if (!pvp)
-            return;*/
+            return;
 
-       // for (uint8 i = TEAM_ALLIANCE; i < MAX_TEAMS; ++i)
-        //    for (auto& guid : pvp->GetPlayers(i))
-                //if (Player* player = ObjectAccessor::GetObjectInMap(guid, caster->GetMap(), (Player*)nullptr))
-                //    targets.push_back(player);
+        for (uint8 i = TEAM_ALLIANCE; i < MAX_TEAMS; ++i)
+            for (auto& guid : pvp->GetPlayers(i))
+                if (Player* player = ObjectAccessor::GetObjectInMap(guid, caster->GetMap(), (Player*)nullptr))
+                    targets.push_back(player);
 
         targets.remove_if([](WorldObject* obj)
             {
@@ -361,5 +360,5 @@ void Addsc_paraxis()
 
     RegisterSpellScript(spell_paraxis_artillery);
 
-  //  new OutdoorPvP_Paraxis();
+   // new OutdoorPvP_Paraxis();
 }

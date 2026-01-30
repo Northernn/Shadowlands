@@ -60,42 +60,6 @@ public:
     }
 };
 
-class at_shadow_rune2 : public AreaTriggerAI
-{
-public:
-    at_shadow_rune2(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Creature* rune = GetClosestCreatureWithEntry(unit, NPC_SHADOW_RUNE, 5.0f))
-        {
-            if (unit->IsPlayer() && rune->HasAura(SPELL_SHADOW_RUNE_2))
-            {
-                rune->RemoveAurasDueToSpell(SPELL_SHADOW_RUNE_2);
-                rune->CastSpell(rune, SPELL_SHADOW_RUNE, true);
-            }
-        }
-    }
-};
-
-class at_shadow_rune3 : public AreaTriggerAI
-{
-public:
-    at_shadow_rune3(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (Creature* rune = GetClosestCreatureWithEntry(unit, NPC_SHADOW_RUNE, 5.0f))
-        {
-            if (unit->IsPlayer() && rune->HasAura(SPELL_SHADOW_RUNE_3))
-            {
-                rune->RemoveAurasDueToSpell(SPELL_SHADOW_RUNE_3);
-                rune->CastSpell(rune, SPELL_SHADOW_RUNE, true);
-            }
-        }
-    }
-};
-
 /*######
 ## Defiiled Burial Site
 ######*/
@@ -232,8 +196,6 @@ public:
 
     class spell_exhume_the_crypts_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_exhume_the_crypts_SpellScript);
-
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             return ValidateSpellInfo({ SPELL_EXHUME_THE_CRYPTS_1, SPELL_EXHUME_THE_CRYPTS_2 });
@@ -363,8 +325,6 @@ class spell_water_burst_targeting : public SpellScriptLoader
 
         class spell_water_burst_targeting_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_water_burst_targeting_SpellScript);
-
             void SelectTargets(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -559,8 +519,6 @@ public:
 void AddSC_shadowmoon_burial_grounds()
 {
     RegisterAreaTriggerAI(at_shadow_rune1);
-    RegisterAreaTriggerAI(at_shadow_rune2);
-    RegisterAreaTriggerAI(at_shadow_rune3);
     new defiled_burial_site();
     new npc_shadowmoon_exhumer();
     new spell_exhume_the_crypts();

@@ -22,6 +22,8 @@
 #include "ObjectGuid.h"
 #include "Optional.h"
 #include "SpawnData.h"
+#include "SharedDefines.h"
+#include <variant>
 #include <vector>
 
 #define MAX_AREATRIGGER_ENTITY_DATA 8
@@ -29,8 +31,8 @@
 
 enum AreaTriggerFlags
 {
-    AREATRIGGER_FLAG_HAS_ABSOLUTE_ORIENTATION   = 0x00001, // NYI
-    AREATRIGGER_FLAG_HAS_DYNAMIC_SHAPE          = 0x00002, // Implemented for Spheres
+    AREATRIGGER_FLAG_HAS_ABSOLUTE_ORIENTATION   = 0x00001, 
+    AREATRIGGER_FLAG_HAS_DYNAMIC_SHAPE          = 0x00002, // Implemented for Spheres & Disks
     AREATRIGGER_FLAG_HAS_ATTACHED               = 0x00004,
     AREATRIGGER_FLAG_HAS_FACE_MOVEMENT_DIR      = 0x00008,
     AREATRIGGER_FLAG_HAS_FOLLOWS_TERRAIN        = 0x00010, // NYI
@@ -45,12 +47,13 @@ enum AreaTriggerFlags
 
 enum AreaTriggerTypes
 {
-    AREATRIGGER_TYPE_SPHERE     = 0,
-    AREATRIGGER_TYPE_BOX        = 1,
-    AREATRIGGER_TYPE_UNK        = 2,
-    AREATRIGGER_TYPE_POLYGON    = 3,
-    AREATRIGGER_TYPE_CYLINDER   = 4,
-    AREATRIGGER_TYPE_DISK       = 5,
+    AREATRIGGER_TYPE_SPHERE         = 0,
+    AREATRIGGER_TYPE_BOX            = 1,
+    AREATRIGGER_TYPE_UNK            = 2,
+    AREATRIGGER_TYPE_POLYGON        = 3,
+    AREATRIGGER_TYPE_CYLINDER       = 4,
+    AREATRIGGER_TYPE_DISK           = 5,
+    AREATRIGGER_TYPE_BOUNDED_PLANE  = 6,
     AREATRIGGER_TYPE_MAX
 };
 
@@ -73,10 +76,78 @@ enum AreaTriggerActionUserTypes
     AREATRIGGER_ACTION_USER_MAX    = 6
 };
 
+enum class AreaTriggerActions : uint8
+{
+    CastSpell,
+    CastSpellOnAreaTriggerCreator,
+    AreaTriggerCreatorCastSpell,
+    CancelAura,
+    SendGameEvent,
+    StartQuest, // player only
+    RunRandomActionSet,
+    Teleport,
+    Deprecated,
+    ActivateGameObject,
+    StartResting,
+    StopResting,
+    DiscoverArea,
+    DeathRegion, // player only
+    DespawnAreaTrigger,
+    AddMovementForce,
+    RemoveMovementForce,
+    AreaTriggerCreatorCancelsAuraOnTriggeringUnit,
+    RunScript,
+    CaptureFlag,
+    SetScale,
+    IncrementScale,
+    DecrementScale,
+    SeamlessWarmup,
+    SeamlessTransfer,
+    KillCredit,
+    KillCreditToPlayerOnly,
+    CancelAuraOneApplication,
+    AreaTriggerCreatorCancelsAuraOnTriggeringUnitOneApplication,
+    ApplyAuraAndKeepRetrying,
+    CreatorApplyAuraAndKeepRetrying,
+    ConversationBegin,
+    AnimationSetForSpellVisual,
+    AnimationSetForSpellVisualAllowDecay,
+    AnimationClearForSpellVisual,
+    AllowGhostInInstance,
+    DissalowGhostInInstance,
+    SendGeneralTrigger
+};
+
+struct AreaTriggerActionParam
+{
+    // CastSpell
+    // CastSpellOnAreaTriggerCreator
+    // AreaTriggerCreatorCastSpell
+    // CancelAura
+    // AreaTriggerCreatorCancelsAuraOnTriggeringUnit
+    // CancelAuraOneApplication
+    // AreaTriggerCreatorCancelsAuraOnTriggeringUnitOneApplication
+    // ApplyAuraAndKeepRetrying
+    Optional<uint32> SpellID;
+
+    // SetScale
+    // IncrementScale
+    // DecrementScale
+    Optional<float> Scale;
+
+    // ActivateGameObject
+    Optional<ObjectGuid> Guid;
+
+    // CaptureFlag
+    Optional<::TeamId> TeamId;
+};
+
 struct AreaTriggerId
 {
     uint32 Id = 0;
     bool IsServerSide = false;
+
+    friend bool operator==(AreaTriggerId const& left, AreaTriggerId const& right) = default;
 };
 
 struct AreaTriggerAction
@@ -86,45 +157,32 @@ struct AreaTriggerAction
     AreaTriggerActionUserTypes TargetType;
 };
 
-// Scale array definition
-// 0 - time offset from creation for starting of scaling
-// 1+2,3+4 are values for curve points Vector2[2]
-// 5 is packed curve information (has_no_data & 1) | ((interpolation_mode & 0x7) << 1) | ((first_point_offset & 0x7FFFFF) << 4) | ((point_count & 0x1F) << 27)
-// 6 bool is_override, only valid for AREATRIGGER_OVERRIDE_SCALE_CURVE, if true then use data from AREATRIGGER_OVERRIDE_SCALE_CURVE instead of ScaleCurveId from CreateObject
-
-struct AreaTriggerScaleInfo
+struct TC_GAME_API AreaTriggerScaleCurvePointsTemplate
 {
-    AreaTriggerScaleInfo();
+    AreaTriggerScaleCurvePointsTemplate();
 
-    union
-    {
-        struct
-        {
-            uint32 StartTimeOffset;
-            float Points[4];
-            struct
-            {
-                uint32 NoData : 1;
-                uint32 InterpolationMode : 3;
-                uint32 FirstPointOffset : 23;
-                uint32 PointCount : 5;
-            } CurveParameters;
-            uint32 OverrideActive;
-        } Structured;
+    CurveInterpolationMode Mode;
+    std::array<DBCPosition2D, 2> Points;
+};
 
-        uint32 Raw[MAX_AREATRIGGER_SCALE];
-    } Data;
+struct TC_GAME_API AreaTriggerScaleCurveTemplate
+{
+    AreaTriggerScaleCurveTemplate();
+
+    uint32 StartTimeOffset;
+    std::variant<float, AreaTriggerScaleCurvePointsTemplate> Curve;
 };
 
 struct AreaTriggerShapeInfo
 {
     AreaTriggerShapeInfo();
 
-    bool IsSphere()     const { return Type == AREATRIGGER_TYPE_SPHERE;     }
-    bool IsBox()        const { return Type == AREATRIGGER_TYPE_BOX;        }
-    bool IsPolygon()    const { return Type == AREATRIGGER_TYPE_POLYGON;    }
-    bool IsCylinder()   const { return Type == AREATRIGGER_TYPE_CYLINDER;   }
-    bool IsDisk()       const { return Type == AREATRIGGER_TYPE_DISK;   }
+    bool IsSphere()         const { return Type == AREATRIGGER_TYPE_SPHERE;         }
+    bool IsBox()            const { return Type == AREATRIGGER_TYPE_BOX;            }
+    bool IsPolygon()        const { return Type == AREATRIGGER_TYPE_POLYGON;        }
+    bool IsCylinder()       const { return Type == AREATRIGGER_TYPE_CYLINDER;       }
+    bool IsDisk()           const { return Type == AREATRIGGER_TYPE_DISK;           }
+    bool IsBoudedPlane()    const { return Type == AREATRIGGER_TYPE_BOUNDED_PLANE;  }
     float GetMaxSearchRadius() const;
 
     AreaTriggerTypes Type;
@@ -180,6 +238,13 @@ struct AreaTriggerShapeInfo
             float LocationZOffset;
             float LocationZOffsetTarget;
         } DiskDatas;
+
+        // AREATRIGGER_TYPE_BOUNDED_PLANE
+        struct
+        {
+            float Extents[2];
+            float ExtentsTarget[2];
+        } BoundedPlaneDatas;
     };
 };
 
@@ -204,7 +269,7 @@ public:
     AreaTriggerTemplate();
     ~AreaTriggerTemplate();
 
-    bool HasFlag(uint32 flag) const { return (Flags & flag) != 0; }
+    bool HasFlag(AreaTriggerFlags flag) const { return (Flags & flag) != 0; }
 
     AreaTriggerId Id;
     uint32 Flags;
@@ -236,8 +301,8 @@ public:
     uint32 TimeToTarget;
     uint32 TimeToTargetScale;
 
-    AreaTriggerScaleInfo OverrideScale;
-    AreaTriggerScaleInfo ExtraScale;
+    Optional<AreaTriggerScaleCurveTemplate> OverrideScale;
+    Optional<AreaTriggerScaleCurveTemplate> ExtraScale;
 
     AreaTriggerShapeInfo Shape;
     std::vector<TaggedPosition<Position::XY>> PolygonVertices;
@@ -256,6 +321,7 @@ struct AreaTriggerSpawn : SpawnData
     AreaTriggerId Id;
 
     AreaTriggerShapeInfo Shape;
+    Optional<int32> SpellForVisuals;
 };
 
 #endif

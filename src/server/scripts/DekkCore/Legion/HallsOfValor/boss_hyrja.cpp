@@ -391,8 +391,6 @@ public:
 
     class spell_hyrja_empowerment_tracker_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_hyrja_empowerment_tracker_AuraScript);
-
             uint8 stack = 0;
 
         void OnPereodic(AuraEffect const* aurEff)
@@ -457,8 +455,6 @@ public:
 
     class spell_hyrja_expel_light_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_hyrja_expel_light_AuraScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (!GetTarget())
@@ -536,8 +532,6 @@ public:
 
     class spell_hyrja_sanctify_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_hyrja_sanctify_AuraScript);
-
             void OnPereodic(AuraEffect const* aurEff)
         {
             Unit* caster = GetCaster();
@@ -568,8 +562,6 @@ public:
 
     class spell_hyrja_eye_storm_absorb_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_hyrja_eye_storm_absorb_AuraScript);
-
         uint32 absorbSave;
 
         bool Load() override

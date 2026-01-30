@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 DekkCore
+ * Copyright (C) 2023 DekkCore
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,11 +17,15 @@
 
 #include "LFGListMgr.h"
 #include "Containers.h"
-#include "Group.h"
+#include "DB2Structure.h"
 #include "GroupMgr.h"
+#include "Group.h"
+#include "Player.h"
 #include "ObjectMgr.h"
 #include "LFGPackets.h"
+#include "LFGListPackets.h"
 #include "LFGList.h"
+
 
 LFGListEntry::LFGListApplicationEntry::LFGListApplicationEntry(ObjectGuid::LowType playerGuid, LFGListEntry* owner)
 {
@@ -135,7 +139,7 @@ bool LFGListEntry::LFGListApplicationEntry::Update(uint32 const /*diff*/)
     return Timeout > time(nullptr); ///< Bye bye
 }
 
-LFGListEntry::LFGListEntry() : GroupFinderActivityData(nullptr), ApplicationGroup(nullptr), HonorLevel(0), QuestID(0), ItemLevel(0), AutoAccept(false)
+LFGListEntry::LFGListEntry() : GroupFinderActivityData(nullptr), ApplicationGroup(nullptr), ActivityID(0), HonorLevel(0), QuestID(0), ItemLevel(0), MinMyticPlusRating(0), TypeActivity(0), AutoAccept(false), PrivateGroup(false), HasQuest(false), minChallege(false), GroupName(""), Comment(""), VoiceChat("")
 {
     CreationTime = uint32(time(nullptr));
     Timeout = CreationTime + LFG_LIST_GROUP_TIMEOUT;

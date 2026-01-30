@@ -1638,8 +1638,6 @@ public:
     class spell_summon_assistants_SpellScript : public SpellScript
     {
     public:
-        PrepareSpellScript(spell_summon_assistants_SpellScript);
-
         void HandleOnCast()
         {
             if (!GetCaster())

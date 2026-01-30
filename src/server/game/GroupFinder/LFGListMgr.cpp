@@ -18,14 +18,14 @@
 #include "Containers.h"
 #include "Object.h"
 #include "LFGListMgr.h"
-#include "Group.h"
 #include "GroupMgr.h"
 #include "LFGPackets.h"
+#include "Group.h"
 #include "ObjectMgr.h"
 #include "LFGPackets.h"
-#include "LFGListPackets.h"
 #include "SocialMgr.h"
 #include "SocialPackets.h"
+#include "LFGListPackets.h"
 
 LFGListMgr* LFGListMgr::instance()
 {
@@ -64,7 +64,7 @@ bool LFGListMgr::CanInsert(LFGListEntry const* lfgEntry, Player* requester, bool
         return false;
     }
 
-    if (Group* group = requester->GetGroup())
+    if (Group const* group = requester->GetGroup())
     {
         if ((!group->isRaidGroup() || !group->IsAssistant(requester->GetGUID())) && !group->IsLeader(requester->GetGUID()))
         {
@@ -81,11 +81,6 @@ bool LFGListMgr::CanInsert(LFGListEntry const* lfgEntry, Player* requester, bool
 bool LFGListMgr::Insert(LFGListEntry* lfgEntry, Player* requester)
 {
     if (!CanInsert(lfgEntry, requester, true)) {
-        return false;
-    }
-    if (!IsEligibleForQueue(requester))
-    {
-        SendLfgListJoinResult(lfgEntry, LFGListStatus::LFG_LIST_STATUS_ERR_ALREADY_USING_LFG_LIST_LIST, requester);
         return false;
     }
 
@@ -145,18 +140,27 @@ void LFGListMgr::SendLFGListStatusUpdate(LFGListEntry* lfgEntry, WorldSession* w
         status.ApplicationTicket.Time = lfgEntry->CreationTime;
     }
 
-    status.Status = AsUnderlyingType(debugStatus != LFGListStatus::None ? debugStatus : LFGListStatus::Joined);
+
+    status.RemainingTime = lfgEntry->Timeout;
+    status.ResultId = AsUnderlyingType(debugStatus != LFGListStatus::None ? debugStatus : LFGListStatus::Joined);
     status.Listed = listed;
 
     status.Request.ActivityID = lfgEntry->GroupFinderActivityData->ID;
     status.Request.ItemLevel = lfgEntry->ItemLevel;
+    status.Request.HonorLevel = lfgEntry->HonorLevel;
+    status.Request.minChallege = lfgEntry->minChallege;
+    status.Request.AutoAccept = lfgEntry->AutoAccept;
+    status.Request.TypeActivity = lfgEntry->TypeActivity;
+    status.Request.PrivateGroup = lfgEntry->PrivateGroup;
+    status.Request.HasQuest = lfgEntry->HasQuest;
     status.Request.GroupName = lfgEntry->GroupName;
     status.Request.Comment = lfgEntry->Comment;
     status.Request.VoiceChat = lfgEntry->VoiceChat;
-    status.Request.AutoAccept = lfgEntry->AutoAccept;
-    status.Request.QuestID = lfgEntry->QuestID;
-    status.Request.CrossFaction = lfgEntry->CrossFaction;
-    status.Request.MinMyticPlusRating = lfgEntry->MinMyticPlusRating;
+    if (status.Request.HasQuest)
+        status.Request.QuestID = lfgEntry->QuestID;
+
+    if (status.Request.minChallege)
+        status.Request.MinMyticPlusRating = lfgEntry->MinMyticPlusRating;
 
     if (worldSession)
     {
@@ -198,12 +202,12 @@ bool LFGListMgr::Remove(ObjectGuid::LowType Guid, Player* requester /* = nullptr
     return true;
 }
 
-void LFGListMgr::PlayerAddedToGroup(Player* player, Group* group)
+void LFGListMgr::PlayerAddedToGroup(Player* /*player*/, Group* group)
 {
     SendLFGListStatusUpdate(GetEntrybyGuid(group->GetGUID().GetCounter()), nullptr, true);
 }
 
-void LFGListMgr::PlayerRemoveFromGroup(Player* player, Group* group)
+void LFGListMgr::PlayerRemoveFromGroup(Player* /*player*/, Group* group)
 {
     SendLFGListStatusUpdate(GetEntrybyGuid(group->GetGUID().GetCounter()), nullptr, false);
 }
@@ -220,7 +224,7 @@ std::list<LFGListEntry const*> LFGListMgr::GetFilteredList(uint32 activityCatego
 
         if (filterString.length() && listEntry->GroupName.length())
         {
-            auto upperName = listEntry->GroupName;
+            auto& upperName = listEntry->GroupName;
             std::transform(upperName.begin(), upperName.end(), upperName.begin(), toupper);
             std::transform(filterString.begin(), filterString.end(), filterString.begin(), toupper);
 
@@ -253,8 +257,6 @@ LFGListEntry* LFGListMgr::GetEntryByApplicant(WorldPackets::LFG::RideTicket appl
 
 void LFGListMgr::OnPlayerApplyForGroup(Player* player, WorldPackets::LFG::RideTicket const* applicationTicket, uint32 activityID, std::string comment, uint8 role)
 {
-    //if (!sGroupFinderActivityStore[activityID])
-      //  return;
 
     auto entry = GetEntrybyGuid(applicationTicket->Id);
     if (!entry)
@@ -437,23 +439,41 @@ bool LFGListMgr::IsActivityPvP(GroupFinderActivityEntry const* activity) const
 
     switch (activity->GroupFinderCategoryID)
     {
-    case LFG_LIST_ACTIVITY_CATEGORY_ARENA:
-    case LFG_LIST_ACTIVITY_CATEGORY_ARENA_SKIRMISH:
+    case LFG_LIST_ACTIVITY_CATEGORY_ARENAS:
+    case LFG_LIST_ACTIVITY_CATEGORY_ARENA_SKIRMISHES:
     case LFG_LIST_ACTIVITY_CATEGORY_BATTLEGROUNDS:
     case LFG_LIST_ACTIVITY_CATEGORY_RATED_BATTLEGROUNDS:
-    case LFG_LIST_ACTIVITY_CATEGORY_OUTDOOR_PVP:
+    case LFG_LIST_ACTIVITY_CATEGORY_ISLAND_EXPEDITIONS:
         return true;
     default:
-        return activity->ID == 17;    ///< Custom PvP
+        return activity->ID == LFG_LIST_ACTIVITY_CATEGORY_CUSTOM;    ///< Custom PvP
     }
 }
 
-float LFGListMgr::GetPlayerItemLevelForActivity(GroupFinderActivityEntry const* activity, Player* player) const
+bool LFGListMgr::IsActivityDungeon(GroupFinderActivityEntry const* activity) const
+{
+    if (!activity)
+        return false;
+
+    switch (activity->GroupFinderCategoryID)
+    {
+    case LFG_LIST_ACTIVITY_CATEGORY_DUNGEON:
+    case LFG_LIST_ACTIVITY_CATEGORY_QUESTING:
+    case LFG_LIST_ACTIVITY_CATEGORY_RAIDS:
+    case LFG_LIST_ACTIVITY_CATEGORY_SCENARIOS:
+    case LFG_LIST_ACTIVITY_CATEGORY_THORGAST:
+        return true;
+    default:
+        return activity->ID == LFG_LIST_ACTIVITY_CATEGORY_DUNGEON;
+    }
+}
+
+float LFGListMgr::GetPlayerItemLevelForActivity(GroupFinderActivityEntry const* activiti, Player* player) const
 {
     if (player == nullptr)
         return 0.0f;
 
-   // return player->GetAverageItemLevelEquipped() + (IsActivityPvP(activity) ? PlayerAvgItemLevelOffsets::PLAYER_AVG_ITEM_LEVEL_PVP : PlayerAvgItemLevelOffsets::PLAYER_AVG_ITEM_LEVEL_NON_PVP);
+    return player->GetAverageItemLevelEquipped() + (IsActivityPvP(activiti) ? PlayerAvgItemLevelOffsets::PLAYER_AVG_ITEM_LEVEL_PVP : PlayerAvgItemLevelOffsets::PLAYER_AVG_ITEM_LEVEL_NON_PVP);
 }
 
 float LFGListMgr::GetLowestItemLevelInGroup(LFGListEntry* entry) const
@@ -475,9 +495,9 @@ uint8 LFGListMgr::GetMemeberCountInGroupIncludingInvite(LFGListEntry* entry)
 uint8 LFGListMgr::CountEntryApplicationsWithStatus(LFGListEntry* entry, LFGListApplicationStatus status)
 {
     return static_cast<uint8>(std::count_if(entry->ApplicationsContainer.begin(), entry->ApplicationsContainer.end(), [&](std::pair<uint32, LFGListEntry::LFGListApplicationEntry> const& itr)
-    {
-        return itr.second.ApplicationStatus == status;
-    }));
+        {
+            return itr.second.ApplicationStatus == status;
+        }));
 }
 
 void LFGListMgr::AutoInviteApplicantsIfPossible(LFGListEntry* entry)
@@ -542,10 +562,10 @@ void LFGListMgr::SendLfgListApplyForGroupResult(LFGListEntry const* lfgEntry, LF
     responce.SearchResult.ApplicationTicket.Id = group->GetGUID().GetCounter();
     responce.SearchResult.ApplicationTicket.Type = WorldPackets::LFG::RideType::LfgListApplication;
     responce.SearchResult.ApplicationTicket.Time = lfgEntry->CreationTime;
-    responce.SearchResult.UnkGuid1 = group->GetLeaderGUID();
-    responce.SearchResult.UnkGuid2 = group->GetLeaderGUID();
-    responce.SearchResult.UnkGuid3 = group->GetLeaderGUID();
-    responce.SearchResult.UnkGuid4 = group->GetLeaderGUID();
+    responce.SearchResult.LastTouchedVoiceChat = group->GetLeaderGUID();
+    responce.SearchResult.PartyGUID = group->GetLeaderGUID();
+    responce.SearchResult.BNetFriends = group->GetLeaderGUID();
+    responce.SearchResult.GuildMates = group->GetLeaderGUID();
     responce.SearchResult.VirtualRealmAddress = GetVirtualRealmAddress();
     responce.SearchResult.CompletedEncounters = 0;
     responce.SearchResult.ResultID = 3;
@@ -553,13 +573,12 @@ void LFGListMgr::SendLfgListApplyForGroupResult(LFGListEntry const* lfgEntry, LF
     responce.SearchResult.ApplicationStatus = AsUnderlyingType(LFGListApplicationStatus::None);
     responce.SearchResult.JoinRequest.ActivityID = activityID;
     responce.SearchResult.JoinRequest.ItemLevel = lfgEntry->ItemLevel;
+    responce.SearchResult.JoinRequest.HonorLevel = lfgEntry->HonorLevel;
     responce.SearchResult.JoinRequest.GroupName = lfgEntry->GroupName;
     responce.SearchResult.JoinRequest.Comment = lfgEntry->Comment;
     responce.SearchResult.JoinRequest.VoiceChat = lfgEntry->VoiceChat;
     responce.SearchResult.JoinRequest.AutoAccept = lfgEntry->AutoAccept;
     responce.SearchResult.JoinRequest.QuestID = lfgEntry->QuestID;
-    responce.SearchResult.JoinRequest.CrossFaction = lfgEntry->CrossFaction;
-    responce.SearchResult.JoinRequest.MinMyticPlusRating = lfgEntry->MinMyticPlusRating;
 
     for (auto const& member : group->GetMemberSlots())
     {

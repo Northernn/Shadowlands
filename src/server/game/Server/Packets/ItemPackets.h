@@ -19,6 +19,7 @@
 #define ItemPackets_h__
 
 #include "Packet.h"
+#include "CraftingPacketsCommon.h"
 #include "DBCEnums.h"
 #include "ItemDefines.h"
 #include "ItemPacketsCommon.h"
@@ -211,7 +212,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            int8 BagResult = EQUIP_ERR_OK; /// @see enum InventoryResult
+            int32 BagResult = EQUIP_ERR_OK; /// @see enum InventoryResult
             uint8 ContainerBSlot = 0;
             ObjectGuid SrcContainer;
             ObjectGuid DstContainer;
@@ -319,7 +320,7 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             ObjectGuid VendorGUID;
-            ObjectGuid ItemGUID;
+            std::vector<ObjectGuid> ItemGUIDs;
             SellResult Reason = SELL_ERR_UNK;
         };
 
@@ -346,15 +347,19 @@ namespace WorldPackets
                                                  // only set if different than real ID (similar to CreatureTemplate.KillCredit)
             int32 Quantity                  = 0;
             int32 QuantityInInventory       = 0;
-            int32 DungeonEncounterID       = 0;
+            int32 DungeonEncounterID        = 0;
             int32 BattlePetSpeciesID        = 0;
             int32 BattlePetBreedID          = 0;
             uint32 BattlePetBreedQuality    = 0;
             int32 BattlePetLevel            = 0;
             ObjectGuid ItemGUID;
+            std::vector<UiEventToast> Toasts;
+            Optional<Crafting::CraftingData> CraftingData;
+            Optional<uint32> FirstCraftOperationID;
             bool Pushed                     = false;
             DisplayType DisplayText         = DISPLAY_TYPE_ENCOUNTER_LOOT;
             bool Created                    = false;
+            bool Unused_1017                = false;
             bool IsBonusRoll                = false;
             bool IsEncounterLoot            = true;
         };
@@ -533,30 +538,6 @@ namespace WorldPackets
             WorldPacket const* Write() override { return &_worldPacket; }
         };
 
-        class OpenItemForge  final : public ServerPacket
-        {
-        public:
-            OpenItemForge() : ServerPacket(SMSG_OPEN_ITEM_FORGE) { }
-
-            WorldPacket const* Write() override;
-
-            uint32 UNK2;
-            bool UNK5 = false;
-            int32 Flags;
-            uint32 Status;
-            bool UNK = true;
-            bool Created = true;
-            uint32 UNK1;
-            uint32 VariableID;
-            bool UNK3 = false;
-            bool UNK4 = false;
-            bool UNK6 = true;
-            bool UNK7 = true;
-            bool UNK8 = true;
-            uint8 UNK9;
-            uint8 UNK10;
-        };
-
         class SocketGemsFailure final : public ServerPacket
         {
         public:
@@ -589,6 +570,29 @@ namespace WorldPackets
             WorldPacket const* Write();
 
             bool Complete = false;
+        };
+
+        class RecraftItemResul final : public ServerPacket
+        {
+        public:
+            RecraftItemResul() : ServerPacket(SMSG_RECRAFT_ITEM_RESULT) { }
+
+            WorldPacket const* Write();
+
+            uint32 itemID; // ID of the item being recrafted
+            uint32 result; // Result of the recrafting attempt (e.g., success, failure, etc.)
+            uint32 newItemID; // ID of the new item created by the recrafting process (if successful)
+            uint32 cost; // Cost of the recrafting process (in gold or other currency)
+        };
+
+        class AddItemPassive final : public ServerPacket
+        {
+        public:
+            AddItemPassive() : ServerPacket(SMSG_ADD_ITEM_PASSIVE, 1) { }
+
+            WorldPacket const* Write();
+
+            uint32 itemID;
         };
     }
 }

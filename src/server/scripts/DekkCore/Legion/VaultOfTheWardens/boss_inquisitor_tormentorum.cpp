@@ -228,8 +228,6 @@ public:
 
     class spell_tormentorum_sap_soul_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_tormentorum_sap_soul_AuraScript);
-
         void OnProc(AuraEffect * aurEff, ProcEventInfo& eventInfo)
         {
             PreventDefaultAction();
@@ -266,8 +264,6 @@ public:
 
     class spell_tormentorum_open_prisons_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_tormentorum_open_prisons_SpellScript);
-
         void HandleDummy(SpellEffIndex effIndex)
         {
             if (!GetCaster() || !GetHitGObj())
@@ -316,8 +312,6 @@ public:
 
     class spell_tormentorum_corrupted_touch_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_tormentorum_corrupted_touch_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (GetTarget())

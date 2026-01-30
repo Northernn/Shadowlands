@@ -38,9 +38,12 @@
 #include "SpellAuraEffects.h"
 #include "SpellMgr.h"
 #include "SpellPackets.h"
-#include "Totem.h"
+#include "TemporarySummon.h"
 #include "TotemPackets.h"
 #include "World.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 void WorldSession::HandleUseItemOpcode(WorldPackets::Spells::UseItem& packet)
 {
@@ -143,7 +146,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet)
     // ignore for remote control state
     if (player->GetUnitBeingMoved() != player)
         return;
-    TC_LOG_INFO("network", "bagIndex: %u, slot: %u", packet.Slot, packet.PackSlot);
+    TC_LOG_INFO("network", "bagIndex: {}, slot: {}", packet.Slot, packet.PackSlot);
 
     // additional check, client outputs message on its own
     if (!player->IsAlive())
@@ -170,8 +173,8 @@ void WorldSession::HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet)
     if (!proto->HasFlag(ITEM_FLAG_HAS_LOOT) && !item->IsWrapped())
     {
         player->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT, item, nullptr);
-        TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player %s %s tried to open item [%s, entry: %u] which is not openable!",
-            player->GetName().c_str(), player->GetGUID().ToString().c_str(), item->GetGUID().ToString().c_str(), proto->GetId());
+        TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player {} {} tried to open item [{}, entry: {}] which is not openable!",
+            player->GetName(), player->GetGUID().ToString(), item->GetGUID().ToString(), proto->GetId());
         return;
     }
 
@@ -184,7 +187,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet)
         if (!lockInfo)
         {
             player->SendEquipError(EQUIP_ERR_ITEM_LOCKED, item, nullptr);
-            TC_LOG_ERROR("network", "WORLD::OpenItem: item %s has an unknown lockId: %u!", item->GetGUID().ToString().c_str(), lockId);
+            TC_LOG_ERROR("network", "WORLD::OpenItem: item {} has an unknown lockId: {}!", item->GetGUID().ToString(), lockId);
             return;
         }
 
@@ -202,9 +205,9 @@ void WorldSession::HandleOpenItemOpcode(WorldPackets::Spells::OpenItem& packet)
         stmt->setUInt64(0, item->GetGUID().GetCounter());
         _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt)
             .WithPreparedCallback([this, pos = item->GetPos(), itemGuid = item->GetGUID()](PreparedQueryResult result)
-        {
-            HandleOpenWrappedItemCallback(pos, itemGuid, std::move(result));
-        }));
+                {
+                    HandleOpenWrappedItemCallback(pos, itemGuid, std::move(result));
+                }));
     }
     else
     {
@@ -243,7 +246,7 @@ void WorldSession::HandleOpenWrappedItemCallback(uint16 pos, ObjectGuid itemGuid
 
     if (!result)
     {
-        TC_LOG_ERROR("network", "Wrapped item %s does't have record in character_gifts table and will deleted", item->GetGUID().ToString().c_str());
+        TC_LOG_ERROR("network", "Wrapped item {} does't have record in character_gifts table and will deleted", item->GetGUID().ToString());
         GetPlayer()->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
         return;
     }
@@ -290,42 +293,16 @@ void WorldSession::HandleGameobjectReportUse(WorldPackets::GameObject::GameObjRe
 
     if (GameObject* go = GetPlayer()->GetGameObjectIfCanInteractWith(packet.Guid))
     {
+#ifdef ELUNA
+        if (sEluna->OnGameObjectUse(_player, go))
+            return;
+#endif
+
         if (go->AI()->OnReportUse(_player))
             return;
 
         _player->UpdateCriteria(CriteriaType::UseGameobject, go->GetEntry());
-
-        switch (go->GetEntry())
-        {
-        case 193905: //Chest Alexstrasza's Gift | Chest Heart of Magic
-        case 193967:
-        case 194158:
-        case 194159:
-            _player->CastSpell(go, 6247, true);
-            break;
-        case 233382:
-            go->Use(_player);
-            break;
-        default:
-            go->AI()->OnGossipHello(_player);
-            break;
-        }
-
-        switch (go->GetGOInfo()->type)
-        {
-        case GAMEOBJECT_TYPE_GARRISON_SHIPMENT:
-           // if (auto garrison = _player->GetGarrison(GARRISON_TYPE_GARRISON))
-              //  garrison->CompleteShipments(go);
-            break;
-        case GAMEOBJECT_TYPE_CHEST: //3
-            _player->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-            _player->RemoveAurasByType(SPELL_AURA_MOD_INVISIBILITY);
-            break;
-        default:
-            break;
-        }
     }
-
 }
 
 void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& cast)
@@ -338,12 +315,9 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& cast)
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(cast.Cast.SpellID, mover->GetMap()->GetDifficultyID());
     if (!spellInfo)
     {
-        TC_LOG_ERROR("network", "WORLD: unknown spell id %u", cast.Cast.SpellID);
+        TC_LOG_ERROR("network", "WORLD: unknown spell id {}", cast.Cast.SpellID);
         return;
     }
-
-    if (spellInfo->IsPassive())
-        return;
 
     Unit* caster = mover;
     if (caster->GetTypeId() == TYPEID_UNIT && !caster->ToCreature()->HasSpell(spellInfo->Id))
@@ -362,7 +336,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& cast)
     SpellCastTargets targets(caster, cast.Cast);
 
     // check known spell or raid marker spell (which not requires player to know it)
-    if (caster->GetTypeId() == TYPEID_PLAYER && !caster->ToPlayer()->HasActiveSpell(spellInfo->Id) && !spellInfo->HasEffect(SPELL_EFFECT_CHANGE_RAID_MARKER) && !spellInfo->HasAttribute(SPELL_ATTR8_RAID_MARKER))
+    if (caster->GetTypeId() == TYPEID_PLAYER && !caster->ToPlayer()->HasActiveSpell(spellInfo->Id) && !spellInfo->HasAttribute(SPELL_ATTR8_SKIP_IS_KNOWN_CHECK))
     {
         bool allow = false;
 
@@ -383,7 +357,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& cast)
     }
 
     // Check possible spell cast overrides
-    spellInfo = caster->GetCastSpellInfo(spellInfo);
+    spellInfo = caster->GetCastSpellInfo(spellInfo, triggerFlag);
+
+    if (spellInfo->IsPassive())
+        return;
 
     // can't use our own spells when we're in possession of another unit,
     if (_player->isPossessing())
@@ -459,9 +436,9 @@ void WorldSession::HandleCancelAuraOpcode(WorldPackets::Spells::CancelAura& canc
 
 void WorldSession::HandlePetCancelAuraOpcode(WorldPackets::Spells::PetCancelAura& packet)
 {
-    if (sSpellMgr->GetSpellInfo(packet.SpellID, DIFFICULTY_NONE))
+    if (!sSpellMgr->GetSpellInfo(packet.SpellID, DIFFICULTY_NONE))
     {
-        TC_LOG_ERROR("network", "WORLD: unknown PET spell id %u", packet.SpellID);
+        TC_LOG_ERROR("network", "WORLD: unknown PET spell id {}", packet.SpellID);
         return;
     }
 
@@ -469,13 +446,13 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPackets::Spells::PetCancelAura
 
     if (!pet)
     {
-        TC_LOG_ERROR("network", "HandlePetCancelAura: Attempt to cancel an aura for non-existant %s by player '%s'", packet.PetGUID.ToString().c_str(), GetPlayer()->GetName().c_str());
+        TC_LOG_ERROR("network", "HandlePetCancelAura: Attempt to cancel an aura for non-existant {} by player '{}'", packet.PetGUID.ToString(), GetPlayer()->GetName());
         return;
     }
 
     if (pet != GetPlayer()->GetGuardianPet() && pet != GetPlayer()->GetCharmed())
     {
-        TC_LOG_ERROR("network", "HandlePetCancelAura: %s is not a pet of player '%s'", packet.PetGUID.ToString().c_str(), GetPlayer()->GetName().c_str());
+        TC_LOG_ERROR("network", "HandlePetCancelAura: {} is not a pet of player '{}'", packet.PetGUID.ToString(), GetPlayer()->GetName());
         return;
     }
 
@@ -493,7 +470,7 @@ void WorldSession::HandleCancelGrowthAuraOpcode(WorldPackets::Spells::CancelGrow
     _player->RemoveAurasByType(SPELL_AURA_MOD_SCALE, [](AuraApplication const* aurApp)
         {
             SpellInfo const* spellInfo = aurApp->GetBase()->GetSpellInfo();
-            return !spellInfo->HasAttribute(SPELL_ATTR0_NO_AURA_CANCEL) && spellInfo->IsPositive() && !spellInfo->IsPassive();
+    return !spellInfo->HasAttribute(SPELL_ATTR0_NO_AURA_CANCEL) && spellInfo->IsPositive() && !spellInfo->IsPassive();
         });
 }
 
@@ -502,7 +479,20 @@ void WorldSession::HandleCancelMountAuraOpcode(WorldPackets::Spells::CancelMount
     _player->RemoveAurasByType(SPELL_AURA_MOUNTED, [](AuraApplication const* aurApp)
         {
             SpellInfo const* spellInfo = aurApp->GetBase()->GetSpellInfo();
-            return !spellInfo->HasAttribute(SPELL_ATTR0_NO_AURA_CANCEL) && spellInfo->IsPositive() && !spellInfo->IsPassive();
+    return !spellInfo->HasAttribute(SPELL_ATTR0_NO_AURA_CANCEL) && spellInfo->IsPositive() && !spellInfo->IsPassive();
+        });
+}
+
+void WorldSession::HandleCancelModSpeedNoControlAuras(WorldPackets::Spells::CancelModSpeedNoControlAuras& cancelModSpeedNoControlAuras)
+{
+    Unit* mover = _player->GetUnitBeingMoved();
+    if (!mover || mover->GetGUID() != cancelModSpeedNoControlAuras.TargetGUID)
+        return;
+
+    _player->RemoveAurasByType(SPELL_AURA_MOD_SPEED_NO_CONTROL, [](AuraApplication const* aurApp)
+        {
+            SpellInfo const* spellInfo = aurApp->GetBase()->GetSpellInfo();
+    return !spellInfo->HasAttribute(SPELL_ATTR0_NO_AURA_CANCEL) && spellInfo->IsPositive() && !spellInfo->IsPassive();
         });
 }
 
@@ -551,8 +541,8 @@ void WorldSession::HandleTotemDestroyed(WorldPackets::Totem::TotemDestroyed& tot
         return;
 
     Creature* totem = ObjectAccessor::GetCreature(*_player, _player->m_SummonSlot[slotId]);
-    if (totem && totem->IsTotem() && totem->GetGUID() == totemDestroyed.TotemGUID)
-        totem->ToTotem()->UnSummon();
+    if (totem && totem->IsTotem() && (totemDestroyed.TotemGUID.IsEmpty() || totem->GetGUID() == totemDestroyed.TotemGUID))
+        totem->DespawnOrUnsummon();
 }
 
 void WorldSession::HandleSelfResOpcode(WorldPackets::Spells::SelfRes& selfRes)
@@ -697,6 +687,20 @@ void WorldSession::HandleUpdateMissileTrajectory(WorldPackets::Spells::UpdateMis
         HandleMovementOpcode(CMSG_MOVE_STOP, *packet.Status);
 }
 
+void WorldSession::HandleKeyboundOverride(WorldPackets::Spells::KeyboundOverride& keyboundOverride)
+{
+    Player* player = GetPlayer();
+    if (!player->HasAuraTypeWithMiscvalue(SPELL_AURA_KEYBOUND_OVERRIDE, keyboundOverride.OverrideID))
+        return;
+
+    SpellKeyboundOverrideEntry const* spellKeyboundOverride = sSpellKeyboundOverrideStore.LookupEntry(keyboundOverride.OverrideID);
+    if (!spellKeyboundOverride)
+        return;
+
+    player->CastSpell(player, spellKeyboundOverride->Data);
+}
+
+//DekkCore
 void WorldSession::HandleCancelQueuedSpell(WorldPackets::Spells::CancelQueuedSpell& packet)
 {
     Unit* mover = _player->m_unitMovedByMe;
@@ -706,20 +710,32 @@ void WorldSession::HandleCancelQueuedSpell(WorldPackets::Spells::CancelQueuedSpe
     mover->CancelPendingCastRequest();
 }
 
-void WorldSession::HandleCancelModSpeedNoControlAuras(WorldPackets::Spells::CancelModSpeedNoControlAuras& packet)
+void WorldSession::HandleUpdateSpellVisualOpcode(WorldPackets::Spells::UpdateSpellVisual& packet)
 {
-    Unit* mover = _player->GetUnitBeingMoved();
-    if (!mover || mover->GetGUID() != packet.TargetGUID)
-        return;
-
-    _player->RemoveAurasByType(SPELL_AURA_MOD_SPEED_NO_CONTROL, [](AuraApplication const* aurApp)
-        {
-            SpellInfo const* spellInfo = aurApp->GetBase()->GetSpellInfo();
-            return !spellInfo->HasAttribute(SPELL_ATTR0_NO_AURA_CANCEL) && spellInfo->IsPositive() && !spellInfo->IsPassive();
-        });
+    if (Aura* aura = GetPlayer()->GetAura(packet.SpellID))
+    {
+        aura->SetSpellXSpellVisualId(packet.SpellXSpellVisualId);
+        aura->SetNeedClientUpdateForTargets();
+    }
 }
 
-void WorldSession::HandleRequestCategoryCooldowns(WorldPackets::Spells::RequestCategoryCooldowns& /*requestCategoryCooldowns*/)
+void WorldSession::HandleSpellEmpowerRelease(WorldPackets::Spells::SpellEmpowerRelease& packet)
 {
-    _player->SendSpellCategoryCooldowns();
+    if (auto spell = _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        spell->m_spellEmpowerReleased = true;
+}
+
+void WorldSession::HandleSpellEmpowerRestart(WorldPackets::Spells::SpellEmpowerRestart& packet)
+{
+    Player* player = GetPlayer();
+
+    player->CastStop(packet.SpellId);
+    player->CastSpell(player, packet.SpellId);
+}
+
+void WorldSession::HandleSpellEmpowerMinHoldPct(WorldPackets::Spells::SpellEmpowerMinHold& packet)
+{
+    Player* player = GetPlayer();
+
+    player->EmpoweredSpellMinHoldPct = packet.holdPct;
 }

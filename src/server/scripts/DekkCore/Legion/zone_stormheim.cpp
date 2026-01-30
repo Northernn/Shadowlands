@@ -99,8 +99,6 @@ public:
 
     class spell_pump_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_pump_SpellScript);
-
         void HandleEnergize(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
@@ -159,8 +157,6 @@ public:
 
     class spell_transponder_pack_180645_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_transponder_pack_180645_AuraScript);
-
         void OnPeriodic(AuraEffect const* aurEff)
         {
             if (Unit* caster = GetCaster())
@@ -962,8 +958,6 @@ struct npc_runestone_93343 : public ScriptedAI
 //191993/returning-spirit
 class spell_returning_spirit_quest_39791 : public SpellScript
 {
-    PrepareSpellScript(spell_returning_spirit_quest_39791);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())

@@ -431,8 +431,6 @@ public:
 
     class spell_naltira_tangled_web_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_naltira_tangled_web_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             if (!GetCaster())
@@ -480,8 +478,6 @@ public:
 
     class spell_naltira_tangled_web_check_dist_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_naltira_tangled_web_check_dist_SpellScript);
-
         void HandleOnHit()
         {
             if (!GetCaster() || !GetHitUnit())

@@ -172,8 +172,8 @@ public:
 
         void Reset() override
         {
-          //  me->GetMap()->SetWorldState(WORLDSTATE_PERFECT_POUR, 1);
-        //   me->GetMap()->SetWorldState(WORLDSTATE_PARTY_OF_SIX, 1); // controlled by spells
+            me->GetMap()->SetWorldStateValue(WORLDSTATE_PERFECT_POUR, 1, false);
+            me->GetMap()->SetWorldStateValue(WORLDSTATE_PARTY_OF_SIX, 1, false); // controlled by spells
             me->SetWalk(false);
         }
 
@@ -277,8 +277,8 @@ public:
                 if (Creature* SkirmisherStalker = GetClosestCreatureWithEntry(me, NPC_VILETONGUE_STALKER, 35.0f, true))
                     SkirmisherStalker->AI()->DoAction(ACTION_VILETONGUE_AT_GROUND);
 
-             //   if (Creature* raiderStalker = ObjectAccessor::GetCreature(*me, SelectAnyStalkerGUID(NPC_VILETONGUE_VEHICLE)))
-                  //  raiderStalker->AI()->DoAction(ACTION_VILETONGUE_AT_HILL);
+                if (Creature* raiderStalker = ObjectAccessor::GetCreature(*me, SelectAnyStalkerGUID(NPC_VILETONGUE_VEHICLE)))
+                    raiderStalker->AI()->DoAction(ACTION_VILETONGUE_AT_HILL);
 
                 Talk(TALK_SAUROKS_AT_HIGH_CLIFF);
                 nonCombatEvents.ScheduleEvent(EVENT_ESCORT, 5s);
@@ -289,7 +289,7 @@ public:
                 if (Creature* SkirmisherStalker = GetClosestCreatureWithEntry(me, NPC_VILETONGUE_STALKER, 35.0f, true))
                     SkirmisherStalker->AI()->DoAction(ACTION_VILETONGUE_AT_GROUND);
 
-                me->SetFacingTo(abs(me->GetOrientation() + M_PI / 2));
+                me->SetFacingTo(std::abs(me->GetOrientation() + M_PI / 2));
                 nonCombatEvents.ScheduleEvent(EVENT_ESCORT, 5s);
                 break;
             case 15:
@@ -327,7 +327,7 @@ public:
             }
         }
 
-        void EnterEvadeMode(EvadeReason why) override
+        void EnterEvadeMode(EvadeReason /*why*/) override
         {
             ScriptedAI::EnterEvadeMode();
         }
@@ -356,8 +356,8 @@ public:
                         Talk(TALK_LIGHTNING_STRIKE);
                     }
 
-                   // if (Creature* selectedRod = ObjectAccessor::GetCreature(*me, SelectAnyStalkerGUID(NPC_LIGHTNING_ROD)))
-                    //    selectedRod->CastSpell(selectedRod, SPELL_LIGHTNING_CHANNEL, false);
+                    if (Creature* selectedRod = ObjectAccessor::GetCreature(*me, SelectAnyStalkerGUID(NPC_LIGHTNING_ROD)))
+                        selectedRod->CastSpell(selectedRod, SPELL_LIGHTNING_CHANNEL, false);
 
                     nonCombatEvents.ScheduleEvent(EVENT_LIGHTNING_ROD, 14s);
                     break;
@@ -371,8 +371,8 @@ public:
                     if (Creature* SkirmisherStalker = GetClosestCreatureWithEntry(me, NPC_VILETONGUE_STALKER, 35.0f, true))
                         SkirmisherStalker->AI()->DoAction(ACTION_VILETONGUE_AT_GROUND);
 
-                  //  if (Creature* raiderStalker = ObjectAccessor::GetCreature(*me, SelectAnyStalkerGUID(NPC_VILETONGUE_VEHICLE)))
-                     //   raiderStalker->AI()->DoAction(ACTION_VILETONGUE_AT_HILL);
+                    if (Creature* raiderStalker = ObjectAccessor::GetCreature(*me, SelectAnyStalkerGUID(NPC_VILETONGUE_VEHICLE)))
+                        raiderStalker->AI()->DoAction(ACTION_VILETONGUE_AT_HILL);
 
                     if (instance && instance->GetData(DATA_MAKE_BOOMERS_BREW) < DONE)
                         nonCombatEvents.ScheduleEvent(EVENT_VILETONGUE_SAUROKS,  4s);
@@ -396,8 +396,8 @@ public:
                         me->GetMotionMaster()->MovePoint(wp, BlancheWaypoints[wp]);
                     break;
                 case EVENT_BLANCHE_POTION:
-                   // if (Player* pItr = me->FindNearestPlayer(100.0f))
-                    //    DoCast(pItr, SPELL_BLANCHES_ELIXIR_OF_REPLENISHMENT);
+                    if (Player* pItr = me->FindNearestPlayer(100.0f))
+                        DoCast(pItr, SPELL_BLANCHES_ELIXIR_OF_REPLENISHMENT);
 
                     Talk(TALK_POTION_ANN);
                     nonCombatEvents.ScheduleEvent(EVENT_BLANCHE_POTION, 49s);
@@ -438,30 +438,30 @@ public:
 
         bool HasChapterOneCompleted()
         {
-           // if (Player* itr = me->FindNearestPlayer(100.0f)) // we need check anyone player 
-          //  {
-                if (!SayBrewBar/* && (itr->GetPower(POWER_ALTERNATE_POWER) > 50)*/)
+            if (Player* itr = me->FindNearestPlayer(100.0f)) // we need check anyone player
+            {
+                if (!SayBrewBar && (itr->GetPower(POWER_ALTERNATE_POWER) > 50))
                 {
                     SayBrewBar = true;
                     Talk(TALK_STORM);
-              //  }
+                }
 
-              //  if (itr->GetPower(POWER_ALTERNATE_POWER) == 100)
-                //    return true;
+                if (itr->GetPower(POWER_ALTERNATE_POWER) == 100)
+                    return true;
             }
 
             return false;
         }
 
-        uint64 SelectAnyStalkerGUID(uint32 npc_entry)
+        ObjectGuid SelectAnyStalkerGUID(uint32 npc_entry)
         {
             std::list<Creature*> StalkerList;
             GetCreatureListWithEntryInGrid(StalkerList, me, npc_entry, 30.0f);
 
             if (StalkerList.empty())
-                return 0;
+                return ObjectGuid::Empty;
 
-          //  return Trinity::Containers::SelectRandomContainerElement(StalkerList)->GetGUID();
+            return Trinity::Containers::SelectRandomContainerElement(StalkerList)->GetGUID();
         }
 
         void BrewOnKegs()
@@ -469,7 +469,7 @@ public:
             std::list<Creature*> BrewKegs;
             GetCreatureListWithEntryInGrid(BrewKegs, me, NPC_BREWKEG, 150.0f);
 
-            for (auto&& itr : BrewKegs)
+            for (auto& itr : BrewKegs)
                 itr->AI()->DoAction(ACTION_MAKE_BOOMERS_BREW);
         }
     };
@@ -624,12 +624,12 @@ private:
     Position pos;
     // Main method for calculate position for jump into ground from hill
     // diff between stalker that`ll spawn creature and current location around 7-8y
-    Position CalculateGroundPos(Position cur, uint64 viletongueGUID)
+    Position CalculateGroundPos(Position cur, ObjectGuid viletongueGUID)
     {
         float x = 0, y = 0, z = 4.5f, o = cur.GetOrientation();
 
-    //    if (Creature* viletongue = ObjectAccessor::GetCreature(*me, viletongueGUID))
-         //   GetPositionWithDistInOrientation(viletongue, 8.0f + frand(-0.5f, 2.0f), o, x, y);
+        if (Creature* viletongue = ObjectAccessor::GetCreature(*me, viletongueGUID))
+            GetPositionWithDistInOrientation(viletongue, 8.0f + frand(-0.5f, 2.0f), o, x, y);
 
         pos.Relocate(x, y, cur.GetPositionZ() + z, o);
         return pos;
@@ -810,8 +810,6 @@ struct npc_viletongue_decimator : public ScriptedAI
 // lightning impact 111544
 class spell_brewing_storm_lightning_impact : public SpellScript
 {
-    PrepareSpellScript(spell_brewing_storm_lightning_impact);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Creature* target = GetHitCreature())
@@ -864,8 +862,6 @@ class spell_brewing_storm_lightning_impact : public SpellScript
 // Boomer Brew Strike 115058
 class spell_boomer_brew_strike : public SpellScript
 {
-    PrepareSpellScript(spell_boomer_brew_strike);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())

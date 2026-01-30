@@ -19,7 +19,9 @@
 #include "ObjectMgr.h"
 #include "PhasingHandler.h"
 #include "GameObject.h"
+#include "GameObjectAI.h"
 #include "ScriptedGossip.h"
+#include "TemporarySummon.h"
 #include "Log.h"
 
  // 92909 LORD_MAXWELL_TYROSUS
@@ -69,7 +71,7 @@ struct npc_travard_108692 : public ScriptedAI
 
     bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
     {
-        TC_LOG_ERROR("server.worldserver", "sGossipSelect %u, %u", menuId, gossipListId);
+        TC_LOG_ERROR("server.worldserver", "sGossipSelect {}, {}", menuId, gossipListId);
         if (player->HasQuest(QUEST_An_Urgent_Gathering))
         {
             if (gossipListId == 0)
@@ -90,7 +92,7 @@ struct npc_orik_trueheart_108693 : public ScriptedAI
 
     bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
     {
-        TC_LOG_ERROR("server.worldserver", "sGossipSelect %u, %u", menuId, gossipListId);
+        TC_LOG_ERROR("server.worldserver", "sGossipSelect {}, {}", menuId, gossipListId);
         if (player->HasQuest(QUEST_An_Urgent_Gathering))
         {
             if (gossipListId == 0)
@@ -107,9 +109,9 @@ struct npc_orik_trueheart_108693 : public ScriptedAI
 
 struct npc_tahu_sagewind_105727 : public ScriptedAI
 {
-   npc_tahu_sagewind_105727(Creature* creature) : ScriptedAI(creature) {  }
+    npc_tahu_sagewind_105727(Creature* creature) : ScriptedAI(creature) {  }
 
-   bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
+    bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
     {
         if (player->HasQuest(QUEST_The_End_of_the_Saga))
         {
@@ -124,21 +126,33 @@ struct npc_tahu_sagewind_105727 : public ScriptedAI
     }
 };
 
-////250364/broken-sword
-//class go_broken_sword_250364 : public GameObjectScript
-//{
-//public:
-//    go_broken_sword_250364() : GameObjectScript("go_broken_sword_250364") { }
-//
-//    bool OnGossipHello(Player* player, GameObject* go) override
-//    {
-//        if (Creature* cow = go->SummonCreature(107314, go->GetRandomNearPosition(10.0f), TEMPSUMMON_TIMED_DESPAWN, 10000))
-//            cow->AI()->Talk(1);
-//        go->SummonCreature(107329, go->GetRandomNearPosition(10.0f), TEMPSUMMON_DEAD_DESPAWN, WEEK);
-//        player->KilledMonsterCredit(113914);
-//        return false;
-//    }
-//};
+//250364/broken-sword
+class go_broken_sword_250364 : public GameObjectScript
+{
+public:
+    go_broken_sword_250364() : GameObjectScript("go_broken_sword_250364") {}
+
+    struct go_broken_sword_250364AI : public GameObjectAI
+    {
+        go_broken_sword_250364AI(GameObject* go) : GameObjectAI(go)
+        {
+        }
+
+    bool OnGossipHello(Player* player) override
+    {
+        if (Creature* cow = me->SummonCreature(107314, me->GetRandomNearPosition(10.0f), TEMPSUMMON_TIMED_DESPAWN, 10s))
+            cow->AI()->Talk(1);
+        me->SummonCreature(107329, me->GetRandomNearPosition(10.0f), TEMPSUMMON_DEAD_DESPAWN, 604800s);
+        player->KilledMonsterCredit(113914);
+        return true;
+    }
+    };
+
+    GameObjectAI* GetAI(GameObject* go) const override
+    {
+        return new go_broken_sword_250364AI(go);
+    }
+};
 
 struct npc_orik_trueheart_105813 : public ScriptedAI
 {
@@ -166,7 +180,7 @@ struct npc_argent_hippogryph_105886 : public ScriptedAI
             if (player->GetQuestStatus(QUEST_SHRINE_OF_THE_TRUTHGUARD) == QUEST_STATUS_INCOMPLETE)
             {
                 player->KilledMonsterCredit(105889);
-                player->TeleportTo(1495, Position(4762.8178f, 62.2226f, -0.83612f));
+                player->TeleportTo(1495, 4762.8178f, 62.2226f, -0.83612f, TELE_TO_NONE);
             }
         }
     }
@@ -178,7 +192,7 @@ void AddSC_class_hall_paladin()
     RegisterCreatureAI(npc_travard_108692);
     RegisterCreatureAI(npc_orik_trueheart_108693);
     RegisterCreatureAI(npc_tahu_sagewind_105727);
-   // new go_broken_sword_250364();
+    new go_broken_sword_250364();
     RegisterCreatureAI(npc_orik_trueheart_105813);
     RegisterCreatureAI(npc_argent_hippogryph_105886);
 }

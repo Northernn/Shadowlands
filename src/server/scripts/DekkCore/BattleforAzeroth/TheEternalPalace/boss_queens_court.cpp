@@ -121,13 +121,13 @@ struct noTanks //: public std::unary_function<Unit*, bool>
     bool operator() (const Unit* pTarget)
     {
         Player* player = const_cast<Player*>(pTarget->ToPlayer());
-        uint32 specialization = player->GetSpecializationId();
-        return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-            || (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-            || (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-            || (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+        uint32 specialization = player->GetPrimarySpecialization();
+        return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+            || (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+            || (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+            || (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+            || (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+            || (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
     }
 };
 
@@ -196,21 +196,20 @@ public:
             }
         }
 
-        void KilledUnit(Unit* t)
+        void KilledUnit(Unit* /*t*/) override
         {
             SelectSoundAndText(me, 3);
         }
 
-        void Reset()
+        void Reset() override
         {
             _dead = false;
             events.Reset();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             DespawnCreature(NPC_QUEEN_AZSHARA_DECREE, 500);
-            me->AddAura(AURA_OVERRIDE_POWER_COLOR_DEMONIC, me);
         }
 
-        void JustDied(Unit*)
+        void JustDied(Unit*) override
         {
             DespawnCreature(NPC_QUEEN_AZSHARA_DECREE, 500);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -279,7 +278,7 @@ public:
             }
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -294,7 +293,7 @@ public:
             }
         }
 
-        void EnterEvadeMode(EvadeReason w)
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _DespawnAtEvade(15s);
         }
@@ -317,7 +316,7 @@ public:
             return me->FindNearestCreature(BOSS_PASHMAR_THE_FANATICAL, 200.0f, true);
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             events.Update(diff);
 
@@ -401,8 +400,6 @@ public:
 
     class bfa_spell_commanders_fury_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_commanders_fury_AuraScript);
-
         ObjectGuid currentTarget;
 
         bool Load() override
@@ -448,8 +445,6 @@ public:
 
     class bfa_spell_frenetic_charge_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_frenetic_charge_cast_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -481,8 +476,6 @@ public:
 
     class bfa_spell_frenetic_charge_at_create_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_frenetic_charge_at_create_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
@@ -510,13 +503,11 @@ public:
 
     class bfa_spell_frenetic_charge_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_frenetic_charge_damage_SpellScript);
-
         uint32 targetList;
 
         bool Load() override
         {
-            targetList = 1; // initial player 
+            targetList = 1; // initial player
             return true;
         }
 
@@ -541,47 +532,6 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new bfa_spell_frenetic_charge_damage_SpellScript();
-    }
-};
-
-// 17380
-class bfa_at_flags_spell : public AreaTriggerEntityScript
-{
-public:
-    bfa_at_flags_spell() : AreaTriggerEntityScript("bfa_at_flags_spell") { }
-
-    struct bfa_at_flags_spell_AI : AreaTriggerAI
-    {
-        bfa_at_flags_spell_AI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-        void OnUpdate(uint32 diff)
-        {
-            std::list<Player*> playerList;
-            at->GetPlayerListInGrid(playerList, 30.0f);
-            if (!playerList.empty())
-            {
-                for (auto player : playerList)
-                {
-                    if (player->GetDistance(at->GetPosition()) <= 29.0f)
-                    {
-                        if (!player->HasAura(SPELL_SPHERE_OF_INFLUENCE))
-                        {
-                            if (Aura* influ = player->AddAura(SPELL_SPHERE_OF_INFLUENCE, player))
-                            {
-                                influ->SetMaxDuration(2000);
-                                influ->SetDuration(2000);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new bfa_at_flags_spell_AI(areatrigger);
     }
 };
 
@@ -631,8 +581,6 @@ public:
 
     class bfa_spell_zealous_eruption_periodic_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_zealous_eruption_periodic_AuraScript);
-
         void HandlePeriodic(AuraEffect const* aureff)
         {
             Unit* caster = GetCaster();
@@ -723,7 +671,6 @@ public:
             _dead = false;
             events.Reset();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-            me->AddAura(AURA_OVERRIDE_POWER_COLOR_OCEAN, me);
         }
 
         void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
@@ -893,8 +840,6 @@ public:
 
     class bfa_spell_potent_spark_cast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_potent_spark_cast_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -967,8 +912,6 @@ public:
 
     class bfa_spell_fanatical_verdict_SpellScritp : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_fanatical_verdict_SpellScritp);
-
         void HandleScript()
         {
             Unit* caster = GetCaster();
@@ -1011,8 +954,6 @@ public:
 
     class bfa_spell_fanatical_verdict_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_fanatical_verdict_aura_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget()->ToPlayer();
@@ -1087,8 +1028,6 @@ public:
 
     class bfa_spell_form_ranks_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_form_ranks_damage_SpellScript);
-
         uint32 targetList;
 
         bool Load() override
@@ -1125,347 +1064,6 @@ public:
     }
 };
 
-class bfa_npc_decree_controller : public CreatureScript
-{
-public:
-    bfa_npc_decree_controller() : CreatureScript("bfa_npc_decree_controller")
-    {
-    }
-
-    struct bfa_npc_decree_controller_AI : public ScriptedAI
-    {
-        bfa_npc_decree_controller_AI(Creature* creature) : ScriptedAI(creature), summons(me)
-        {
-            creature->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-            creature->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-        }
-
-        EventMap events;
-        SummonList summons;
-
-        void Reset()
-        {
-            events.Reset();
-        }
-
-        void SelectSoundAndText(Creature* me, uint32  selectedTextSound = 0)
-        {
-            if (!me)
-                return;
-
-            if (me)
-            {
-                switch (selectedTextSound)
-                {
-                case 1:
-                    me->Yell(DECREE_SPECIAL_1, LANG_UNIVERSAL, NULL);
-                    break;
-                case 2:
-                    me->Yell(DECREE_SPECIAL_2, LANG_UNIVERSAL, NULL);
-                    break;
-                }
-            }
-        }
-
-        void DoAction(int32 action)
-        {
-            switch (action)
-            {
-            case ACTION_INIT_DECREE:
-            {
-               // events.ScheduleEvent(EVENT_FORM_RANKS, TIMER_DECREE_START);
-                if (me->GetMap()->IsMythic())
-                {
-                    for (uint8 i = 0; i < 5; ++i)
-                        me->SummonCreature(DecreeFlags[i], flagPos[i], TEMPSUMMON_MANUAL_DESPAWN);
-                }
-                break;
-            }
-            }
-        }
-
-        void JustSummoned(Creature* summon)
-        {
-            summons.Summon(summon);
-
-            switch (summon->GetEntry())
-            {
-            case NPC_FORM_RANKS:
-            case NPC_OBEY_OR_SUFFER:
-            case NPC_DEFERRED_SENTENCE:
-            case NPC_STAND_ALONE:
-            case NPC_REPEAT_PERFORMANCE:
-                summon->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-                summon->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-                summon->AddUnitState(UNIT_STATE_ROOT);
-                break;
-            }
-        }
-
-        void HandleSphereOfInfluence(uint32 entry, uint32 spellId)
-        {
-            std::list<Creature*> flagsList;
-            me->GetCreatureListWithEntryInGrid(flagsList, NPC_FORM_RANKS, 200.0f);
-            me->GetCreatureListWithEntryInGrid(flagsList, NPC_STAND_ALONE, 200.0f);
-            me->GetCreatureListWithEntryInGrid(flagsList, NPC_OBEY_OR_SUFFER, 200.0f);
-            me->GetCreatureListWithEntryInGrid(flagsList, NPC_DEFERRED_SENTENCE, 200.0f);
-            me->GetCreatureListWithEntryInGrid(flagsList, NPC_REPEAT_PERFORMANCE, 200.0f);
-            if (!flagsList.empty())
-            {
-                for (auto flag : flagsList)
-                {
-                    for (uint8 i = 0; i < 5; ++i)
-                        flag->RemoveAura(DecreeAreaTriggerSpellByFlag[i]);
-                    flag->CastSpell(flag->FindNearestCreature(entry, 50.0f), spellId, true);
-                }
-            }
-        }
-
-        void DamageTaken(Unit* d, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-        {
-            damage = 0;
-        }
-
-        void FormRanks()
-        {
-            for (uint8 i = 0; i < (me->GetMap()->IsMythic() ? 6 : 3); ++i)
-            {
-                Position random = me->GetRandomPoint(centerPos, me->GetMap()->IsMythic() ? 40.0f : 15.0f);
-                me->CastSpell(random, SPELL_FORM_RANKS_AT, true);
-            }
-
-            me->GetScheduler().Schedule(5s, [this](TaskContext /*context*/)
-                {
-                    for (uint8 i = 0; i < (me->GetMap()->IsMythic() ? 6 : 3); ++i)
-                    {
-                        Position random = me->GetRandomPoint(centerPos, me->GetMap()->IsMythic() ? 40.0f : 15.0f);
-                        me->CastSpell(random, SPELL_FORM_RANKS_AT, true);
-                    }
-                });
-
-            me->GetScheduler().Schedule(10s, [this](TaskContext /*context*/)
-                {
-                    for (uint8 i = 0; i < (me->GetMap()->IsMythic() ? 6 : 3); ++i)
-                    {
-                        Position random = me->GetRandomPoint(centerPos, me->GetMap()->IsMythic() ? 40.0f : 15.0f);
-                        me->CastSpell(random, SPELL_FORM_RANKS_AT, true);
-                    }
-                });
-        }
-
-        void StandAlone()
-        {
-            std::list<Player*> playerList;
-            me->GetPlayerListInGrid(playerList, 200.0f);
-            if (!playerList.empty())
-            {
-                for (auto player : playerList)
-                {
-                    player->AddAura(SPELL_STAND_ALONE_VISUAL_AURA, player);
-                }
-            }
-        }
-
-        void ObeyOrSuffer()
-        {
-            std::list<Player*> playerList;
-            me->GetPlayerListInGrid(playerList, 200.0f);
-            if (!playerList.empty())
-            {
-                for (auto player : playerList)
-                {
-                    player->AddAura(SPELL_OBEY_OR_SUFFER, player);
-                }
-            }
-        }
-
-        void RepeatPerformance()
-        {
-            std::list<Player*> playerList;
-            me->GetPlayerListInGrid(playerList, 200.0f);
-            if (!playerList.empty())
-            {
-                for (auto player : playerList)
-                {
-                    player->AddAura(SPELL_REPEAT_PERFORMANCE_PROC_CHECK, player);
-                }
-            }
-        }
-
-        void DeferredSentence()
-        {
-            std::list<Player*> playerList;
-            me->GetPlayerListInGrid(playerList, 200.0f);
-            if (!playerList.empty())
-            {
-                for (auto player : playerList)
-                {
-                    player->AddAura(SPELL_DEFFERED_SENTENCE_PERIODIC, player);
-                }
-            }
-        }
-
-        void SelectDecreeText(uint32 text_id)
-        {
-            switch (text_id)
-            {
-            case 1:
-            {
-                SelectSoundAndText(me, urand(1, 2));
-                std::ostringstream str;
-                str << "Queen Azshara enacts her decree |cFFF00000|h[Form Ranks]|h|r!";
-                me->TextEmote(str.str().c_str(), 0, true);
-                break;
-            }
-            case 2:
-            {
-                SelectSoundAndText(me, urand(1, 2));
-                std::ostringstream str;
-                str << "Queen Azshara enacts her decree |cFFF00000|h[Stand Alone]|h|r!";
-                me->TextEmote(str.str().c_str(), 0, true);
-                break;
-            }
-            case 3:
-            {
-                SelectSoundAndText(me, urand(1, 2));
-                std::ostringstream str;
-                str << "Queen Azshara enacts her decree |cFFF00000|h[Deferred Sentence]|h|r!";
-                me->TextEmote(str.str().c_str(), 0, true);
-                break;
-            }
-            case 4:
-            {
-                SelectSoundAndText(me, urand(1, 2));
-                std::ostringstream str;
-                str << "Queen Azshara enacts her decree |cFFF00000|h[Obey and Suffer]|h|r!";
-                me->TextEmote(str.str().c_str(), 0, true);
-                break;
-            }
-            case 5:
-            {
-                SelectSoundAndText(me, urand(1, 2));
-                std::ostringstream str;
-                str << "Queen Azshara enacts her decree |cFFF00000|h[Repeat Performance]|h|r!";
-                me->TextEmote(str.str().c_str(), 0, true);
-                break;
-            }
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_FORM_RANKS:
-                {
-                    FormRanks();
-                    SelectDecreeText(1);
-                    HandleSphereOfInfluence(NPC_FORM_RANKS, SPELL_FORM_RANKS_MYTHIC_AT);
-                    //if (me->GetMap()->IsMythic())
-                    //{
-                    // //   events.ScheduleEvent(EVENT_STAND_ALONE, TIMER_DECREE_NEXT_MYTHIC);
-                    //}
-                    //else if (me->GetMap()->IsHeroic())
-                    //{
-                    //    events.ScheduleEvent(EVENT_STAND_ALONE, TIMER_DECREE_NEXT_HEROIC);
-                    //}
-                    //else if (me->GetMap()->IsNormal() || me->GetMap()->IsLFR())
-                    //{
-                    //    events.ScheduleEvent(EVENT_STAND_ALONE, TIMER_DECREE_NEXT);
-                    //}
-                    break;
-                }
-                case EVENT_STAND_ALONE:
-                {
-                    StandAlone();
-                    SelectDecreeText(2);
-                    HandleSphereOfInfluence(NPC_STAND_ALONE, SPELL_STAND_ALONE_MYTHIC_AT);
-                  /*  if (me->GetMap()->IsMythic())
-                    {
-                        events.ScheduleEvent(EVENT_REPEAT_PERFORMANCE, TIMER_DECREE_NEXT_MYTHIC);
-                    }
-                    else if (me->GetMap()->IsHeroic())
-                    {
-                        events.ScheduleEvent(EVENT_REPEAT_PERFORMANCE, TIMER_DECREE_NEXT_HEROIC);
-                    }
-                    else if (me->GetMap()->IsNormal() || me->GetMap()->IsLFR())
-                    {
-                        events.ScheduleEvent(EVENT_REPEAT_PERFORMANCE, TIMER_DECREE_NEXT);
-                    }*/
-                    break;
-                }
-                case EVENT_REPEAT_PERFORMANCE:
-                {
-                    RepeatPerformance();
-                    SelectDecreeText(3);
-                    HandleSphereOfInfluence(NPC_REPEAT_PERFORMANCE, SPELL_REPEAT_PERFORMANCE_MYTHIC_AT);
-                  /*  if (me->GetMap()->IsMythic())
-                    {
-                        events.ScheduleEvent(EVENT_DEFERRED_SENTENCE, TIMER_DECREE_NEXT_MYTHIC);
-                    }
-                    else if (me->GetMap()->IsHeroic())
-                    {
-                        events.ScheduleEvent(EVENT_DEFERRED_SENTENCE, TIMER_DECREE_NEXT_HEROIC);
-                    }
-                    else if (me->GetMap()->IsNormal() || me->GetMap()->IsLFR())
-                    {
-                        events.ScheduleEvent(EVENT_DEFERRED_SENTENCE, TIMER_DECREE_NEXT);
-                    }*/
-                    break;
-                }
-                case EVENT_DEFERRED_SENTENCE:
-                {
-                    DeferredSentence();
-                    SelectDecreeText(5);
-                    HandleSphereOfInfluence(NPC_DEFERRED_SENTENCE, SPELL_DEFERRED_SENTENCE_MYTHIC_AT);
-                   /* if (me->GetMap()->IsMythic())
-                    {
-                        events.ScheduleEvent(EVENT_OBEY_OR_SUFFER, TIMER_DECREE_NEXT_MYTHIC);
-                    }
-                    else if (me->GetMap()->IsHeroic())
-                    {
-                        events.ScheduleEvent(EVENT_OBEY_OR_SUFFER, TIMER_DECREE_NEXT_HEROIC);
-                    }
-                    else if (me->GetMap()->IsNormal() || me->GetMap()->IsLFR())
-                    {
-                        events.ScheduleEvent(EVENT_OBEY_OR_SUFFER, TIMER_DECREE_NEXT);
-                    }*/
-                    break;
-                }
-                case EVENT_OBEY_OR_SUFFER:
-                {
-                    ObeyOrSuffer();
-                    SelectDecreeText(4);
-                    HandleSphereOfInfluence(NPC_OBEY_OR_SUFFER, SPELL_OBEY_OR_SUFFER_MYTHIC_AT);
-                    /*if (me->GetMap()->IsMythic())
-                    {
-                        events.ScheduleEvent(EVENT_FORM_RANKS, TIMER_DECREE_NEXT_MYTHIC);
-                    }
-                    else if (me->GetMap()->IsHeroic())
-                    {
-                        events.ScheduleEvent(EVENT_FORM_RANKS, TIMER_DECREE_NEXT_HEROIC);
-                    }
-                    else if (me->GetMap()->IsNormal() || me->GetMap()->IsLFR())
-                    {
-                        events.ScheduleEvent(EVENT_FORM_RANKS, TIMER_DECREE_NEXT);
-                    }*/
-                    break;
-                }
-                }
-            }
-        }
-    };
-    
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new bfa_npc_decree_controller_AI(creature);
-    }
-};
-
 // 301244
 class bfa_spell_repeat_performance : public SpellScriptLoader
 {
@@ -1474,8 +1072,6 @@ public:
 
     class bfa_spell_repeat_performance_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_repeat_performance_AuraScript);
-
         uint32 _sameSpell;
 
         bool Load()
@@ -1518,8 +1114,6 @@ public:
 
     class spell_deferred_sentence_periodic_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_deferred_sentence_periodic_AuraScript);
-
         void HandlePeriodic(AuraEffect const* aureff)
         {
             Unit* target = GetCaster();
@@ -1560,8 +1154,6 @@ public:
 
     class bfa_spell_deferred_sentence_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_deferred_sentence_damage_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -1597,8 +1189,6 @@ public:
 
     class bfa_spell_stand_alone_court_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_stand_alone_court_AuraScript);
-
         void HandlePeriodic(AuraEffect const* aureff)
         {
             Unit* caster = GetCaster();
@@ -1656,9 +1246,7 @@ void AddSC_boss_queens_court()
 {
     new bfa_boss_pashmar_the_fanatical();
     new bfa_boss_silivaz_the_zealous();
-    new bfa_npc_decree_controller();
     new bfa_npc_potent_spark();
-    new bfa_at_flags_spell();
     new bfa_at_form_ranks();
     new bfa_at_mighty_rupture();
     new bfa_spell_fanatical_verdict();

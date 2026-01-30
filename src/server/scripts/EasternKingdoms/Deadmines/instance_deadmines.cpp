@@ -91,7 +91,7 @@ class instance_deadmines : public InstanceMapScript
                     case CANNON_GUNPOWDER_USED:
                         CannonBlast_Timer = DATA_CANNON_BLAST_TIMER;
                         // it's a hack - Mr. Smite should do that but his too far away
-                        //pIronCladDoor->SetName("Mr. Smite");
+                        pIronCladDoor->SetName("Mr. Smite");
                         //pIronCladDoor->MonsterYell(SAY_MR_SMITE_ALARM1, LANG_UNIVERSAL, nullptr);
                         pIronCladDoor->PlayDirectSound(SOUND_MR_SMITE_ALARM1);
                         State = CANNON_BLAST_INITIATED;
@@ -196,7 +196,6 @@ class instance_deadmines : public InstanceMapScript
                             State = data;
                         break;
                     case EVENT_RHAHKZOR:
-                        if (data == DONE)
                             if (GameObject* go = instance->GetGameObject(FactoryDoorGUID))
                                 go->SetGoState(GO_STATE_ACTIVE);
                         break;

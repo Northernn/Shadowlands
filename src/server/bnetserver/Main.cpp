@@ -23,7 +23,9 @@
 * authentication server
 */
 
+#ifdef ACTIVATIONKEY
 #include "ActivationKey.h"
+#endif
 #include "AppenderDB.h"
 #include "Banner.h"
 #include "BigNumber.h"
@@ -33,6 +35,7 @@
 #include "DeadlineTimer.h"
 #include "GitRevision.h"
 #include "IPLocation.h"
+#include "IpNetwork.h"
 #include "LoginRESTService.h"
 #include "MySQLThreading.h"
 #include "OpenSSLCrypto.h"
@@ -42,6 +45,7 @@
 #include "SessionManager.h"
 #include "SslContext.h"
 #include "Util.h"
+#include "StopWatch.h"
 #include <boost/asio/signal_set.hpp>
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/program_options.hpp>
@@ -52,7 +56,6 @@
 
 #include "Hacks/boost_program_options_with_filesystem_path.h"
 
-using boost::asio::ip::tcp;
 using namespace boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -86,6 +89,8 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
 int main(int argc, char** argv)
 {
     signal(SIGABRT, &Trinity::AbortHandler);
+
+    StopWatch sw;
 
     auto configFile = fs::absolute(_TRINITY_BNET_CONFIG);
     std::string configService;
@@ -124,24 +129,26 @@ int main(int argc, char** argv)
     Trinity::Banner::Show("bnetserver",
         [](char const* text)
         {
-            TC_LOG_INFO("server.bnetserver", "%s", text);
+            TC_LOG_INFO("server.bnetserver", "{}", text);
         },
         []()
         {
-            TC_LOG_INFO("server.bnetserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
-            TC_LOG_INFO("server.bnetserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
-            TC_LOG_INFO("server.bnetserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+        TC_LOG_INFO("server.bnetserver", "Using configuration file {}.", sConfigMgr->GetFilename());
+        TC_LOG_INFO("server.bnetserver", "Using SSL version: {} (library: {})", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
+        TC_LOG_INFO("server.bnetserver", "Using Boost version: {}.{}.{}", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
 
+#ifdef ACTIVATIONKEY
 #ifdef _WIN32
 			/// - Check Activation Key
             std::string keyfile = "key.txt";
-            findKeyfile(keyfile);
+            DekkCore::findKeyfile(keyfile);
+#endif
 #endif
 		}
     );
 
     for (std::string const& key : overriddenKeys)
-        TC_LOG_INFO("server.authserver", "Configuration field '%s' was overridden with environment variable.", key.c_str());
+        TC_LOG_INFO("server.authserver", "Configuration field '{}' was overridden with environment variable.", key);
 
     OpenSSLCrypto::threadsSetup(boost::dll::program_location().remove_filename());
 
@@ -152,10 +159,10 @@ int main(int argc, char** argv)
     if (!pidFile.empty())
     {
         if (uint32 pid = CreatePIDFile(pidFile))
-            TC_LOG_INFO("server.bnetserver", "Daemon PID: %u\n", pid);
+            TC_LOG_INFO("server.bnetserver", "Daemon PID: {}\n", pid);
         else
         {
-            TC_LOG_ERROR("server.bnetserver", "Cannot create PID file %s.\n", pidFile.c_str());
+            TC_LOG_ERROR("server.bnetserver", "Cannot create PID file {}.\n", pidFile);
             return 1;
         }
     }
@@ -182,11 +189,13 @@ int main(int argc, char** argv)
 
     std::shared_ptr<Trinity::Asio::IoContext> ioContext = std::make_shared<Trinity::Asio::IoContext>();
 
+    Trinity::Net::ScanLocalNetworks();
+
     // Start the listening port (acceptor) for auth connections
     int32 bnport = sConfigMgr->GetIntDefault("BattlenetPort", 1119);
     if (bnport < 0 || bnport > 0xFFFF)
     {
-        TC_LOG_ERROR("server.bnetserver", "Specified battle.net port (%d) out of allowed range (1-65535)", bnport);
+        TC_LOG_ERROR("server.bnetserver", "Specified battle.net port ({}) out of allowed range (1-65535)", bnport);
         return 1;
     }
 
@@ -246,6 +255,8 @@ int main(int argc, char** argv)
             std::placeholders::_1));
     }
 #endif
+
+    TC_LOG_INFO("server.bnetserver", "BattleNet server initizlied in {}", sw);
 
     // Start the io service worker loop
     ioContext->run();

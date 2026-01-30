@@ -28,12 +28,10 @@
 #include "SystemPackets.h"
 #include "World.h"
 
-
-// DekkCore >
+// Fluxurion >
 #include "BattlePayMgr.h"
 #include "BattlePayData.h"
-// < DekkCore
-
+// < Fluxurion
 
 void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
 {
@@ -47,7 +45,7 @@ void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
         response.SuccessInfo->ActiveExpansionLevel = GetExpansion();
         response.SuccessInfo->AccountExpansionLevel = GetAccountExpansion();
         response.SuccessInfo->VirtualRealmAddress = realm.Id.GetAddress();
-        response.SuccessInfo->CurrencyID = GetBattlePayMgr()->GetShopCurrency();
+        response.SuccessInfo->CurrencyID = GetBattlePayMgr()->GetShopCurrency(); // < Fluxurion
         response.SuccessInfo->Time = int32(GameTime::GetGameTime());
 
         // Send current home realm. Also there is no need to send it later in realm queries.
@@ -101,6 +99,7 @@ void WorldSession::SendSetTimeZoneInformation()
     WorldPackets::System::SetTimeZoneInformation packet;
     packet.ServerTimeTZ = "Europe/Paris";
     packet.GameTimeTZ = "Europe/Paris";
+    packet.ServerRegionalTZ = "Europe/Paris";
 
     SendPacket(packet.Write());
 }
@@ -108,8 +107,8 @@ void WorldSession::SendSetTimeZoneInformation()
 void WorldSession::SendFeatureSystemStatusGlueScreen()
 {
     WorldPackets::System::FeatureSystemStatusGlueScreen features;
-    features.BpayStoreEnabled = sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_BPAY_STORE_ENABLED);
-    features.BpayStoreAvailable = sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_BPAY_STORE_ENABLED); // < DekkCore
+    features.BpayStoreEnabled = sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_BPAY_STORE_ENABLED); // < Fluxurion
+    features.BpayStoreAvailable = sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_BPAY_STORE_ENABLED); // < Fluxurion
     features.CommerceSystemEnabled = true;
     features.BpayStoreDisabledByParentalControls = false;
     features.CharUndeleteEnabled = sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_CHARACTER_UNDELETE_ENABLED);
@@ -126,6 +125,13 @@ void WorldSession::SendFeatureSystemStatusGlueScreen()
     features.EuropaTicketSystemStatus->BugsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_BUGS_ENABLED);
     features.EuropaTicketSystemStatus->ComplaintsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_COMPLAINTS_ENABLED);
     features.EuropaTicketSystemStatus->SuggestionsEnabled = sWorld->getBoolConfig(CONFIG_SUPPORT_SUGGESTIONS_ENABLED);
+
+    // @TODO: implement and add config option D
+    features.ActiveCharacterUpgradeBoostType = 6;
+    features.ActiveClassTrialBoostType = 4;
+    //features.CharUndeleteEnabled = true;
+    features.TrialBoostEnabled = true;
+    features.Unk14 = true;
 
     SendPacket(features.Write());
 }

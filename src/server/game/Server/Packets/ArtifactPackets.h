@@ -112,7 +112,7 @@ namespace WorldPackets
             uint32 UnkInt = 0;
             uint32 UnkInt2 = 0;
         };
-        //DekkCore
+        //DekkCore 
     }
 }
 

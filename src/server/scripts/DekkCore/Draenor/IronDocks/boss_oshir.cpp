@@ -367,14 +367,14 @@ class boss_oshir : public CreatureScript
                         break;
                     }
                     case eMovementInformed::MovementInformOshirPrimalAssaultDestArrival:
-                    {  
+                    {
                         m_Spell = false;
                         me->SetReactState(ReactStates::REACT_AGGRESSIVE);
                         me->RemoveAura(eOshirSpells::SpellRendingSlashVisual);
                         me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
                         break;
                     }
- 
+
                     default:
                         break;
                 }
@@ -538,7 +538,7 @@ class boss_oshir : public CreatureScript
                         case eCosmeticEvents::EventCosmetic04:
                         {
                             me->SetFaction(HostileFaction);
-                            me->SetHomePosition(g_NewHomePos);                       
+                            me->SetHomePosition(g_NewHomePos);
 
                             me->GetMotionMaster()->MovePoint(100, g_NewHomePos);
                             me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NON_ATTACKABLE));
@@ -560,7 +560,7 @@ class boss_oshir : public CreatureScript
 
                 if (!m_Spell)
                 events.Update(p_Diff);
-          
+
                 ///< Primal Assault
                 if (m_PrimalAssault)
                 {
@@ -631,7 +631,7 @@ class boss_oshir : public CreatureScript
                     {
                         me->RemoveAura(eOshirSpells::SpellFeedingFrenzy);
 
-                        m_HpPact = me->GetHealthPct() * 0.95;                 
+                        m_HpPact = me->GetHealthPct() * 0.95;
 
                         if (Unit* l_Target = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                         {
@@ -647,7 +647,7 @@ class boss_oshir : public CreatureScript
                                         me->CastSpell(l_Player, eOshirSpells::SpellFeedingFrenzy);
                                     }
                                 }
-                            });                
+                            });
                         }
 
                         events.ScheduleEvent(eOshirEvents::EventFeedingFrenzyCancel, 20s);
@@ -730,7 +730,7 @@ class boss_oshir : public CreatureScript
 
                                 if ((*l_Iter)!= ObjectGuid::Empty)
                                 {
-                                   
+
                                 }
                                 break;
                             }
@@ -1226,7 +1226,7 @@ class iron_docks_oshir_mob_rylak : public CreatureScript
                 me->SetReactState(ReactStates::REACT_PASSIVE);
                 me->AddUnitState(UnitState::UNIT_STATE_IGNORE_PATHFINDING);
                 me->SetUnitFlag(UnitFlags(UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC));
-                m_AcidTimer = (11 * TimeConstants::IN_MILLISECONDS, 16 * TimeConstants::IN_MILLISECONDS);
+                m_AcidTimer = urand(11, 16) * TimeConstants::IN_MILLISECONDS;
             }
 
             void UpdateAI(uint32 const p_Diff) override
@@ -1343,67 +1343,6 @@ class iron_docks_oshir_mob_wolf : public CreatureScript
         }
 };
 
-/// Acid Spit - 324256 // Custom
-class iron_docks_oshir_mob_acid_spit : public CreatureScript
-{
-    public:
-
-        iron_docks_oshir_mob_acid_spit() : CreatureScript("iron_docks_oshir_mob_acid_spit") { }
-
-        struct mob_iron_docksAI : public ScriptedAI
-        {
-            mob_iron_docksAI(Creature* p_Creature) : ScriptedAI(p_Creature)
-            {
-                m_Instance = me->GetInstanceScript();
-            }
-
-            enum eAcidSpitSpells
-            {
-                /// Rylak
-                SpellAcidicCast = 171529,
-                SpellAcidPool   = 171533
-            };
-
-            uint32 m_Timer;
-            InstanceScript* m_Instance;
-
-            void Reset() override
-            {
-                me->SetFaction(HostileFaction);
-                m_Timer = 1 * TimeConstants::IN_MILLISECONDS;
-                me->AddUnitMovementFlag(MovementFlags::MOVEMENTFLAG_ROOT);
-                me->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_REMOVE_CLIENT_CONTROL));
-            }
-
-            void UpdateAI(uint32 const p_Diff) override
-            {
-                if (m_Timer <= p_Diff)
-                {
-                    std::list<Player*> l_PlayerList;
-                    l_PlayerList = me->SelectNearestPlayers(2.0f, true);
-
-                    if (!l_PlayerList.empty())
-                    {
-                        for (auto l_Itr : l_PlayerList)
-                        {
-                            if (!l_Itr->HasAura(eAcidSpitSpells::SpellAcidPool))
-                                l_Itr->CastSpell(l_Itr, eAcidSpitSpells::SpellAcidPool);
-                        }
-                    }
-
-                    m_Timer = 1 * TimeConstants::IN_MILLISECONDS;
-                }
-                else
-                    m_Timer -= p_Diff;
-            }
-        };
-
-        CreatureAI* GetAI(Creature* p_Creature) const override
-        {
-            return new mob_iron_docksAI(p_Creature);
-        }
-};
-
 /// Acid Spit Dummy - 178154
 class iron_docks_oshir_spell_acid_spit : public SpellScriptLoader
 {
@@ -1413,8 +1352,6 @@ public:
 
     class iron_docks_oshir_spell_acid_spit_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_oshir_spell_acid_spit_SpellScript);
-
         enum eAcidSpitSpells
         {
             SpellAcidSpitTriggerMissile = 178155
@@ -1457,8 +1394,6 @@ public:
 
     class iron_docks_oshir_spell_acid_spit_trigger_missile_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_oshir_spell_acid_spit_trigger_missile_SpellScript);
-
         void OnSpellHit(SpellEffIndex)
         {
             Unit* l_Caster = GetCaster();
@@ -1482,7 +1417,7 @@ public:
     }
 };
 
-/// Feeding Frenzy - 162424 
+/// Feeding Frenzy - 162424
 class spell_iron_docks_oshir_time_to_feed : public SpellScriptLoader
 {
 public:
@@ -1490,8 +1425,6 @@ public:
 
     class spell_iron_docks_oshir_time_to_feed_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_iron_docks_oshir_time_to_feed_AuraScript);
-
         enum eSpells
         {
             SpellTimeToFeed = 162415
@@ -1511,7 +1444,7 @@ public:
                     if (Creature* l_Oshir = l_InstanceScript->instance->GetCreature(l_InstanceScript->GetGuidData(eIronDocksDatas::DataOshir)))
                     {
                         if (!l_Oshir->HasAura(eSpells::SpellTimeToFeed))
-                            l_Oshir->RemoveAura(p_AurEff->GetId());             
+                            l_Oshir->RemoveAura(p_AurEff->GetId());
                     }
                 }
             }
@@ -1556,7 +1489,7 @@ public:
                         if (!l_Oshir->HasAura(eSpells::SpellTimeToFeed))
                         {
                             l_Oshir->ToCreature()->SetReactState(ReactStates::REACT_AGGRESSIVE);
-                           
+
                             if (l_Oshir->IsAIEnabled())
                             {
                                 l_Oshir->GetAI()->DoAction(eAction::ActionFinishSpell);
@@ -1595,7 +1528,6 @@ void AddSC_boss_oshir()
     new iron_docks_mob_thundering_wandler(); /// 83390
     new iron_docks_oshir_mob_rylak(); /// 89011
     new iron_docks_oshir_mob_wolf(); /// 89012
-    new iron_docks_oshir_mob_acid_spit(); /// 324256
     /// Triggers
     new iron_docks_oshir_mob_rylak_dest(); /// 89021
     new iron_docks_oshir_mob_wolf_dest(); /// 89022

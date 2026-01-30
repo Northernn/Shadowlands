@@ -299,7 +299,7 @@ public:
         if (choiceId != PLAYER_CHOICE_ROGE_SELECTION)
             return;
 
-        TC_LOG_ERROR("server.worldserver", "roge_playerchoice %u, %u", choiceId, responseId);
+        TC_LOG_ERROR("server.worldserver", "roge_playerchoice {}, {}", choiceId, responseId);
 
         if (player->HasQuest(QUEST_A_WORTHY_BLADE))
         {
@@ -441,7 +441,7 @@ struct npc_princess_tess_greymane_94138 : public ScriptedAI
 
     bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId)
     {
-        TC_LOG_ERROR("server.worldserver", "sGossipSelect %u, %u", menuId, gossipListId);
+        TC_LOG_ERROR("server.worldserver", "sGossipSelect {}, {}", menuId, gossipListId);
 
         if (player->HasQuest(QUEST_A_WORTHY_BLADE))
         {

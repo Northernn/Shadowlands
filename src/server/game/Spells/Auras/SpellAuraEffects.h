@@ -22,6 +22,7 @@
 
 class AuraEffect;
 class Unit;
+class WorldObject;
 
 typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
@@ -64,6 +65,9 @@ class TC_GAME_API AuraEffect
         void SetPeriodicTimer(int32 periodicTimer) { _periodicTimer = periodicTimer; }
 
         int32 CalculateAmount(Unit* caster);
+        static Optional<float> CalculateEstimatedAmount(Unit const* caster, Unit* target, SpellInfo const* spellInfo, SpellEffectInfo const& spellEffectInfo, int32 amount, uint8 stack, AuraEffect const* aurEff);
+        Optional<float> CalculateEstimatedAmount(Unit const* caster, int32 amount) const;
+        static float CalculateEstimatedfTotalPeriodicAmount(Unit* caster, Unit* target, SpellInfo const* spellInfo, SpellEffectInfo const& spellEffectInfo, float amount, uint8 stack);
         void CalculatePeriodic(Unit* caster, bool resetPeriodicTimer = true, bool load = false);
         void CalculateSpellMod();
         void ChangeAmount(int32 newAmount, bool mark = true, bool onStackOrReapply = false, AuraEffect const* triggeredBy = nullptr);
@@ -77,6 +81,8 @@ class TC_GAME_API AuraEffect
 
         void Update(uint32 diff, Unit* caster);
 
+        void  SetDamage(int32 val) { m_damage = val; }
+        int32 GetDamage() const { return m_damage; }
         uint32 GetTickNumber() const { return _ticksDone; }
         uint32 GetRemainingTicks() const { return GetTotalTicks() - _ticksDone; }
         uint32 GetTotalTicks() const;
@@ -103,6 +109,8 @@ class TC_GAME_API AuraEffect
         bool IsEffect(SpellEffectName effectName) const { return m_effectInfo.Effect == effectName; }
         bool IsAreaAuraEffect() const;
 
+        SoulbindConduitRankEntry const* ConduitRankEntry;
+
     private:
         Aura* const m_base;
 
@@ -113,6 +121,7 @@ class TC_GAME_API AuraEffect
 
         int32 const m_baseAmount;
         int32 _amount;
+        int32 m_damage;
         Optional<float> _estimatedAmount;   // for periodic damage and healing auras this will include damage done bonuses
 
         // periodic stuff
@@ -195,8 +204,11 @@ class TC_GAME_API AuraEffect
         void HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModRootAndDisableGravity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModStunAndDisableGravity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //  charm
         void HandleModPossess(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModCharm(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleCharmConvert(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraControlVehicle(AuraApplication const* aurApp, uint8 mode, bool apply) const;
@@ -307,7 +319,6 @@ class TC_GAME_API AuraEffect
         void HandleAuraOverrideSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandlePreventResurrection(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAbsorbOverkill(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleMastery(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleEnableAltPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
@@ -328,11 +339,16 @@ class TC_GAME_API AuraEffect
         void HandleStoreTeleportReturnPoint(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleMountRestrictions(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleCosmeticMounted(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModRequiredMountCapabilityFlags(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleSuppressItemPassiveEffectBySpellLabel(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleForceBreathBar(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModFixate(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAdvancedFlying(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //DekkCore
+        void HandleAuraModSpellPowerPercent(AuraApplication const* aurApp, uint8 mode, bool) const;
         void HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModNextSpell(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleCreateVignette(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //DekkCore
         // aura effect periodic tick handlers
         void HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) const;
@@ -361,11 +377,12 @@ class TC_GAME_API AuraEffect
 
         // DekkCore >
         public:
-            int32 GetRemainingAmount(int32 maxDurationIfPermanent = 0) const
+            int32 GetRemainingAmount([[maybe_unused]] int32 maxDurationIfPermanent = 0) const
             {
                 int32 ticks = GetTotalTicks();
                 if (!GetBase()->IsPermanent())
                     ticks -= GetTickNumber();
+
                 return GetAmount() * ticks;
             }
         // < DekkCore

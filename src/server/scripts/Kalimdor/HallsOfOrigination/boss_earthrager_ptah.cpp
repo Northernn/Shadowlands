@@ -261,8 +261,6 @@ class spell_earthrager_ptah_flame_bolt : public SpellScriptLoader
 
         class spell_earthrager_ptah_flame_bolt_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_earthrager_ptah_flame_bolt_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 Trinity::Containers::RandomResize(targets, GetCaster()->GetMap()->IsHeroic() ? 3 : 2);
@@ -287,8 +285,6 @@ public:
 
     class spell_earthrager_ptah_explosion_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_earthrager_ptah_explosion_AuraScript);
-
         void SetFlags(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* ptah = GetCaster())

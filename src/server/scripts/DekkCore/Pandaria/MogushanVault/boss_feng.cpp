@@ -1171,8 +1171,6 @@ class spell_mogu_epicenter : public SpellScriptLoader
 
         class spell_mogu_epicenter_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_mogu_epicenter_SpellScript);
-
             void DealDamage()
             {
                 Unit* caster = GetCaster();
@@ -1207,8 +1205,6 @@ class spell_mogu_wildfire_spark : public SpellScriptLoader
 
         class spell_mogu_wildfire_spark_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_mogu_wildfire_spark_SpellScript);
-
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 const uint8 maxSpark = 4;
@@ -1246,8 +1242,6 @@ class spell_wildfire_spark : public SpellScriptLoader
 
         class spell_wildfire_spark_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_wildfire_spark_AuraScript);
-
             void Cast(AuraEffect const* /*AurEff*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1263,8 +1257,6 @@ class spell_wildfire_spark : public SpellScriptLoader
 
         class spell_wildfire_spark_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_wildfire_spark_SpellScript);
-
             void HandleHit(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1296,8 +1288,6 @@ class spell_wildfire_infusion_stacks : public SpellScriptLoader
 
         class spell_wildfire_infusion_stacks_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_wildfire_infusion_stacks_AuraScript);
-
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
@@ -1331,8 +1321,6 @@ class spell_mogu_wildfire_infusion : public SpellScriptLoader
 
         class spell_mogu_wildfire_infusion_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_mogu_wildfire_infusion_SpellScript);
-
             void HandleAfterCast()
             {
                 if (Unit* caster = GetCaster())
@@ -1360,8 +1348,6 @@ class spell_draw_flame : public SpellScriptLoader
 
         class spell_draw_flame_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_draw_flame_SpellScript);
-
             void ReplaceTarget(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -1396,8 +1382,6 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
 
         class spell_mogu_arcane_velocity_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_mogu_arcane_velocity_SpellScript);
-
             void DealDamage()
             {
                 Unit* caster = GetCaster();
@@ -1436,8 +1420,6 @@ class spell_mogu_arcane_resonance : public SpellScriptLoader
 
         class spell_mogu_arcane_resonance_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_mogu_arcane_resonance_SpellScript);
-
             uint8 targetCount;
 
             void FilterTargets(std::list<WorldObject*>& targets)
@@ -1474,8 +1456,6 @@ class spell_mogu_inversion : public SpellScriptLoader
 
         class spell_mogu_inversion_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_mogu_inversion_AuraScript);
-
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
@@ -1509,8 +1489,6 @@ class spell_spirit_bolt : public SpellScriptLoader
 
         class spell_spirit_bolt_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_spirit_bolt_SpellScript);
-
             void SelectTarget(std::list<WorldObject*>& targets)
             {
                 if (Unit* caster = GetCaster())
@@ -1568,8 +1546,6 @@ class spell_nullification_barrier : public SpellScriptLoader
 
         class spell_nullification_barrierSpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_nullification_barrierSpellScript);
-
             void RemoveSoulFragments()
             {
                 if (Creature* shield = GetClosestCreatureWithEntry(GetCaster(), NPC_SIPHONING_SHIELD, 200.0f))

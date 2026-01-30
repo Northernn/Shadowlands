@@ -204,7 +204,7 @@ public:
 
     OutdoorPVPSentinax(Map* map) : OutdoorPvP(map)
     {
-       // m_TypeId = OUTDOOR_PVP_SENTINAX;
+        m_TypeId = OUTDOOR_PVP_SENTINAX;
     }
 
     bool SetupOutdoorPvP() override 
@@ -260,7 +260,7 @@ public:
 
     }
 
-    bool Update(uint32 diff) override
+    void Update(uint32 diff) override
     {
         if (has_timer)
         {
@@ -296,7 +296,6 @@ public:
         }
         else
             timer_for_check -= diff;
-        return true;
     }
     
 private:

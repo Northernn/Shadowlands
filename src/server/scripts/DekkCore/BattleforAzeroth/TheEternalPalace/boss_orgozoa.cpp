@@ -122,7 +122,7 @@ Position phase2Intermission[8] =
 };
 
 const Position firstPlatform = { 267.31f, 703.25f, 1060.80f }; //30y
-const Position secondPlatform = { 220.20f, 818.42f, 1010.81f }; //50y 
+const Position secondPlatform = { 220.20f, 818.42f, 1010.81f }; //50y
 
 Position hatcheryEgg[25] =
 {
@@ -195,7 +195,7 @@ public:
         bool phase2_check;
         uint8 dribblingIchor;
 
-        void Reset()
+        void Reset() override
         {
             intermission = false;
             phase1_check = false;
@@ -210,7 +210,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void JustDied(Unit*)
+        void JustDied(Unit*) override
         {
             RemoveIncubationFluid();
             DespawnCreatureEntry(NPC_ZANJIR_MYRMIDON);
@@ -221,7 +221,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void EnterEvadeMode(EvadeReason w)
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _DespawnAtEvade(15s);
         }
@@ -325,7 +325,7 @@ public:
             }
         }
 
-        void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*at*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (me->HealthBelowPct(40) && !intermission)
             {
@@ -351,7 +351,7 @@ public:
             HandlePhases(1);
         }
 
-        void MovementInform(uint32 type, uint32 pointId)
+        void MovementInform(uint32 /*type*/, uint32 pointId) override
         {
             switch (pointId)
             {
@@ -383,7 +383,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(Creature* summon) override
         {
             summons.Summon(summon);
 
@@ -600,8 +600,6 @@ public:
 
     class bfa_spell_dribbling_ichor_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_dribbling_ichor_AuraScript);
-
         uint8 ichor;
 
         bool Load()
@@ -664,9 +662,7 @@ public:
 
     class bfa_spell_desensiizing_sting_AuraScript : public AuraScript
     {
-        PrepareAuraScript(bfa_spell_desensiizing_sting_AuraScript);
-
-        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
         {
             Unit* caster = GetCaster();
             Unit* target = GetTarget()->ToPlayer();
@@ -697,8 +693,6 @@ public:
 
     class bfa_spell_massive_incubator_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_massive_incubator_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -736,8 +730,6 @@ public:
 
     class bfa_spell_incubation_fluid_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_incubation_fluid_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -856,8 +848,6 @@ public:
 
     class bfa_spell_amniotic_splatter_filter_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_amniotic_splatter_filter_SpellScript);
-
         void HandleAfterCast()
         {
             Unit* caster = GetCaster();
@@ -1019,8 +1009,6 @@ public:
 
     class bfa_spell_powerful_stomp_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_powerful_stomp_SpellScript);
-
         uint32 targetList;
 
         bool Load() override
@@ -1127,8 +1115,6 @@ public:
 
     class bfa_spell_aqua_lance_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_aqua_lance_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())

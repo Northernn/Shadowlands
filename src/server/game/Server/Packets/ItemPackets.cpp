@@ -30,8 +30,8 @@ void WorldPackets::Item::BuyItem::Read()
     _worldPacket >> Quantity;
     _worldPacket >> Muid;
     _worldPacket >> Slot;
+    ItemType = _worldPacket.read<ItemVendorType, int32>();
     _worldPacket >> Item;
-    ItemType = static_cast<ItemVendorType>(_worldPacket.ReadBits(3));
 }
 
 WorldPacket const* WorldPackets::Item::BuySucceeded::Write()
@@ -152,7 +152,7 @@ WorldPacket const* WorldPackets::Item::SetProficiency::Write()
 
 WorldPacket const* WorldPackets::Item::InventoryChangeFailure::Write()
 {
-    _worldPacket << int8(BagResult);
+    _worldPacket << int32(BagResult);
     _worldPacket << Item[0];
     _worldPacket << Item[1];
     _worldPacket << uint8(ContainerBSlot); // bag type subclass, used with EQUIP_ERR_EVENT_AUTOEQUIP_BIND_CONFIRM and EQUIP_ERR_WRONG_BAG_TYPE_2
@@ -238,8 +238,10 @@ void WorldPackets::Item::DestroyItem::Read()
 WorldPacket const* WorldPackets::Item::SellResponse::Write()
 {
     _worldPacket << VendorGUID;
-    _worldPacket << ItemGUID;
-    _worldPacket << uint8(Reason);
+    _worldPacket << uint32(ItemGUIDs.size());
+    _worldPacket << int32(Reason);
+    for (ObjectGuid const& itemGuid : ItemGUIDs)
+        _worldPacket << itemGuid;
 
     return &_worldPacket;
 }
@@ -258,13 +260,27 @@ WorldPacket const* WorldPackets::Item::ItemPushResult::Write()
     _worldPacket << uint32(BattlePetBreedQuality);
     _worldPacket << int32(BattlePetLevel);
     _worldPacket << ItemGUID;
+    _worldPacket << uint32(Toasts.size());
+    for (UiEventToast const& uiEventToast : Toasts)
+        _worldPacket << uiEventToast;
+
     _worldPacket.WriteBit(Pushed);
     _worldPacket.WriteBit(Created);
+    _worldPacket.WriteBit(Unused_1017);
     _worldPacket.WriteBits(DisplayText, 3);
     _worldPacket.WriteBit(IsBonusRoll);
     _worldPacket.WriteBit(IsEncounterLoot);
+    _worldPacket.WriteBit(CraftingData.has_value());
+    _worldPacket.WriteBit(FirstCraftOperationID.has_value());
     _worldPacket.FlushBits();
+
     _worldPacket << Item;
+
+    if (FirstCraftOperationID)
+        _worldPacket << uint32(*FirstCraftOperationID);
+
+    if (CraftingData)
+        _worldPacket << *CraftingData;
 
     return &_worldPacket;
 }
@@ -358,28 +374,6 @@ void WorldPackets::Item::RemoveNewItem::Read()
     _worldPacket >> ItemGuid;
 }
 
-WorldPacket const* WorldPackets::Item::OpenItemForge::Write()
-{
-    _worldPacket << uint32(UNK2); 
-    _worldPacket << int32(Flags);
-    _worldPacket << uint32(Status);
-    _worldPacket << uint32(UNK1);
-    _worldPacket << uint32(VariableID);
-    _worldPacket << uint8(UNK9);
-    _worldPacket << uint8(UNK10);
-
-    _worldPacket.WriteBit(UNK5);
-    _worldPacket.WriteBit(UNK3);
-    _worldPacket.WriteBit(UNK4);
-    _worldPacket.WriteBit(UNK6);
-    _worldPacket.WriteBit(UNK7);
-    _worldPacket.WriteBit(UNK8);
-    _worldPacket.WriteBit(UNK);
-    _worldPacket.WriteBits(Created, true);
- 
-    return &_worldPacket;
-}
-
 WorldPacket const* WorldPackets::Item::SocketGemsFailure::Write()
 {
     _worldPacket << Item;
@@ -402,5 +396,22 @@ WorldPacket const* WorldPackets::Item::ItemInteractionComplete::Write()
 {
     _worldPacket.WriteBit(Complete);
     _worldPacket.FlushBits();
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Item::RecraftItemResul::Write()
+{
+    _worldPacket << itemID;
+    _worldPacket << result;
+    _worldPacket << newItemID;
+    _worldPacket << cost;
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Item::AddItemPassive::Write()
+{
+    _worldPacket << itemID;
+
     return &_worldPacket;
 }

@@ -121,14 +121,14 @@ public:
         void JustEngagedWith(Unit*) override
         {
             if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-           //     events.ScheduleEvent(EVENT_CATALYST_PATCHES, TIMER_CATALYST_PATCHES);
+                events.ScheduleEvent(EVENT_CATALYST_PATCHES, 15s);
             SelectSoundAndText(me, 1);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-           /* events.ScheduleEvent(EVENT_PROPELLANT_BLAST, TIMER_PROPELLANT_BLAST);
-            events.ScheduleEvent(EVENT_AZERITE_CATALYST, TIMER_AZERITE_CATALYST);
-            events.ScheduleEvent(EVENT_CHEMICAL_BURN, TIMER_CHEMICAL_BURN);
-            events.ScheduleEvent(EVENT_SEARING_REAGENT, TIMER_SEARING_REAGENT);*/
+            events.ScheduleEvent(EVENT_PROPELLANT_BLAST, 17s);
+            events.ScheduleEvent(EVENT_AZERITE_CATALYST, 22s);
+            events.ScheduleEvent(EVENT_CHEMICAL_BURN, 30s);
+            events.ScheduleEvent(EVENT_SEARING_REAGENT, 14s);
         }
 
         void HandlePropellantBlast() // movement force is not currently working so.. we do the pushback spell until then
@@ -198,7 +198,7 @@ public:
                             me->CastSpell(player, SPELL_CHEMICAL_BURN_MISSILE);
                     }
 
-                   // events.ScheduleEvent(EVENT_CHEMICAL_BURN, TIMER_CHEMICAL_BURN);
+                    events.ScheduleEvent(EVENT_CHEMICAL_BURN, 15s);
                     break;
                 }
                 case EVENT_AZERITE_CATALYST:
@@ -210,7 +210,7 @@ public:
                 case EVENT_SEARING_REAGENT:
                     if(Unit* target = me->GetVictim())
                         me->CastSpell(target, SPELL_SEARING_REAGENT);
-                  //  events.ScheduleEvent(EVENT_SEARING_REAGENT, TIMER_SEARING_REAGENT);
+                    events.ScheduleEvent(EVENT_SEARING_REAGENT, 13s);
                     break;
                 }
             }

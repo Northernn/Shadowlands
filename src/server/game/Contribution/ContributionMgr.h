@@ -6,6 +6,9 @@ Thordekk
 #ifndef ContributionMgr_h__
 #define ContributionMgr_h__
 
+#define CONTRIBUTION_UPDATE_DELAY   5 * IN_MILLISECONDS
+#define CONTRIBUTION_SAVE_DELAY     60 * IN_MILLISECONDS
+
 namespace ContributionData
 {
     enum ContributionState : uint8
@@ -54,16 +57,54 @@ public:
 
     ContributionMgr();
 
-    void Update(uint32 diff);
+    void Update(uint32 diff, Player* player);
 
     void Initialize();
-    void OnChangeContributionState(uint32 contribuiontID, ContributionData::ContributionState newState);
+    void OnChangeContributionState(Player* player, uint32 contribuiontID, ContributionData::ContributionState newState);
     void Contribute(Player* player, uint8 contributuinID);
     void ContributionGetState(Player* player, uint32 contributionID, uint32 contributionGuid);
 
 private:
     std::map<uint32, ContributionLifeData> _contributionObjects;
     uint32 m_nextUpdate;
+};
+
+enum eContributionStates
+{
+    Building = 1,
+    Active,
+    UnderAttack,
+    Destroyed,
+
+    MaxState = Destroyed
+};
+
+struct Contribution
+{
+public:
+    Contribution();
+    ~Contribution();
+
+    uint32 GetTotalProgress(uint32 p_Time) const;
+    uint32 GetTotalDepletion(uint32 p_Time) const;
+    uint32 GetEndStateTime() const;
+
+    bool IsActive() const;
+
+    bool IsAfterHalfOfCurrentState() const;
+    uint32 GetHalfCurrentStateTimer() const;
+
+    operator bool() const { return ID != 0; }
+
+public: ///< DB Datas
+    uint32 ID;
+    uint32 State;
+    uint32 Progress;
+    uint32 StartTime;
+
+public: ///< DBC Datas
+    ManagedWorldStateEntry const* Data;
+    std::pair<uint32, uint32> RequiredCurrency;
 };
 
 #define sContributionMgr ContributionMgr::Instance()

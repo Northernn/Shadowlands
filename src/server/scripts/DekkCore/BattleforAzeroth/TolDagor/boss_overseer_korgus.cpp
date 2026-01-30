@@ -135,8 +135,6 @@ private:
 // 256038 - Deadeye
 class spell_generic_deadeye : public AuraScript
 {
-    PrepareAuraScript(spell_generic_deadeye);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -159,8 +157,6 @@ class spell_generic_deadeye : public AuraScript
 // 256105 - Explosive Burst
 class spell_explosive_burst : public AuraScript
 {
-    PrepareAuraScript(spell_explosive_burst);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();

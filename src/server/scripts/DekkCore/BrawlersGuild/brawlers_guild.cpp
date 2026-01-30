@@ -19,6 +19,7 @@
 #include "BrawlersGuild.h"
 #include "ScriptedGossip.h"
 #include "Creature.h"
+#include "SpellScript.h"
 
  // 68408, 67267
 class npc_brawlers_guild_queue : public CreatureScript
@@ -48,7 +49,7 @@ public:
                 if (player->HasAchieved(ACHIEVEMENT_FIRST_RULE_H) || player->HasAchieved(ACHIEVEMENT_FIRST_RULE_A))
                 {
                     AddGossipItemFor(player, 15284, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                    AddGossipItemFor(player, 15284, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                    //AddGossipItemFor(player, 15284, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
                 }
 
                 player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
@@ -63,7 +64,7 @@ public:
             {
                 player->PlayerTalkClass->ClearMenus();
 
-                if (action == GOSSIP_ACTION_INFO_DEF + 1)
+                if (action == 0) // add to queue
                 {
                     if (BrawlersGuild* brawlerGuild = player->GetBrawlerGuild())
                         brawlerGuild->AddPlayer(player);
@@ -102,7 +103,6 @@ public:
 
         void Reset() override
         {
-            (true);
             events.Reset();
             me->Mount(44634);
             if (BrawlersGuild* brawlerGuild = me->GetBrawlerGuild())
@@ -114,6 +114,9 @@ public:
         {
             switch (rank)
             {
+            case NPC_OSO:
+                Talk(10);
+                break;
             case NPC_OOLISS:
                 Talk(11);
                 break;
@@ -189,6 +192,12 @@ public:
             }
         }
 
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        {
+            if (damage >= me->GetHealth())
+                damage = me->GetHealth() - 1;
+        }
+
         void UpdateAI(uint32 /*diff*/) override
         { }
     };
@@ -213,10 +222,11 @@ public:
 
         void Reset() override
         {
-            (true);
             events.Reset();
+
             if (BrawlersGuild* brawlerGuild = me->GetBrawlerGuild())
                 brawlerGuild->SetAnnouncer(me->GetGUID());
+
             me->GetMotionMaster()->MovePath(11854503, true);
         }
 
@@ -316,8 +326,6 @@ public:
 
     class spell_queued_for_brawl_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_queued_for_brawl_AuraScript);
-
         void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (BrawlersGuild* brawlerGuild = GetUnitOwner()->GetBrawlerGuild())
@@ -371,6 +379,41 @@ public:
     }
 };
 
+// 136149
+class spell_blood_soaked_invitation : public SpellScript
+{
+    void HandleEffect(SpellEffIndex /*effIndex*/)
+    {
+        Player* player = GetCaster()->ToPlayer();
+
+        if (!player)
+            return;
+
+        if (player->HasAchieved(ACHIEVEMENT_FIRST_RULE_A) || player->HasAchieved(ACHIEVEMENT_FIRST_RULE_H))
+            return;
+
+        if (player->GetTeamId() == TEAM_ALLIANCE)
+        {
+            if (auto achievementEntry = sAchievementStore.LookupEntry(ACHIEVEMENT_FIRST_RULE_A))
+                player->CompletedAchievement(achievementEntry);
+
+            player->CastSpell(player, SPELL_ALLIANCE_SOUND, true);
+        }
+        else
+        {
+            if (auto achievementEntry = sAchievementStore.LookupEntry(ACHIEVEMENT_FIRST_RULE_H))
+                player->CompletedAchievement(achievementEntry);
+
+            player->CastSpell(player, SPELL_HORDE_SOUND, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_blood_soaked_invitation::HandleEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_the_brawlers_guild()
 {
     new npc_brawlers_guild_queue();
@@ -378,4 +421,5 @@ void AddSC_the_brawlers_guild()
     new npc_bossy();
     new spell_queued_for_brawl();
     new brawl_invitation_item();
+    RegisterSpellScript(spell_blood_soaked_invitation);
 }

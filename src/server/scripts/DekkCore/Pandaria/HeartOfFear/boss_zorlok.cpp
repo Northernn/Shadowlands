@@ -1226,8 +1226,6 @@ class spell_inhale_zorlok : public SpellScriptLoader
 
         class spell_inhale_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_inhale_SpellScript);
-
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
               //  if (Unit* caster = GetCaster())
@@ -1254,8 +1252,6 @@ class spell_attenuation : public SpellScriptLoader
 
         class spell_attenuation_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_attenuation_SpellScript);
-
             void Apply()
             {
                 if (Creature* zorlok = GetCaster()->ToCreature())
@@ -1288,8 +1284,6 @@ class spell_force_verve : public SpellScriptLoader
 
         class spell_force_verve_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_force_verve_SpellScript);
-
             void ApplyEffect()
             {
                 if (Player* target = GetHitPlayer())
@@ -1326,8 +1320,6 @@ class spell_sonic_ring : public SpellScriptLoader
 
         class spell_sonic_ring_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_sonic_ring_SpellScript);
-
             void Effect()
             {
                 if (Player* target = GetHitPlayer())
@@ -1357,8 +1349,6 @@ class spell_sonic_pulse : public SpellScriptLoader
 
         class spell_sonic_pulse_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_sonic_pulse_AuraScript);
-
             void ApplyAura(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1374,8 +1364,6 @@ class spell_sonic_pulse : public SpellScriptLoader
 
         class spell_sonic_pulse_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_sonic_pulse_SpellScript);
-
             void Effect()
             {
                 if (Unit* caster = GetCaster())
@@ -1434,8 +1422,6 @@ class spell_zorlok_exhale : public SpellScriptLoader
 
         class spell_zorlok_exhale_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_zorlok_exhale_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -1517,8 +1503,6 @@ class spell_zorlok_exhale_damage : public SpellScriptLoader
 
         class spell_zorlok_exhale_damage_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_zorlok_exhale_damage_SpellScript);
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 Unit* caster = GetCaster();
@@ -1588,8 +1572,6 @@ class spell_convert : public SpellScriptLoader
 
         class spell_convertSpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_convertSpellScript);
-
             void SelectTargets(std::list<WorldObject*>& targets)
             {
                 targets.clear();

@@ -12,7 +12,7 @@ const Position middle_pos = { -1487.0f, -580.0f, -518.4f, 4.71f };
 
 enum Texts
 {
-    SAY_MINDQUAKE,    
+    SAY_MINDQUAKE,
     SAY_AGGRO = 2,
     SAY_SHRED_PSYCHE,
     SAY_ILLUSIONARY_PROJECTIONS,
@@ -37,7 +37,7 @@ enum Spells
     NPC_SHREDDED_PSYCHE = 158781,
     SPELL_PSYCHIC_OUTBURST = 309687,
     SPELL_PSYCHIC_REVERBERATIONS = 312721,
-    //Heroic    
+    //Heroic
     SPELL_INTANGIBLE_ILLUSION = 313208,
     SPELL_SURGING_IMAGES_CREATE_AT = 313210,
     SPELL_SURGING_IMAGES_AT_DAMAGE = 313215,
@@ -71,7 +71,7 @@ private:
 
     void Reset() override
     {
-        BossAI::Reset();        
+        BossAI::Reset();
         me->ClearUnitState(UNIT_STATE_ROOT);
         me->RemoveAura(SPELL_PROPHET_ILLUSION);
         me->SetPowerType(POWER_ENERGY);
@@ -92,15 +92,16 @@ private:
         events.ScheduleEvent(EVENT_BERSERK, 8min);
     }
 
-    void DamageTaken(Unit* done_by, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HealthBelowPct(81) && this->phase != 2 )
         {
-            this->phase = 2;
+            phase = 2;
             me->InterruptNonMeleeSpells(true, 0, true);
-            Talk(SAY_ILLUSIONARY_PROJECTIONS);            
+            Talk(SAY_ILLUSIONARY_PROJECTIONS);
             me->SetReactState(REACT_PASSIVE);
-            DoCast(SPELL_ILLUSIONARY_PROJECTION_DISAPPEAR);            
+            DoCast(SPELL_ILLUSIONARY_PROJECTION_DISAPPEAR);
+
             me->GetScheduler().Schedule(5s, [this] (TaskContext context)
             {
                 std::list<Player*> p_li;
@@ -112,9 +113,10 @@ private:
                     context.Repeat(5s);
             });
         }
-        if (me->HealthBelowPct(75) && this->phase != 2)
+
+        if (me->HealthBelowPct(75) && phase != 2)
         {
-            this->phase = 1;
+            phase = 1;
             me->ClearUnitState(UNIT_STATE_ROOT);
             me->ClearUnitState(UNIT_STATE_CASTING);
             events.ScheduleEvent(EVENT_SHADOW_SHOCK, 3s);
@@ -152,7 +154,7 @@ private:
         _DespawnAtEvade();
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         _JustDied();
         me->RemoveAllAreaTriggers();
@@ -175,17 +177,18 @@ private:
         case EVENT_SHRED_PSYCHE:
         {
             Talk(SAY_SHRED_PSYCHE);
-             UnitList tarlist;
-             for (Unit* tar : tarlist)
-             {
-                 DoCast(SPELL_SHRED_PSYCHE_DUMMY);
-                 DoCast(tar, SPELL_SHRED_PSYCHE_AURA);
-                 tar->GetScheduler().Schedule(5s, [tar] (TaskContext context)
-                 {
-                    tar->CastSpell(nullptr, SPELL_SHRED_PSYCHE_SUMMON, true);
-                 });      
-             }
-             events.Repeat(30s);  
+            UnitList tarlist;
+            for (Unit* tar : tarlist)
+            {
+                DoCast(SPELL_SHRED_PSYCHE_DUMMY);
+                DoCast(tar, SPELL_SHRED_PSYCHE_AURA);
+
+                tar->GetScheduler().Schedule(5s, [tar](TaskContext)
+                {
+                   tar->CastSpell(nullptr, SPELL_SHRED_PSYCHE_SUMMON, true);
+                });
+            }
+            events.Repeat(30s);
         }
         break;
 
@@ -216,7 +219,7 @@ private:
                 {
                     DoCast(tar, SPELL_TWISTED_MIND, true);
                 }
-            }  
+            }
             break;
         }
         case EVENT_PROJECTIONS:
@@ -224,9 +227,10 @@ private:
             Talk(SAY_ILLUSIONARY_PROJECTIONS);
             for (uint8 i = 0; i < 5; ++i)
             {
-                auto* projections = DoSummon(NPC_PROPGET_SKITRA_PROJECTION, me->GetRandomPoint(middle_pos, 60.0f), 30s, TEMPSUMMON_MANUAL_DESPAWN);               
+                /*auto* projections = */DoSummon(NPC_PROPGET_SKITRA_PROJECTION, me->GetRandomPoint(middle_pos, 60.0f), 30s, TEMPSUMMON_MANUAL_DESPAWN);
             }
             me->AddUnitState(UNIT_STATE_CASTING);
+            break;
         }
         case EVENT_BERSERK:
         {
@@ -258,7 +262,7 @@ struct npc_shredded_psyche : public ScriptedAI
         ScriptedAI::Reset();
     }
 
-    void IsSummonedBy(WorldObject* summoner) override
+    void IsSummonedBy(WorldObject* /*summoner*/) override
     {
         me->SetDisplayId(me->GetNativeDisplayId());
         me->AddAura(309681, me);
@@ -284,7 +288,7 @@ struct npc_prophet_skitra_projection : public ScriptedAI
         me->AddUnitState(UNIT_STATE_CASTING);
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         DoCastAOE(SPELL_MINDQUAKE, false);
     }
@@ -298,7 +302,7 @@ struct npc_image_of_absolution : public ScriptedAI
     void Reset() override
     {
         ScriptedAI::Reset();
-        me->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE));       
+        me->SetUnitFlag(UnitFlags(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_UNINTERACTIBLE));
         me->SetReactState(REACT_PASSIVE);
         //me->AddAura(SPELL_INTANGIBLE_ILLUSION);
         me->CastSpell(nullptr, SPELL_SURGING_IMAGES_CREATE_AT, true);

@@ -796,8 +796,6 @@ public:
 
     class spell_suppressing_wind_189168_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_suppressing_wind_189168_SpellScript);
-
         void HandleHitTarget(SpellEffIndex /*effIndex*/)
         {
             if (!GetHitUnit() || !GetCaster() || GetHitUnit()->IsPlayer())
@@ -1069,19 +1067,6 @@ struct npc_quest_pet_rocks : public ScriptedAI
     }
 };
 
-class scene_the_story_of_huln : public SceneScript
-{
-public:
-    scene_the_story_of_huln() : SceneScript("scene_the_story_of_huln") { }
-
-    // Called when a scene is either canceled or completed
-    void OnSceneEnd(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* /*sceneTemplate*/) override
-    {
-        player->KilledMonsterCredit(98825);
-        player->SummonCreature(98825, Position(4057.2099f, 4320.37f, 675.603f, 1.2158f), TEMPSUMMON_MANUAL_DESPAWN, 0s, 0);
-    }
-};
-
 void AddSC_highmountain()
 {
     RegisterCreatureAI(npc_94973);
@@ -1120,5 +1105,4 @@ void AddSC_highmountain()
     RegisterCreatureAI(npc_marakhan_97418);
     RegisterCreatureAI(npc_navarrogg_95259);
     RegisterCreatureAI(npc_quest_pet_rocks);
-    RegisterSceneScript(scene_the_story_of_huln);
 }

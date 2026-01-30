@@ -213,7 +213,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
 [](Player const* /*player*/, int32 holidayID, int32 arg2) -> int32
 {
     HolidaysEntry const* entry = sHolidaysStore.LookupEntry(holidayID);
-    if (!entry || arg2 > 0 && !entry->Duration[arg2])
+    if (!entry || (arg2 > 0 && !entry->Duration[arg2]))
         return 0;
 
     int l_ChoosedDuration = entry->Duration[arg2];
@@ -424,28 +424,28 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
     return l_ChoosedDuration * MS::Utilities::Globals::InMinutes::Hour;
 },
 /// WorldStateExpressionFunctions::HolidayActive
-[](Player const* player, int32 holidayID, int32 /*arg2*/) -> int32
+[](Player const* /*player*/, int32 /*holidayID*/, int32 /*arg2*/) -> int32
 {
-    if (HolidaysEntry const* entry = sHolidaysStore.LookupEntry(holidayID))
-    {
-        auto idx = 0;
-        auto durations = entry->Duration;
-        /*while (idx <= 0 || *durations)
-        {
-            signed int currentDuration = *durations;
-            if (!currentDuration)
-                currentDuration = 24;
-
-            if (WorldStateExpressionFunction[sWorldStateExpressionFunctions::HolidayStart](player, holidayID, idx) < MS::Utilities::Globals::InMinutes::Hour * currentDuration)
-                return 1;
-
-            ++idx;
-            durations += 4;
-
-            if (idx >= MAX_HOLIDAY_DURATIONS)
-                return 0;
-        }*/
-    }
+//    if (HolidaysEntry const* entry = sHolidaysStore.LookupEntry(holidayID))
+//    {
+//        auto idx = 0;
+//        auto durations = entry->Duration;
+//        /*while (idx <= 0 || *durations)
+//        {
+//            signed int currentDuration = *durations;
+//            if (!currentDuration)
+//                currentDuration = 24;
+//
+//            if (WorldStateExpressionFunction[sWorldStateExpressionFunctions::HolidayStart](player, holidayID, idx) < MS::Utilities::Globals::InMinutes::Hour * currentDuration)
+//                return 1;
+//
+//            ++idx;
+//            durations += 4;
+//
+//            if (idx >= MAX_HOLIDAY_DURATIONS)
+//                return 0;
+//        }*/
+//    }
 
     return 0;
 },
@@ -457,7 +457,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
 /// WorldStateExpressionFunctions::WeekNumber
 [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
 {
-    time_t time = GameTime::GetGameTime();
+//    time_t time = GameTime::GetGameTime();
     return 0/*(time - sWorld->GetServerRaidOrigin()) / WEEK*/;
 },
 /// WorldStateExpressionFunctions::None2
@@ -551,7 +551,7 @@ std::string UnpackWorldStateExpression(char const* input)
     return l_Unpacked;
 }
 
-int32 WorldStateExpression_EvalPush(Player const* player, char const** unpackedExpression, uint32 ID, int32* _worldStateID)
+int32 WorldStateExpression_EvalPush(Player const* /*player*/, char const** unpackedExpression, uint32 /*ID*/, int32* _worldStateID)
 {
 #define UNPACK_UINT8(x) { x = *((uint8*)((char const*)*unpackedExpression)); *unpackedExpression += sizeof(uint8);}
 #define UNPACK_INT32(x) { x = *((int32*)((char const*)*unpackedExpression)); *unpackedExpression += sizeof(int32);}
@@ -571,7 +571,7 @@ int32 WorldStateExpression_EvalPush(Player const* player, char const** unpackedE
         int32 l_WorldStateID;
         UNPACK_INT32(l_WorldStateID);
 
-        // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`) VALUES (%u, %u);", ID, l_WorldStateID); // Need for convert WorldStateExpressionID -> WorldStateID
+        // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`) VALUES ({}, {});", ID, l_WorldStateID); // Need for convert WorldStateExpressionID -> WorldStateID
 
         *_worldStateID = l_WorldStateID;
       //  if (player)
@@ -582,10 +582,10 @@ int32 WorldStateExpression_EvalPush(Player const* player, char const** unpackedE
         int32 functionID;
         UNPACK_INT32(functionID);
 
-        int arg1 = WorldStateExpression_EvalPush(player, unpackedExpression, ID, _worldStateID);
-        int arg2 = WorldStateExpression_EvalPush(player, unpackedExpression, ID, _worldStateID);
+//        int arg1 = WorldStateExpression_EvalPush(player, unpackedExpression, ID, _worldStateID);
+//        int arg2 = WorldStateExpression_EvalPush(player, unpackedExpression, ID, _worldStateID);
 
-        if (functionID > sizeof WorldStateExpressionFunction / sizeof WorldStateExpressionFunction[0])
+        if (uint64(functionID) > (sizeof(WorldStateExpressionFunction) / sizeof(WorldStateExpressionFunction[0])))
             return static_cast<uint32>(-1);
 
         // return WorldStateExpressionFunction[functionID](player, arg1, arg2);
@@ -645,14 +645,14 @@ bool WorldStateExpression_EvalCompare(Player const* player, char const** unpacke
         if (*_worldStateID && state)
             state->insert(std::make_pair(*_worldStateID, leftValue > 0 ? leftValue : 1));
 
-        // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`) VALUES (%u, %u, %i);", ID, *_worldStateID, leftValue); // Need for convert WorldStateExpressionID -> WorldStateID
+        // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`) VALUES ({}, {}, {});", ID, *_worldStateID, leftValue); // Need for convert WorldStateExpressionID -> WorldStateID
         return !!leftValue;
     }
 
     int32 _worldStateID2 = 0;
     auto rValue = WorldStateExpression_EvalArithmetic(player, unpackedExpression, ID, &_worldStateID2);
 
-    // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`, `Value1`) VALUES (%u, %u, %i, %i);", ID, *_worldStateID, rValue, opperand); // Need for convert WorldStateExpressionID -> WorldStateID
+    // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`, `Value1`) VALUES ({}, {}, {}, {});", ID, *_worldStateID, rValue, opperand); // Need for convert WorldStateExpressionID -> WorldStateID
 
     switch (opperand)
     {

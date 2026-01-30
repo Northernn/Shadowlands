@@ -1,6 +1,6 @@
 /*
 scenario_talador_iron_horde_finale
-
+ Dekk Core Team Devs 
 */
 #include "Scenario.h"
 #include "GameObject.h"
@@ -149,7 +149,7 @@ Position const stage5FirstPos[5] =
 
 Position const stage6KhadgarPos = { 3918.34f,2937.666f, 18.8634f, 4.9786f };
 
-G3D::Vector3 stage5SencondPos[3] =
+Position const stage5SencondPos[3] =
 {
     {3617.12f, 3042.61f, 26.159f},
     {3866.236f, 2915.77f, 34.54f},
@@ -157,7 +157,7 @@ G3D::Vector3 stage5SencondPos[3] =
 };
 using Path01Size = std::extent<decltype(stage5SencondPos)>;
 
-G3D::Vector3 stage6FirstPos[3] =
+Position const stage6FirstPos[3] =
 {
     {3882.08f, 2963.3f, 43.118f},
     {3762.3f, 3084.98f, 31.34f},
@@ -254,7 +254,7 @@ struct scenario_talador_iron_horde_finale : public InstanceScript
             {
                 khadgar->CastStop();
                 khadgar->CastSpell(khadgar, SPELL_STAGE_4_STOP_TIME_CAST, true);
-               // DoSendEventScenario(41623);
+                DoSendScenarioEvent(41623);
             });
         }
 
@@ -326,14 +326,14 @@ struct scenario_talador_iron_horde_finale : public InstanceScript
             wav_4++;
             if (wav_4 == 18)
             {
-                //DoSendEventScenario(41623);
+                DoSendScenarioEvent(41623);
             }
             break;
         case NPC_MACHINIST_BRANDT_80962:
-          //  DoSendEventScenario(39193);
+            DoSendScenarioEvent(39193);
             break;
         case NPC_BLACKHAND_77256:
-           // DoSendEventScenario(40688);
+            DoSendScenarioEvent(40688);
             instance->SummonGameObject(GO_PORTAL_TO_TALADOR_ALLIANCE, portalPos, QuaternionData(0.0f, 0.0f, 0.0f, 0.0f), 0);
             DoCastSpellOnPlayers(SPELL_MOVIE);
             //Death 
@@ -356,7 +356,7 @@ struct npc_scenario_talador_stage_1 : public ScriptedAI
     void sGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId)
     {
         CloseGossipMenuFor(player);
-      //  instance->DoSendEventScenario(42809);
+        instance->DoSendScenarioEvent(42809);
         //86671
         if (Creature* npc = me->FindNearestCreature(86671, 50.0f))
         {
@@ -377,7 +377,7 @@ struct npc_iron_star_86671 : public ScriptedAI
         if (Player* player = clicker->ToPlayer())
         {
             if (InstanceScript* instance = me->GetInstanceScript())
-             //   instance->DoSendEventScenario(42033);
+                instance->DoSendScenarioEvent(42033);
             //173525 cast  173524   86712 ()
             if (auto npc = player->SummonCreature(86712, player->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0s))
             {
@@ -393,7 +393,8 @@ struct npc_iron_star_86671 : public ScriptedAI
         }
     }
 };
-//at 7891 155693/iron-star-area-trigger Area Trigger (3219)
+
+//at  155693/iron-star-area-trigger Area Trigger (3219)
 //at_iron_star_area_trigger
 struct at_iron_star_area_trigger : AreaTriggerAI
 {
@@ -435,15 +436,15 @@ struct npc_archmage_khadgar_77195 : public ScriptedAI
         CloseGossipMenuFor(player);
         if (instance->GetData(3) != DONE)
         {
-            //instance->DoSendEventScenario(42109);
+            instance->DoSendScenarioEvent(42109);
             me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
         }
         else if (instance->GetData(5) != DONE)
         {
-          //  instance->DoSendEventScenario(41842);
-           // if (!IsLock)
+            instance->DoSendScenarioEvent(41842);
+            if (!IsLock)
             {
-              //  IsLock = true;
+                IsLock = true;
                 if (Creature* black = me->FindNearestCreature(NPC_BLACKHAND_77256, 50.0f))
                 {
                     if (Creature* mob = me->FindNearestCreature(NPC_ORGRIM_DOOMHAMMER_77257, 50.0f))
@@ -453,14 +454,14 @@ struct npc_archmage_khadgar_77195 : public ScriptedAI
                     }
                 }
             }
-          //  instance->DoSendEventScenario(40692);
-           // player->GetMotionMaster()->MoveSmoothPath(2, stage5SencondPos, Path01Size::value, false);
+            instance->DoSendScenarioEvent(40692);
+            player->GetMotionMaster()->MoveSmoothPath(2, stage5SencondPos, Path01Size::value, false);
             me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
         }
         else if (instance->GetData(6) != DONE)
         {
-          //  instance->DoSendEventScenario(42038);
-         //   player->GetMotionMaster()->MoveSmoothPath(2, stage6FirstPos, Path02Size::value, false);
+            instance->DoSendScenarioEvent(42038);
+            player->GetMotionMaster()->MoveSmoothPath(2, stage6FirstPos, Path02Size::value, false);
             me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
         }
     }
@@ -471,19 +472,18 @@ struct npc_archmage_khadgar_77195 : public ScriptedAI
         {
             if (me->IsWithinDist(player, 15.0f, false))
             {
-             //   if (instance->GetData(3) != DONE)
-                 //   instance->DoSendEventScenario(42032);
+                if (instance->GetData(3) != DONE)
+                    instance->DoSendScenarioEvent(42032);
             }
         }
     }
 private:
     InstanceScript* instance;
+    bool IsLock;
 };
 //167264 TIME STOP -> AURA 167260
 class spell_talador_stop_time : public SpellScript
 {
-    PrepareSpellScript(spell_talador_stop_time);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())
@@ -543,8 +543,6 @@ class spell_talador_stop_time : public SpellScript
 // 167260
 class aura_talador_stop_time : public AuraScript
 {
-    PrepareAuraScript(aura_talador_stop_time);
-
     void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
     {
         if (!GetUnitOwner())
@@ -753,7 +751,7 @@ public:
 };
 void AddSC_scenario_talador_iron_horde_finale()
 {
-   // RegisterInstanceScript(scenario_talador_iron_horde_finale, 1207);
+    RegisterInstanceScript(scenario_talador_iron_horde_finale, 1207);
     RegisterCreatureAI(npc_scenario_talador_stage_1);
     RegisterCreatureAI(npc_iron_star_86671);
     RegisterAreaTriggerAI(at_iron_star_area_trigger);

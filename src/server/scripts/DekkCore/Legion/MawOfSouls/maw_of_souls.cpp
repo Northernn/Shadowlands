@@ -165,126 +165,6 @@ public:
     }
 };
 
-
-class npc_seacursed_soulkeeper : public CreatureScript
-{
-public:
-    npc_seacursed_soulkeeper() : CreatureScript("npc_seacursed_soulkeeper") {}
-
-    struct npc_seacursed_soulkeeperAI : public ScriptedAI
-    {
-        npc_seacursed_soulkeeperAI(Creature* creature) : ScriptedAI(creature)
-        {
-            instance = me->GetInstanceScript();
-            Initialize();
-        }
-
-        void Initialize()
-        {
-        }
-
-        void UpdateAI(uint32 /*diff*/) override
-        {
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-
-    private:
-        InstanceScript* instance;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_seacursed_soulkeeperAI(creature);
-    }
-};
-
-
-class npc_seacursed_slaver : public CreatureScript
-{
-public:
-    npc_seacursed_slaver() : CreatureScript("npc_seacursed_slaver") {}
-
-    struct npc_seacursed_slaverAI : public ScriptedAI
-    {
-        npc_seacursed_slaverAI(Creature* creature) : ScriptedAI(creature)
-        {
-            instance = me->GetInstanceScript();
-            Initialize();
-        }
-
-        void Initialize()
-        {
-        }
-
-        void UpdateAI(uint32 /*diff*/) override
-        {
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-
-    private:
-        InstanceScript* instance;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_seacursed_slaverAI(creature);
-    }
-};
-
-
-class npc_seacursed_swiftblade : public CreatureScript
-{
-public:
-    npc_seacursed_swiftblade() : CreatureScript("npc_seacursed_swiftblade") {}
-
-    struct npc_seacursed_swiftbladeAI : public ScriptedAI
-    {
-        npc_seacursed_swiftbladeAI(Creature* creature) : ScriptedAI(creature)
-        {
-            instance = me->GetInstanceScript();
-            Initialize();
-        }
-
-        void Initialize()
-        {
-        }
-
-        void UpdateAI(uint32 /*diff*/) override
-        {
-            if (!UpdateVictim())
-            {
-                if (auraRemoved)
-                    auraRemoved = false;
-                return;
-            }
-
-            if (!auraRemoved)
-            {
-                auraRemoved = true;
-                me->RemoveAura(197227);
-            }
-
-            DoMeleeAttackIfReady();
-        }
-
-    private:
-        InstanceScript* instance;
-        bool auraRemoved = false;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_seacursed_swiftbladeAI(creature);
-    }
-};
-
-
 class npc_waterlogged_soul_guard : public CreatureScript
 {
 public:
@@ -418,9 +298,6 @@ void AddSC_maw_of_souls()
 {
     new npc_shroud_hound();
     new npc_night_watch_mariner();
-    new npc_seacursed_soulkeeper();
-    new npc_seacursed_slaver();
-    new npc_seacursed_swiftblade();
     new npc_waterlogged_soul_guard();
     new npc_helarjar_champion();
     new npc_skjal_maw();

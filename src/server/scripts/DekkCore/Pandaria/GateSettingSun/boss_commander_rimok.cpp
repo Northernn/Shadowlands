@@ -301,7 +301,6 @@ class npc_viscous_fluid : public CreatureScript
                 {
                     if (Unit* target = me->SelectNearestPlayer(5.0f))
                     {
-                        
                         {
                             if (Creature* rimok = pInstance->instance->GetCreature(pInstance->GetGuidData(NPC_RIMOK)))
                             {
@@ -330,8 +329,6 @@ class spell_rimok_saboteur_bombard: public SpellScriptLoader
 
         class spell_rimok_saboteur_bombard_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_rimok_saboteur_bombard_AuraScript);
-
             void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();

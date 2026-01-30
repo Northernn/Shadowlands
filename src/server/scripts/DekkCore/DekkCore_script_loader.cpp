@@ -7,6 +7,7 @@
  
 
 /* ######### Continents ######## > */
+void Add_DekkCore_DragonflightScripts();
 void Add_DekkCore_ShadowlandsScripts();
 void Add_DekkCore_BFAScripts();
 void Add_DekkCore_LegionScripts();
@@ -28,14 +29,15 @@ void AddSC_DekkCore_hunter_spell_scripts();
 void AddSC_DekkCore_druid_spell_scripts();
 void AddSC_DekkCore_deathknight_spell_scripts();
 void AddSC_DekkCore_demon_hunter_spell_scripts();
-void AddSC_dekkcore_generic_spell_scripts();
+void AddSC_DekkCore_generic_spell_scripts();
+void AddSC_DekkCore_evoker_spell_scripts();
+void AddSC_dragonriding_spell_scripts();
 /* < ######### Spells ########  */
 
 
 /* ######### Others ######## > */
-void AddSC_garrison_instance();
-void AddSC_Warboard_Scripts();
 void AddSC_Allied_Race_Scripts();
+void AddDekkCoreCommandsScripts();
 /* < ######### Others ########  */
 
 
@@ -44,7 +46,7 @@ void AddCustom_npc();
 void AddCustom_playerscript();
 void AddSC_Custom_Spells();
 void AddSC_Custom_Commands();
-void AddSC_Fluxurion_Custom_Scripts();
+void AddSC_Azgath_Custom_Scripts();
 /* < ######### Custom ########  */
 
 // Scenarios 
@@ -71,6 +73,9 @@ void AddSC_troves_of_the_thunder_king();
 void AddSC_DH_vengeance_art_scenario();
 void AddSC_arena_of_annihiliation();
 void AddSC_instance_instance_arena_of_annihiliation();
+void AddSC_instance_secrets_of_ragefire();
+void AddSC_scenario_the_secrets_of_ragefire();
+void AddSC_secrets_of_ragefire();
 
 // Draenor
 void AddSC_frostfire_ridge();
@@ -125,6 +130,11 @@ void AddSC_boss_SlaveWatcherCrushto();
 void AddSC_instance_Bloodmaul();
 void AddSC_mob_Bloodmaul();
 void AddSC_spell_Bloodmaul();
+void AddSC_gorgrond();
+void AddSC_spires_of_arak();
+void AddSC_talador();
+
+void AddBrawlersGuildScripts();
 
 // #################################################### //
 // Add them to AddDekkCoreScripts(){ .. } without void. //
@@ -133,6 +143,7 @@ void AddSC_spell_Bloodmaul();
 void AddDekkCoreScripts()
 {
     /* ######### Continents ######## > */
+    Add_DekkCore_DragonflightScripts();
 	Add_DekkCore_ShadowlandsScripts();
 	Add_DekkCore_BFAScripts();
     Add_DekkCore_LegionScripts();
@@ -153,14 +164,15 @@ void AddDekkCoreScripts()
     AddSC_DekkCore_druid_spell_scripts();
     AddSC_DekkCore_deathknight_spell_scripts();
     AddSC_DekkCore_demon_hunter_spell_scripts();
-    AddSC_dekkcore_generic_spell_scripts();
-	/* < ######### Spells ######## */
+    AddSC_DekkCore_generic_spell_scripts();
+    AddSC_DekkCore_evoker_spell_scripts();
+    AddSC_dragonriding_spell_scripts();
+    /* < ######### Spells ######## */
 	
 
     /* ######### Others ######## > */
-    AddSC_garrison_instance();
-    AddSC_Warboard_Scripts();
     AddSC_Allied_Race_Scripts();
+    AddDekkCoreCommandsScripts();
     /* < ######### Others ########  */
 
 
@@ -169,7 +181,7 @@ void AddDekkCoreScripts()
     AddCustom_playerscript();
     AddSC_Custom_Spells();
     AddSC_Custom_Commands();
-    AddSC_Fluxurion_Custom_Scripts();
+	AddSC_Azgath_Custom_Scripts();
     /* < ######### Custom ########  */
 
     //Scenarios
@@ -196,6 +208,9 @@ void AddDekkCoreScripts()
     AddSC_DH_vengeance_art_scenario();
     AddSC_arena_of_annihiliation();
     AddSC_instance_instance_arena_of_annihiliation();
+    AddSC_instance_secrets_of_ragefire();
+    AddSC_scenario_the_secrets_of_ragefire();
+    AddSC_secrets_of_ragefire();
 
     //Draenor
     AddSC_frostfire_ridge();
@@ -250,5 +265,11 @@ void AddDekkCoreScripts()
     AddSC_instance_Bloodmaul();
     AddSC_mob_Bloodmaul();
     AddSC_spell_Bloodmaul();
+    AddSC_gorgrond();
+    AddSC_spires_of_arak();
+    AddSC_talador();
+
+    // Brawlers guild
+    AddBrawlersGuildScripts();
 }
 

@@ -278,8 +278,6 @@ public:
 
     class spell_calamir_wf_target_picker_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_calamir_wf_target_picker_SpellScript);
-
         void HandleHitTarget(SpellEffIndex /*effIndex*/)
         {
             Unit* target = GetHitUnit();
@@ -338,73 +336,6 @@ public:
     }
 };
 
-//7625
-class at_calamir_wrathful_flames : public AreaTriggerEntityScript
-{
-public:
-    int32 timeInterval;
-    at_calamir_wrathful_flames() : AreaTriggerEntityScript("at_calamir_wrathful_flames") { }
-
-    struct at_calamir_wrathful_flamesAI : AreaTriggerAI
-    {
-        at_calamir_wrathful_flamesAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-        void OnCreate() override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster)
-                return;
-
-            for (auto guid : at->GetInsideUnits())
-                if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                    if (unit->GetTypeId() == TYPEID_PLAYER)
-                        unit->CastSpell(unit, SPELL_FI_WF_DAMAGE, true); //Applies an aura that damages everything
-        }
-
-        void OnUnitEnter(Unit* unit) override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster)
-                return;
-
-            if (!unit)
-                return;
-
-            if(unit->GetTypeId() == TYPEID_PLAYER)
-                unit->CastSpell(unit, SPELL_FI_WF_DAMAGE, true);
-        }
-
-        void OnUnitExit(Unit* unit) override
-        {
-            if (!unit)
-                return;
-
-            if (unit->HasAura(SPELL_FI_WF_DAMAGE))
-                unit->RemoveAura(SPELL_FI_WF_DAMAGE);
-        }
-
-        void OnRemove() override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!at || !caster)
-                return;
-
-            for (auto guid : at->GetInsideUnits())
-                if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                    if (unit->HasAura(SPELL_FI_WF_DAMAGE))
-                        unit->RemoveAura(SPELL_FI_WF_DAMAGE);
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new at_calamir_wrathful_flamesAI(areatrigger);
-    }
-};
-
 //217986
 class spell_calamir_arcane_desolation_target : public SpellScriptLoader
 {
@@ -413,8 +344,6 @@ public:
 
     class spell_calamir_arcane_desolation_target_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_calamir_arcane_desolation_target_SpellScript);
-
         void HandleHitTarget(SpellEffIndex /*effIndex*/)
         {
             Unit* target = GetHitUnit();
@@ -437,80 +366,6 @@ public:
     }
 };
 
-//7630
-class at_calamir_icy_comet : public AreaTriggerEntityScript
-{
-public:
-    at_calamir_icy_comet() : AreaTriggerEntityScript("at_calamir_icy_comet") { }
-
-    struct at_calamir_icy_cometAI : AreaTriggerAI
-    {
-        at_calamir_icy_cometAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
-        {
-            timeInterval = 0;
-        }
-
-        int32 timeInterval;
-
-        void OnCreate() override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster)
-                return;
-
-        //    at->SetDecalPropertiesID(13);
-
-            for (auto guid : at->GetInsideUnits())
-                if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                    if (unit->GetTypeId() == TYPEID_PLAYER)
-                        unit->CastSpell(unit, SPELL_FR_IC_SLOW, true);
-
-        }
-
-        void OnUnitEnter(Unit* unit) override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster)
-                return;
-
-            if (!unit)
-                return;
-
-            if (unit->GetTypeId() == TYPEID_PLAYER)
-                unit->CastSpell(unit, SPELL_FR_IC_SLOW, true);
-        }
-
-        void OnUnitExit(Unit* unit) override
-        {
-            if (!unit)
-                return;
-
-            if (unit->HasAura(SPELL_FR_IC_SLOW))
-                unit->RemoveAura(SPELL_FR_IC_SLOW);
-        }
-
-        void OnRemove() override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!at || !caster)
-                return;
-
-            for (auto guid : at->GetInsideUnits())
-                if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                    if (unit->HasAura(SPELL_FR_IC_SLOW))
-                        unit->RemoveAura(SPELL_FR_IC_SLOW);
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new at_calamir_icy_cometAI(areatrigger);
-    }
-};
-
 //7650
 class at_calamir_arcanopulse : public AreaTriggerEntityScript
 {
@@ -521,7 +376,7 @@ public:
     {
         at_calamir_arcanopulseAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
-        void OnCreate() override
+        void OnCreate(Spell const* /*creatingSpell*/) override
         {
             Unit* caster = at->GetCaster();
 
@@ -637,8 +492,6 @@ void AddSC_boss_calamir()
 {
     new at_calamir_arcanopulse();
     new at_calamir_howling_gale();
-    new at_calamir_icy_comet();
-    new at_calamir_wrathful_flames();
 
     new boss_calamir();
 

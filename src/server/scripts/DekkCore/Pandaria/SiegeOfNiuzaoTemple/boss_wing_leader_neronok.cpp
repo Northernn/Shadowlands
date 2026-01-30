@@ -455,8 +455,6 @@ public:
 
     class spell_wing_leader_neronok_caustic_pitch_target_selector_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_wing_leader_neronok_caustic_pitch_target_selector_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             targets.remove_if(CausticPitchTargetSelector());
@@ -512,8 +510,6 @@ public:
 
     class spell_wing_leader_neronok_quick_dry_resin_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_wing_leader_neronok_quick_dry_resin_aura_AuraScript);
-
         void OnPeriodic(AuraEffect const* /*aurEff*/)
         {
             if (Unit* targetUnit = GetTarget())

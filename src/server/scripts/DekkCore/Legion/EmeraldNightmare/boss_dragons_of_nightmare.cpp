@@ -1115,8 +1115,6 @@ struct npc_en_rothos : public ScriptedAI
 //205281, 205282
 class spell_ysondre_periodic_energize : public AuraScript
 {
-    PrepareAuraScript(spell_ysondre_periodic_energize);
-
     bool fullPower = false;
 
     void OnTick(AuraEffect const* aurEff)
@@ -1156,8 +1154,6 @@ class spell_ysondre_periodic_energize : public AuraScript
 //203102,203121,203124,203125
 class spell_ysondre_marks : public AuraScript
 {
-    PrepareAuraScript(spell_ysondre_marks);
-
     void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (!GetTarget())
@@ -1177,8 +1173,6 @@ class spell_ysondre_marks : public AuraScript
 //203686
 class spell_ysondre_nightmare_bloom : public SpellScript
 {
-    PrepareSpellScript(spell_ysondre_nightmare_bloom);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (GetCaster() && targets.empty())
@@ -1203,8 +1197,6 @@ class spell_ysondre_nightmare_bloom : public SpellScript
 //204040
 class spell_ysondre_shadow_burst : public AuraScript
 {
-    PrepareAuraScript(spell_ysondre_shadow_burst);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         AuraRemoveMode mode = GetTargetApplication()->GetRemoveMode();
@@ -1224,8 +1216,6 @@ class spell_ysondre_shadow_burst : public AuraScript
 //205172
 class spell_ysondre_bellowing_roar : public AuraScript
 {
-    PrepareAuraScript(spell_ysondre_bellowing_roar);
-
         void OnPeriodic(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -1244,8 +1234,6 @@ class spell_ysondre_bellowing_roar : public AuraScript
 //203888
 class spell_ysondre_siphon_spirit_filter : public SpellScript
 {
-    PrepareSpellScript(spell_ysondre_siphon_spirit_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())

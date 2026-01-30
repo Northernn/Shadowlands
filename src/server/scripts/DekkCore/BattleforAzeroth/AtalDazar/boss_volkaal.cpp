@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -153,7 +153,7 @@ struct boss_ataldazar_volkaal : public BossAI
         events.Reset();
         summons.DespawnAll();
         OpenBossGate(instance);
-       // totemsDead = 0;
+        totemsDead = 0;
 
         if (me->HasAura(SPELL_BAD_VODOO))
             me->RemoveAura(SPELL_BAD_VODOO);
@@ -208,7 +208,7 @@ struct boss_ataldazar_volkaal : public BossAI
                 //Noxious Stench adds a delay on toxic leap
                 if (phase == 1)
                 {
-                    //events.DelayEvent(EVENT_TOXIC_LEAP, 2s);
+                    events.DelayEvents(2s);
                     events.ScheduleEvent(EVENT_NOXIOUS_STENCH, 18s);
                 }
                 if (phase == 2)
@@ -234,6 +234,7 @@ struct boss_ataldazar_volkaal : public BossAI
             }
             case EVENT_CLOSE_DOOR:
                 CloseBossGate(instance);
+                break;
             default:
                 break;
             }
@@ -284,7 +285,7 @@ struct boss_ataldazar_volkaal : public BossAI
         }
     }
 
-    void JustDied(Unit* killer) override
+    void JustDied(Unit* /*killer*/) override
     {
         Talk(TALK_DEATH);
         _JustDied();

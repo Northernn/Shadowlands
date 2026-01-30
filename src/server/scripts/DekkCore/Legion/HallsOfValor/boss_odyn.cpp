@@ -386,8 +386,6 @@ public:
 
     class spell_odyn_radiant_tempest_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_odyn_radiant_tempest_SpellScript);
-
         void HandleOnHit()
         {
             if (!GetCaster() || !GetHitUnit())
@@ -426,8 +424,6 @@ public:
 
     class spell_odyn_runic_brand_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_odyn_runic_brand_AuraScript);
-
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();

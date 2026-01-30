@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2023 DekkCore
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -113,16 +113,9 @@ uint8 CouncilActive(InstanceScript* instance, Creature* me)
 
 // texts and sounds
 
-class bfa_boss_brother_ironhull : public CreatureScript
-{
-public:
-    bfa_boss_brother_ironhull() : CreatureScript("bfa_boss_brother_ironhull")
+struct bfa_boss_brother_ironhull : public BossAI
     {
-    }
-
-    struct bfa_boss_brother_ironhull_AI : public BossAI
-    {
-        bfa_boss_brother_ironhull_AI(Creature* creature) : BossAI(creature, DATA_TIDESAGE_COUNCIL)
+        bfa_boss_brother_ironhull(Creature* creature) : BossAI(creature, DATA_TIDESAGE_COUNCIL)
         {
             instance = me->GetInstanceScript();
         }
@@ -141,13 +134,13 @@ public:
                 me->CastSpell(fayeBoss, SPELL_REINFORCING_WARD);
         }
 
-        void EnterEvadeMode(EvadeReason why) override
+        void EnterEvadeMode(EvadeReason /*why*/) override
         {
             _DespawnAtEvade(15s);
             Reset();
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -171,8 +164,10 @@ public:
             }
         }
 
-        void JustDied(Unit*) override
+        void JustDied(Unit* who) 
         {
+            BossAI::JustDied(who);
+            instance->SetBossState(DATA_TIDESAGE_COUNCIL, DONE);
             if (instance)
             {
                 switch (CouncilActive(instance, me))
@@ -195,7 +190,7 @@ public:
             me->SetMaxPower(POWER_MANA, 10000);
             me->SetPower(POWER_MANA, 0);
 
-       //     events.ScheduleEvent(EVENT_REGEN_MANA, TIMER_REGEN_MANA);
+            events.ScheduleEvent(EVENT_REGEN_MANA, 10s);
         }
 
         void Reset() override
@@ -204,16 +199,18 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void JustEngagedWith(Unit*) override
+        void JustEngagedWith(Unit* who) override
         {
+            BossAI::JustEngagedWith(who);
             SelectSoundAndText(me, 1);
             if (Creature* faye = Faye())
                 faye->SetInCombatWithZone();
             HandleManaRegen();
-       //     events.ScheduleEvent(EVENT_HINDERING_CLEAVE, TIMER_HINDERING_CLEAVE);
+            events.ScheduleEvent(EVENT_HINDERING_CLEAVE, 10s);
             if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-          //      events.ScheduleEvent(EVENT_BLESSING_OF_IRONSIDE, TIMER_BLESSING_OF_IRONSIDE);
+                events.ScheduleEvent(EVENT_BLESSING_OF_IRONSIDE, 15s);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+            instance->SetBossState(DATA_TIDESAGE_COUNCIL, IN_PROGRESS);
         }
 
         void SelectSoundAndText(Creature* me, uint32  selectedTextSound = 0)
@@ -253,10 +250,10 @@ public:
                     me->SetPower(POWER_MANA, me->GetPower(POWER_MANA) + 1000);
                     if (me->GetPower(POWER_MANA) == 10000)
                     {
-                     //   events.ScheduleEvent(EVENT_REINFORCING_WARD, TIMER_REINFORCING_WARD);
+                        events.ScheduleEvent(EVENT_REINFORCING_WARD, 10s);
                         me->SetPower(POWER_MANA, 0);
                     }
-//                    events.ScheduleEvent(EVENT_REGEN_MANA, TIMER_REGEN_MANA);
+                    events.ScheduleEvent(EVENT_REGEN_MANA, 15s);
                     break;
                 case EVENT_REINFORCING_WARD:
                 {
@@ -269,34 +266,21 @@ public:
                 }
                 case EVENT_BLESSING_OF_IRONSIDE:
                     me->CastSpell(me, SPELL_BLESSING_OF_IRONSIDES);
-                 //   events.ScheduleEvent(EVENT_BLESSING_OF_IRONSIDE, TIMER_BLESSING_OF_IRONSIDE);
+                    events.ScheduleEvent(EVENT_BLESSING_OF_IRONSIDE, 17s);
                     break;
                 case EVENT_HINDERING_CLEAVE:
                     me->CastSpell(me->GetVictim(), SPELL_HINDERING_CLEAVE);
-                  //  events.ScheduleEvent(EVENT_HINDERING_CLEAVE, TIMER_HINDERING_CLEAVE);
+                    events.ScheduleEvent(EVENT_HINDERING_CLEAVE, 10s);
                     break;
                 }
             }
             DoMeleeAttackIfReady();
         }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new bfa_boss_brother_ironhull_AI(creature);
-    }
 };
 
-class bfa_boss_galecaller_faye : public CreatureScript
-{
-public:
-    bfa_boss_galecaller_faye() : CreatureScript("bfa_boss_galecaller_faye")
+struct bfa_boss_galecaller_faye : public BossAI
     {
-    }
-
-    struct bfa_boss_galecaller_faye_AI : public BossAI
-    {
-        bfa_boss_galecaller_faye_AI(Creature* creature) : BossAI(creature, DATA_TIDESAGE_COUNCIL)
+        bfa_boss_galecaller_faye(Creature* creature) : BossAI(creature, DATA_TIDESAGE_COUNCIL)
         {
             instance = me->GetInstanceScript();
         }
@@ -341,7 +325,7 @@ public:
             }
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -368,7 +352,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        void EnterEvadeMode(EvadeReason why) override
+        void EnterEvadeMode(EvadeReason /*why*/) override
         {
             _DespawnAtEvade(15s);
             Reset();
@@ -378,7 +362,6 @@ public:
         {
             return me->FindNearestCreature(BOSS_BROTHER_IRONHULL, 500.0f, false);
         }
-
 
         void RespawnCouncilAtWipe()
         {
@@ -394,7 +377,7 @@ public:
             me->SetMaxPower(POWER_MANA, 10000);
             me->SetPower(POWER_MANA, 0);
 
-          //  events.ScheduleEvent(EVENT_REGEN_MANA, TIMER_REGEN_MANA);
+            events.ScheduleEvent(EVENT_REGEN_MANA, 15s);
         }
 
         void JustEngagedWith(Unit*) override
@@ -403,9 +386,9 @@ public:
                 iron->SetInCombatWithZone();
 
             HandleManaRegen();
-          //  events.ScheduleEvent(EVENT_SLICING_BLAST, TIMER_SLICING_BLAST);
+            events.ScheduleEvent(EVENT_SLICING_BLAST, 14s);
             if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-           //     events.ScheduleEvent(EVENT_BLESSING_OF_THE_TEMPEST, TIMER_BLESSING_OF_THE_TEMPEST);
+                events.ScheduleEvent(EVENT_BLESSING_OF_THE_TEMPEST, 20s);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         }
 
@@ -427,10 +410,10 @@ public:
                     me->SetPower(POWER_MANA, me->GetPower(POWER_MANA) + 1000);
                     if (me->GetPower(POWER_MANA) == 10000)
                     {
-                     //   events.ScheduleEvent(EVENT_SWIFTNESS_WARD, TIMER_SWIFTNESS_WARD);
+                        events.ScheduleEvent(EVENT_SWIFTNESS_WARD, 15s);
                         me->SetPower(POWER_MANA, 0);
                     }
-                  //  events.ScheduleEvent(EVENT_REGEN_MANA, TIMER_REGEN_MANA);
+                    events.ScheduleEvent(EVENT_REGEN_MANA, 17s);
                     break;
                 case EVENT_SWIFTNESS_WARD:
                 {
@@ -442,34 +425,27 @@ public:
                 }
                 case EVENT_BLESSING_OF_THE_TEMPEST:
                     me->CastSpell(me, SPELL_BLESSING_OF_THE_TEMPEST);
-                  //  events.ScheduleEvent(EVENT_BLESSING_OF_THE_TEMPEST, TIMER_BLESSING_OF_THE_TEMPEST);
+                    events.ScheduleEvent(EVENT_BLESSING_OF_THE_TEMPEST, 20s);
                     break;
                 case EVENT_SLICING_BLAST:
                     me->CastSpell(me->GetVictim(), SPELL_SLICING_BLAST);
-                  //  events.ScheduleEvent(EVENT_SLICING_BLAST, TIMER_SLICING_BLAST);
+                    events.ScheduleEvent(EVENT_SLICING_BLAST, 16s);
                     break;
                 }
             }
             DoMeleeAttackIfReady();
         }
 
-       void OnSpellCast(SpellInfo const* spell) override
-        {
-                if (me->HasAura(SPELL_BLESSING_OF_THE_TEMPEST))
-                {
-                    SelectSoundAndText(me, 1);
-                    me->GetSpellHistory()->LockSpellSchool(SPELL_SCHOOL_MASK_NATURE, 0s);
-                    me->CastSpell(me, SPELL_BLOWBACK, true);
-                }
-        }
-
+       void OnSpellCast(SpellInfo const* /*spell*/) override
+       {
+            if (me->HasAura(SPELL_BLESSING_OF_THE_TEMPEST))
+            {
+                SelectSoundAndText(me, 1);
+                me->GetSpellHistory()->LockSpellSchool(SPELL_SCHOOL_MASK_NATURE, 0s);
+                me->CastSpell(me, SPELL_BLOWBACK, true);
+            }
+       }
     };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new bfa_boss_galecaller_faye_AI(creature);
-    }
-};
 
 enum BlowbackEvents
 {
@@ -602,8 +578,8 @@ public:
 
 void AddSC_boss_tidesage_council()
 {
-    new bfa_boss_brother_ironhull();
-    new bfa_boss_galecaller_faye();
+    RegisterCreatureAI(bfa_boss_brother_ironhull);
+    RegisterCreatureAI(bfa_boss_galecaller_faye);
     new bfa_npc_blowback();
 
     new bfa_reinforcing_ward_at();

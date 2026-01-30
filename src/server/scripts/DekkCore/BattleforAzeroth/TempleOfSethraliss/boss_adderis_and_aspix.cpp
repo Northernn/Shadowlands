@@ -105,7 +105,7 @@ public:
             shielded = false;
             me->SetPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
-            me->SetPower(POWER_ENERGY, 0);            
+            me->SetPower(POWER_ENERGY, 0);
             RespawnAspixAtWipe();
             me->RemoveUnitFlag2(UNIT_FLAG2_REGENERATE_POWER);
         }
@@ -194,21 +194,22 @@ public:
             }
         }
 
-        void EnterEvadeMode(EvadeReason why) override
+        void EnterEvadeMode(EvadeReason /*why*/) override
         {
             _DespawnAtEvade(15s);
         }
 
-        void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*at*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (me->HasAura(SPELL_LIGHTNING_SHIELD_AURA))
-                damage = 0;
+                me->RemoveAura(SPELL_LIGHTNING_SHIELD_AURA);
         }
 
         void JustEngagedWith(Unit* who) override
         {
             if (Creature* aspix = GetAspix())
                 aspix->SetInCombatWithZone();
+
             me->SetPower(POWER_ENERGY, 0);
             _JustEngagedWith(who);
 
@@ -449,12 +450,12 @@ public:
             }
         }
 
-        void EnterEvadeMode(EvadeReason w) override
+        void EnterEvadeMode(EvadeReason /*w*/) override
         {
             _DespawnAtEvade(15s);
         }
 
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
         {
             if (me->HasAura(SPELL_LIGHTNING_SHIELD_AURA))
                 damage = 0;
@@ -572,8 +573,6 @@ public:
 
     class bfa_spell_arcing_blade_SpellScript : public SpellScript
     {
-        PrepareSpellScript(bfa_spell_arcing_blade_SpellScript);
-
         uint8 targetsPlayers;
 
         bool Load()
@@ -587,7 +586,7 @@ public:
             targetsPlayers = targets.size();
         }
 
-        void RecalculateDamage(SpellEffIndex effIndex)
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
             SetHitDamage(GetHitDamage() / targetsPlayers);
         }
@@ -597,7 +596,6 @@ public:
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(bfa_spell_arcing_blade_SpellScript::CheckTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             OnEffectHitTarget += SpellEffectFn(bfa_spell_arcing_blade_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
         }
-
     };
 
     SpellScript* GetSpellScript() const

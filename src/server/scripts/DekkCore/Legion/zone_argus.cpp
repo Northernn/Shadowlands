@@ -703,8 +703,6 @@ struct boss_matron_folnuna : public ScriptedAI
 //247549
 class spell_beguiling_charm : public SpellScript
 {
-    PrepareSpellScript(spell_beguiling_charm);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         Unit* caster = GetCaster();
@@ -746,8 +744,6 @@ class spell_beguiling_charm : public SpellScript
 //247590
 class spell_sadist : public AuraScript
 {
-    PrepareAuraScript(spell_sadist);
-
     void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
@@ -767,8 +763,6 @@ class spell_sadist : public AuraScript
 //247739
 class spell_drain : public AuraScript
 {
-    PrepareAuraScript(spell_drain);
-
     void OnTick(AuraEffect const* /*auraEffect*/)
     {
         Unit* target = GetTarget();
@@ -791,8 +785,6 @@ class spell_drain : public AuraScript
 //247332
 class spell_eye_sore : public SpellScript
 {
-    PrepareSpellScript(spell_eye_sore);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         uint32 count = 5;
@@ -810,8 +802,6 @@ class spell_eye_sore : public SpellScript
 //247410
 class spell_soul_cleave : public SpellScript
 {
-    PrepareSpellScript(spell_soul_cleave);
-
     uint8 targetsCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -835,8 +825,6 @@ class spell_soul_cleave : public SpellScript
 //247437
 class spell_argus_seed_of_destruction : public AuraScript
 {
-    PrepareAuraScript(spell_argus_seed_of_destruction);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (!GetCaster() || !GetTarget() || !GetCaster()->IsInCombat() || GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
@@ -863,8 +851,6 @@ class spell_argus_seed_of_destruction : public AuraScript
 //247362
 class spell_infected_claws : public AuraScript
 {
-    PrepareAuraScript(spell_infected_claws);
-
     void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
@@ -982,8 +968,6 @@ struct npc_slumbering_gasp : ScriptedAI
 //247441
 class spell_folnuna_nausea : public AuraScript
 {
-    PrepareAuraScript(spell_folnuna_nausea);
-
     uint8 power{};
     std::vector<uint32> energy = { 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 1 };
     uint32 i = 0;
@@ -1006,8 +990,6 @@ class spell_folnuna_nausea : public AuraScript
  //247069
 class spell_enter_rift : public SpellScript
 {
-    PrepareSpellScript(spell_enter_rift);
-
     SpellCastResult CheckCast()
     {
         if (Player* player = GetCaster()->ToPlayer())
@@ -1177,31 +1159,6 @@ class spell_enter_rift : public SpellScript
     }
 };
 
-
-struct at_seeds_of_chaos : AreaTriggerAI
-{
-    at_seeds_of_chaos(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-    bool OnPlayerEnter = false;
-    uint32 scaleTimer = 1000;
-
-    void OnUnitEnter(Unit* player) override
-    {
-        if (!player->IsPlayer())
-            return;
-
-        OnPlayerEnter = true;
-    }
-
-    void OnUnitExit(Unit* player) override
-    {
-        if (!player->IsPlayer())
-            return;
-
-        OnPlayerEnter = false;
-    }
-};
-
 void AddSC_zone_argus()
 {
     RegisterCreatureAI(boss_mistress_alluradel);
@@ -1222,5 +1179,4 @@ void AddSC_zone_argus()
     RegisterSpellScript(spell_argus_seed_of_destruction);
     RegisterSpellScript(spell_infected_claws);
     RegisterSpellScript(spell_folnuna_nausea);
-    RegisterAreaTriggerAI(at_seeds_of_chaos);
 }

@@ -1193,8 +1193,6 @@ struct npc_cenarius_beast_of_nightmare : public ScriptedAI
 //212630
 class spell_cenarius_cleansing_ground : public SpellScript
 {
-    PrepareSpellScript(spell_cenarius_cleansing_ground);
-
     void FilterTargets(std::list<WorldObject*>& targetsList)
     {
         std::vector<WorldObject*> tempCreature;
@@ -1252,8 +1250,6 @@ class spell_cenarius_cleansing_ground : public SpellScript
 //212188, 212192
 class spell_cenarius_sum_wisp : public SpellScript
 {
-    PrepareSpellScript(spell_cenarius_sum_wisp);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         PreventHitDefaultEffect(EFFECT_0);
@@ -1272,8 +1268,6 @@ class spell_cenarius_sum_wisp : public SpellScript
 //211639
 class spell_cenarius_allies_periodic_energize : public AuraScript
 {
-    PrepareAuraScript(spell_cenarius_allies_periodic_energize);
-
     uint8 powerTick = 0;
 
     void OnTick(AuraEffect const* aurEff)
@@ -1372,8 +1366,6 @@ class spell_cenarius_allies_periodic_energize : public AuraScript
 //211935
 class spell_cenarius_ancient_dream_filter : public SpellScript
 {
-    PrepareSpellScript(spell_cenarius_ancient_dream_filter);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         targets.clear();
@@ -1400,8 +1392,6 @@ class spell_cenarius_ancient_dream_filter : public SpellScript
 //211939
 class spell_cenarius_ancient_dream : public AuraScript
 {
-    PrepareAuraScript(spell_cenarius_ancient_dream);
-
     void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
     {
         amount = -1;
@@ -1429,8 +1419,6 @@ class spell_cenarius_ancient_dream : public AuraScript
 //211073, 226821
 class spell_cenarius_desiccating_stomp_filter : public SpellScript
 {
-    PrepareSpellScript(spell_cenarius_desiccating_stomp_filter);
-
     bool targetsEmpty = false;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -1454,8 +1442,6 @@ class spell_cenarius_desiccating_stomp_filter : public SpellScript
 //211462
 class spell_cenarius_twisted_touch_of_life_filter : public SpellScript
 {
-    PrepareSpellScript(spell_cenarius_twisted_touch_of_life_filter);
-
     void FilterTargets(std::list<WorldObject*>& targetsList)
     {
         std::list<WorldObject*> tempCreature;
@@ -1489,8 +1475,6 @@ class spell_cenarius_twisted_touch_of_life_filter : public SpellScript
 //210340
 class spell_cenarius_dread_thorns_reflects : public AuraScript
 {
-    PrepareAuraScript(spell_cenarius_dread_thorns_reflects);
-
     void OnProc(AuraEffect * aurEff, ProcEventInfo& eventInfo)
     {
         if (!GetCaster())
@@ -1516,8 +1500,6 @@ class spell_cenarius_dread_thorns_reflects : public AuraScript
 //214529
 class spell_cenarius_spear_of_nightmares : public SpellScript
 {
-    PrepareSpellScript(spell_cenarius_spear_of_nightmares);
-
     void HandleScript(SpellEffIndex /*effectIndex*/)
     {
         if (!GetCaster() || !GetHitUnit())
@@ -1541,7 +1523,7 @@ struct at_cenarius_nightmare_blast : AreaTriggerAI
     float createScale = 0.0f;
     uint32 createScaleTimer = 0;
 
-    void OnCreate() override
+    void OnCreate(Spell const* /*creatingSpell*/) override
     {
         createScale = CalculatePct(50.0f, 1 * 100.0f);
         createScaleTimer = 200;

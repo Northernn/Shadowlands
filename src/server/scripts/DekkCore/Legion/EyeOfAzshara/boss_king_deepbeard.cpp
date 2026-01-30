@@ -398,8 +398,6 @@ public:
 	class bfa_spell_gaseous_bubbles_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_gaseous_bubbles_SpellScript);
-
 		void FilterTargets(std::list<WorldObject*> & targets)
 		{
 			if (targets.empty())
@@ -423,8 +421,6 @@ public:
 	class bfa_spell_gaseous_bubbles_AuraScript : public AuraScript
 	{
 	public:
-		PrepareAuraScript(bfa_spell_gaseous_bubbles_AuraScript);
-
 		bool Load() override
 		{
 			_amountAbsorbed = 0;
@@ -486,8 +482,6 @@ public:
 	class bfa_spell_call_of_seas_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_call_of_seas_SpellScript);
-
 		void HandleOnCast()
 		{
 			if (!GetCaster())
@@ -534,8 +528,6 @@ public:
 	class bfa_spell_quake_SpellScript : public SpellScript
 	{
 	public:
-		PrepareSpellScript(bfa_spell_quake_SpellScript);
-
 		void FilterTargets(std::list<WorldObject*>& targets)
 		{
 			if (targets.empty())

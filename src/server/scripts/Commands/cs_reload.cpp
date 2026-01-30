@@ -28,8 +28,6 @@ EndScriptData */
 #include "AreaTriggerDataStore.h"
 #include "AuctionHouseMgr.h"
 #include "BattlegroundMgr.h"
-#include "BattlePayMgr.h"
-#include "BattlePayData.h"
 #include "CharacterTemplateDataStore.h"
 #include "Chat.h"
 #include "ChatCommand.h"
@@ -52,6 +50,11 @@ EndScriptData */
 #include "SupportMgr.h"
 #include "WaypointManager.h"
 #include "World.h"
+
+// Fluxurion >
+#include "BattlePayMgr.h"
+#include "BattlePayData.h"
+// < Fluxurion
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -90,7 +93,6 @@ public:
             { "areatrigger_template",          rbac::RBAC_PERM_COMMAND_RELOAD_AREATRIGGER_TEMPLATE,             true,  &HandleReloadAreaTriggerTemplateCommand,        "" },
             { "autobroadcast",                 rbac::RBAC_PERM_COMMAND_RELOAD_AUTOBROADCAST,                    true,  &HandleReloadAutobroadcastCommand,              "" },
             { "battleground_template",         rbac::RBAC_PERM_COMMAND_RELOAD_BATTLEGROUND_TEMPLATE,            true,  &HandleReloadBattlegroundTemplate,              "" },
-            { "battlepay",                     rbac::RBAC_PERM_COMMAND_RELOAD_BATTLEPAY,                        true,  &HandleReloadBattlePay,                         "" },
             { "character_template",            rbac::RBAC_PERM_COMMAND_RELOAD_CHARACTER_TEMPLATE,               true,  &HandleReloadCharacterTemplate,                 "" },
             { "conditions",                    rbac::RBAC_PERM_COMMAND_RELOAD_CONDITIONS,                       true,  &HandleReloadConditions,                        "" },
             { "config",                        rbac::RBAC_PERM_COMMAND_RELOAD_CONFIG,                           true,  &HandleReloadConfigCommand,                     "" },
@@ -171,8 +173,13 @@ public:
             { "vehicle_template",              rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE,                 true,  &HandleReloadVehicleTemplateCommand,            "" },
             { "vehicle_accessory",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_ACCESORY,                 true,  &HandleReloadVehicleAccessoryCommand,           "" },
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
-            { "playerchoice",                  rbac::RBAC_PERM_COMMAND_RELOAD_PLAYERCHOICE,                     true,  &HandleReloadPlayerChoiceCommand,               "" },
-            { "worldsafelocs",                  rbac::RBAC_PERM_COMMAND_RELOAD_WORLDSAFELOCS,                    true,  &HandleReloadWorldSafeLocsCommand,              "" },
+
+            // Fluxurion >
+            { "bpay",                          rbac::RBAC_PERM_COMMAND_RELOAD_BATTLEPAY,                        true,  &HandleReloadBattlePay,                         "" },
+            { "playerchoice",                  rbac::RBAC_PERM_COMMAND_RELOAD,                                  true,  &HandleReloadPlayerChoice,                      "" },
+            { "creatureall",                   rbac::RBAC_PERM_COMMAND_RELOAD_CREATURE_TEMPLATE,                true,  &HandleReloadCreatureAllCommand,           "" },
+            // < Fluxurion
+
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -405,15 +412,6 @@ public:
         return true;
     }
 
-    static bool HandleReloadBattlePay(ChatHandler* handler, char const* /*args*/)
-    {
-        //sBattlepayMgr->();
-        TC_LOG_INFO("misc", "Re-Loading BattlePay Shop data...");
-        sBattlePayDataStore->Initialize();
-        handler->SendGlobalGMSysMessage("Battlepay Shop data reloaded.");
-        return true;
-    }
-
     static bool HandleReloadCharacterTemplate(ChatHandler* handler, char const* /*args*/)
     {
         TC_LOG_INFO("misc", "Re-Loading Character Templates...");
@@ -465,7 +463,7 @@ public:
                 continue;
             }
 
-            TC_LOG_INFO("misc", "Reloading creature template entry %u", entry);
+            TC_LOG_INFO("misc", "Reloading creature template entry {}", entry);
 
             Field* fields = result->Fetch();
             sObjectMgr->LoadCreatureTemplate(fields);
@@ -1198,23 +1196,53 @@ public:
         return true;
     }
 
-    // DekkCore >
-    static bool HandleReloadWorldSafeLocsCommand(ChatHandler* handler, const char* args)
+
+    // Fluxurion >
+    static bool HandleReloadBattlePay(ChatHandler* handler, char const* /*args*/)
     {
-        TC_LOG_INFO("misc", "Reloading world_safe_locs table...");
-        sObjectMgr->LoadWorldSafeLocs();
-        handler->SendGlobalGMSysMessage("World Safe Locs reloaded.");
+        TC_LOG_INFO("misc", "Reloading BattlePay Shop data...");
+        sBattlePayDataStore->Initialize();
+        handler->SendGlobalGMSysMessage("Battlepay Shop data reloaded.");
         return true;
     }
 
-    static bool HandleReloadPlayerChoiceCommand(ChatHandler* handler, char const* /*args*/)
+    static bool HandleReloadPlayerChoice(ChatHandler* handler, char const* /*args*/)
     {
-        TC_LOG_INFO("misc", "Re-Loading `playerchoice` Table!");
+        TC_LOG_INFO("misc", "Reloading PlayerChoice related tables!");
         sObjectMgr->LoadPlayerChoices();
-        handler->SendGlobalGMSysMessage("DB table `playerchoice` reloaded.");
+        sObjectMgr->LoadPlayerChoicesLocale();
+        handler->SendGlobalGMSysMessage("PlayerChoice related DB tables reloaded.");
         return true;
     }
-    // < DekkCore
+
+    static bool HandleReloadCreatureAllCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        TC_LOG_INFO("misc", "Reloading All Creature related tables!");
+        sObjectMgr->LoadCreatureAddons();
+        sObjectMgr->LoadCreatureClassLevelStats();
+        sObjectMgr->LoadCreatureLocales();
+        sObjectMgr->LoadCreatureModelInfo();
+        sObjectMgr->LoadCreatureMovementOverrides();
+        sObjectMgr->LoadCreatureOutfits();
+        sObjectMgr->LoadCreatureQuestEnders();
+        sObjectMgr->LoadCreatureQuestItems();
+        sObjectMgr->LoadCreatureQuestStarters();
+        sObjectMgr->LoadCreatures();
+        sObjectMgr->LoadCreatureSummonedData();
+        sObjectMgr->LoadCreatureTemplateAddons();
+        sObjectMgr->LoadCreatureTemplateDifficulty();
+        sObjectMgr->LoadCreatureTemplateGossip();
+        sObjectMgr->LoadCreatureTemplateModels();
+        sObjectMgr->LoadCreatureTemplateResistances();
+        sObjectMgr->LoadCreatureTemplates();
+        sObjectMgr->LoadCreatureTemplateSparring();
+        sObjectMgr->LoadCreatureTemplateSpells();
+        sObjectMgr->LoadCreatureTrainers();
+        handler->SendGlobalGMSysMessage("All Creature related DB tables reloaded.");
+        return true;
+    }
+    // < Fluxurion
+
 };
 
 void AddSC_reload_commandscript()

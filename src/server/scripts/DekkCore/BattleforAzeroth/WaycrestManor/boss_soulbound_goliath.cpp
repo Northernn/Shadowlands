@@ -166,7 +166,7 @@ struct npc_burning_soul : public ScriptedAI
 		events.ScheduleEvent(EVENT_BURNING_SOUL_KILL, 10s);
 	}
 
-	void ExecuteEvent(uint32 eventId) //override
+	void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{

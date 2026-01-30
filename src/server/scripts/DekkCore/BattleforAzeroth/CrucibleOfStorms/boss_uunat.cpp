@@ -29,7 +29,7 @@ enum Spells
 	SPELL_TEMPEST_NPC_VISUAL = 285884,
 	SPELL_TEMPEST_CALLER_BUTTON = 286750,
 	SPELL_FEEDBACK_STORM = 286458,
-	
+
 	// buttons
 	SPELL_CUSTODY_OF_THE_DEEP = 284772, // trident of deep ocean
 	SPELL_CUSTODY_SHIELD = 284804,
@@ -149,7 +149,7 @@ enum Timers
 enum Creatures
 {
 	BOSS_UUNAT = 145371,
-	
+
 	NPC_PRIMORDIAL_MINDBENDER = 146940,
 	NPC_SWARMING_VOIDSPAWN = 146945,
 	NPC_UNDYING_GUARDIAN = 146829,
@@ -235,13 +235,13 @@ struct tankSpecs //: public std::unary_function<Unit*, bool>
 	bool operator() (const Unit* pTarget)
 	{
 		Player* player = const_cast<Player*>(pTarget->ToPlayer());
-		uint32 specialization = player->GetSpecializationId();
-		return ((player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BEAR)
-			|| (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_PROTECTION)
-			|| (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_PROTECTION)
-			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_BLOOD)
-			|| (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_VENGEANCE)
-			|| (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BREWMASTER));
+		uint32 specialization = player->GetPrimarySpecialization();
+		return ((player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidGuardian)
+			|| (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorProtection)
+			|| (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinProtection)
+			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightBlood)
+			|| (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterVengeance)
+			|| (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkBrewmaster));
 	}
 };
 
@@ -253,13 +253,13 @@ struct healSpecs //: public std::unary_function<Unit*, bool>
 	bool operator() (const Unit* pTarget)
 	{
 		Player* player = const_cast<Player*>(pTarget->ToPlayer());
-		uint32 specialization = player->GetSpecializationId();
-		return ((player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_DISCIPLINE)
-			|| (player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_HOLY)
-			|| (player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_RESTORATION)
-			|| (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_MISTWEAVER)
-			|| (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_HOLY)
-			|| (player->GetClass() == CLASS_SHAMAN && specialization == TALENT_SPEC_SHAMAN_RESTORATION));
+		uint32 specialization = player->GetPrimarySpecialization();
+		return ((player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestDiscipline)
+			|| (player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestHoly)
+			|| (player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidRestoration)
+			|| (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkMistweaver)
+			|| (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinHoly)
+			|| (player->GetClass() == CLASS_SHAMAN && specialization == ChrSpecialization::ShamanRestoration));
 	}
 };
 
@@ -271,31 +271,31 @@ struct dpsSpecs //: public std::unary_function<Unit*, bool>
 	bool operator() (const Unit* pTarget)
 	{
 		Player* player = const_cast<Player*>(pTarget->ToPlayer());
-		uint32 specialization = player->GetSpecializationId();
-		return ((player->GetClass() == CLASS_PRIEST && specialization == TALENT_SPEC_PRIEST_SHADOW)
-			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_FROST)
-			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == TALENT_SPEC_DEATHKNIGHT_UNHOLY)
-			|| (player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_BALANCE)
-			|| (player->GetClass() == CLASS_DRUID && specialization == TALENT_SPEC_DRUID_CAT)
-			|| (player->GetClass() == CLASS_MONK && specialization == TALENT_SPEC_MONK_BATTLEDANCER)
-			|| (player->GetClass() == CLASS_SHAMAN && specialization == TALENT_SPEC_SHAMAN_ELEMENTAL)
-			|| (player->GetClass() == CLASS_DEMON_HUNTER && specialization == TALENT_SPEC_DEMON_HUNTER_HAVOC)
-			|| (player->GetClass() == CLASS_HUNTER && specialization == TALENT_SPEC_HUNTER_BEASTMASTER)
-			|| (player->GetClass() == CLASS_HUNTER && specialization == TALENT_SPEC_HUNTER_SURVIVAL)
-			|| (player->GetClass() == CLASS_HUNTER && specialization == TALENT_SPEC_HUNTER_MARKSMAN)
-			|| (player->GetClass() == CLASS_MAGE && specialization == TALENT_SPEC_MAGE_FIRE)
-			|| (player->GetClass() == CLASS_MAGE && specialization == TALENT_SPEC_MAGE_ARCANE)
-			|| (player->GetClass() == CLASS_MAGE && specialization == TALENT_SPEC_MAGE_FROST)
-			|| (player->GetClass() == CLASS_ROGUE && specialization == TALENT_SPEC_ROGUE_COMBAT)
-			|| (player->GetClass() == CLASS_ROGUE && specialization == TALENT_SPEC_ROGUE_ASSASSINATION)
-			|| (player->GetClass() == CLASS_ROGUE && specialization == TALENT_SPEC_ROGUE_SUBTLETY)
-			|| (player->GetClass() == CLASS_WARLOCK && specialization == TALENT_SPEC_WARLOCK_AFFLICTION)
-			|| (player->GetClass() == CLASS_WARLOCK && specialization == TALENT_SPEC_WARLOCK_DEMONOLOGY)
-			|| (player->GetClass() == CLASS_WARLOCK && specialization == TALENT_SPEC_WARLOCK_DESTRUCTION)
-			|| (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_ARMS)
-			|| (player->GetClass() == CLASS_WARRIOR && specialization == TALENT_SPEC_WARRIOR_FURY)
-			|| (player->GetClass() == CLASS_PALADIN && specialization == TALENT_SPEC_PALADIN_RETRIBUTION)
-			|| (player->GetClass() == CLASS_SHAMAN && specialization == TALENT_SPEC_SHAMAN_ENHANCEMENT));
+		uint32 specialization = player->GetPrimarySpecialization();
+		return ((player->GetClass() == CLASS_PRIEST && specialization == ChrSpecialization::PriestShadow)
+			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightFrost)
+			|| (player->GetClass() == CLASS_DEATH_KNIGHT && specialization == ChrSpecialization::DeathKnightUnholy)
+			|| (player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidBalance)
+			|| (player->GetClass() == CLASS_DRUID && specialization == ChrSpecialization::DruidFeral)
+			|| (player->GetClass() == CLASS_MONK && specialization == ChrSpecialization::MonkWindwalker)
+			|| (player->GetClass() == CLASS_SHAMAN && specialization == ChrSpecialization::ShamanElemental)
+			|| (player->GetClass() == CLASS_DEMON_HUNTER && specialization == ChrSpecialization::DemonHunterHavoc)
+			|| (player->GetClass() == CLASS_HUNTER && specialization == ChrSpecialization::HunterBeastMastery)
+			|| (player->GetClass() == CLASS_HUNTER && specialization == ChrSpecialization::HunterSurvival)
+			|| (player->GetClass() == CLASS_HUNTER && specialization == ChrSpecialization::HunterMarksmanship)
+			|| (player->GetClass() == CLASS_MAGE && specialization == ChrSpecialization::MageFire)
+			|| (player->GetClass() == CLASS_MAGE && specialization == ChrSpecialization::MageArcane)
+			|| (player->GetClass() == CLASS_MAGE && specialization == ChrSpecialization::MageFrost)
+			|| (player->GetClass() == CLASS_ROGUE && specialization == ChrSpecialization::RogueAssassination)
+			|| (player->GetClass() == CLASS_ROGUE && specialization == ChrSpecialization::RogueOutlaw)
+			|| (player->GetClass() == CLASS_ROGUE && specialization == ChrSpecialization::RogueSubtely)
+			|| (player->GetClass() == CLASS_WARLOCK && specialization == ChrSpecialization::WarlockAffliction)
+			|| (player->GetClass() == CLASS_WARLOCK && specialization == ChrSpecialization::WarlockDemonology)
+			|| (player->GetClass() == CLASS_WARLOCK && specialization == ChrSpecialization::WarlockDestruction)
+			|| (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorArms)
+			|| (player->GetClass() == CLASS_WARRIOR && specialization == ChrSpecialization::WarriorFury)
+			|| (player->GetClass() == CLASS_PALADIN && specialization == ChrSpecialization::PaladinRetribution)
+			|| (player->GetClass() == CLASS_SHAMAN && specialization == ChrSpecialization::ShamanEnhancement));
 	}
 };
 
@@ -318,7 +318,7 @@ public:
 		}
 
 		EventMap events;
-		InstanceScript* instance;
+		InstanceScript* instance = nullptr;
 		SummonList summons;
 
 		bool introText;
@@ -392,7 +392,7 @@ public:
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 		}
 
-		void MoveInLineOfSight(Unit* who) override
+		void MoveInLineOfSight(Unit*) override
 		{
 			if (!introText)
 			{
@@ -419,7 +419,7 @@ public:
 			DespawnRelics(NPC_TEMPEST_RELIC);
 		}
 
-		void EnterEvadeMode(EvadeReason why) override
+		void EnterEvadeMode(EvadeReason) override
 		{
 			RemoveTormentFromPlayers();
 			DespawnRelics(NPC_VOID_RELIC);
@@ -474,7 +474,7 @@ public:
 				tridentRelic->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
 		}
 
-		void DamageTaken(Unit* t, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+		void DamageTaken(Unit*, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 		{
 			if (me->HealthBelowPct(70) && !phase2)
 			{
@@ -617,7 +617,7 @@ public:
 				events.ScheduleEvent(EVENT_MADDENING_EYE, TIMER_MADDENING_EYE);
 				events.ScheduleEvent(EVENT_PIERCING_GAZE, TIMER_PIERCING_GAZE);
 				events.ScheduleEvent(EVENT_TOUCH_OF_THE_END, TIMER_TOUCH_OF_THE_END);
-				
+
 				if (me->GetMap()->IsHeroic())
 					events.ScheduleEvent(EVENT_VOID_CRASH, TIMER_VOID_CRASH);
 				if (me->GetMap()->IsMythic())
@@ -664,7 +664,7 @@ public:
 			}
 		}
 
-		void MovementInform(uint32 type, uint32 pointId) override
+		void MovementInform(uint32 /*type*/, uint32 pointId) override
 		{
 			switch (pointId)
 			{
@@ -674,7 +674,7 @@ public:
 			}
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			HandlePhase(1);
 			voidCrashTargets.clear();
@@ -1065,7 +1065,7 @@ public:
 			DoMeleeAttackIfReady();
 		}
 	};
-	
+
 	CreatureAI* GetAI(Creature* creature) const override
 	{
 		return new bfa_boss_uunat_AI(creature);
@@ -1080,8 +1080,6 @@ public:
 
 	class bfa_spell_void_crash_missile_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_void_crash_missile_SpellScript);
-
 		void OnSpellHit(SpellEffIndex)
 		{
 			Unit* caster = GetCaster();
@@ -1143,7 +1141,7 @@ public:
             events.Reset();
         }
 
-        void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+        void DamageTaken(Unit* /*at*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
         {
             if (damage >= me->GetHealth() && !regen)
             {
@@ -1152,7 +1150,8 @@ public:
                 me->CastSpell(me, SPELL_UNNATURAL_REGENERATION);
             }
         }
-        void JustEngagedWith(Unit*)
+
+        void JustEngagedWith(Unit*) override
         {
             if (me->GetMap()->IsMythic())
         	{
@@ -1289,7 +1288,7 @@ public:
 			events.Reset();
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			if (me->GetMap()->IsMythic())
 			{
@@ -1306,12 +1305,12 @@ public:
 
 		}
 
-       void OnSpellCast(SpellInfo const* spell) override
+        void OnSpellCast(SpellInfo const* /*spell*/) override
         {
-			    if (me->HasAura(42716))
-			    {
-				    events.ScheduleEvent(EVENT_CONSUME_ESSENCE, 3s);
-			    }
+            if (me->HasAura(42716))
+            {
+                events.ScheduleEvent(EVENT_CONSUME_ESSENCE, 3s);
+            }
 		}
 
 		void UpdateAI(uint32 diff) override
@@ -1362,7 +1361,7 @@ public:
 			events.Reset();
 		}
 
-		void JustEngagedWith(Unit*)
+		void JustEngagedWith(Unit*) override
 		{
 			if (me->GetMap()->IsMythic())
 			{
@@ -1371,7 +1370,7 @@ public:
 			}
 		}
 
-		void DamageTaken(Unit* at, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+		void DamageTaken(Unit*, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
 		{
 			if (damage >= me->GetHealth())
 			{
@@ -1461,8 +1460,6 @@ public:
 
 	class bfa_spell_gift_of_nzoth_hysteria_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_gift_of_nzoth_hysteria_SpellScript);
-
 		void HandleAfterCast()
 		{
 			Unit* caster = GetCaster();
@@ -1536,7 +1533,6 @@ public:
 			{
 				Unit* maintrigger = me;
 				Unit* triggerTarget = me->GetVictim();
-				Unit* targetPlayer = NULL;
 
 				if (!maintrigger || !triggerTarget)
 					return;
@@ -1595,7 +1591,7 @@ public:
 			events.Reset();
 		}
 
-		void DoAction(int32 action)
+		void DoAction(int32 action) override
 		{
 			switch (action)
 			{
@@ -1654,8 +1650,6 @@ public:
 
 	class bfa_spell_void_stone_relic_remove_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_void_stone_relic_remove_SpellScript);
-
 		void HandleAfterCast()
 		{
 			Unit* caster = GetCaster();
@@ -1689,12 +1683,13 @@ public:
 		if (!me || !player)
 			return false;
 
-		if (!player->HasAura(SPELL_FEEDBACK_OCEAN) && !player->HasAura(SPELL_VOID_STONE_ALLOW_CLICK) || !player->HasAura(SPELL_TEMPEST_CALLER_ALLOW_CLICK))
+		if ((!player->HasAura(SPELL_FEEDBACK_OCEAN) && !player->HasAura(SPELL_VOID_STONE_ALLOW_CLICK)) || !player->HasAura(SPELL_TEMPEST_CALLER_ALLOW_CLICK))
 		{
 			me->CastSpell(player, SPELL_TRIDENT_OF_DEEP_OCEAN_BUTTON, true);
 			me->DespawnOrUnsummon();
 		}
-		return true;
+
+        return true;
 	}
 
 	struct bfa_npc_trident_of_deep_ocean_relic_AI : public ScriptedAI
@@ -1711,7 +1706,7 @@ public:
 			events.Reset();
 		}
 
-		void DoAction(int32 action)
+		void DoAction(int32 action) override
 		{
 			switch (action)
 			{
@@ -1770,8 +1765,6 @@ public:
 
 	class bfa_spell_trident_of_deep_ocean_relic_remove_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_trident_of_deep_ocean_relic_remove_SpellScript);
-
 		void HandleAfterCast()
 		{
 			Unit* caster = GetCaster();
@@ -1796,89 +1789,6 @@ public:
 	}
 };
 
-class bfa_npc_tempest_caller_relic : public CreatureScript
-{
-public:
-	bfa_npc_tempest_caller_relic() : CreatureScript("bfa_npc_tempest_caller_relic") { }
-
-	bool OnGossipHello(Player* player, Creature* me)
-	{
-		if (!me || !player)
-			return false;
-
-		if (!player->HasAura(SPELL_FEEDBACK_STORM) && !player->HasAura(SPELL_TEMPEST_CALLER_ALLOW_CLICK))
-		{
-			me->CastSpell(player, SPELL_TEMPEST_CALLER_BUTTON, true);
-			me->DespawnOrUnsummon();
-		}
-		return true;
-	}
-
-	struct bfa_npc_tempest_caller_relic_AI : public ScriptedAI
-	{
-		bfa_npc_tempest_caller_relic_AI(Creature* creature) : ScriptedAI(creature)
-		{
-			me->CastSpell(me, SPELL_TEMPEST_NPC_VISUAL, true);
-		}
-
-		EventMap events;
-
-		void Reset() override
-		{
-			events.Reset();
-		}
-
-		void DoAction(int32 action)
-		{
-			switch (action)
-			{
-			case ACTION_REGEN_RELIC:
-				events.ScheduleEvent(EVENT_RELIC_REGEN, 30s);
-				break;
-			}
-		}
-
-		void CheckUnstableResonanceDist()
-		{
-			Map::PlayerList const& playerList = me->GetMap()->GetPlayers();
-			for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
-				if (Player* player = i->GetSource())
-				{
-					if (!player->IsGameMaster() && player->IsAlive() && player->HasAura(SPELL_UNSTABLE_STORM))
-					{
-						if (me->GetDistance(player) <= 2.0f)
-						{
-							player->RemoveAura(SPELL_UNSTABLE_STORM);
-						}
-					}
-				}
-		}
-
-		void UpdateAI(uint32 diff) override
-		{
-			events.Update(diff);
-
-			if (me->GetMap()->IsMythic())
-				CheckUnstableResonanceDist();
-
-			while (uint32 eventId = events.ExecuteEvent())
-			{
-				switch (eventId)
-				{
-				case EVENT_RELIC_REGEN:
-					me->SetNpcFlag(UNIT_NPC_FLAG_GOSSIP);
-					break;
-				}
-			}
-		}
-	};
-
-	CreatureAI* GetAI(Creature* creature) const override
-	{
-		return new bfa_npc_tempest_caller_relic_AI(creature);
-	}
-};
-
 // 284569
 class bfa_spell_tempest_caller_relic_remove : public SpellScriptLoader
 {
@@ -1887,8 +1797,6 @@ public:
 
 	class bfa_spell_tempest_caller_relic_remove_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_tempest_caller_relic_remove_SpellScript);
-
 		void HandleAfterCast()
 		{
 			Unit* caster = GetCaster();
@@ -1920,8 +1828,6 @@ public:
 
 	class bfa_spell_storm_of_annihilation_effect_SpellScript : public SpellScript
 	{
-		PrepareSpellScript(bfa_spell_storm_of_annihilation_effect_SpellScript);
-
 		void DealDamage()
 		{
 			if (Unit* caster = GetCaster())
@@ -2036,8 +1942,6 @@ public:
 	class bfa_spell_custody_of_deep_absorb_AuraScript : public AuraScript
 	{
 	public:
-		PrepareAuraScript(bfa_spell_custody_of_deep_absorb_AuraScript);
-
 		uint32 damageToRune;
 
 		bool Load() override
@@ -2046,7 +1950,7 @@ public:
 			return true;
 		}
 
-		void HandleDmgAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+		void HandleDmgAbsorb(AuraEffect* /*aurEff*/, DamageInfo& /*dmgInfo*/, uint32& absorbAmount)
 		{
 			Unit* target = GetTarget();
 			if (!target)
@@ -2058,7 +1962,7 @@ public:
 		//		target->DealDamage(oceanRune, damageToRune);
 		}
 
-		void Register()
+		void Register() override
 		{
 			AfterEffectAbsorb += AuraEffectAbsorbFn(bfa_spell_custody_of_deep_absorb_AuraScript::HandleDmgAbsorb, EFFECT_0);
 		}
@@ -2078,8 +1982,6 @@ public:
 
 	class bfa_spell_unstable_resonance_remove_effect_AuraScript : public AuraScript
 	{
-		PrepareAuraScript(bfa_spell_unstable_resonance_remove_effect_AuraScript);
-
 		void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 		{
 			Unit* caster = GetCaster();
@@ -2112,8 +2014,6 @@ public:
 
 	class bfa_spell_insatiable_torment_AuraScript : public AuraScript
 	{
-		PrepareAuraScript(bfa_spell_insatiable_torment_AuraScript);
-
 		void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 		{
 			Unit* caster = GetCaster();
@@ -2132,7 +2032,7 @@ public:
 			target->CastSpell(target, SPELL_INSATIABLE_TORMENT_RANGE, true);
 		}
 
-		void OnPeriodic(AuraEffect const* aurEff)
+		void OnPeriodic(AuraEffect const* /*aurEff*/)
 		{
 			Unit* caster = GetCaster();
 			Unit* target = GetTarget();
@@ -2146,14 +2046,15 @@ public:
 					if (player->IsAlive() && target->GetDistance(player) <= 5.0f && !player->IsGameMaster())
 						players.push_back(player);
 
-			Player* validTarget = NULL;
+			Player* validTarget = nullptr;
 			if (players.size())
 			{
 				for (auto initialPlayer : players)
 				{
-						if (initialPlayer == target)
-							continue;
-						initialPlayer = validTarget;
+                    if (initialPlayer == target)
+                        continue;
+
+                    initialPlayer = validTarget;
 				}
 			}
 
@@ -2164,7 +2065,7 @@ public:
 			}
 		}
 
-		void Register()
+		void Register() override
 		{
 			OnEffectRemove += AuraEffectRemoveFn(bfa_spell_insatiable_torment_AuraScript::OnRemove, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
 			OnEffectApply += AuraEffectApplyFn(bfa_spell_insatiable_torment_AuraScript::OnApply, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
@@ -2185,7 +2086,6 @@ void AddSC_bfa_boss_uunat()
 	new bfa_npc_piercing_gaze_trigger();
 	new bfa_npc_primordial_mindbender();
 	new bfa_npc_swarming_voidspawns();
-	new bfa_npc_tempest_caller_relic();
 	new bfa_npc_trident_of_deep_ocean_relic();
 	new bfa_npc_undying_guardian();
 	new bfa_npc_void_stone_relic();

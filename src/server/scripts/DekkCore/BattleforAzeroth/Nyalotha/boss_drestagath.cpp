@@ -83,8 +83,8 @@ enum Events
 //157602
 struct boss_drestagath : public BossAI
 {
-	boss_drestagath(Creature* creature) : BossAI(creature, DATA_DRESTAGATH) 
-	{ 
+	boss_drestagath(Creature* creature) : BossAI(creature, DATA_DRESTAGATH)
+	{
 		SetCombatMovement(false);
 		me->SetFlying(true);
 	}
@@ -95,7 +95,6 @@ struct boss_drestagath : public BossAI
 		me->SetPowerType(POWER_ENERGY);
 		me->SetMaxPower(POWER_ENERGY, 100);
 		me->SetPower(POWER_ENERGY, 0);
-		me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE, me);
 		me->CastSpell(nullptr, SPELL_ABERRANT_REGENERATION, true);
 		if (IsMythic())
 		{
@@ -162,7 +161,7 @@ struct boss_drestagath : public BossAI
 						me->GetPlayerListInGrid(playerList, 100.0f);
 						for (auto& targets : playerList)
 						{
-                            Position pos = (targets->GetPositionX() + 10.0f, targets->GetPositionY(), targets->GetPositionZ());
+                            Position pos = Position(targets->GetPositionX() + 10.0f, targets->GetPositionY(), targets->GetPositionZ());
 							agonyCreatures->CastSpell(pos, SPELL_ERRANT_BLAST_MISSILE, true);
 							agonyCreatures->CastSpell(pos, SPELL_ERRANT_BLAST_CREATE_AT, true);
 						}
@@ -216,7 +215,7 @@ struct boss_drestagath : public BossAI
 					me->GetPlayerListInGrid(playerList, 100.0f);
 					for (auto& targets : playerList)
 					{
-                        Position pos = (targets->GetPositionX() + 10.0f, targets->GetPositionY(), targets->GetPositionZ());
+                        Position pos = Position(targets->GetPositionX() + 10.0f, targets->GetPositionY(), targets->GetPositionZ());
 						agonyCreatures->CastSpell(pos, SPELL_ERRANT_BLAST_MISSILE, true);
 						agonyCreatures->CastSpell(pos, SPELL_ERRANT_BLAST_CREATE_AT, true);
 					}
@@ -273,12 +272,12 @@ struct boss_drestagath : public BossAI
 			std::list<Creature*> eyeList;
 			me->GetCreatureListWithEntryInGrid(eyeList, NPC_EYE_OF_DRESTAGATH, 150.0f);
 			for (auto& eyes : eyeList)
-			{				
+			{
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0F, true))
 				{
 					eyes->CastSpell(nullptr, SPELL_VOID_GLARE_DUMMY, false);
 					eyes->AddAura(SPELL_VOID_GLARE_DAMAGE, target);
-				}				
+				}
 			}
 			events.Repeat(55s);
 			break;
@@ -338,14 +337,14 @@ struct boss_drestagath : public BossAI
 		_DespawnAtEvade();
 	}
 
-	void JustDied(Unit* unit) override
+	void JustDied(Unit* /*unit*/) override
 	{
 		_JustDied();
 		CleanupEncounter(instance, me);
 	//	instance->DoModifyPlayerCurrencies(CURRENCY_ECHOES_OF_NYALOTHA, 16);
 	}
 
-	void CleanupEncounter(InstanceScript* instance, Creature* me)
+	void CleanupEncounter(InstanceScript* /*instance*/, Creature* me)
 	{
 		_JustReachedHome();
 		me->DespawnCreaturesInArea(NPC_EYE_OF_DRESTAGATH, 125.0f);
@@ -358,8 +357,8 @@ struct boss_drestagath : public BossAI
 //157612
 struct npc_eye_of_drestagath : public ScriptedAI
 {
-	npc_eye_of_drestagath(Creature* c) : ScriptedAI(c) 
-	{ 
+	npc_eye_of_drestagath(Creature* c) : ScriptedAI(c)
+	{
 		SetCombatMovement(false);
 	}
 
@@ -369,17 +368,17 @@ struct npc_eye_of_drestagath : public ScriptedAI
 		me->SetPowerType(POWER_ENERGY);
 		me->SetMaxPower(POWER_ENERGY, 100);
 		me->SetPower(POWER_ENERGY, 0);
-		me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE, me);
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit* /*who*/) override
 	{
 		if (instance)
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-		events.ScheduleEvent(EVENT_MIND_FLAY, 3s);
+
+        events.ScheduleEvent(EVENT_MIND_FLAY, 3s);
 	}
 
-	void ExecuteEvent(uint32 eventId) //override
+	void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{
@@ -415,7 +414,6 @@ struct npc_tentacle_of_drestagath : public ScriptedAI
 		me->SetPowerType(POWER_ENERGY);
 		me->SetMaxPower(POWER_ENERGY, 100);
 		me->SetPower(POWER_ENERGY, 0);
-		me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE, me);
 		if (IsHeroic() || IsMythic())
 			me->AddAura(SPELL_VOID_MIASMA_APPLY_AT, me);
 	}
@@ -435,7 +433,7 @@ struct npc_tentacle_of_drestagath : public ScriptedAI
 			unit->RemoveAura(SPELL_VOID_MISMA_AT_DAMAGE);
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit* /*who*/) override
 	{
 		if (instance)
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
@@ -467,7 +465,7 @@ private:
 //157613
 struct npc_maw_of_drestagath : public ScriptedAI
 {
-	npc_maw_of_drestagath(Creature* c) : ScriptedAI(c)
+	explicit npc_maw_of_drestagath(Creature* c) : ScriptedAI(c)
 	{
 		SetCombatMovement(false);
 	}
@@ -485,13 +483,14 @@ struct npc_maw_of_drestagath : public ScriptedAI
 
 	void MoveInLineOfSight(Unit* unit) override
 	{
-		if (me->HasAura(SPELL_MUTTERING_OF_BETRAYAL_TRIGGER && unit->IsPlayer() && unit->GetDistance2d(me) <= 10.0f))
+		if (me->HasAura(SPELL_MUTTERING_OF_BETRAYAL_TRIGGER) && unit->IsPlayer() && unit->GetDistance2d(me) <= 10.0f)
 		{
 			if (Aura* muttering = unit->GetAura(SPELL_MUTTERING_OF_BETRAYAL_AURA))
 			{
 				if (muttering->GetStackAmount() < 4)
 					me->AddAura(SPELL_MUTTERING_OF_BETRAYAL_AURA, unit);
-				if (muttering->GetStackAmount() == 4)
+
+                if (muttering->GetStackAmount() == 4)
 				{
 					unit->RemoveAurasDueToSpell(SPELL_MUTTERING_OF_BETRAYAL_AURA);
 					me->AddAura(SPELL_BETRAYED, unit);
@@ -500,14 +499,15 @@ struct npc_maw_of_drestagath : public ScriptedAI
 		}
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit*) override
 	{
 		if (instance)
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-		events.ScheduleEvent(EVENT_ACID_SPLASH, 3s);
+
+        events.ScheduleEvent(EVENT_ACID_SPLASH, 3s);
 	}
 
-	void ExecuteEvent(uint32 eventId) //override
+	void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{
@@ -524,16 +524,14 @@ struct npc_maw_of_drestagath : public ScriptedAI
 		if (instance)
 			instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 	}
+
 private:
-    InstanceScript* instance;
     EventMap events;
 };
 
-//310358 
+//310358
 class aura_mutterings_of_insanity : public AuraScript
 {
-	PrepareAuraScript(aura_mutterings_of_insanity);
-
 	void OnTick(AuraEffect const* /*aurEff*/)
 	{
 		if (Unit* target = GetTarget())
@@ -543,7 +541,7 @@ class aura_mutterings_of_insanity : public AuraScript
 		}
 	}
 
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();
@@ -561,12 +559,10 @@ class aura_mutterings_of_insanity : public AuraScript
 	}
 };
 
-//310277 
+//310277
 class aura_volatile_seed : public AuraScript
 {
-	PrepareAuraScript(aura_volatile_seed);
-
-	void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+	void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
 	{
 		Unit* target = GetTarget();
 		Unit* caster = GetCaster();

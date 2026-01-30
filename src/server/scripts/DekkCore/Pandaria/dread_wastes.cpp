@@ -262,21 +262,21 @@ class mob_dread_kunchong : public CreatureScript
                 if (!player)
                     return;
 
-                switch (player->GetSpecializationId())
+                switch (player->GetPrimarySpecialization())
                 {
-                    case TALENT_SPEC_DEATHKNIGHT_BLOOD:
-                    case TALENT_SPEC_DEATHKNIGHT_FROST:
-                    case TALENT_SPEC_DEATHKNIGHT_UNHOLY:
-                    case TALENT_SPEC_PALADIN_PROTECTION:
-                    case TALENT_SPEC_PALADIN_RETRIBUTION:
-                    case TALENT_SPEC_WARRIOR_ARMS:
-                    case TALENT_SPEC_WARRIOR_FURY:
-                    case TALENT_SPEC_WARRIOR_PROTECTION:
-                    case TALENT_SPEC_MONK_BREWMASTER:
+                    case ChrSpecialization::DeathKnightBlood:
+                    case ChrSpecialization::DeathKnightFrost:
+                    case ChrSpecialization::DeathKnightUnholy:
+                    case ChrSpecialization::PaladinProtection:
+                    case ChrSpecialization::PaladinRetribution:
+                    case ChrSpecialization::WarriorArms:
+                    case ChrSpecialization::WarriorFury:
+                    case ChrSpecialization::WarriorProtection:
+                    case ChrSpecialization::MonkBrewmaster:
                     default:
                         DoCast(me, SPELL_SEEK_AND_DESTROY,   true);
                         break;
-                    case TALENT_SPEC_MAGE_ARCANE:
+                  /*  case TALENT_SPEC_MAGE_ARCANE:
                     case TALENT_SPEC_MAGE_FIRE:
                     case TALENT_SPEC_MAGE_FROST:
                     case TALENT_SPEC_PALADIN_HOLY:
@@ -304,7 +304,7 @@ class mob_dread_kunchong : public CreatureScript
                     case TALENT_SPEC_SHAMAN_ENHANCEMENT:
                     case TALENT_SPEC_MONK_BATTLEDANCER:
                         DoCast(me, SPELL_SEEK_AND_DESTROY_3, true);
-                        break;
+                        break;*/
                 }
             }
 
@@ -745,7 +745,7 @@ class mob_ik_thik_terrorclaw : public CreatureScript
                 if (!player)
                     return;
 
-                switch (player->GetSpecializationId())
+               /* switch (player->GetSpecializationId())
                 {
                     case TALENT_SPEC_DEATHKNIGHT_BLOOD:
                     case TALENT_SPEC_DEATHKNIGHT_FROST:
@@ -788,7 +788,7 @@ class mob_ik_thik_terrorclaw : public CreatureScript
                     case TALENT_SPEC_MONK_BATTLEDANCER:
                         DoCast(me, SPELL_SEEK_AND_DESTROY_3, true);
                         break;
-                }
+                }*/
             }
 
             void JustDied(Unit* killer) override
@@ -1167,7 +1167,7 @@ class mob_wake_of_horror : public CreatureScript
                 if (!player)
                     return;
 
-                switch (player->GetSpecializationId())
+              /*  switch (player->GetSpecializationId())
                 {
                     case TALENT_SPEC_DEATHKNIGHT_BLOOD:
                     case TALENT_SPEC_DEATHKNIGHT_FROST:
@@ -1210,7 +1210,7 @@ class mob_wake_of_horror : public CreatureScript
                     case TALENT_SPEC_MONK_BATTLEDANCER:
                         DoCast(me, SPELL_SEEK_AND_DESTROY_3, true);
                         break;
-                }
+                }*/
             }
 
             void JustDied(Unit* killer) override
@@ -2291,7 +2291,7 @@ class mob_second_kaz_tik_the_manipulator : public CreatureScript
                             switch (eventId)
                             {
                                 case EVENT_START_WALKING:
-                                    Start(false, false, playerGUID);
+                                    Start(false);
                                     break;
                                 default:
                                     break;

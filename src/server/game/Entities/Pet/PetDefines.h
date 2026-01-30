@@ -58,6 +58,12 @@ constexpr bool IsStabledPetSlot(PetSaveMode slot)
     return slot >= PET_SAVE_FIRST_STABLE_SLOT && slot < PET_SAVE_LAST_STABLE_SLOT;
 }
 
+enum PetStableFlags : uint8
+{
+    PET_STABLE_ACTIVE   = 0x1,
+    PET_STABLE_INACTIVE = 0x2
+};
+
 enum PetSpellState
 {
     PETSPELL_UNCHANGED = 0,
@@ -88,8 +94,13 @@ enum PetTalk
     PET_TALK_ATTACK         = 1
 };
 
+// Used by companions (minipets) and quest slot summons
+constexpr float DEFAULT_FOLLOW_DISTANCE = 2.5f;
+constexpr float DEFAULT_FOLLOW_DISTANCE_PET = 3.f;
+constexpr float DEFAULT_FOLLOW_ANGLE = float(M_PI);
+
 #define PET_FOLLOW_DIST  1.0f
-#define PET_FOLLOW_ANGLE float(M_PI)
+#define PET_FOLLOW_ANGLE float(M_PI_4) // < Fluxuriony
 
 enum class PetTameResult : uint8
 {
@@ -110,7 +121,19 @@ enum class PetTameResult : uint8
     EliteTooHighLevel       = 14
 };
 
+enum class StableResult : uint8
+{
+    NotEnoughMoney        = 1,                              // "you don't have enough money"
+    InvalidSlot           = 3,                              // "That slot is locked"
+    StableSuccess         = 8,                              // stable success
+    UnstableSuccess       = 9,                              // unstable/swap success
+    BuySlotSuccess        = 10,                             // buy slot success
+    CantControlExotic     = 11,                             // "you are unable to control exotic creatures"
+    InternalError         = 12,                             // "Internal pet error"
+};
+
 constexpr uint32 CALL_PET_SPELL_ID = 883;
+constexpr uint32 PET_SUMMONING_DISORIENTATION = 32752;
 
 class PetStable
 {
@@ -141,11 +164,39 @@ public:
     std::array<Optional<PetInfo>, MAX_PET_STABLES> StabledPets;     // PET_SAVE_FIRST_STABLE_SLOT - PET_SAVE_LAST_STABLE_SLOT
     std::vector<PetInfo> UnslottedPets;                             // PET_SAVE_NOT_IN_SLOT
 
+    bool RemovePetFromActivePets(PetInfo const* TargetPet)
+    {
+        // Remove the TargetPet from ActivePets
+        for (auto& petInfo : ActivePets)
+        {
+            if (petInfo.has_value() && petInfo.value().PetNumber == TargetPet->PetNumber)
+            {
+                petInfo.reset();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     PetInfo* GetCurrentPet() { return const_cast<PetInfo*>(const_cast<PetStable const*>(this)->GetCurrentPet()); }
     PetInfo const* GetCurrentPet() const
     {
-        if (!CurrentPetIndex)
+        if (!CurrentPetIndex || !CurrentPetIndex.value())
+        {
+            for (const auto& ActivePet : ActivePets)
+            {
+                if (ActivePet)
+                    return &ActivePet.value();
+            }
+
+            for (const PetInfo& pet : UnslottedPets)
+            {
+                return &pet;
+            }
+
             return nullptr;
+        }
 
         if (Optional<uint32> activePetIndex = GetCurrentActivePetIndex())
             return ActivePets[*activePetIndex] ? &ActivePets[*activePetIndex].value() : nullptr;

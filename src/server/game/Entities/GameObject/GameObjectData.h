@@ -24,6 +24,7 @@
 #include "SpawnData.h"
 #include "WorldPacket.h"
 #include <array>
+#include <set>
 #include <string>
 
 // from `gameobject_template`
@@ -56,6 +57,7 @@ struct GameObjectTemplate
             uint32 InfiniteAOI;                             // 10 Infinite AOI, enum { false, true, }; Default: false
             uint32 NotLOSBlocking;                          // 11 Not LOS Blocking, enum { false, true, }; Default: false
             uint32 InteractRadiusOverride;                  // 12 Interact Radius Override (in hundredths), int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 Collisionupdatedelayafteropen;           // 13 Collision update delay(ms) after open, int, Min value: 0, Max value: 2147483647, Default value: 0
         } door;
         // 1 GAMEOBJECT_TYPE_BUTTON
         struct
@@ -71,6 +73,13 @@ struct GameObjectTemplate
             uint32 requireLOS;                              // 8 require LOS, enum { false, true, }; Default: false
             uint32 conditionID1;                            // 9 conditionID1, References: PlayerCondition, NoValue = 0
             uint32 InteractRadiusOverride;                  // 10 Interact Radius Override (in hundredths), int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 gossipID;                                // 10 gossipID, References: Gossip, NoValue = 0
+            uint32 spellFocusType2;                         // 11 spellFocusType 2, References: SpellFocusObject, NoValue = 0
+            uint32 spellFocusType3;                         // 12 spellFocusType 3, References: SpellFocusObject, NoValue = 0
+            uint32 spellFocusType4;                         // 13 spellFocusType 4, References: SpellFocusObject, NoValue = 0
+            uint32 Profession;                              // 14 Profession, enum { First Aid, Blacksmithing, Leatherworking, Alchemy, Herbalism, Cooking, Mining, Tailoring, Engineering, Enchanting, Fishing, Skinning, Jewelcrafting, Inscription, Archaeology, }; Default: Blacksmithing
+            uint32 Profession2;                             // 15 Profession 2, enum { First Aid, Blacksmithing, Leatherworking, Alchemy, Herbalism, Cooking, Mining, Tailoring, Engineering, Enchanting, Fishing, Skinning, Jewelcrafting, Inscription, Archaeology, }; Default: Blacksmithing
+            uint32 Profession3;                             // 16 Profession 3, enum { First Aid, Blacksmithing, Leatherworking, Alchemy, Herbalism, Cooking, Mining, Tailoring, Engineering, Enchanting, Fishing, Skinning, Jewelcrafting, Inscription, Archaeology, }; Default: Blacksmithing
         } button;
         // 2 GAMEOBJECT_TYPE_QUESTGIVER
         struct
@@ -275,6 +284,7 @@ struct GameObjectTemplate
             uint32 onlychargeheightcheck;                   // 22 only charge height check. (yards), int, Min value: 0, Max value: 65535, Default value: 0
             uint32 onlychargetimecheck;                     // 23 only charge time check, int, Min value: 0, Max value: 65535, Default value: 0
             uint32 InteractRadiusOverride;                  // 24 Interact Radius Override (in hundredths), int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 Overrideminimaptrackingicon;             // 25 Override minimap tracking icon, References: UiTextureAtlasMember, NoValue = 0
         } transport;
         // 12 GAMEOBJECT_TYPE_AREADAMAGE
         struct
@@ -324,6 +334,7 @@ struct GameObjectTemplate
         struct
         {
             uint32 InteractRadiusOverride;                  // 0 Interact Radius Override (in hundredths), int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 Willthisduelgountilaplayerdies;          // 1 Will this duel go until a player dies?, enum { false, true, }; Default: false
         } duelFlag;
         // 17 GAMEOBJECT_TYPE_FISHINGNODE
         struct
@@ -483,7 +494,7 @@ struct GameObjectTemplate
         // 31 GAMEOBJECT_TYPE_DUNGEON_DIFFICULTY
         struct
         {
-            uint32 InstanceType;                            // 0 Instance Type, enum { Not Instanced, Party Dungeon, Raid Dungeon, PVP Battlefield, Arena Battlefield, Scenario, }; Default: Party Dungeon
+            uint32 InstanceType;                            // 0 Instance Type, enum { Not Instanced, Party Dungeon, Raid Dungeon, PVP Battlefield, Arena Battlefield, Scenario, WoWLabs, }; Default: Party Dungeon
             uint32 DifficultyNormal;                        // 1 Difficulty Normal, References: animationdata, NoValue = 0
             uint32 DifficultyHeroic;                        // 2 Difficulty Heroic, References: animationdata, NoValue = 0
             uint32 DifficultyEpic;                          // 3 Difficulty Epic, References: animationdata, NoValue = 0
@@ -503,6 +514,8 @@ struct GameObjectTemplate
             int32 HeightOffset;                             // 1 Height Offset (inches), int, Min value: -100, Max value: 100, Default value: 0
             uint32 SitAnimKit;                              // 2 Sit Anim Kit, References: AnimKit, NoValue = 0
             uint32 InteractRadiusOverride;                  // 3 Interact Radius Override (in hundredths), int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 CustomizationScope;                      // 4 Customization Scope, int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 Preventteleportingtheplayeroutofthebarbershopchair;// 5 Prevent teleporting the player out of the barbershop chair, enum { false, true, }; Default: false
         } barberChair;
         // 33 GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING
         struct
@@ -794,6 +807,7 @@ struct GameObjectTemplate
             uint32 WhenAvailable;                           // 0 When Available, References: GameObjectDisplayInfo, NoValue = 0
             uint32 open;                                    // 1 open, References: Lock_, NoValue = 0
             uint32 InteractRadiusOverride;                  // 2 Interact Radius Override (in hundredths), int, Min value: 0, Max value: 2147483647, Default value: 0
+            uint32 ExpansionLevel;                          // 3 Expansion Level, int, Min value: 0, Max value: 2147483647, Default value: 0
         } weeklyRewardChest;
         // 60 GAMEOBJECT_TYPE_CLIENT_MODEL
         struct
@@ -803,6 +817,17 @@ struct GameObjectTemplate
             uint32 InfiniteAOI;                             // 2 Infinite AOI, enum { false, true, }; Default: false
             uint32 TrueInfiniteAOI;                         // 3 True Infinite AOI (programmer only!), enum { false, true, }; Default: false
         } clientModel;
+        // 61 GAMEOBJECT_TYPE_CRAFTING_TABLE
+        struct
+        {
+            uint32 Profession;                              // 0 Profession, enum { First Aid, Blacksmithing, Leatherworking, Alchemy, Herbalism, Cooking, Mining, Tailoring, Engineering, Enchanting, Fishing, Skinning, Jewelcrafting, Inscription, Archaeology, }; Default: Blacksmithing
+        } craftingTable;
+        // 62 GAMEOBJECT_TYPE_PERKS_PROGRAM_CHEST
+        struct
+        {
+            uint32 Script;                                  // 0 Script, References: SpellScript, NoValue = 0
+            uint32 autoClose;                               // 1 autoClose (ms), int, Min value: 0, Max value: 2147483647, Default value: 3000
+        } PerksProgramChest;
         struct
         {
             uint32 data[MAX_GAMEOBJECT_DATA];
@@ -811,6 +836,7 @@ struct GameObjectTemplate
 
     std::string AIName;
     uint32 ScriptId;
+    std::string StringId;
     WorldPacket QueryData[TOTAL_LOCALES];
 
     // helpers
@@ -995,7 +1021,7 @@ struct GameObjectTemplate
             case GAMEOBJECT_TYPE_DOOR:       return door.noDamageImmune;
             case GAMEOBJECT_TYPE_BUTTON:     return button.noDamageImmune;
             case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune;
-            case GAMEOBJECT_TYPE_CHEST:      return 1;
+            case GAMEOBJECT_TYPE_CHEST:      return !chest.DamageImmuneOK;
             case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune;
             case GAMEOBJECT_TYPE_FLAGSTAND:  return flagStand.noDamageImmune;
             case GAMEOBJECT_TYPE_FLAGDROP:   return flagDrop.noDamageImmune;
@@ -1041,13 +1067,14 @@ struct GameObjectTemplate
     {
         switch (type)
         {
-            case GAMEOBJECT_TYPE_DOOR:          return door.autoClose;
-            case GAMEOBJECT_TYPE_BUTTON:        return button.autoClose;
-            case GAMEOBJECT_TYPE_TRAP:          return trap.autoClose;
-            case GAMEOBJECT_TYPE_GOOBER:        return goober.autoClose;
-            case GAMEOBJECT_TYPE_TRANSPORT:     return transport.autoClose;
-            case GAMEOBJECT_TYPE_AREADAMAGE:    return areaDamage.autoClose;
-            case GAMEOBJECT_TYPE_TRAPDOOR:      return trapdoor.autoClose;
+        case GAMEOBJECT_TYPE_DOOR:                  return door.autoClose;
+        case GAMEOBJECT_TYPE_BUTTON:                return button.autoClose;
+        case GAMEOBJECT_TYPE_TRAP:                  return trap.autoClose;
+        case GAMEOBJECT_TYPE_GOOBER:                return goober.autoClose;
+        case GAMEOBJECT_TYPE_TRANSPORT:             return transport.autoClose;
+        case GAMEOBJECT_TYPE_AREADAMAGE:            return areaDamage.autoClose;
+        case GAMEOBJECT_TYPE_TRAPDOOR:              return trapdoor.autoClose;
+        case GAMEOBJECT_TYPE_PERKS_PROGRAM_CHEST:   return PerksProgramChest.autoClose;
             default: return 0;
         }
     }
@@ -1073,17 +1100,77 @@ struct GameObjectTemplate
         }
     }
 
-    uint32 GetEventScriptId() const
+    std::set<uint32> GetEventScriptSet() const
     {
+        std::set<uint32> eventSet;
         switch (type)
         {
-            case GAMEOBJECT_TYPE_GOOBER:            return goober.eventID;
-            case GAMEOBJECT_TYPE_CHEST:             return chest.triggeredEvent;
-            case GAMEOBJECT_TYPE_CHAIR:             return chair.triggeredEvent;
-            case GAMEOBJECT_TYPE_CAMERA:            return camera.eventID;
-            case GAMEOBJECT_TYPE_GATHERING_NODE:    return gatheringNode.triggeredEvent;
-            default: return 0;
+        case GAMEOBJECT_TYPE_CHEST:
+            eventSet.insert(chest.triggeredEvent);
+            break;
+        case GAMEOBJECT_TYPE_CHAIR:
+            eventSet.insert(chair.triggeredEvent);
+            break;
+        case GAMEOBJECT_TYPE_GOOBER:
+            eventSet.insert(goober.eventID);
+            break;
+        case GAMEOBJECT_TYPE_TRANSPORT:
+            eventSet.insert(transport.Reached1stfloor);
+            eventSet.insert(transport.Reached2ndfloor);
+            eventSet.insert(transport.Reached3rdfloor);
+            eventSet.insert(transport.Reached4thfloor);
+            eventSet.insert(transport.Reached5thfloor);
+            eventSet.insert(transport.Reached6thfloor);
+            eventSet.insert(transport.Reached7thfloor);
+            eventSet.insert(transport.Reached8thfloor);
+            eventSet.insert(transport.Reached9thfloor);
+            eventSet.insert(transport.Reached10thfloor);
+            break;
+        case GAMEOBJECT_TYPE_CAMERA:
+            eventSet.insert(camera.eventID);
+            break;
+        case GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT:
+            eventSet.insert(moTransport.startEventID);
+            eventSet.insert(moTransport.stopEventID);
+            break;
+        case GAMEOBJECT_TYPE_FLAGDROP:
+            eventSet.insert(flagDrop.eventID);
+            break;
+        case GAMEOBJECT_TYPE_CONTROL_ZONE:
+            eventSet.insert(controlZone.CaptureEventHorde);
+            eventSet.insert(controlZone.CaptureEventAlliance);
+            eventSet.insert(controlZone.ContestedEventHorde);
+            eventSet.insert(controlZone.ContestedEventAlliance);
+            eventSet.insert(controlZone.ProgressEventHorde);
+            eventSet.insert(controlZone.ProgressEventAlliance);
+            eventSet.insert(controlZone.NeutralEventHorde);
+            eventSet.insert(controlZone.NeutralEventAlliance);
+            break;
+        case GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING:
+            eventSet.insert(destructibleBuilding.IntactEvent);
+            eventSet.insert(destructibleBuilding.DamagedEvent);
+            eventSet.insert(destructibleBuilding.DestroyedEvent);
+            eventSet.insert(destructibleBuilding.RebuildingEvent);
+            eventSet.insert(destructibleBuilding.DamageEvent);
+            break;
+        case GAMEOBJECT_TYPE_CAPTURE_POINT:
+            eventSet.insert(capturePoint.ContestedEventHorde);
+            eventSet.insert(capturePoint.CaptureEventHorde);
+            eventSet.insert(capturePoint.DefendedEventHorde);
+            eventSet.insert(capturePoint.ContestedEventAlliance);
+            eventSet.insert(capturePoint.CaptureEventAlliance);
+            eventSet.insert(capturePoint.DefendedEventAlliance);
+            break;
+        case GAMEOBJECT_TYPE_GATHERING_NODE:
+            eventSet.insert(gatheringNode.triggeredEvent);
+            break;
+        default:
+            break;
         }
+        // Erase invalid value added from unused GameEvents data fields
+        eventSet.erase(0);
+
+        return eventSet;
     }
 
     uint32 GetTrivialSkillHigh() const
@@ -1181,6 +1268,18 @@ struct GameObjectTemplate
         }
     }
 
+    uint32 GetServerOnly() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_GENERIC: return generic.serverOnly;
+            case GAMEOBJECT_TYPE_TRAP: return trap.serverOnly;
+            case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.serverOnly;
+            case GAMEOBJECT_TYPE_AURA_GENERATOR: return auraGenerator.serverOnly;
+            default: return 0;
+        }
+    }
+
     uint32 GetSpellFocusType() const
     {
         switch (type)
@@ -1239,16 +1338,48 @@ struct GameObjectTemplate
 
     uint32 GetTrackingQuestId() const
     {
+        uint32 vignette = GetVignetteId();
+
+        if (VignetteEntry const* vignetteEntry = sVignetteStore.LookupEntry(vignette))
+        {
+            if (vignetteEntry->VisibleTrackingQuestID)
+                return vignetteEntry->VisibleTrackingQuestID;
+        }
+
         uint32 playerConditionID = 0;
         switch (type)
         {
         case GAMEOBJECT_TYPE_CHEST:
             playerConditionID = chest.conditionID1;
             break;
+        case GAMEOBJECT_TYPE_GOOBER:
+            playerConditionID = goober.conditionID1;
+            break;
         default:
             break;
         }
-        return 0;
+
+        if (!playerConditionID)
+            return 0;
+
+        auto playerCondition = sPlayerConditionStore.LookupEntry(playerConditionID);
+        if (playerCondition == nullptr || !(playerCondition->PrevQuestLogic & 0x10000)) ///< TrackingQuest
+            return 0;
+
+        return playerCondition->PrevQuestID[0];
+    }
+
+    bool IsDisplayMandatory() const
+    {
+        switch (type)
+        {
+        case GAMEOBJECT_TYPE_SPELL_FOCUS:
+        case GAMEOBJECT_TYPE_MULTI:
+        case GAMEOBJECT_TYPE_SIEGEABLE_MULTI:
+            return false;
+        default:
+            return true;
+        }
     }
 
     void InitializeQueryData();

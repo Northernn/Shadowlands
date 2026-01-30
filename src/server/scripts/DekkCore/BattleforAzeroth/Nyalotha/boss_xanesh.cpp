@@ -164,7 +164,7 @@ struct boss_xanesh : public BossAI
 			Talk(SAY_OBELISKS);
 			me->CastSpell(nullptr, SPELL_SUMMON_RITUAL_OBELISKS, false);
 			if (Creature* azshara = me->FindNearestCreature(NPC_QUEEN_AZSHARA_XANESH, 100.0f, true))
-			{		
+			{
 				for (uint8 i = 0; i < 8; i++)
 				{
 					azshara->SummonCreature(NPC_RITUAL_OBELISK, azshara->GetRandomNearPosition(25.0f), TEMPSUMMON_MANUAL_DESPAWN);
@@ -173,7 +173,6 @@ struct boss_xanesh : public BossAI
 			events.Repeat(65s);
 			break;
 		}
-
 		case EVENT_BERSERK:
 			me->CastSpell(nullptr, SPELL_BERSERK, true);
 			break;
@@ -184,20 +183,18 @@ struct boss_xanesh : public BossAI
 	{
 		me->DespawnCreaturesInArea(NPC_GOAL_PORTAL, 125.0f);
 		uint32 ChoosePortal = urand(0, 3);
-		switch (ChoosePortal)
+
+        switch (ChoosePortal)
 		{
-		case 0:			
+		case 0:
 			me->SummonCreature(NPC_GOAL_PORTAL, goal_portal_spawn_one, TEMPSUMMON_MANUAL_DESPAWN);
 			break;
-
 		case 1:
 			me->SummonCreature(NPC_GOAL_PORTAL, goal_portal_spawn_two, TEMPSUMMON_MANUAL_DESPAWN);
 			break;
-
 		case 2:
 			me->SummonCreature(NPC_GOAL_PORTAL, goal_portal_spawn_three, TEMPSUMMON_MANUAL_DESPAWN);
 			break;
-
 		case 3:
 			me->SummonCreature(NPC_GOAL_PORTAL, goal_portal_spawn_four, TEMPSUMMON_MANUAL_DESPAWN);
 			break;
@@ -206,20 +203,18 @@ struct boss_xanesh : public BossAI
 
     void OnSpellCast(SpellInfo const* spell) override
     {
-
 		switch (spell->Id)
 		{
-		case SPELL_VOID_RITUAL:
-		{
-			me->SummonCreature(NPC_VOID_ORB, void_orb_spawn, TEMPSUMMON_MANUAL_DESPAWN);
-			ChooseGoalPortal();
-			break;
-		}
-
+            case SPELL_VOID_RITUAL:
+            {
+                me->SummonCreature(NPC_VOID_ORB, void_orb_spawn, TEMPSUMMON_MANUAL_DESPAWN);
+                ChooseGoalPortal();
+                break;
+            }
 		}
 	}
 
-	void CleanupEncounter(InstanceScript* instance, Creature* me)
+	void CleanupEncounter()
 	{
 		_JustReachedHome();
 		me->DespawnCreaturesInArea(NPC_FLAYED_SOUL, 125.0f);
@@ -231,13 +226,14 @@ struct boss_xanesh : public BossAI
 		me->DespawnCreaturesInArea(NPC_VOID_ORB, 125.0f);
 		me->DespawnCreaturesInArea(NPC_GOAL_PORTAL, 125.0f);
 		me->RemoveAllAreaTriggers();
-		if (Creature* azshara = me->FindNearestCreature(NPC_QUEEN_AZSHARA_XANESH, 100.0f, true))
+
+        if (Creature* azshara = me->FindNearestCreature(NPC_QUEEN_AZSHARA_XANESH, 100.0f, true))
 			azshara->RemoveAura(SPELL_ANQUISH);
 	}
 
 	void EnterEvadeMode(EvadeReason /*why*/) override
 	{
-		CleanupEncounter(instance, me);
+		CleanupEncounter();
 		_DespawnAtEvade();
 	}
 
@@ -329,14 +325,14 @@ struct npc_void_orb : public ScriptedAI
 		ScriptedAI::Reset();
 		me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
 		me->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
-		me->SetDisplayId(93977, 1.5f);
+		me->SetDisplayId(93977, false);
 		me->SetWalk(true);
-		me->GetSpeed(MOVE_WALK);		
+		me->GetSpeed(MOVE_WALK);
 	}
 
-	void IsSummonedBy(WorldObject* summoner) override
+	void IsSummonedBy(WorldObject* /*summoner*/) override
 	{
-		if (me->GetMapId() == MAP_NYALOTHA)
+		//if (me->GetMapId() == MAP_NYALOTHA)
 			me->GetMotionMaster()->MovePoint(1, azshara_pos, true);
 	}
 
@@ -346,7 +342,7 @@ struct npc_void_orb : public ScriptedAI
 		{
 			if (clicker->HasAura(SPELL_VOIDWOKEN))
 			{
-				me->StopMoving();		
+				me->StopMoving();
 				me->GetMotionMaster()->Clear();
 				me->GetMotionMaster()->MoveFollow(clicker, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 				if (IsHeroic() || IsMythic())
@@ -399,10 +395,10 @@ struct npc_flayed_soul : public ScriptedAI
 	void Reset() override
 	{
 		ScriptedAI::Reset();
-		DoZoneInCombat(nullptr);		
+		DoZoneInCombat(nullptr);
 	}
 
-	void JustEngagedWith(Unit* who) override
+	void JustEngagedWith(Unit* /*who*/) override
 	{
 		me->CastSpell(nullptr, SPELL_SOUL_FLY, false);
 	}

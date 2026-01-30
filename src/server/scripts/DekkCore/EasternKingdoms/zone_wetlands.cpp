@@ -70,7 +70,6 @@ public:
                 case 2:
                     if (me->HasStealthAura())
                         me->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-                    SetRun();
                     me->SetFaction(FACTION_ENEMY);
                     break;
             }
@@ -107,8 +106,6 @@ public:
                     me->RemoveAllAuras();
                     me->GetThreatManager().ClearAllThreat();
                     me->CombatStop(true);
-
-                    SetRun(false);
                 }
             }
         }
@@ -140,7 +137,7 @@ public:
                     slim->CastSpell(slim, SPELL_STEALTH, true);
 
                 if (npc_tapoke_slim_jahn::npc_tapoke_slim_jahnAI* slimAI = CAST_AI(npc_tapoke_slim_jahn::npc_tapoke_slim_jahnAI, slim->AI()))
-                    slimAI->Start(false, false, player->GetGUID(), quest);
+                    slimAI->Start(false, player->GetGUID(), quest);
             }
         }
     };
@@ -159,8 +156,6 @@ enum MarshFire
 
 class spell_water_blast : public SpellScript
 {
-    PrepareSpellScript(spell_water_blast);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit() || !GetCaster()->IsPlayer() || !GetHitUnit()->ToCreature())

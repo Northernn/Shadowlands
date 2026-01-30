@@ -20,7 +20,7 @@
 #include "SharedDefines.h"
 
 BattlegroundScore::BattlegroundScore(ObjectGuid playerGuid, uint32 team) : PlayerGuid(playerGuid), TeamId(team == ALLIANCE ? PVP_TEAM_ALLIANCE : PVP_TEAM_HORDE),
-    KillingBlows(0), Deaths(0), HonorableKills(0), BonusHonor(0), DamageDone(0), HealingDone(0)
+KillingBlows(0), Deaths(0), HonorableKills(0), BonusHonor(0), DamageDone(0), HealingDone(0)
 {
 }
 
@@ -32,27 +32,27 @@ void BattlegroundScore::UpdateScore(uint32 type, uint32 value)
 {
     switch (type)
     {
-        case SCORE_KILLING_BLOWS:   // Killing blows
-            KillingBlows += value;
-            break;
-        case SCORE_DEATHS:          // Deaths
-            Deaths += value;
-            break;
-        case SCORE_HONORABLE_KILLS: // Honorable kills
-            HonorableKills += value;
-            break;
-        case SCORE_BONUS_HONOR:     // Honor bonus
-            BonusHonor += value;
-            break;
-        case SCORE_DAMAGE_DONE:     // Damage Done
-            DamageDone += value;
-            break;
-        case SCORE_HEALING_DONE:    // Healing Done
-            HealingDone += value;
-            break;
-        default:
-            ABORT_MSG("Not implemented Battleground score type %u!", type);
-            break;
+    case SCORE_KILLING_BLOWS:   // Killing blows
+        KillingBlows += value;
+        break;
+    case SCORE_DEATHS:          // Deaths
+        Deaths += value;
+        break;
+    case SCORE_HONORABLE_KILLS: // Honorable kills
+        HonorableKills += value;
+        break;
+    case SCORE_BONUS_HONOR:     // Honor bonus
+        BonusHonor += value;
+        break;
+    case SCORE_DAMAGE_DONE:     // Damage Done
+        DamageDone += value;
+        break;
+    case SCORE_HEALING_DONE:    // Healing Done
+        HealingDone += value;
+        break;
+    default:
+        ABORT_MSG("Not implemented Battleground score type %u!", type);
+        break;
     }
 }
 

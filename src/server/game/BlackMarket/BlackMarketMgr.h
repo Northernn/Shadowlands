@@ -113,17 +113,17 @@ private:
     uint64 _currentBid = 0;
     int32 _numBids = 0;
     ObjectGuid::LowType _bidder = 0;
-    uint32 _secondsRemaining = 0;
+    int32 _secondsRemaining = 0;
     bool _mailSent = false;
 };
 
 class TC_GAME_API BlackMarketMgr
 {
-  private:
+private:
     BlackMarketMgr();
     ~BlackMarketMgr();
 
-  public:
+public:
     static BlackMarketMgr* Instance();
 
     typedef std::unordered_map<int32, BlackMarketEntry*> BlackMarketEntryMap;
@@ -147,13 +147,27 @@ class TC_GAME_API BlackMarketMgr
     void AddAuction(BlackMarketEntry* auction);
     void AddTemplate(BlackMarketTemplate* templ);
 
+    /**
+    * Checks if an auction entry is already in our auctions,
+    * used to prevent duplicate entries
+    * @param auction
+    * @return bool Does aucton exist?
+    */
+    bool DoesAuctionAlreadyExist(BlackMarketEntry* auction);
+
     void SendAuctionWonMail(BlackMarketEntry* entry, CharacterDatabaseTransaction trans);
     void SendAuctionOutbidMail(BlackMarketEntry* entry, CharacterDatabaseTransaction trans); // Call before incrementing bid
 
-  private:
-      BlackMarketEntryMap _auctions;
-      BlackMarketTemplateMap _templates;
-      time_t _lastUpdate = time_t(0);
+private:
+
+    // Listed auctions
+    BlackMarketEntryMap _auctions;
+
+    // All auctions
+    BlackMarketTemplateMap _templates;
+
+    // Last refresh time
+    time_t _lastUpdate = time_t(0);
 };
 
 #define sBlackMarketMgr BlackMarketMgr::Instance()

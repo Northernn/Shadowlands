@@ -94,9 +94,9 @@ void ArenaDalaranSewers::PostUpdateImpl(uint32 diff)
                         if (player->GetPositionZ() > 12.0f && !player->IsGameMaster())
                         {
                             if (waterSpout->GetPositionX() < 1300.0f && waterSpout->GetPositionY() < 800.0f)
-                                player->GetMotionMaster()->MoveJump(1271.39f, 765.94f, 7.2f, 30.0f, 10.0f);
+                                player->GetMotionMaster()->MoveJump(Position(1271.39f, 765.94f, 7.2f), 30.0f, 10.0f);
                             else
-                                player->GetMotionMaster()->MoveJump(1310.98f, 815.59f, 7.2f, 30.0f, 10.0f);
+                                player->GetMotionMaster()->MoveJump(Position(1310.98f, 815.59f, 7.2f), 30.0f, 10.0f);
                         }
                 }
 
@@ -203,7 +203,7 @@ void ArenaDalaranSewers::StartingEventOpenDoors()
                 player->RemoveAurasDueToSpell(48018);
 }
 
-void ArenaDalaranSewers::_CheckPositions(uint32 diff)
+void ArenaDalaranSewers::_CheckPositions(uint32 /*diff*/)
 {
     for (auto const& itr : GetPlayers())
     {

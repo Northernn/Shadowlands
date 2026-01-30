@@ -19,12 +19,12 @@
 #include "DBCEnums.h"
 #include "GameObject.h"
 #include "Garrison.h"
-#include "WodGarrison.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectGridLoader.h"
 #include "Player.h"
 #include "World.h"
+#include "WodGarrison.h"
 
 class GarrisonGridLoader
 {
@@ -69,7 +69,7 @@ void GarrisonGridLoader::LoadN()
         }
     }
 
-    TC_LOG_DEBUG("maps", "%u GameObjects and %u Creatures loaded for grid %u on map %u", i_gameObjects, i_creatures, i_grid->GetGridId(), i_map->GetId());
+    TC_LOG_DEBUG("maps", "{} GameObjects and {} Creatures loaded for grid {} on map {}", i_gameObjects, i_creatures, i_grid->GetGridId(), i_map->GetId());
 }
 
 void GarrisonGridLoader::Visit(GameObjectMapType& m)
@@ -82,18 +82,18 @@ void GarrisonGridLoader::Visit(GameObjectMapType& m)
             CellCoord cellCoord = i_cell.GetCellCoord();
             for (WodGarrison::Plot* plot : plots)
             {
-                Position const& spawn = plot->PacketInfo.PlotPos.Pos;
-                if (cellCoord != Trinity::ComputeCellCoord(spawn.GetPositionX(), spawn.GetPositionY()))
-                    continue;
+            Position const& spawn = plot->PacketInfo.PlotPos.Pos;
+            if (cellCoord != Trinity::ComputeCellCoord(spawn.GetPositionX(), spawn.GetPositionY()))
+                continue;
 
-                GameObject* go = plot->CreateGameObject(i_map, i_garrison->GetFaction());
-                if (!go)
-                    continue;
+            GameObject* go = plot->CreateGameObject(i_map, i_garrison->GetFaction());
+            if (!go)
+                continue;
 
-                go->AddToGrid(m);
-                ObjectGridLoader::SetObjectCell(go, cellCoord);
-                go->AddToWorld();
-                ++i_gameObjects;
+            go->AddToGrid(m);
+            ObjectGridLoader::SetObjectCell(go, cellCoord);
+            go->AddToWorld();
+            ++i_gameObjects;
             }
         }
     }
@@ -121,10 +121,10 @@ void GarrisonMap::LoadGridObjects(NGridType* grid, Cell const& cell)
 Garrison* GarrisonMap::GetGarrison()
 {
     if (_loadingPlayer)
-        return _loadingPlayer->GetGarrison(GARRISON_TYPE_COVENANT);
+        return _loadingPlayer->GetGarrison(GARRISON_TYPE_GARRISON);
 
     if (Player* owner = ObjectAccessor::FindConnectedPlayer(_owner))
-        return owner->GetGarrison(GARRISON_TYPE_COVENANT);
+        return owner->GetGarrison(GARRISON_TYPE_GARRISON);
 
     return nullptr;
 }

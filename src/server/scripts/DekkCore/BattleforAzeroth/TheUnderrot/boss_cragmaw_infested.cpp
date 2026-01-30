@@ -1,445 +1,363 @@
+/*
+ * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "CreatureAI.h"
+#include "CreatureAIImpl.h"
+#include "InstanceScript.h"
+#include "Map.h"
+#include "MotionMaster.h"
+#include "ObjectAccessor.h"
 #include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellAuraEffects.h"
+#include "SpellScript.h"
 #include "SpellAuras.h"
-#include "the_underrot.h"
+#include "SharedDefines.h"
 #include "TemporarySummon.h"
+#include "the_underrot.h"
 
-enum Spells
+enum CragmawSpells
 {
-    SPELL_CRAWG_EATING                  = 279156,
+    // Cragmaw
+    SPELL_CRAWG_EATING = 279156,
+    SPELL_POWER_DISPLAY_TANTRUM = 271771,
+    SPELL_POWER_ENERGIZE_TANTRUM = 271775,
+    SPELL_CHARGE_SELECTOR = 260292,
+    SPELL_INDIGESTION = 260793,
+    SPELL_TANTRUM_INITIAL = 260333,
 
-    SPELL_INFESTED                      = 260477,
-    SPELL_CHARGE                        = 260292, // spawn 12 random pos lava, change spellinfo effect target
-    SPELL_CHARGE_DAMAGE                 = 260312,
-    SPELL_INDIGESTION                   = 260793,
+    // Larva
+    SPELL_DESTROY_LARVA = 260418,
+    SPELL_METAMORPHOSIS_2 = 260766,
+    SPELL_SUMMON_BLOOD_TICK = 260353,
+    SPELL_SUMMON_BLOOD_TICK_VISUAL = 260496,
 
-    SPELL_TANTRUM_ENERGY_VISUAL         = 271771,
-    SPELL_TANTRUM_ENERGY_PERIODIC       = 271775,
-    SPELL_TANTRUM                       = 260333,
+    // Blood Tick
+    SPELL_BLOOD_BURST_DAMAGE = 278637,
+    SPELL_SERRATED_FANGS = 260455,
 
-    SPELL_BLOOD_TICK_SPELL_DEST = 260391,
-    SPELL_LARVA_SUMMON_VISUAL           = 260411, // visual on npc larves
-    SPELL_LARVA_SUMMON_BLOOD_TICK       = 260353,
-    SPELL_LARVA_METAMORPHOSIS           = 260416,
-    SPELL_LARVA_METAMORPHOSIS_2         = 260766,
-    SPELL_LARVA_DESTROY                 = 260418, // visual on blood is created
-
-    SPELL_BLOOD_TICK_SPAWN              = 260768, // on blood ticks at spawn, size increase
-    SPELL_BLOOD_TICK_SERRATED_FANGS     = 260455,
-    SPELL_BLOOD_TICK_BLOOD_BURST        = 278641,
-    SPELL_BLOOD_TICK_BLOOD_BURST_DAMAGE = 278637,
+    // Fetid Maggot
+    SPELL_FEIGN_DEATH = 159474
 };
 
-enum Events
+enum CragmawEvents
 {
-    EVENT_ENERGY_REGEN = 1,
-    EVENT_CHARGE_TARGET,
+    // Cragmaw
+    EVENT_CHARGE_SELECTOR = 1,
     EVENT_INDIGESTION,
-    EVENT_TANTRUM,
+    EVENT_NORMAL_REQUEUE,
+    EVENT_CHECK_ENERGY_TANTRUM,
 
-    EVENT_METAMORPHOSIS,
-    EVENT_SERRATED_FANGS,
+    // Blood Tick
+    EVENT_SERRATED_FANGS = 1
 };
 
-enum Timers
+enum CragmawPoints
 {
-    TIMER_ENERGY_REGEN = 2 * IN_MILLISECONDS,
-    TIMER_CHARGE = 20 * IN_MILLISECONDS,
-    TIMER_INDIGESTION = 8 * IN_MILLISECONDS,
-    TIMER_SERRATED_FANGS = 3 * IN_MILLISECONDS,
-    TIMER_SERRATED_FANGS_AFTER = 10 * IN_MILLISECONDS,
-    TIMER_METAMORPHOSIS = 10 * IN_MILLISECONDS,
+    POINT_TANTRUM_START_RND_MOVEMENT = 0
 };
 
-enum Creatures
+enum CragmawNPC
 {
-    BOSS_CRAGMAW_THE_INFESTED = 131817,
-
-    NPC_BLOOD_TICK = 132051,
-    NPC_LARVES = 132080,
+    NPC_FETID_MAGGOT = 130909
 };
 
-enum Points
+Position const FetidMaggotSpawn = { 857.864f, 984.981f, 39.231f, 4.68147f };
+
+// 131817 - Cragmaw the Infested
+struct boss_cragmaw_the_infested : public BossAI
 {
-    POINT_ONE = 1,
-    POINT_TWO = 2,
-    POINT_THREE = 3,
-};
+    boss_cragmaw_the_infested(Creature* creature) : BossAI(creature, DATA_CRAGMAW_THE_INFESTED) { }
 
-const Position centerZone = { 856.38f, 981.99f, 39.14f  }; // cheaters
-
-class bfa_boss_cragmaw_the_infested : public CreatureScript
-{
-public:
-    bfa_boss_cragmaw_the_infested() : CreatureScript("bfa_boss_cragmaw_the_infested")
-    {}
-
-    struct bfa_boss_cragmaw_the_infested_AI : public BossAI
+    void JustDied(Unit* /*killer*/) override
     {
-        bfa_boss_cragmaw_the_infested_AI(Creature* creature) : BossAI(creature, DATA_CRAGMAW_THE_INFESTED)
+        _JustDied();
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+    }
+
+    void JustAppeared() override
+    {
+        me->SetPowerType(POWER_ENERGY);
+        DoCast(SPELL_POWER_DISPLAY_TANTRUM);
+
+        if (instance->GetData(DATA_CRAGMAW_CRAWG_EATING))
+            return;
+
+        DoCastSelf(SPELL_CRAWG_EATING);
+        me->SetEmoteState(EMOTE_STATE_EAT);
+        if (TempSummon* summon = me->SummonCreature(NPC_FETID_MAGGOT, FetidMaggotSpawn))
         {
-            instance = me->GetInstanceScript();
+            _fetidMaggotGuid = summon->GetGUID();
+            summon->CastSpell(nullptr, SPELL_FEIGN_DEATH, true);
         }
+    }
 
-        EventMap events;
-        InstanceScript* instance;
+    void EnterEvadeMode(EvadeReason /*why*/) override
+    {
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        summons.DespawnAll();
+        _EnterEvadeMode();
+        _DespawnAtEvade();
+    }
 
-        void Reset() override
+    void ScheduleSpells()
+    {
+        events.Reset();
+
+        if (GetDifficulty() == DIFFICULTY_NORMAL)
+            events.ScheduleEvent(EVENT_NORMAL_REQUEUE, 45s);
+
+        if (urand(0, 1) == 0)
         {
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-            events.Reset();
-            DespawnCreature(NPC_BLOOD_TICK);
-            DespawnCreature(NPC_LARVES);
-
+            events.ScheduleEvent(EVENT_CHARGE_SELECTOR, 9s);
+            events.ScheduleEvent(EVENT_INDIGESTION, 20s);
+            events.ScheduleEvent(EVENT_CHARGE_SELECTOR, 33s);
         }
-
-        void DespawnCreature(uint32 entry)
+        else
         {
-            std::list<Creature*> cList;
-            me->GetCreatureListWithEntryInGrid(cList, entry, 500.0f);
-            if (!cList.empty())
-                for (std::list<Creature*>::const_iterator itr = cList.begin(); itr != cList.end(); ++itr)
-                    (*itr)->DespawnOrUnsummon();
+            events.ScheduleEvent(EVENT_INDIGESTION, 9s);
+            events.ScheduleEvent(EVENT_CHARGE_SELECTOR, 21s);
+            events.ScheduleEvent(EVENT_CHARGE_SELECTOR, 41s);
         }
+    }
 
-        void JustDied(Unit*) override
-        {
-            DespawnCreature(NPC_BLOOD_TICK);
-            DespawnCreature(NPC_LARVES);
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-        }
+    void JustEngagedWith(Unit* who) override
+    {
+        BossAI::JustEngagedWith(who);
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me, 1);
+        instance->SetData(DATA_CRAGMAW_CRAWG_EATING, 1);
+        ScheduleSpells();
+        events.ScheduleEvent(EVENT_CHECK_ENERGY_TANTRUM, 500ms);
 
-        void EnterEvadeMode(EvadeReason why) override
-        {
-            DespawnCreature(NPC_BLOOD_TICK);
-            DespawnCreature(NPC_LARVES);
-            _DespawnAtEvade(15s);
-        }
+        if (Creature* fetidMaggot = ObjectAccessor::GetCreature(*me, _fetidMaggotGuid))
+            fetidMaggot->DespawnOrUnsummon();
 
-        void MovementInform(uint32 uiType, uint32 id) override
-        {
-            switch (id)
-            {
-            case POINT_ONE:
-                if(me->HasAura(SPELL_TANTRUM))
-                    me->GetMotionMaster()->MovePoint(2, 839.35f, 968.41f, 40.61f, false);
-                else
-                {
-                    me->GetMotionMaster()->Clear();
-                    me->SetSpeed(MOVE_WALK, 1.5f);
-                    me->SetSpeed(MOVE_RUN, 1.5f);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->SetSpeed(MOVE_FLIGHT, 1.5f);
-                }
-                break;
-            case POINT_TWO:
-                if(me->HasAura(SPELL_TANTRUM))
-                    me->GetMotionMaster()->MovePoint(3, 863.21f, 1015.53f, 39.90f, false);
-                else
-                {
-                    me->GetMotionMaster()->Clear();
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->SetSpeed(MOVE_WALK, 1.5f);
-                    me->SetSpeed(MOVE_RUN, 1.5f);
-                    me->SetSpeed(MOVE_FLIGHT, 1.5f);
-                }
-                break;
-            case POINT_THREE:
-                me->SetReactState(REACT_AGGRESSIVE);
-                me->GetMotionMaster()->Clear();
-                me->SetSpeed(MOVE_WALK, 1.5f);
-                me->SetSpeed(MOVE_RUN, 1.5f);
-                me->SetSpeed(MOVE_FLIGHT, 1.5f);
-                break;
-            }
-        }
-        // too many effecttargets to corret, handle this way
-        void HandleLarveSpawnBySpell(bool bigWave)
-        {
-            if (!me->GetVictim())
-                return;
+        if (IsHeroic() || GetDifficulty() == DIFFICULTY_MYTHIC || GetDifficulty() == DIFFICULTY_MYTHIC_KEYSTONE)
+            DoCast(SPELL_POWER_ENERGIZE_TANTRUM);
+    }
 
-            if (bigWave)
-            {
-                // 12 larves, CHARGE SPELL
-                // select random position based on our current position
-                float Myx;
-                float Myy;
+    void MovementInform(uint32 /*type*/, uint32 id) override
+    {
+        if (id == POINT_TANTRUM_START_RND_MOVEMENT)
+            me->GetMotionMaster()->MoveRandom(20.0f);
+    }
 
-                Myx = me->GetPositionX();
-
-                Myy = me->GetPositionY();
-
-                // main spell has 12 missiles
-                for (uint8 i = 0; i < 12; ++i)
-                    me->CastSpell(Position(Myx + urand(2, 10) , Myy - urand(2, 10), me->GetPositionZ()), SPELL_BLOOD_TICK_SPELL_DEST, true);
-
-            }
-            else
-            {
-                // 4 larves INDIGESTION
-                // target random in front of caster
-                float x;
-                float y;
-
-                // we take tank as main point and play with values
-                x = me->GetVictim()->GetPositionX();
-                y = me->GetVictim()->GetPositionY();
-
-                for (uint8 i = 0; i < 4; ++i)
-                    me->CastSpell(Position(x + urand(3, 5), y - urand(3,7), me->GetPositionZ()), SPELL_BLOOD_TICK_SPELL_DEST, true);
-
-            }
-        }
-
-        void JustEngagedWith(Unit*) override
-        {
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-
-            me->SetPowerType(POWER_ENERGY);
-            me->SetMaxPower(POWER_ENERGY, 100);
-            me->SetPower(POWER_ENERGY, 0);
-
-        //    events.ScheduleEvent(EVENT_INDIGESTION, TIMER_INDIGESTION);
-         //   events.ScheduleEvent(EVENT_CHARGE_TARGET, TIMER_CHARGE);
-
-        //    if (me->GetMap()->IsHeroic() || me->GetMap()->IsMythic())
-         //       events.ScheduleEvent(EVENT_ENERGY_REGEN, TIMER_ENERGY_REGEN);
-        }
-
-        void OnSpellCast(SpellInfo const* spell) override
-        {
-            switch (spell->Id)
-            {
-            case SPELL_CHARGE:
-                HandleLarveSpawnBySpell(true);
-                break;
-            case SPELL_INDIGESTION:
-                HandleLarveSpawnBySpell(false);
-                break;
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            if (!UpdateVictim())
-                return;
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_ENERGY_REGEN:
-                    me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 2);
-                    if (me->GetPower(POWER_ENERGY) == 100)
-                    {
-                        events.ScheduleEvent(EVENT_TANTRUM, 1s);
-                        me->SetPower(POWER_ENERGY, 0);
-                    }
-//                    events.ScheduleEvent(EVENT_ENERGY_REGEN, TIMER_ENERGY_REGEN);
-                    break;
-                case EVENT_TANTRUM:
-                    me->SetSpeed(MOVE_WALK, 4.5f);
-                    me->SetSpeed(MOVE_RUN, 4.5f);
-                    me->SetSpeed(MOVE_FLIGHT, 4.5f);
-                    me->GetMotionMaster()->MovePoint(POINT_ONE, 888.63f, 967.30f, 41.06f, false);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->CastSpell(me, SPELL_TANTRUM, true);
-                    break;
-                case EVENT_INDIGESTION:
-                    me->CastSpell(me->GetVictim(), SPELL_INDIGESTION);
-                 //   events.ScheduleEvent(EVENT_INDIGESTION, TIMER_INDIGESTION);
-                    break;
-                case EVENT_CHARGE_TARGET:
-                {
-                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
-                    {
-                        me->CastSpell(target, SPELL_CHARGE);
-                    }
-                  //  events.ScheduleEvent(EVENT_CHARGE_TARGET, TIMER_CHARGE);
-                    break;
-                }
-                }
-            }
-            DoMeleeAttackIfReady();
-        }
+    void OnChannelFinished(SpellInfo const* spell) override
+    {
+        if (spell->Id == SPELL_TANTRUM_INITIAL)
+            me->SetReactState(REACT_AGGRESSIVE);
     };
 
-    CreatureAI* GetAI(Creature* creature) const override
+    void UpdateAI(uint32 diff) override
     {
-        return new bfa_boss_cragmaw_the_infested_AI(creature);
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        switch (events.ExecuteEvent())
+        {
+        case EVENT_CHARGE_SELECTOR:
+            DoCast(SPELL_CHARGE_SELECTOR);
+            break;
+        case EVENT_INDIGESTION:
+            DoCast(SPELL_INDIGESTION);
+            break;
+        case EVENT_NORMAL_REQUEUE:
+            ScheduleSpells();
+            break;
+        case EVENT_CHECK_ENERGY_TANTRUM:
+            if (me->GetPower(POWER_ENERGY) >= 100)
+            {
+                ScheduleSpells();
+                DoCast(SPELL_TANTRUM_INITIAL);
+                me->SetReactState(REACT_PASSIVE);
+                me->GetMotionMaster()->MovePoint(POINT_TANTRUM_START_RND_MOVEMENT, me->GetHomePosition());
+            }
+            events.Repeat(500ms);
+            break;
+        default:
+            break;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+private:
+    ObjectGuid _fetidMaggotGuid;
+};
+
+// 132051 - Blood Tick
+struct npc_cragmaw_blood_tick : public ScriptedAI
+{
+    npc_cragmaw_blood_tick(Creature* creature) : ScriptedAI(creature) { }
+
+    void JustAppeared() override
+    {
+        Creature* cragmaw = me->GetInstanceScript()->GetCreature(DATA_CRAGMAW_THE_INFESTED);
+        if (!cragmaw || !cragmaw->IsAIEnabled())
+            return;
+
+        cragmaw->AI()->JustSummoned(me);
+        DoZoneInCombat();
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        _events.ScheduleEvent(EVENT_SERRATED_FANGS, 1s);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        _events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING) || me->HasUnitState(UNIT_STATE_STUNNED))
+            return;
+
+        switch (_events.ExecuteEvent())
+        {
+        case EVENT_SERRATED_FANGS:
+            DoCastVictim(SPELL_SERRATED_FANGS);
+            _events.ScheduleEvent(EVENT_SERRATED_FANGS, 6s);
+            break;
+        default:
+            break;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+private:
+    EventMap _events;
+};
+
+// 271775 - Tantrum Energy Bar (periodic)
+class spell_cragmaw_power_energize_tantrum : public AuraScript
+{
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* target = GetTarget();
+        target->SetPower(POWER_ENERGY, target->GetPower(POWER_ENERGY) + 2);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_cragmaw_power_energize_tantrum::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 
-class bfa_npc_blood_larves : public CreatureScript
+// 260411 - Summon Larva
+class spell_cragmaw_summon_larva : public AuraScript
 {
-public:
-    bfa_npc_blood_larves() : CreatureScript("bfa_npc_blood_larves")
-    {}
-
-    struct bfa_npc_blood_larves_AI : public ScriptedAI
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        bfa_npc_blood_larves_AI(Creature* creature) : ScriptedAI(creature)
-        {
-            me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-            me->SetReactState(REACT_PASSIVE);
-            me->SetUnitFlag(UNIT_FLAG_IMMUNE_TO_PC);
-            me->SetDisplayId(88361);
-            me->AddAura(167209, me); // hack fix because aura tend to disappear sometimes and we set an arrow and displayid
-        }
+        if (Creature* creature = GetTarget()->ToCreature())
+            creature->DespawnOrUnsummon(300ms);
+    }
 
-        EventMap events;
-
-        void Reset() override
-        {
-            me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 2.0f, me->GetOrientation()); //safety
-          //  events.ScheduleEvent(EVENT_METAMORPHOSIS, TIMER_METAMORPHOSIS);
-            me->CastSpell(me, SPELL_LARVA_SUMMON_VISUAL, true);
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            Map::PlayerList const& playerList = me->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
-                if (Player* player = i->GetSource())
-                {
-                    if (!player->IsGameMaster()) //gm check
-                    {
-                        if (player->GetDistance(me) <= 0.5f)
-                        {
-                            me->CastSpell(player, SPELL_LARVA_DESTROY, true);
-                            me->ForcedDespawn();
-                        }
-                    }
-                }
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_METAMORPHOSIS:
-                    if (Creature* tick = me->SummonCreature(NPC_BLOOD_TICK, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), TEMPSUMMON_CORPSE_DESPAWN))
-                        tick->SetInCombatWithZone();
-                    me->ForcedDespawn();
-                    break;
-                }
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
+    void Register() override
     {
-        return new bfa_npc_blood_larves_AI(creature);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_cragmaw_summon_larva::OnRemove, EFFECT_0, SPELL_AURA_AREA_TRIGGER, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
-class bfa_npc_blood_tick : public CreatureScript
+// 260418 - Destroy Larva
+struct at_cragmaw_destroy_larva : AreaTriggerAI
 {
-public:
-    bfa_npc_blood_tick() : CreatureScript("bfa_npc_blood_tick")
-    {}
-
-    struct bfa_npc_blood_tick_AI : public ScriptedAI
-    {
-        bfa_npc_blood_tick_AI(Creature* creature) : ScriptedAI(creature)
-        {
-            me->AddAura(SPELL_BLOOD_TICK_SPAWN, me);
-            me->AddAura(SPELL_LARVA_METAMORPHOSIS_2, me);
-        }
-
-        EventMap events;
-
-        void Reset() override
-        {
-            events.Reset();
-        }
-
-        void JustEngagedWith(Unit*) override
-        {
-          //  events.ScheduleEvent(EVENT_SERRATED_FANGS, TIMER_SERRATED_FANGS);
-        }
-
-        void DamageTaken(Unit* killer, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
-        {
-            if (damage >= me->GetHealth())
-            {
-                me->CastSpell(killer, SPELL_BLOOD_TICK_BLOOD_BURST_DAMAGE, true);
-                me->DespawnOrUnsummon(1s);
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            if (!UpdateVictim())
-                return;
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_SERRATED_FANGS:
-                    me->CastSpell(me->GetVictim(), SPELL_BLOOD_TICK_SERRATED_FANGS);
-                  //  events.ScheduleEvent(EVENT_SERRATED_FANGS, TIMER_SERRATED_FANGS_AFTER);
-                    break;
-                }
-            }
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new bfa_npc_blood_tick_AI(creature);
-    }
-};
-
-
-// at 17014
-class bfa_at_cragmaw_charge : public AreaTriggerEntityScript
-{
-public:
-    bfa_at_cragmaw_charge() : AreaTriggerEntityScript("bfa_at_cragmaw_charge")
-    {}
-
-    struct bfa_at_cragmaw_charge_AI : public AreaTriggerAI
-    {
-        bfa_at_cragmaw_charge_AI(AreaTrigger* at) : AreaTriggerAI(at)
-        {}
+    at_cragmaw_destroy_larva(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
     void OnUnitEnter(Unit* unit) override
     {
-        if (Unit* caster = at->GetCaster())
-            if (caster->IsValidAttackTarget(unit))
-                caster->CastSpell(unit, SPELL_CHARGE_DAMAGE, true);
-    }
+        if (!unit->IsPlayer())
+            return;
 
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* at) const override
-    {
-        return new bfa_at_cragmaw_charge_AI(at);
+        at->GetCaster()->CastSpell(nullptr, SPELL_DESTROY_LARVA, true);
     }
 };
 
-
-void AddSC_boss_cragmaw_infested()
+// 260416 - Metamorphosis
+class spell_cragmaw_larva_metamorphosis : public AuraScript
 {
-    new bfa_boss_cragmaw_the_infested();
-    new bfa_npc_blood_larves();
-    new bfa_npc_blood_tick();
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_SUMMON_BLOOD_TICK,
+                SPELL_SUMMON_BLOOD_TICK_VISUAL,
+                SPELL_METAMORPHOSIS_2
+            });
+    }
 
-    new bfa_at_cragmaw_charge();
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        if (aurEff->GetTickNumber() == aurEff->GetTotalTicks() - 2)
+            GetTarget()->CastSpell(nullptr, SPELL_METAMORPHOSIS_2, true);
+    }
+
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+            return;
+
+        Unit* target = GetTarget();
+        target->CastSpell(nullptr, SPELL_SUMMON_BLOOD_TICK_VISUAL, true);
+        target->CastSpell(target->GetPosition(), SPELL_SUMMON_BLOOD_TICK, true);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_cragmaw_larva_metamorphosis::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_cragmaw_larva_metamorphosis::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 278641 - Blood Burst
+class spell_cragmaw_blood_burst : public AuraScript
+{
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* target = GetTarget();
+        target->CastSpell(target, SPELL_BLOOD_BURST_DAMAGE, true);
+    }
+
+    void Register() override
+    {
+        AfterEffectRemove += AuraEffectRemoveFn(spell_cragmaw_blood_burst::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+void AddSC_boss_cragmaw_the_infested()
+{
+    // Creature
+    RegisterUnderrotCreatureAI(boss_cragmaw_the_infested);
+    RegisterUnderrotCreatureAI(npc_cragmaw_blood_tick);
+
+    // Spells
+    RegisterSpellScript(spell_cragmaw_power_energize_tantrum);
+    RegisterSpellScript(spell_cragmaw_larva_metamorphosis);
+    RegisterSpellScript(spell_cragmaw_blood_burst);
+    RegisterSpellScript(spell_cragmaw_summon_larva);
+
+    // AreaTrigger
+    RegisterAreaTriggerAI(at_cragmaw_destroy_larva);
 }

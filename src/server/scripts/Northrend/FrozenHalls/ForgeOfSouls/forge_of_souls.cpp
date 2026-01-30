@@ -132,17 +132,17 @@ struct npc_sylvanas_fos : public ScriptedAI
 
                 case EVENT_INTRO_3:
                     Talk(SAY_SYLVANAS_INTRO_3);
-                    events.ScheduleEvent(EVENT_INTRO_4, 9500ms);
+                    events.ScheduleEvent(EVENT_INTRO_4, 10500ms);
                     break;
 
                 case EVENT_INTRO_4:
                     Talk(SAY_SYLVANAS_INTRO_4);
-                    events.ScheduleEvent(EVENT_INTRO_5, 10500ms);
+                    events.ScheduleEvent(EVENT_INTRO_5, 11500ms);
                     break;
 
                 case EVENT_INTRO_5:
                     Talk(SAY_SYLVANAS_INTRO_5);
-                    events.ScheduleEvent(EVENT_INTRO_6, 9500ms);
+                    events.ScheduleEvent(EVENT_INTRO_6, 8000ms);
                     break;
 
                 case EVENT_INTRO_6:
@@ -214,7 +214,7 @@ struct npc_jaina_fos: public ScriptedAI
 
                 case EVENT_INTRO_2:
                     Talk(SAY_JAINA_INTRO_2);
-                    events.ScheduleEvent(EVENT_INTRO_3, 8500ms);
+                    events.ScheduleEvent(EVENT_INTRO_3, 9500ms);
                     break;
 
                 case EVENT_INTRO_3:
@@ -229,7 +229,7 @@ struct npc_jaina_fos: public ScriptedAI
 
                 case EVENT_INTRO_5:
                     Talk(SAY_JAINA_INTRO_5);
-                    events.ScheduleEvent(EVENT_INTRO_6, 8s);
+                    events.ScheduleEvent(EVENT_INTRO_6, 8500ms);
                     break;
 
                 case EVENT_INTRO_6:
@@ -263,8 +263,6 @@ struct npc_jaina_fos: public ScriptedAI
 // 69131 - Soul Sickness
 class spell_forge_of_souls_soul_sickness : public AuraScript
 {
-    PrepareAuraScript(spell_forge_of_souls_soul_sickness);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_LETHARGY });

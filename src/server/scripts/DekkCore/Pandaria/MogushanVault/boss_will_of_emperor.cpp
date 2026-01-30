@@ -1543,8 +1543,6 @@ class spell_cosmetic_lightning : public SpellScriptLoader
 
         class spell_cosmetic_lightning_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_cosmetic_lightning_SpellScript);
-
             void SelectTargets(std::list<WorldObject*>& targets)
             {
                 if (Unit* caster = GetCaster())
@@ -1584,8 +1582,6 @@ class spell_terracota_spawn : public SpellScriptLoader
 
         class spell_terracota_spawn_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_terracota_spawn_SpellScript);
-
             void HandleOnHit()
             {
                 if (Unit* l_Caster = GetCaster())
@@ -1612,8 +1608,6 @@ class spell_magnetized_qin : public SpellScriptLoader
 
         class spell_magnetized_qin_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_magnetized_qin_AuraScript);
-
             void Apply(AuraEffect const* /*aurAff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetTarget()->ToPlayer())
@@ -1640,8 +1634,6 @@ class spell_magnetized_jan : public SpellScriptLoader
 
         class spell_magnetized_jan_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_magnetized_jan_AuraScript);
-
             void Apply(AuraEffect const* /*aurAff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetTarget()->ToPlayer())
@@ -1668,8 +1660,6 @@ class spell_arc_visual : public SpellScriptLoader
 
         class spell_arc_visual_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_arc_visual_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 std::list<Player*> players;
@@ -1699,8 +1689,6 @@ class spell_devastating_arc : public SpellScriptLoader
 
         class spell_devastating_arc_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_devastating_arc_SpellScript);
-
             void HandleHit(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* l_Caster = GetCaster())
@@ -1733,8 +1721,6 @@ class spell_impeding_thrust : public SpellScriptLoader
 
         class spell_impeding_thrust_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_impeding_thrust_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetTarget()->ToPlayer())
@@ -1765,8 +1751,6 @@ class spell_titan_gas : public SpellScriptLoader
 
         class spell_titan_gas_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_titan_gas_AuraScript);
-
             void Apply(AuraEffect const* /*aurAff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
@@ -1793,8 +1777,6 @@ class spell_titan_gas2 : public SpellScriptLoader
 
         class spell_titan_gas2_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_titan_gas2_AuraScript);
-
             void Apply(AuraEffect const* /*aurAff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
@@ -1821,8 +1803,6 @@ class spell_energizing_smash : public SpellScriptLoader
 
         class spell_ernergizing_smash_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_ernergizing_smash_SpellScript);
-
             void SelectTargets(std::list<WorldObject*>& targets)
             {
                 targets.clear();
@@ -1861,8 +1841,6 @@ class spell_energizing_visual : public SpellScriptLoader
 
         class spell_energizing_visual_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_energizing_visual_SpellScript);
-
             void HandleHit(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* l_Caster = GetCaster())
@@ -1896,8 +1874,6 @@ class spell_energized : public SpellScriptLoader
 
         class spell_energized_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_energized_AuraScript);
-
             void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())

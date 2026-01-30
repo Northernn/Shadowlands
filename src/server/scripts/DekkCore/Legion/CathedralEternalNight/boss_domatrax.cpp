@@ -321,45 +321,6 @@ public:
     }
 };
 
-// 14825
-class areatrigger_domatrax_egida_shield : public AreaTriggerScript
-{
-public:
-    areatrigger_domatrax_egida_shield() : AreaTriggerScript("areatrigger_domatrax_egida_shield") { }
-
-    struct areatrigger_domatrax_egida_shieldAI : AreaTriggerAI
-    {
-        areatrigger_domatrax_egida_shieldAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
-        {
-            scale_by_one_pct = 1;
-        }
-
-        float scale_by_one_pct{};
-
-        void OnUpdate(uint32 diff) override
-        {
-            Unit* caster = at->GetCaster();
-            if (!caster)
-                return;
-
-            float new_scale = scale_by_one_pct * caster->GetPower(POWER_ALTERNATE_POWER);
-            if (!new_scale)
-            {
-                at->Remove();
-                return;
-            }
-
-            at->SetObjectScale(new_scale);
-        }
-
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const
-    {
-        return new areatrigger_domatrax_egida_shieldAI(areatrigger);
-    }
-};
-
 // 235827, 235881
 class spell_domatrax_portals : public SpellScriptLoader
 {
@@ -368,8 +329,6 @@ public:
 
     class spell_domatrax_portals_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_domatrax_portals_AuraScript);
-
         void OnTick(AuraEffect const* /*aurEff*/)
         {
             Unit* caster = GetCaster();
@@ -401,6 +360,5 @@ void AddSC_boss_domatrax()
 {
     new boss_domatrax();
     new npc_coen_egida();
-    new areatrigger_domatrax_egida_shield();
     new spell_domatrax_portals();
 }

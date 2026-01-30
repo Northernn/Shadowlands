@@ -56,7 +56,7 @@ enum eNyamiTalks
     NyamiSpell4 = 4,   ///< I Will Drown This World In Shadows!(43650)
     NyamiAggro = 5,   ///< I Will Coil Your Souls Into Darkness!(43636)
     NyamiSlay = 6,   ///< Shadows Envelop You! (43646)
-    NyamiDeath = 7,   ///< Too Late...My Master...Comes...(43637) 
+    NyamiDeath = 7,   ///< Too Late...My Master...Comes...(43637)
     Auchenaiwarden1 = 32,  ///< Champions! Nyami'S Agents - They Went This Way.
     Auchenaiwarden2 = 33,  ///< No...Oh...No...
     Auchenaiwarden3 = 34,  ///< The Barrier Protecting Auchindoun Is Asunder.
@@ -132,8 +132,8 @@ struct boss_nyami : public BossAI
             instance->SendEncounterUnit(EncounterFrameType::ENCOUNTER_FRAME_ENGAGE, me);
 
         Talk(eNyamiTalks::NyamiAggro);
-        events.ScheduleEvent(eNyamiEvents::EventMindSpikeNyami, (8s, 15s));
-        events.ScheduleEvent(eNyamiEvents::EventShadowWordPain, (12s, 18s));
+        events.ScheduleEvent(eNyamiEvents::EventMindSpikeNyami, 12s);
+        events.ScheduleEvent(eNyamiEvents::EventShadowWordPain, 15s);
         events.ScheduleEvent(eNyamiEvents::EventSoulVessel, 20s);
         events.ScheduleEvent(eNyamiEvents::EventTornSpirit, 35s);
     }
@@ -175,7 +175,7 @@ struct boss_nyami : public BossAI
                 me->GetCreatureListWithEntryInGrid(l_ListCorpsesTriggers, eAuchindounCreatures::CreatureCorpsesNyamiFight, 40.0f);
                 if (!l_ListCorpsesTriggers.empty())
                 {
-                    std::list<Creature*>::const_iterator l_Itr = l_ListCorpsesTriggers.begin();
+                    auto l_Itr = l_ListCorpsesTriggers.begin();
                     std::advance(l_Itr, (0, l_ListCorpsesTriggers.size() - 1));
 
                     if ((*l_Itr))
@@ -218,12 +218,12 @@ struct boss_nyami : public BossAI
         case eNyamiEvents::EventMindSpikeNyami:
             if (Unit * l_Target = me->GetVictim())
                 me->CastSpell(l_Target, eAuchindounSpells::SpellMindSpike);
-            events.ScheduleEvent(eNyamiEvents::EventMindSpikeNyami, (6s, 8s));
+            events.ScheduleEvent(eNyamiEvents::EventMindSpikeNyami, 7s);
             break;
         case eNyamiEvents::EventShadowWordPain:
             if (Unit* l_Target = SelectTarget(SelectTargetMethod::Random, 0, 200.0f, true))
                 me->CastSpell(l_Target, eNyamiSpells::SpellShadowWordPain);
-            events.ScheduleEvent(eNyamiEvents::EventShadowWordPain, (12s, 18s));
+            events.ScheduleEvent(eNyamiEvents::EventShadowWordPain, 15s);
             break;
         case eNyamiEvents::EventSoulVessel:
             if (instance)
@@ -271,7 +271,7 @@ struct boss_nyami : public BossAI
                 l_Warden->SetDisableGravity(false);
                 l_Warden->AddAura(eAuchindounSpells::SpellKneel, l_Warden);
                 events.ScheduleEvent(eNyamiEvents::EventOnDeath2, 6s);
-            }            
+            }
             break;
         }
         case EventOnDeath2:
@@ -347,96 +347,6 @@ struct auchindoun_nyami_mob_warden_cosmetic : public ScriptedAI
     }
 };
 
-/// Bubble Creature - 342652
-struct auchindoun_nyami_mob_bubble : public ScriptedAI
-{
-    auchindoun_nyami_mob_bubble(Creature* p_Creature) : ScriptedAI(p_Creature) {}
-
-    enum eBubbleSpells
-    {
-        SpellSoulBubbleVisual = 177549,
-        SpellSoulBubbleBuff = 177550
-    };
-
-    EventMap events;
-    uint32 m_SpellDiff;
-    bool m_Visual;
-
-    void Reset()
-    {
-        events.Reset();
-        m_Visual = false;
-        me->SetDisplayId(InvisibleDisplay);
-        m_SpellDiff = 1;
-        me->CastSpell(me, eBubbleSpells::SpellSoulBubbleVisual);
-        me->CastSpell(me, eBubbleSpells::SpellSoulBubbleBuff);
-    }
-
-    void UpdateAI(uint32 p_Diff) override
-    {
-        if (m_Visual)
-        {
-            if (m_SpellDiff <= p_Diff)
-            {
-                std::list<Player*> l_PlayerList;
-                me->GetPlayerListInGrid(l_PlayerList, 20.0f);
-                //me->VisitNearbyObject(12.0f, searcher);
-                if (!l_PlayerList.empty())
-                {
-                    for (std::list<Player*>::const_iterator l_Itr = l_PlayerList.begin(); l_Itr != l_PlayerList.end(); ++l_Itr)
-                    {
-                        if (!(*l_Itr))
-                            continue;
-
-                        if ((*l_Itr)->IsWithinDistInMap(me, 4.0f))
-                        {
-                            if (!(*l_Itr)->HasAura(eBubbleSpells::SpellSoulBubbleBuff))
-                                me->AddAura(eBubbleSpells::SpellSoulBubbleBuff, (*l_Itr));
-                        }
-                        else
-                        {
-                            if ((*l_Itr)->HasAura(eBubbleSpells::SpellSoulBubbleBuff))
-                                (*l_Itr)->RemoveAura(eBubbleSpells::SpellSoulBubbleBuff);
-                        }
-                    }
-                }
-
-                //G3D::Vector3 l_Source(me->m_positionX, me->m_positionY, me->m_positionZ);
-                //G3D::Vector3 l_Dest(1652.273f, 3008.761f, 36.79123f);
-                //G3D::Vector3 l_Orientation(0.0f, 0.0f, 0.0f);
-
-                me->SendPlaySpellVisual(Position(1652.273f, 3008.761f, 36.79123f, 0.f), 0.f, eAuchindounSpellVisualKit::SpellVisualKitNyamiSoulVesselCircle, 0, 0, 1.0f, true);
-
-                m_SpellDiff = 1;
-            }
-            else
-                m_SpellDiff -= p_Diff;
-        }
-    }
-
-    void DoAction(int32 p_Action)
-    {
-        switch (p_Action)
-        {
-        case eNyamiActions::ActionReleaseAnimationPreSoulVessel:
-        {
-            //??????
-            me->Unit::SendCancelOrphanSpellVisual(eAuchindounSpellVisualKit::SpellVisualKitNyamiSoulVesselCircle);
-            me->Unit::SendCancelOrphanSpellVisual(eAuchindounSpellVisualKit::SpellVisualKitNyamiSoulVesselSpiralCircle);
-
-            if (m_Visual)
-                m_Visual = false;
-            else
-                m_Visual = true;
-            break;
-        }
-        default:
-            break;
-        }
-    }
-
-};
-
 /// Malefic Defender - 76283
 struct auchindoun_nyami_mob_malefic_defender : public ScriptedAI
 {
@@ -480,7 +390,7 @@ struct auchindoun_nyami_mob_malefic_defender : public ScriptedAI
         case eMaleficDefenderEvents::EventCrusaderStirke:
             if (Unit* l_Target = me->GetVictim())
                 me->CastSpell(l_Target, eMaleficDefenderSpells::SpellCrusaderStirke);
-            events.ScheduleEvent(eMaleficDefenderEvents::EventCrusaderStirke, (7s, 12s));
+            events.ScheduleEvent(eMaleficDefenderEvents::EventCrusaderStirke, 9s);
             break;
         default:
             break;
@@ -579,7 +489,7 @@ struct auchindoun_nyami_mob_spiteful_arbitrer : public ScriptedAI
         {
             m_Radiant = false;
             events.CancelEvent(eNyamiEvents::EventRadiantFurySummonTrigger);
-            events.ScheduleEvent(eNyamiEvents::EventRadiantFury, (15s, 20s));
+            events.ScheduleEvent(eNyamiEvents::EventRadiantFury, 17s);
             break;
         }
         default:
@@ -657,8 +567,6 @@ struct auchindoun_nyami_mob_twisted_magus : public ScriptedAI
 /// Torn Spirits - 153994
 class auchindoun_nyami_spell_torn_spirits : public SpellScript
 {
-    PrepareSpellScript(auchindoun_nyami_spell_torn_spirits);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         uint32 l_Entries[3] = { eNyamiCreatures::CreatureMaleficDefender, eNyamiCreatures::CreatureTwistedMagus, eNyamiCreatures::CreatureSpitefulArbitrer };
@@ -686,8 +594,6 @@ class auchindoun_nyami_spell_torn_spirits : public SpellScript
 /// Soul Vessel - 154187
 class auchindoun_nyami_spell_soul_vessel : public SpellScript
 {
-    PrepareSpellScript(auchindoun_nyami_spell_soul_vessel);
-
     void RecalculateDamage(SpellEffIndex p_EffIndex)
     {
         if (GetHitUnit() && GetHitUnit()->HasAura(eNyamiSpells::SpellSoulBubbleBuff))
@@ -699,12 +605,10 @@ class auchindoun_nyami_spell_soul_vessel : public SpellScript
         OnEffectHitTarget += SpellEffectFn(auchindoun_nyami_spell_soul_vessel::RecalculateDamage, SpellEffIndex::EFFECT_0, SpellEffectName::SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
-    
+
 // Soul Vessel - 155327
 class auchindoun_nyami_spell_soul_vessel_dummy : public AuraScript
 {
-    PrepareAuraScript(auchindoun_nyami_spell_soul_vessel_dummy);
-
     void HandlePeriodic(AuraEffect const* p_AurEff)
     {
         if (Unit* l_Caster = GetCaster())
@@ -751,72 +655,15 @@ class auchindoun_nyami_spell_soul_vessel_dummy : public AuraScript
         AfterEffectRemove += AuraEffectRemoveFn(auchindoun_nyami_spell_soul_vessel_dummy::OnRemove, SpellEffIndex::EFFECT_1, AuraType::SPELL_AURA_PERIODIC_TRIGGER_SPELL, AuraEffectHandleModes::AURA_EFFECT_HANDLE_REAL);
     }
 };
-    
-
-/// Radiant Star AreaTrigger - 157787
-
-class auchindoun_nyami_at_radiant_star : public AreaTriggerEntityScript
-{
-public:
-
-    auchindoun_nyami_at_radiant_star() : AreaTriggerEntityScript("auchindoun_nyami_at_radiant_star") {}
-
-    uint32 m_Diff = 1;
-    std::list<uint64> m_Targets;
-
-    void OnCreate(AreaTrigger* p_AreaTrigger)
-    {
-        Position l_Position;
-        //p_AreaTrigger->GetPosition(&l_Position);
-
-        l_Position.m_positionX = p_AreaTrigger->m_positionX + 15/* * cos(p_AreaTrigger->m_orientation)*/;
-        l_Position.m_positionY = p_AreaTrigger->m_positionY + 15/* * sin(p_AreaTrigger->m_orientation)*/;
-
-        p_AreaTrigger->MovePosition(l_Position, 2.0f, p_AreaTrigger->GetOrientation());
-    }
-
-    void OnUpdate(AreaTrigger* p_AreaTrigger, Unit* SPLL, uint32 p_Time)
-    {
-        if (m_Diff <= p_Time)
-        {
-            std::list<Player*> l_ListPlayers;
-            p_AreaTrigger->GetPlayerListInGrid(l_ListPlayers, 1.2f);
-            //  p_AreaTrigger->VisitNearbyObject(3.0f, searcher);
-
-            if (!l_ListPlayers.empty())
-            {
-                for (std::list<Player*>::const_iterator l_Itr = l_ListPlayers.begin(); l_Itr != l_ListPlayers.end(); ++l_Itr)
-                {
-                    if (!(*l_Itr))
-                        continue;
-                    //???
-                    SPLL->CastSpell((*l_Itr), eNyamiSpells::SpellRadiantDamage);
-                    p_AreaTrigger->Remove();
-                }
-            }
-        }
-        else
-            m_Diff -= p_Time;
-    }
-    /*
-    auchindoun_nyami_at_radiant_star* GetAI()const
-    {
-    return nullptr;
-    }*/
-};
-
-
 
 void AddSC_boss_nyami()
 {
     RegisterCreatureAI(boss_nyami);
     RegisterCreatureAI(auchindoun_nyami_mob_warden_cosmetic);
-    RegisterCreatureAI(auchindoun_nyami_mob_bubble); ///delete
     RegisterCreatureAI(auchindoun_nyami_mob_malefic_defender);
     RegisterCreatureAI(auchindoun_nyami_mob_spiteful_arbitrer);
     RegisterCreatureAI(auchindoun_nyami_mob_twisted_magus);
     RegisterSpellScript(auchindoun_nyami_spell_torn_spirits);
     RegisterSpellScript(auchindoun_nyami_spell_soul_vessel);
     RegisterSpellScript(auchindoun_nyami_spell_soul_vessel_dummy);
-    new auchindoun_nyami_at_radiant_star();             ///< 157787//???
 }

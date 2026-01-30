@@ -216,8 +216,6 @@ public:
 
     class spell_curator_arc_lightning_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_curator_arc_lightning_SpellScript);
-
         void DealDamage()
         {
             if (!GetCaster())

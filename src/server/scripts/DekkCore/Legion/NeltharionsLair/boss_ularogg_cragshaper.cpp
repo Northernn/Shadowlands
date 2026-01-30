@@ -449,8 +449,6 @@ struct npc_nl_understone_drummer : public ScriptedAI
 //183213
 class spell_barrel_ride_plr_move : public AuraScript
 {
-    PrepareAuraScript(spell_barrel_ride_plr_move);
-
     void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (Player* player = GetTarget()->ToPlayer())
@@ -469,8 +467,6 @@ class spell_barrel_ride_plr_move : public AuraScript
 //198719
 class spell_ularogg_falling_debris : public AuraScript
 {
-    PrepareAuraScript(spell_ularogg_falling_debris);
-
     uint8 tickTrigger = 6;
     uint8 tickSwitch = 0;
 
@@ -497,8 +493,6 @@ class spell_ularogg_falling_debris : public AuraScript
 //183088
 class spell_nl_avalanche : public SpellScript
 {
-    PrepareSpellScript(spell_nl_avalanche);
-
     void HandleScript(SpellEffIndex effIndex)
     {
         if (!GetCaster())
@@ -520,8 +514,6 @@ class spell_nl_avalanche : public SpellScript
 //198475
 class spell_ularogg_strike_mountain : public SpellScript
 {
-    PrepareSpellScript(spell_ularogg_strike_mountain);
-
     void HandleScript(SpellEffIndex effectIndex)
     {
         if (!GetCaster() || !GetHitUnit())

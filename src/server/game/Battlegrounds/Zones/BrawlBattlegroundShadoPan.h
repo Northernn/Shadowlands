@@ -74,7 +74,7 @@ public:
     bool SetupBattleground() override;
     void PostUpdateImpl(uint32 diff) override;
 
-    void AddPlayer(Player* player) override;
+    void AddPlayer(Player* player, BattlegroundQueueTypeId queueId) override;
     void RemovePlayer(Player* player, ObjectGuid /*guid*/, uint32 /*team*/) override;
 
     WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);

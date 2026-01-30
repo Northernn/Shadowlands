@@ -77,6 +77,7 @@
 #include "TotemPackets.h"
 #include "ToyPackets.h"
 #include "TradePackets.h"
+#include "TraitPackets.h"
 #include "TransmogrificationPackets.h"
 #include "VehiclePackets.h"
 #include "VoidStoragePackets.h"
@@ -84,9 +85,9 @@
 #include "WhoPackets.h"
 #include "WorldStatePackets.h"
 
-// DekkCore >
+// Fluxurion >
 #include "BattlePayPackets.h"
 #include "BattlePayMgr.h"
-// < DekkCore
+// < Fluxurion
 
 #endif // AllPackets_h__

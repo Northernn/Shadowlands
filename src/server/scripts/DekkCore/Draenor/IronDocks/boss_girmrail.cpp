@@ -991,8 +991,6 @@ class iron_docks_grimrail_spell_sanguine_sphere : public SpellScriptLoader
 
         class iron_docks_grimrail_spell_sanguine_sphere_AuraScript : public AuraScript
         {
-            PrepareAuraScript(iron_docks_grimrail_spell_sanguine_sphere_AuraScript);
-
             void OnRemove(AuraEffect const* p_AurEff, AuraEffectHandleModes p_Mode)
             {
                 AuraRemoveMode l_RemoveMode = GetTargetApplication()->GetRemoveMode();
@@ -1062,8 +1060,6 @@ class iron_docks_grimrail_spell_big_boom : public SpellScriptLoader
 
     class iron_docks_grimrail_spell_big_boom_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_grimrail_spell_big_boom_SpellScript);
-
         enum eSpells
         {
             SpellBigBoom         = 163379,
@@ -1099,8 +1095,6 @@ class iron_docks_grimrail_spell_flaming_slash : public SpellScriptLoader
 
     class iron_docks_grimrail_spell_flaming_slash_SpellScript : public SpellScript
     {
-        PrepareSpellScript(iron_docks_grimrail_spell_flaming_slash_SpellScript);
-
         void HandleAfterCast(SpellMissInfo missInfo)
         {
             if (!GetCaster())
@@ -1124,29 +1118,6 @@ class iron_docks_grimrail_spell_flaming_slash : public SpellScriptLoader
     }
 };
 
-/// Starts the Grimrail event - 10314
-class iron_docks_grimrail_at_event : public AreaTriggerScript
-{
-    public:
-
-    iron_docks_grimrail_at_event() : AreaTriggerScript("iron_docks_grimrail_at_event")  {  }
-
-    void OnEnter(Player* p_Player, AreaTriggerEntry const* p_AreaTrigger) 
-    {
-        if (p_Player)
-        {
-            if (InstanceScript* l_Instance = p_Player->GetInstanceScript())
-            {
-                if (Creature* l_Skulloc = l_Instance->instance->GetCreature(l_Instance->GetGuidData(eIronDocksDatas::DataSkulloc)))
-                {
-                    if (l_Skulloc->IsAIEnabled())
-                        l_Skulloc->GetAI()->DoAction(eIronDocksActions::ActionActivateGrimrailEvent);
-                }
-            }
-        }
-    }
-};
-
 void AddSC_boss_grimrail()
 {
     /// Bosses
@@ -1161,6 +1132,4 @@ void AddSC_boss_grimrail()
     new iron_docks_grimrail_spell_big_boom(); /// 163379 Visual
     new iron_docks_grimrail_spell_flaming_slash(); /// 163665
     //new iron_docks_grimrail_spell_lava_wave(); /// 98928 
-    /// Areatrigger
-    new iron_docks_grimrail_at_event(); /// 10314
 }

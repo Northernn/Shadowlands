@@ -28,8 +28,6 @@ enum ConstrictionTotem
 
 class spell_burn_constriction_totem : public SpellScript
 {
-    PrepareSpellScript(spell_burn_constriction_totem);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit() || !GetCaster()->IsPlayer())
@@ -88,8 +86,6 @@ static const Position southernFlyingMachineDestPositions[2] =
 
 class spell_signal_flare : public SpellScript
 {
-    PrepareSpellScript(spell_signal_flare);
-
     void SelectTarget(WorldObject*& target)
     {
         target = GetCaster()->FindNearestCreature(NPC_FROSTMANE_RETREAT_NORTH, 25.0f, true);
@@ -185,8 +181,6 @@ private:
 
 class spell_missile_barrage : public SpellScript
 {
-    PrepareSpellScript(spell_missile_barrage);
-
     void SelectTarget(WorldObject*& target)
     {
         target = GetCaster()->FindNearestCreature(NPC_BOMBARDMENT_BUNNY, 30.0f, true);
@@ -217,8 +211,6 @@ enum BurningBomber
 
 class spell_extinguish_fire : public SpellScript
 {
-    PrepareSpellScript(spell_extinguish_fire);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (!GetHitUnit())
@@ -249,8 +241,6 @@ enum StolenRam
 
 class spell_emote_stolen_ram : public SpellScript
 {
-    PrepareSpellScript(spell_emote_stolen_ram);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* hitUnit = GetHitUnit();

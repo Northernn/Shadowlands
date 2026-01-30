@@ -363,8 +363,6 @@ public:
 
     class spell_nightbane_ignite_soul_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_nightbane_ignite_soul_SpellScript);
-
         void HandleDamage(SpellEffIndex /*effIndex*/)
         {
             if (GetExplTargetUnit())

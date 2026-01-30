@@ -50,8 +50,6 @@ enum FacesEvil
 
 class spell_tiki_torch : public SpellScript
 {
-    PrepareSpellScript(spell_tiki_torch);
-
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         if (Player* player = GetCaster()->ToPlayer())
@@ -85,8 +83,6 @@ enum RitualShadra
 
 class spell_ritual_of_shadra : public SpellScript
 {
-    PrepareSpellScript(spell_ritual_of_shadra);
-
     void SelectTarget(WorldObject*& target)
     {
         target = GetCaster()->FindNearestCreature(NPC_SHADRA_NW_ALTAR_BUNNY, 15.0f, true);

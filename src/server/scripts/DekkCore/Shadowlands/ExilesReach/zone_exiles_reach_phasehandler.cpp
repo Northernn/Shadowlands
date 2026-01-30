@@ -20,7 +20,7 @@
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "ZoneScript.h"
-#include <DekkCore/Shadowlands/zone_exiles_reach.h>
+#include "zone_exiles_reach.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // This script has been made for handling all phase change in exile reach. //
@@ -78,7 +78,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CUSTOM PHASING FUNCTIONS ------------------------------------------------------------------------------------------- >
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
         // shorten the phase add method
         void AddPhase(Player* player, uint32 phaseID)
         {
@@ -284,12 +284,12 @@ public:
     {
         /* *********** HORDE > *********** */
         if (movieId == 931)
-        {            
+        {
             player->GetScheduler().Schedule(Milliseconds(3000), [player](TaskContext context)
                 {
                     if (!player->GetPhaseShift().HasPhase(HORDE_PHASE_1)) PhasingHandler::AddPhase(player, HORDE_PHASE_1, true);
                     if (!player->GetPhaseShift().HasPhase(PHASE_GENERIC)) PhasingHandler::AddPhase(player, PHASE_GENERIC, true);
-                });            
+                });
         }
         /* ***********< HORDE *********** */
 

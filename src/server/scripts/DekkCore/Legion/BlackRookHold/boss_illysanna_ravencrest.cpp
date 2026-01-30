@@ -656,8 +656,6 @@ struct npc_brh_wyrmtongue_scavenger : public ScriptedAI
 //197394
 class spell_illysanna_periodic_energize : public AuraScript
 {
-    PrepareAuraScript(spell_illysanna_periodic_energize);
-
     void OnTick(AuraEffect const* aurEff)
     {
         auto caster = GetCaster()->ToCreature();
@@ -681,8 +679,6 @@ class spell_illysanna_periodic_energize : public AuraScript
 //197696
 class spell_illysanna_eye_beams : public AuraScript
 {
-    PrepareAuraScript(spell_illysanna_eye_beams);
-
     void OnTick(AuraEffect const* aurEff)
     {
         if (!GetCaster() || !GetTarget())
@@ -700,8 +696,6 @@ class spell_illysanna_eye_beams : public AuraScript
 //197484
 class spell_illysanna_dark_rush : public SpellScript
 {
-    PrepareSpellScript(spell_illysanna_dark_rush);
-
     std::list<WorldObject*> tempTargets;
     Position savePos;
 

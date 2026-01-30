@@ -15,7 +15,7 @@ enum Texts
 {
     //VO_81_Zandalari_Paladin
     SAY_AGGRO = 0,
-    SAY_INTRO = 1,    
+    SAY_INTRO = 1,
     SAY_WAVE_OF_LIGHT,
     SAY_PRAYER_FOR_THE_FALLEN,
     SAY_RETRIBUTION,
@@ -87,7 +87,7 @@ enum Crusader
     EVENT_CRUSADER_STRIKE = 1,
     EVENT_CONSECRATION,
     EVENT_DIVINE_MALLET,
-    EVENT_BLINDING_FAITH,    
+    EVENT_BLINDING_FAITH,
 };
 
 //144683
@@ -96,7 +96,7 @@ struct boss_rawani_kanae : public BossAI
     boss_rawani_kanae(Creature* creature) : BossAI(creature, DATA_RAWANI_KANAE) { }
 
     void Reset() override
-    {        
+    {
         BossAI::Reset();
         me->RemoveAura(PERIODIC_ENERGY_GAIN);
         me->SetPowerType(POWER_ENERGY);
@@ -118,17 +118,17 @@ struct boss_rawani_kanae : public BossAI
     }
 
     void JustEngagedWith(Unit* who) override
-    {        
+    {
         _JustEngagedWith(who);
         Talk(SAY_AGGRO);
         DoCast(PERIODIC_ENERGY_GAIN);
         me->StopMoving();
         me->AddAura(SEAL_OF_RETRIBUTION, me);
-        me->GetScheduler().Schedule(3s, [this] (TaskContext context)
+        me->GetScheduler().Schedule(3s, [this] (TaskContext /*context*/)
         {
-            Talk(SAY_RETRIBUTION);           
+            Talk(SAY_RETRIBUTION);
         });
-        events.ScheduleEvent(EVENT_WAVE_OF_LIGHT, 12s);    
+        events.ScheduleEvent(EVENT_WAVE_OF_LIGHT, 12s);
         events.ScheduleEvent(EVENT_JUDGMENT_RIGHTEOUSNESS, 50s);
         events.ScheduleEvent(EVENT_JUDGMENT_OF_RECKONING, 60s);
         events.ScheduleEvent(EVENT_CALL_TO_ARMS, 65s);
@@ -152,7 +152,7 @@ struct boss_rawani_kanae : public BossAI
         }
     }
 
-    void DamageTaken(Unit* unit, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*unit*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HealthBelowPct(60) && hp60 == false)
             hp60 = true;
@@ -204,7 +204,7 @@ struct boss_rawani_kanae : public BossAI
                 Talk(SAY_KILL);
     }
 
-   void SpellHit(WorldObject* caster, SpellInfo const* spell) override 
+   void SpellHit(WorldObject* /*caster*/, SpellInfo const* /*spell*/) override
    {
        if (me->HasAura(SEAL_OF_RECKONING))
            me->AddAura(ZEALOTRY, me);
@@ -234,8 +234,8 @@ struct boss_rawani_kanae : public BossAI
            break;
        }
    }
-   
-   void OnSuccessfulSpellCast(SpellInfo const* spellInfo) 
+
+   void OnSuccessfulSpellCast(SpellInfo const* spellInfo)
    {
        if (spellInfo->Id == CALL_TO_ARMS)
        {
@@ -257,12 +257,12 @@ struct boss_rawani_kanae : public BossAI
         {
             if (Creature* crusader = me->FindNearestCreature(NPC_ZANDALARI_CRUSADER, 100.0f, true))
             {
-                if (crusader->HealthBelowPct(99) && !crusader->HasAura(DIVINE_PROCTECTION_REDUCTION)) 
+                if (crusader->HealthBelowPct(99) && !crusader->HasAura(DIVINE_PROCTECTION_REDUCTION))
                     crusader->AddAura(DIVINE_PROCTECTION_REDUCTION, crusader);
             }
             if (Creature* disciple = me->FindNearestCreature(NPC_REZANI_DISCIPLE, 100.0f, true))
             {
-                if (disciple->HealthBelowPct(99) && !disciple->HasAura(DIVINE_PROCTECTION_REDUCTION))      
+                if (disciple->HealthBelowPct(99) && !disciple->HasAura(DIVINE_PROCTECTION_REDUCTION))
                     disciple->AddAura(DIVINE_PROCTECTION_REDUCTION, disciple);
             }
             events.Repeat(15s);
@@ -277,7 +277,7 @@ struct boss_rawani_kanae : public BossAI
             }
             events.Repeat(20s);
             break;
-        }        
+        }
         case EVENT_PRAYER_FOR_THE_FALLEN:
         {
              Talk(SAY_PRAYER_FOR_THE_FALLEN);
@@ -285,7 +285,7 @@ struct boss_rawani_kanae : public BossAI
              std::list<Creature*> c_li;
              me->GetCreatureListWithEntryInGrid(c_li, NPC_REZANI_DISCIPLE, 250.0f);
              for (auto& disciples : c_li)
-             {             
+             {
                  disciples->StopMoving();
                  disciples->CastSpell(disciples, ANGELIC_RENEWAL, false);
              }
@@ -310,7 +310,7 @@ struct boss_rawani_kanae : public BossAI
                 me->CastStop();
                 Talk(SAY_RECKONING);
                 me->SetPower(POWER_ENERGY, 0);
-                DoCastAOE(JUDGMENT_RECKONING);                
+                DoCastAOE(JUDGMENT_RECKONING);
             }
             events.Repeat(60s);
             break;
@@ -321,22 +321,22 @@ struct boss_rawani_kanae : public BossAI
             {
                 if (me->HasAura(SEAL_OF_RETRIBUTION))
                 {
-                    me->GetScheduler().Schedule(100ms, [this] (TaskContext context)
+                    me->GetScheduler().Schedule(100ms, [this] (TaskContext /*context*/)
                     {
                         me->SetPower(POWER_ENERGY, 0);
                         me->RemoveAura(SEAL_OF_RETRIBUTION);
-                        me->RemoveAura(PERIODIC_ENERGY_GAIN);                        
+                        me->RemoveAura(PERIODIC_ENERGY_GAIN);
 
-                        me->AddAura(SEAL_OF_RECKONING, me);                        
+                        me->AddAura(SEAL_OF_RECKONING, me);
                     });
                 }
                 if (me->HasAura(SEAL_OF_RECKONING))
                 {
-                    me->GetScheduler().Schedule(100ms, [this] (TaskContext context)
+                    me->GetScheduler().Schedule(100ms, [this] (TaskContext /*context*/)
                     {
                         me->SetPower(POWER_ENERGY, 0);
                         me->RemoveAura(SEAL_OF_RECKONING);
-                        me->RemoveAura(PERIODIC_ENERGY_GAIN);                        
+                        me->RemoveAura(PERIODIC_ENERGY_GAIN);
 
                         me->AddAura(SEAL_OF_RETRIBUTION, me);
                         me->AddAura(PERIODIC_ENERGY_GAIN, me);
@@ -345,7 +345,7 @@ struct boss_rawani_kanae : public BossAI
             }
             break;
         }
-        case EVENT_CALL_TO_ARMS:       
+        case EVENT_CALL_TO_ARMS:
         {
              Talk(SAY_CALL_TO_ARMS);
              me->StopMoving();
@@ -373,7 +373,7 @@ struct npc_zandalari_crusader_147896 : public ScriptedAI
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
-    void JustEngagedWith(Unit * u) override
+    void JustEngagedWith(Unit*) override
     {
         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         events.ScheduleEvent(EVENT_CRUSADER_STRIKE, 3s);
@@ -382,7 +382,7 @@ struct npc_zandalari_crusader_147896 : public ScriptedAI
         events.ScheduleEvent(EVENT_DIVINE_MALLET, 18s);
     }
 
-    void MoveInLineOfSight(Unit* u) override
+    void MoveInLineOfSight(Unit*) override
     {
         if (Creature* rawani = me->FindNearestCreature(NPC_RAWANI_KANAE, 100.f, true))
         {
@@ -406,7 +406,7 @@ struct npc_zandalari_crusader_147896 : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         if (Creature* frida = me->FindNearestCreature(NPC_RAWANI_KANAE, 100.0f))
@@ -466,7 +466,7 @@ struct npc_rezani_disciple_147895 : public ScriptedAI
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
-    void JustEngagedWith(Unit* u) override
+    void JustEngagedWith(Unit*) override
     {
         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         events.ScheduleEvent(EVENT_DIVINE_BURST, 3s);
@@ -475,7 +475,7 @@ struct npc_rezani_disciple_147895 : public ScriptedAI
         events.ScheduleEvent(EVENT_PENANCE_DAMAGE, 18s);
     }
 
-    void MoveInLineOfSight(Unit* u) override
+    void MoveInLineOfSight(Unit*) override
     {
         if (Creature* rawani = me->FindNearestCreature(NPC_RAWANI_KANAE, 100.0f))
         {
@@ -490,12 +490,12 @@ struct npc_rezani_disciple_147895 : public ScriptedAI
                 {
                     if (me->HasAura(AURA_OF_RETRIBUTION))
                         me->RemoveAura(AURA_OF_RETRIBUTION);
-                }     
+                }
             }
         }
     }
 
-    void JustDied(Unit* u) override
+    void JustDied(Unit*) override
     {
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         if (Creature* frida = me->FindNearestCreature(NPC_RAWANI_KANAE, 100.0f))
@@ -542,77 +542,9 @@ private:
     EventMap events;
 };
 
-//500522
-struct npc_lions_roar : public ScriptedAI
-{
-    npc_lions_roar(Creature* c) : ScriptedAI(c) { }
-
-    void Reset() override
-    {
-        ScriptedAI::Reset();        
-    }
-
-    void MovementInform(uint32 type, uint32 point) override
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
-
-        if (point == 1)
-        {            
-            me->GetMotionMaster()->Clear();
-        }
-        if (point == 2)
-        {
-            me->GetMotionMaster()->Clear();
-            me->DespawnOrUnsummon(3s);
-        }
-    }
-
-    void IsSummonedBy(WorldObject* summoner) override
-    {
-        me->SetFaction(84);
-        me->SetUnitFlag(UnitFlags(UNIT_FLAG_UNINTERACTIBLE | UNIT_FLAG_NON_ATTACKABLE));
-        me->SetWalk(false);
-        me->GetMotionMaster()->MovePoint(1, -2022.489f, 774.871f, 5.931f, true);
-        me->GetScheduler().Schedule(8s, [this] (TaskContext context)
-        {
-            if (auto* collision1 = me->FindNearestGameObject(GO_RAWANI_COLLISION_1, 100.0f))
-                collision1->RemoveFromWorld();
-            if (auto* collision2 = me->FindNearestGameObject(GO_RAWANI_COLLISION_2, 100.0f))
-               collision2->RemoveFromWorld();
-            if (auto* collision3 = me->FindNearestGameObject(GO_RAWANI_COLLISION_3, 100.0f))
-                collision3->RemoveFromWorld();
-            std::list<Creature*> stalker_li;
-            me->GetCreatureListWithEntryInGrid(stalker_li, NPC_BARRIER_DESTRUCTION_STALKER, 100.0f);
-            for (auto& stalkers : stalker_li)
-            stalkers->DespawnOrUnsummon();
-
-            std::list<Creature*> u_li;
-            me->GetCreatureListWithEntryInGrid(u_li, NPC_RASTAFARI_ENFORCER, 95.0f);
-            me->GetCreatureListWithEntryInGrid(u_li, NPC_RASTAFARI_FLAMESPEAKER, 95.0f);
-            for (auto& creatures : u_li)
-            {
-                if (Unit* units = creatures->ToUnit())
-                    units->KillSelf();
-            }
-
-            me->GetMotionMaster()->MovePoint(2, -2020.807f, 688.250f, 5.932f, true);
-        });
-    }
-
-    void UpdateAI(uint32 diff) override
-    {
-        scheduler.Update(diff);
-    }
-
-private:
-    TaskScheduler scheduler;
-};
-
 void AddSC_boss_rawani_kanae()
 {
     RegisterCreatureAI(boss_rawani_kanae);
     RegisterCreatureAI(npc_zandalari_crusader_147896);
     RegisterCreatureAI(npc_rezani_disciple_147895);
-    RegisterCreatureAI(npc_lions_roar);
 }

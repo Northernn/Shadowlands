@@ -14,7 +14,6 @@ void AddSC_DekkCore_swamp_of_sorrows();
 void AddSC_DekkCore_stranglethorn_vale();
 void AddSC_DekkCore_stormwind_city();
 void AddSC_DekkCore_undercity();
-//void AddSC_DekkCore_silverpine_forest(); OLD used new script from TrinityCore
 void AddSC_DekkCore_redridge_mountains();
 void AddSC_DekkCore_northern_stranglethorn();
 void AddSC_DekkCore_loch_modan();
@@ -33,6 +32,7 @@ void AddSC_DekkCore_deadwind_pass();
 void AddSC_DekkCore_burning_steppes();
 void AddSC_DekkCore_blasted_lands();
 void AddSC_DekkCore_arathi_highlands();
+void AddSC_hillsbrad_foothills();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -47,7 +47,6 @@ void Add_DekkCore_EasternKingdomsScripts()
     AddSC_DekkCore_stranglethorn_vale();
     AddSC_DekkCore_stormwind_city();
     AddSC_DekkCore_undercity();
-    //AddSC_DekkCore_silverpine_forest(); OLD used new script from TrinityCore
     AddSC_DekkCore_redridge_mountains();
     AddSC_DekkCore_northern_stranglethorn();
     AddSC_DekkCore_loch_modan();
@@ -67,4 +66,5 @@ void Add_DekkCore_EasternKingdomsScripts()
     AddSC_DekkCore_blasted_lands();
     AddSC_DekkCore_arathi_highlands();
     AddSC_gilneas_c1();
+    AddSC_hillsbrad_foothills();
 }

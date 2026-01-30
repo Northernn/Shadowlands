@@ -1,5 +1,4 @@
 /*
-/*
  * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,6 +21,26 @@ namespace WorldPackets
 {
     namespace MythicPlus
     {
+        bool DungeonScoreMapSummary::operator==(DungeonScoreMapSummary const& right) const
+        {
+            if (ChallengeModeID != right.ChallengeModeID)
+                return false;
+
+            if (MapScore != right.MapScore)
+                return false;
+
+            if (BestRunLevel != right.BestRunLevel)
+                return false;
+
+            if (BestRunDurationMS != right.BestRunDurationMS)
+                return false;
+
+            if (FinishedSuccess != right.FinishedSuccess)
+                return false;
+
+            return true;
+        }
+
         ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreMapSummary const& dungeonScoreMapSummary)
         {
             data << int32(dungeonScoreMapSummary.ChallengeModeID);
@@ -34,13 +53,24 @@ namespace WorldPackets
             return data;
         }
 
-ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSummary const& dungeonScoreSummary)
-{
-    data << float(dungeonScoreSummary.OverallScoreCurrentSeason);
-    data << float(dungeonScoreSummary.LadderScoreCurrentSeason);
-    data << uint32(dungeonScoreSummary.Runs.size());
-    for (DungeonScoreMapSummary const& dungeonScoreMapSummary : dungeonScoreSummary.Runs)
-        data << dungeonScoreMapSummary;
+        bool DungeonScoreSummary::operator==(DungeonScoreSummary const& right) const
+        {
+            if (LadderScoreCurrentSeason != right.LadderScoreCurrentSeason)
+                return false;
+
+            if (OverallScoreCurrentSeason != right.OverallScoreCurrentSeason)
+                return false;
+
+            return true;
+        }
+
+        ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSummary const& dungeonScoreSummary)
+        {
+            data << float(dungeonScoreSummary.OverallScoreCurrentSeason);
+            data << float(dungeonScoreSummary.LadderScoreCurrentSeason);
+            data << uint32(dungeonScoreSummary.Runs.size());
+            for (DungeonScoreMapSummary const& dungeonScoreMapSummary : dungeonScoreSummary.Runs)
+                data << dungeonScoreMapSummary;
 
             return data;
         }
@@ -102,20 +132,42 @@ ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSummary const& dungeonScore
             return data;
         }
 
-ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSeasonData const& dungeonScoreSeasonData)
-{
-    data << int32(dungeonScoreSeasonData.Season);
-    data << uint32(dungeonScoreSeasonData.SeasonMaps.size());
-    data << uint32(dungeonScoreSeasonData.LadderMaps.size());
-    data << float(dungeonScoreSeasonData.SeasonScore);
-    data << float(dungeonScoreSeasonData.LadderScore);
-    for (DungeonScoreMapData const& map : dungeonScoreSeasonData.SeasonMaps)
-        data << map;
+        bool DungeonScoreSeasonData::operator==(DungeonScoreSeasonData const& right) const
+        {
+            if (SeasonScore != right.SeasonScore)
+                return false;
 
-    for (DungeonScoreMapData const& map : dungeonScoreSeasonData.LadderMaps)
-        data << map;
+            if (LadderScore != right.LadderScore)
+                return false;
+
+            return true;
+        }
+
+        ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSeasonData const& dungeonScoreSeasonData)
+        {
+            data << int32(dungeonScoreSeasonData.Season);
+            data << uint32(dungeonScoreSeasonData.SeasonMaps.size());
+            data << uint32(dungeonScoreSeasonData.LadderMaps.size());
+            data << float(dungeonScoreSeasonData.SeasonScore);
+            data << float(dungeonScoreSeasonData.LadderScore);
+            for (DungeonScoreMapData const& map : dungeonScoreSeasonData.SeasonMaps)
+                data << map;
+
+            for (DungeonScoreMapData const& map : dungeonScoreSeasonData.LadderMaps)
+                data << map;
 
             return data;
+        }
+
+        bool DungeonScoreData::operator==(DungeonScoreData const& right) const
+        {
+            if (Seasons != right.Seasons)
+                return false;
+
+            if (TotalRuns != right.TotalRuns)
+                return false;
+
+            return true;
         }
 
         ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreData const& dungeonScoreData)
@@ -127,69 +179,17 @@ ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSeasonData const& dungeonSc
 
             return data;
         }
-
-
-        WorldPacket const* MythicPlusRequestMapStatsResult::Write()
+        ByteBuffer& operator<<(ByteBuffer& data, Reward const& reward)
         {
-            _worldPacket << uint32(mythicPlusRuns.size());
-            _worldPacket << uint32(RewardCount);
-            _worldPacket << int32(Season);
-            _worldPacket << int32(Subseason);
+            data << uint32(reward.Field0);
+            data << uint32(reward.Field4);
+            data << int64(reward.Field8);
+            data << int64(reward.Field10);
+            data << int64(reward.Field20);
+            data.WriteBit(reward.Field24);
+            data.FlushBits();
 
-            for (MythicPlusRun mythicPlusRun : mythicPlusRuns)
-                _worldPacket << mythicPlusRun;
-
-            return &_worldPacket;
+            return data;
         }
-
-        void MythicPlusRequestWeeklyRewards::Read() {}
-
-        WorldPacket const* MythicPlusSeasonDataResult::Write()
-        {
-            _worldPacket.WriteBit(IsMythicPlusActive);
-
-            _worldPacket.FlushBits();
-
-            return &_worldPacket;
-        }
-
-        void MythicPlusRequestMapStats::Read()
-        {
-            _worldPacket >> BnetAccountGUID;
-            _worldPacket >> MapChallengeModeID;
-            _worldPacket >> UNK;
-        }
-
-        WorldPacket const* MythicPlusCurrentAffixesResult::Write()
-        {
-            _worldPacket << uint32(Count);
-
-            for (uint32 i = 0; i < Count; ++i)
-            {
-                _worldPacket << int32(Affixes[i]);
-                _worldPacket << int32(RequiredSeason[i]);
-            }
-
-            return &_worldPacket;
-        }
-
-        void MythicPlusCurrentAffixes::Read() {}
-
-        void MythicPlusSeasonData::Read() {}
-
-        WorldPacket const* Rewards::Write()
-        {
-            _worldPacket << static_cast<uint32>(MapChallengeModeRewards.size());
-            _worldPacket << static_cast<uint32>(ItemRewards.size());
-
-            // for (auto const& map : MapChallengeModeRewards)
-            //      _worldPacket << map;
-
-            // for (auto const& item : ItemRewards)
-            //    _worldPacket << item;
-
-            return &_worldPacket;
-        }
-
     }
 }

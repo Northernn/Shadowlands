@@ -589,8 +589,6 @@ struct npc_kurtalos_stinging_swarm : public ScriptedAI
 //198835
 class spell_latosius_random_teleport : public SpellScript
 {
-    PrepareSpellScript(spell_latosius_random_teleport);
-
     void HandleScriptEffect(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
@@ -611,8 +609,6 @@ class spell_latosius_random_teleport : public SpellScript
 //201733
 class spell_kurtalos_stinging_swarm : public AuraScript
 {
-    PrepareAuraScript(spell_kurtalos_stinging_swarm);
-
     void OnTick(AuraEffect const* /*auraEffect*/)
     {
         if (urand(0, 100) < 30)

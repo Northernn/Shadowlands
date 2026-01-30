@@ -43,8 +43,6 @@ struct npc_underrot_faceless_corruptor : public ScriptedAI
 // 279271
 class aura_underrot_open_web_door : public AuraScript
 {
-    PrepareAuraScript(aura_underrot_open_web_door);
-
     void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (InstanceScript* instanceScript = GetTarget()->GetInstanceScript())
@@ -57,37 +55,8 @@ class aura_underrot_open_web_door : public AuraScript
     }
 };
 
-struct at_underrot_tunnel : AreaTriggerAI
-{
-    at_underrot_tunnel(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    enum
-    {
-        SPELL_GATEWAY   = 253773
-    };
-
-    Position unboundAbominationPath[3] =
-    {
-        { 1125.237183f, 1366.732910f,    7.305541f, 0.956234f },
-        { 1203.495728f, 1489.153198f,  -45.093700f, 0.999432f },
-        { 1206.048584f, 1490.873169f, -181.704376f, 5.154191f },
-    };
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->IsPlayer())
-        {
-            unit->CastSpell(unit, SPELL_GATEWAY, true);
-            unit->GetMotionMaster()->MoveSmoothPath(1, unboundAbominationPath, 3, false, false);
-        }
-    }
-};
-
 void AddSC_the_underrot()
 {
     RegisterCreatureAI(npc_underrot_faceless_corruptor);
-
     RegisterSpellScript(aura_underrot_open_web_door);
-
-    RegisterAreaTriggerAI(at_underrot_tunnel);
 }

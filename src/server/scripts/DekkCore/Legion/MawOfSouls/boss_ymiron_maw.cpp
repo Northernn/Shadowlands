@@ -718,8 +718,6 @@ struct npc_mos_runecarver_slave : public ScriptedAI
 //167922
 class spell_ymiron_power_regen : public AuraScript
 {
-    PrepareAuraScript(spell_ymiron_power_regen);
-
         uint8 powerCounter = 0;
 
     void OnPeriodic(AuraEffect const* aurEff)
@@ -758,8 +756,6 @@ class spell_ymiron_power_regen : public AuraScript
 //193460
 class spell_ymiron_bane : public AuraScript
 {
-    PrepareAuraScript(spell_ymiron_bane);
-
         void OnPereodic(AuraEffect const* aurEff)
     {
         PreventDefaultAction();
@@ -793,8 +789,6 @@ class spell_ymiron_bane : public AuraScript
 //191560
 class spell_ymiron_helheim_teleport : public SpellScript
 {
-    PrepareSpellScript(spell_ymiron_helheim_teleport);
-
     void HandleOnHit()
     {
         if (auto player = GetHitUnit()->ToPlayer())
@@ -815,8 +809,6 @@ class spell_ymiron_helheim_teleport : public SpellScript
 //194640
 class spell_mos_curse_of_hope : public AuraScript
 {
-    PrepareAuraScript(spell_mos_curse_of_hope);
-
     void OnPereodic(AuraEffect const* aurEff)
     {
         if (!GetCaster())
@@ -835,8 +827,6 @@ class spell_mos_curse_of_hope : public AuraScript
 //195031
 class spell_mos_defiant_strike : public AuraScript
 {
-    PrepareAuraScript(spell_mos_defiant_strike);
-
         bool cast = true;
 
     void OnPereodic(AuraEffect const* aurEff)

@@ -76,7 +76,7 @@ void PetAI::UpdateAI(uint32 diff)
 
         if (NeedToStop())
         {
-            TC_LOG_TRACE("scripts.ai.petai", "PetAI::UpdateAI: AI stopped attacking %s", me->GetGUID().ToString().c_str());
+            TC_LOG_TRACE("scripts.ai.petai", "PetAI::UpdateAI: AI stopped attacking {}", me->GetGUID().ToString());
             StopAttack();
             return;
         }
@@ -368,7 +368,7 @@ void PetAI::HandleReturnMovement()
 
     if (!me->GetCharmInfo())
     {
-        TC_LOG_WARN("scripts.ai.petai", "me->GetCharmInfo() is NULL in PetAI::HandleReturnMovement(). Debug info: %s", GetDebugInfo().c_str());
+        TC_LOG_WARN("scripts.ai.petai", "me->GetCharmInfo() is NULL in PetAI::HandleReturnMovement(). Debug info: {}", GetDebugInfo());
         return;
     }
 
@@ -399,7 +399,7 @@ void PetAI::HandleReturnMovement()
             if (me->HasUnitState(UNIT_STATE_CHASE))
                 me->GetMotionMaster()->Remove(CHASE_MOTION_TYPE);
 
-            me->GetMotionMaster()->MoveFollow(me->GetCharmerOrOwner(), PET_FOLLOW_DIST, me->GetFollowAngle());
+            me->GetMotionMaster()->MoveFollow(me->GetCharmerOrOwner(), me->GetFollowDist(), me->GetFollowAngle()); // < Fluxurion
         }
     }
     me->RemoveUnitFlag(UNIT_FLAG_PET_IN_COMBAT); // on player pets, this flag indicates that we're actively going after a target - we're returning, so remove it
@@ -498,7 +498,7 @@ bool PetAI::CanAttack(Unit* target)
 
     if (!me->GetCharmInfo())
     {
-        TC_LOG_WARN("scripts.ai.petai", "me->GetCharmInfo() is NULL in PetAI::CanAttack(). Debug info: %s", GetDebugInfo().c_str());
+        TC_LOG_WARN("scripts.ai.petai", "me->GetCharmInfo() is NULL in PetAI::CanAttack(). Debug info: {}", GetDebugInfo());
         return false;
     }
 
@@ -640,7 +640,7 @@ void PetAI::UpdateAllies()
 void PetAI::OnCharmed(bool isNew)
 {
     if (!me->isPossessedByPlayer() && me->IsCharmed())
-        me->GetMotionMaster()->MoveFollow(me->GetCharmer(), PET_FOLLOW_DIST, me->GetFollowAngle());
+        me->GetMotionMaster()->MoveFollow(me->GetCharmer(), me->GetFollowDist(), me->GetFollowAngle()); // < Fluxurion
 
     CreatureAI::OnCharmed(isNew);
 }

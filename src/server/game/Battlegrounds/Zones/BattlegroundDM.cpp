@@ -27,7 +27,7 @@ void BattlegroundDeathMatch::StartingEventOpenDoors()
 {
     for (uint32 i = 0; i < 6; ++i)
         SpawnBGObject(i, RESPAWN_IMMEDIATELY);
-    
+
     timer_for_end  = 1200000; // 20 minutes
 }
 
@@ -39,20 +39,20 @@ bool BattlegroundDeathMatch::SetupBattleground()
             TC_LOG_ERROR("LOG_FILTER_SQL", "BatteGroundWS: Failed to spawn some object Battleground not created!");
             return false;
         }
-        
+
     return true;
 }
 
-void BattlegroundDeathMatch::AddPlayer(Player* player)
+void BattlegroundDeathMatch::AddPlayer(Player* player, BattlegroundQueueTypeId queueId)
 {
-    TeamId teamIndex = GetTeamIndexByTeamId(GetPlayerTeam(player->GetGUID()));
+//    TeamId teamIndex = GetTeamIndexByTeamId(GetPlayerTeam(player->GetGUID()));
 
-    Battleground::AddPlayer(player);
+    Battleground::AddPlayer(player, queueId);
    // PlayerScores[player->GetGUID()] = new BattlegroundDMScore(player->GetGUID(), TeamId());
 
     if (Group* group = player->GetGroup())
         group->RemoveMember(player->GetGUID());
-    
+
     //if (!IsRated())
     //{
     //    RemoveFromBGFreeSlotQueue();
@@ -65,13 +65,13 @@ void BattlegroundDeathMatch::OnPlayerEnter(Player* player)
     // Battleground::OnPlayerEnter(player);
     //if (WorldSafeLocsEntry const* entry = GetClosestGraveYard(player))
       //  player->TeleportTo(entry->ID, entry->Loc.X, entry->Loc.Y, entry->Loc.Z, entry->Loc.O * M_PI / 180.0f);
-    
+
  //   player->SetByteValue(PLAYER_FIELD_BYTES_6, PLAYER_BYTES_6_OFFSET_ARENA_FACTION, DMTeam++);
     player->UpdatePvPState(false);
-    
+
     strike[player->GetGUID()] = 0;
     temp_strike[player->GetGUID()] = {0,getMSTime()};
-    
+
    /* if (DeathMatchScore* dmscore =  player->getDeathMatchScore())
     {
         if (dmscore->selected_morph)
@@ -85,14 +85,14 @@ void BattlegroundDeathMatch::OnPlayerEnter(Player* player)
 void BattlegroundDeathMatch::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket)
 {
     if (Player* player = ObjectAccessor::FindPlayer(guid))
-    {        
+    {
    //     std::map<ObjectGuid, BattlegroundScore*> bgsm = GetBattlegroundScoreMap();
  //       std::map<ObjectGuid, BattlegroundScore*>::iterator itr = bgsm.find(guid);
       //  if (itr != bgsm.end() /*&& IsRated()*/)
           //  player->ModifyDeathMatchStats(itr->second->GetScore(SCORE_KILLING_BLOWS), itr->second->GetScore(SCORE_DEATHS), itr->second->GetScore(SCORE_DAMAGE_DONE), CalculateRating(itr->second), itr->second->GetScore(SCORE_KILLING_BLOWS));
-        
+
         player->RemoveAura(SPELL_FOCUSED_ASSAULT);
-        
+
       /*  if (DeathMatchScore* dmscore =  player->getDeathMatchScore())
         {
             if (dmscore->selected_morph)
@@ -106,17 +106,17 @@ void BattlegroundDeathMatch::RemovePlayerAtLeave(ObjectGuid guid, bool Transport
     auto itr = strike.find(guid);
     if (itr != strike.end())
         strike.erase(itr);
-    
+
     auto itr_t = temp_strike.find(guid);
     if (itr_t != temp_strike.end())
         temp_strike.erase(itr_t);
-    
+
     Battleground::RemovePlayerAtLeave(guid, Transport, SendPacket);
 }
 
 WorldSafeLocsEntry const* BattlegroundDeathMatch::GetClosestGraveYard(Player* /*player*/)
 {
-    uint32 max_zone = 6248;
+//    uint32 max_zone = 6248;
   //  if (GetBattlegroundScoreMap().size() < 20)
     //    max_zone = 6045;
  //   else if (GetBattlegroundScoreMap().size() < 30)
@@ -140,9 +140,9 @@ void BattlegroundDeathMatch::HandleKillPlayer(Player* victim, Player* killer)
 		if (itr != strike.end())
 			std::swap(victim_kills, itr->second);
 	}
-        
+
     victim->RemoveAura(SPELL_FOCUSED_ASSAULT);
-    
+
     // Add +1 deaths
     UpdatePlayerScore(victim, SCORE_DEATHS, 1, true);
 
@@ -156,7 +156,7 @@ void BattlegroundDeathMatch::HandleKillPlayer(Player* victim, Player* killer)
         if (victim_kills >= KILLS_FOR_HIGH_COST)
         {
             SendSysMessageToAll(TEXT_LOSE_STRIKE_BY, victim, killer);
-            
+
             //if (IsRated())
             //{
                 if (victim_kills >= 2* KILLS_FOR_HIGH_COST)
@@ -167,7 +167,7 @@ void BattlegroundDeathMatch::HandleKillPlayer(Player* victim, Player* killer)
         }
         else // common announce
             SendSysMessageToAll(TEXT_KILLED_BY, victim, killer);
-        
+
         // if fast strike, then announce about it
 		if (!temp_strike.empty())
 		{
@@ -196,7 +196,7 @@ void BattlegroundDeathMatch::HandleKillPlayer(Player* victim, Player* killer)
 				}
 			}
 		}
-            
+
         // if strike, then announce about it
         if (!strike.empty())
 		{
@@ -228,32 +228,32 @@ void BattlegroundDeathMatch::HandleKillPlayer(Player* victim, Player* killer)
 					}
 				}
 			}
-                
+
                 // add aura for increasing taken damage
                 if (itr->second >= 5 && itr->second % 2 == 1) // only 5, 7, 9,.......
                     killer->AddAura(SPELL_FOCUSED_ASSAULT, killer);
-                
+
             }
-            
+
         // common update
         UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1,  true);
         UpdatePlayerScore(killer, SCORE_KILLING_BLOWS, 1, true);
-        
+
         killer->KilledMonsterCredit(230003);
     }
-    
+
     victim->SetUnitFlag(UNIT_FLAG_SKINNABLE);
     RewardXPAtKill(killer, victim);
 }
 
 
-void BattlegroundDeathMatch::EndBattleground(uint32 team)
-{   
+void BattlegroundDeathMatch::EndBattleground(uint32 /*team*/)
+{
  //   Battleground::EndBattleground(WINNER_NONE); // not needed team at Deathmatch
-    
+
     //if (!IsRated())
     //    return;
-    
+
   //  PvpRewardTypes type = PvpReward_DeathMatch;
   //  PvpReward* reward = sBattlegroundMgr->GetPvpReward(type);
     //if (reward && GetPlayerScoresSize())
@@ -263,10 +263,10 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
     //    for (uint8 i = 0; i < (max >= 4 ? 4 : max); ++i)
     //    {
     //        std::map<ObjectGuid, BattlegroundScore*>::const_iterator Max_itr = bgsm.begin();
-    //        
+    //
     //        if (Max_itr == bgsm.end()) // end?
     //            break;
-    //        
+    //
     //        for (std::map<ObjectGuid, BattlegroundScore*>::const_iterator itr = bgsm.begin(); itr != bgsm.end(); ++itr)
     //        {
     //            if (i == 3) // last going and we need reward other players
@@ -274,7 +274,7 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
     //                if (Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr->first))
     //                {
     //                    bool isAlliance = player->GetTeam() == ALLIANCE;
-    //                    
+    //
     //                    if (roll_chance_f(reward->ChestChance))
     //                    {
     //                        uint32 chestId = isAlliance ? reward->ChestA : reward->ChestH;
@@ -293,7 +293,7 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
     //            else if (itr->second->GetScore(SCORE_KILLING_BLOWS) >= Max_itr->second->GetScore(SCORE_KILLING_BLOWS))  // not last going and we try to find best player
     //                Max_itr = itr;
     //        }
-            
+
            // if (i != 3 && Max_itr != bgsm.end()) // i think, that it can't be useless
             //{
             //    if (Player* player = ObjectAccessor::FindPlayer(GetBgMap(), Max_itr->first))
@@ -301,9 +301,9 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
             //        player->KilledMonsterCredit(240060);
             //        // it's like common rewards
             //        bool isAlliance = player->GetTeam() == ALLIANCE;
-            //        
+            //
             //        uint32 chest_chance = 100; // first place
-            //        uint32 artifactRewardItem = 147203; 
+            //        uint32 artifactRewardItem = 147203;
             //        switch(i)
             //        {
             //            case 1: // second place
@@ -315,7 +315,7 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
             //                artifactRewardItem = 143680;
             //                break;
             //        }
-            //        
+            //
             //        if (roll_chance_f(chest_chance))
             //        {
             //            uint32 chestId = isAlliance ? reward->ChestA : reward->ChestH;
@@ -328,8 +328,8 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
             //                    //player->SendDisplayToast(chestId, ToastType::ITEM, false, 1, DisplayToastMethod::DISPLAY_TOAST_ENTRY_PVP_FACTION, 0, item);
             //                }
             //            }
-            //        }   
-            //        
+            //        }
+            //
 
         //            ItemPosCountVec dest;
         //            if (player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, artifactRewardItem, 1) == EQUIP_ERR_OK)
@@ -340,12 +340,12 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
         //                    //player->SendDisplayToast(artifactRewardItem, ToastType::ITEM, false, 1, DisplayToastMethod::DISPLAY_TOAST_ENTRY_PVP_FACTION, 0, item);
         //                }
         //            }
-    
+
         //            if (i == 0) // first
         //            {
         //                if (!roll_chance_f(reward->ItemsChance)) // Roll can take item
         //                    return;
-        //                    
+        //
         //                uint32 playerSpecID = player->GetLootSpecID();
         //                uint8 playerLevel = player->getLevel();
 
@@ -355,7 +355,7 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
         //                std::vector<uint32> itemsContainer = isAlliance ? reward->ItemsA : reward->ItemsH;
 
         //                int32 needLevel = reward->BaseLevel;
-        //                
+        //
         //                if (!itemsContainer.empty())
         //                {
         //                    std::vector<uint32> possibleLoot;
@@ -412,25 +412,24 @@ void BattlegroundDeathMatch::EndBattleground(uint32 team)
         //                }
         //            }
         //        }
-        //        
+        //
         //        bgsm.erase(Max_itr); // delete this position. don't needed
         //    }
         //}
    // }
 }
 
-
 int32 BattlegroundDeathMatch::CalculateRating(uint32 kills, uint32 dies, uint64 dmg) const
 {
     if (!dmg || !kills)
         return 0;
-    
+
     // Not in vain I'm studying at the faculty of mathematics  =D
     uint64 effective = kills*MIDDLE_HP/dmg; // этим мы пытаемся исключить варианты, когда рога убил 1000 игроков, но нанес дамага на "5-ых". или наоборот. Игрок намесил дамага на 1000 килов, но никого так и не убил
-    
+
     if (effective == 0)
         return 0;
-    
+
     int32 coef = effective*STEP_RATING/KILLS_PER_STEP - (dies/effective)*STEP_RATING;
     return coef;
 }
@@ -446,35 +445,35 @@ void BattlegroundDeathMatch::SendSysMessageToAll(uint32 textid, Player* first, P
          //   PlaySoundToAll(BG_SOUND_CAPTURE_POINT_CAPTURED_HORDE);
             break;
     }
-    
+
     for (std::map<ObjectGuid, BattlegroundPlayer>::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
     {
         Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr->first);
         if (!player)
             continue;
-        
+
      //   ChatHandler chH = ChatHandler(player);
         LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-        
+
         if (!first)
         {
             WorldPackets::Chat::Chat packet;
             packet.Initialize(CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, player, player, sObjectMgr->GetTrinityString(textid, loc_idx));
             player->SendDirectMessage(packet.Write());
         }
-        else
+       /* else
         {
-			char str[500];
+			std::string str;
 
-            //if (!second)
-              //  snprintf(str, 500, sObjectMgr->GetTrinityString(textid, loc_idx), chH.GetNameLink(first).c_str());
-         //   else
-             //   snprintf(str, 500, sObjectMgr->GetTrinityString(textid, loc_idx), chH.GetNameLink(first).c_str(), chH.GetNameLink(second).c_str());
-            
+            if (!second)
+                str = Trinity::StringFormat(sObjectMgr->GetTrinityString(textid, loc_idx), ChatHandler(first->GetSession()).GetNameLink());
+            else
+                str = Trinity::StringFormat(sObjectMgr->GetTrinityString(textid, loc_idx), ChatHandler(first->GetSession()).GetNameLink(), ChatHandler(second->GetSession()).GetNameLink());
+
             WorldPackets::Chat::Chat packet;
             packet.Initialize(urand(1,2) == 1 ? CHAT_MSG_BG_SYSTEM_HORDE : CHAT_MSG_BG_SYSTEM_ALLIANCE, LANG_UNIVERSAL, player, player, str);
             player->SendDirectMessage(packet.Write());
-        }
+        }*/
     }
 }
 
@@ -482,20 +481,17 @@ void BattlegroundDeathMatch::SendDirectMessageToAll(uint32 textid, Player* first
 {
     if (!first)
         return;
-    
+
     //PlaySoundToAll(BG_SOUND_START); // some sounds
-    
-    for (std::map<ObjectGuid, BattlegroundPlayer>::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+
+    for (const auto& itr : GetPlayers())
     {
-        Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr->first);
+        Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr.first);
         if (!player)
             continue;
-        
-      //  ChatHandler chH = ChatHandler(player);
-        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-        char str[500];
-       // snprintf(str, 500, sObjectMgr->GetTrinityString(textid, loc_idx), chH.GetNameLink(first).c_str());
-        player->SendDirectMessage(WorldPackets::Chat::PrintNotification(str).Write());
+
+//        auto str = Trinity::StringFormat(sObjectMgr->GetTrinityString(textid, player->GetSession()->GetSessionDbLocaleIndex()), ChatHandler(first->GetSession()).GetNameLink());
+    //    player->SendDirectMessage(WorldPackets::Chat::PrintNotification(str).Write());
     }
 }
 
@@ -510,14 +506,14 @@ void BattlegroundDeathMatch::PostUpdateImpl(uint32 diff)
             timer_for_end -= diff;
             if (small_delayed_timer <= diff)
             {
-                for (std::map<ObjectGuid, BattlegroundPlayer>::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+                for (const auto& itr : GetPlayers())
                 {
-                    Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr->first);
+                    Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr.first);
                     if (!player)
                         continue;
-                    
+
                   //  ChatHandler chH = ChatHandler(player);
-                    
+
                   //  chH.PSendSysMessage(20214, timer_for_end/1000);
                 }
                 small_delayed_timer = urand(20000, 60000);

@@ -311,7 +311,7 @@ public:
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool /*apply*/) override
         {
             who->ToPlayer()->KilledMonsterCredit(96659);
-            Start(false, true, who->GetGUID());
+            Start(false, who->GetGUID());
         }
     };
 };
@@ -573,6 +573,8 @@ public:
                             cre->Respawn();
 
                         Clicker->ToPlayer()->KilledMonsterCredit(92849);
+                        Clicker->ToPlayer()->KilledMonsterCredit(112287);
+                        Clicker->ToPlayer()->KilledMonsterCredit(99326);
                         me->DestroyForPlayer(player);
                     }
 
@@ -585,6 +587,8 @@ public:
                             cre->Respawn();
 
                         Clicker->ToPlayer()->KilledMonsterCredit(92848);
+                        Clicker->ToPlayer()->KilledMonsterCredit(112277);
+                        Clicker->ToPlayer()->KilledMonsterCredit(112276);
                         me->DestroyForPlayer(player);
                     }
                 }
@@ -662,8 +666,6 @@ public:
 
     class spell_199760_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_199760_SpellScript);
-
         void HandleDummy(SpellEffIndex )
         {
             PreventHitDefaultEffect(EFFECT_0);

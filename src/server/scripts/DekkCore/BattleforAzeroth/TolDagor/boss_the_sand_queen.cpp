@@ -105,28 +105,9 @@ private:
 
 };
 
-struct areatrigger_sand_trap : AreaTriggerAI
-{
-    areatrigger_sand_trap(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) {}
-
-    void OnInitialize() override
-    {
-        _instance = at->GetInstanceScript();
-    };
-    InstanceScript * _instance;
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        unit->CastSpell(unit, SPELL_SAND_TRAP_DAMAGE);
-        at->Remove();
-    }
-};
-
 //257092
 class spell_sand_trap : public SpellScript
 {
-    PrepareSpellScript(spell_sand_trap);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -147,8 +128,6 @@ class spell_sand_trap : public SpellScript
 //257612
 class spell_upheaval_target_selector : public SpellScript
 {
-    PrepareSpellScript(spell_upheaval_target_selector);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -169,8 +148,6 @@ class spell_upheaval_target_selector : public SpellScript
 //257608
 class spell_upheaval : public AuraScript
 {
-    PrepareAuraScript(spell_upheaval);
-
     void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -189,7 +166,6 @@ class spell_upheaval : public AuraScript
 void AddSC_boss_the_sand_queen()
 {
     RegisterCreatureAI(boss_sand_queen);
-    RegisterAreaTriggerAI(areatrigger_sand_trap);
     RegisterSpellScript(spell_sand_trap);
     RegisterSpellScript(spell_upheaval_target_selector);
     RegisterSpellScript(spell_upheaval);

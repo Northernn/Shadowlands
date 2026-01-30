@@ -54,7 +54,6 @@ enum TolBaradSpells
     SPELL_TB_SLOW_FALL = 88473,
     SPELL_TB_VETERAN = 84655,
     SPELL_TOWER_ATTACK_BONUS = 82629,
-    SPELL_TB_SPIRIT_HEAL_CHANNEL = 22011, // this spell replaces m_LastResurrectTimer in Battlefield.cpp?
     SPELL_TB_SPIRITUAL_IMMUNITY = 95332,
 
     // Vehicle
@@ -62,8 +61,8 @@ enum TolBaradSpells
     SPELL_RIDE_TOL_BARAD_VEHICLE = 84754,
     SPELL_DEPLOY_SIEGE_MODE = 84974,
     SPELL_SIEGE_CANNON_AURA = 85167, // aura, periodically triggers spell 85122
-//  SPELL_SIEGE_CANNON_EFFECT = 85122, // targets random
-//  SPELL_SIEGE_CANNON_DAMAGE = 85125,
+    //  SPELL_SIEGE_CANNON_EFFECT = 85122, // targets random
+    //  SPELL_SIEGE_CANNON_DAMAGE = 85125,
     SPELL_LEAVE_SIEGE_MODE = 85078,
 
     SPELL_TOWER_RANGE_FINDER_PERIODIC = 85671,
@@ -78,43 +77,43 @@ enum TolBaradSpells
 enum TolBaradNpcs
 {
     // Cursed Depths area
-    NPC_TOLBARAD_CAPTIVE_SPIRIT                     = 47531,
-    NPC_TOLBARAD_CELLBLOCK_OOZE                     = 47534,
-    NPC_TOLBARAD_ARCHMAGE_GALUS                     = 47537,
-    NPC_TOLBARAD_GHASTLY_CONVICT                    = 47590,
+    NPC_TOLBARAD_CAPTIVE_SPIRIT = 47531,
+    NPC_TOLBARAD_CELLBLOCK_OOZE = 47534,
+    NPC_TOLBARAD_ARCHMAGE_GALUS = 47537,
+    NPC_TOLBARAD_GHASTLY_CONVICT = 47590,
 
     // D-Block area
-    NPC_TOLBARAD_SHIVARRA_DESTROYER                 = 47540,
-    NPC_TOLBARAD_CELL_WATCHER                       = 47542,
-    NPC_TOLBARAD_SVARNOS                            = 47544,
-    NPC_TOLBARAD_JAILED_WRATHGUARD                  = 47548,
-    NPC_TOLBARAD_IMPRISONED_IMP                     = 47549,
+    NPC_TOLBARAD_SHIVARRA_DESTROYER = 47540,
+    NPC_TOLBARAD_CELL_WATCHER = 47542,
+    NPC_TOLBARAD_SVARNOS = 47544,
+    NPC_TOLBARAD_JAILED_WRATHGUARD = 47548,
+    NPC_TOLBARAD_IMPRISONED_IMP = 47549,
 
     // The Hole area
-    NPC_TOLBARAD_WARDEN_SILVA                       = 48036,
-    NPC_TOLBARAD_WARDEN_GUARD                       = 47561,
-    NPC_TOLBARAD_IMPRISONED_WORKER                  = 47550,
-    NPC_TOLBARAD_EXILED_MAGE                        = 47552,
+    NPC_TOLBARAD_WARDEN_SILVA = 48036,
+    NPC_TOLBARAD_WARDEN_GUARD = 47561,
+    NPC_TOLBARAD_IMPRISONED_WORKER = 47550,
+    NPC_TOLBARAD_EXILED_MAGE = 47552,
 
     // Other
-    NPC_CROCOLISK                                   = 47591,
-    NPC_PROBLIM                                     = 47593,
+    NPC_CROCOLISK = 47591,
+    NPC_PROBLIM = 47593,
 
     // Graveyard spirits
-    NPC_TB_GY_SPIRIT_BARADIN_HOLD_A                 = 45066,
-    NPC_TB_GY_SPIRIT_BARADIN_HOLD_H                 = 45067,
-    NPC_TB_GY_SPIRIT_IRONCLAD_GARRISON_A            = 45068,
-    NPC_TB_GY_SPIRIT_WARDENS_VIGIL_A                = 45069,
-    NPC_TB_GY_SPIRIT_EAST_SPIRE_A                   = 45070,
-    NPC_TB_GY_SPIRIT_SOUTH_SPIRE_A                  = 45071,
-    NPC_TB_GY_SPIRIT_WEST_SPIRE_A                   = 45072,
-    NPC_TB_GY_SPIRIT_SLAGWORKS_A                    = 45073,
-    NPC_TB_GY_SPIRIT_IRONCLAD_GARRISON_H            = 45074,
-    NPC_TB_GY_SPIRIT_WARDENS_VIGIL_H                = 45075,
-    NPC_TB_GY_SPIRIT_SLAGWORKS_H                    = 45076,
-    NPC_TB_GY_SPIRIT_WEST_SPIRE_H                   = 45077,
-    NPC_TB_GY_SPIRIT_EAST_SPIRE_H                   = 45078,
-    NPC_TB_GY_SPIRIT_SOUTH_SPIRE_H                  = 45079,
+    NPC_TB_GY_SPIRIT_BARADIN_HOLD_A = 45066,
+    NPC_TB_GY_SPIRIT_BARADIN_HOLD_H = 45067,
+    NPC_TB_GY_SPIRIT_IRONCLAD_GARRISON_A = 45068,
+    NPC_TB_GY_SPIRIT_WARDENS_VIGIL_A = 45069,
+    NPC_TB_GY_SPIRIT_EAST_SPIRE_A = 45070,
+    NPC_TB_GY_SPIRIT_SOUTH_SPIRE_A = 45071,
+    NPC_TB_GY_SPIRIT_WEST_SPIRE_A = 45072,
+    NPC_TB_GY_SPIRIT_SLAGWORKS_A = 45073,
+    NPC_TB_GY_SPIRIT_IRONCLAD_GARRISON_H = 45074,
+    NPC_TB_GY_SPIRIT_WARDENS_VIGIL_H = 45075,
+    NPC_TB_GY_SPIRIT_SLAGWORKS_H = 45076,
+    NPC_TB_GY_SPIRIT_WEST_SPIRE_H = 45077,
+    NPC_TB_GY_SPIRIT_EAST_SPIRE_H = 45078,
+    NPC_TB_GY_SPIRIT_SOUTH_SPIRE_H = 45079,
 
     // Stalker, dummies
     NPC_DEBUG_ANNOUNCER = 43679,
@@ -130,12 +129,12 @@ enum TolBaradGOs
     GO_EAST_SPIRE = 204589,
     GO_SOUTH_SPIRE = 204590,
 
-    GO_CAPTURE_POINT_NORTH_A_DEFENDING          = 205068,
-    GO_CAPTURE_POINT_NORTH_H_DEFENDING          = 205096,
-    GO_CAPTURE_POINT_EAST_A_DEFENDING           = 205138,
-    GO_CAPTURE_POINT_EAST_H_DEFENDING           = 205139,
-    GO_CAPTURE_POINT_WEST_A_DEFENDING           = 205101,
-    GO_CAPTURE_POINT_WEST_H_DEFENDING           = 205103,
+    GO_CAPTURE_POINT_NORTH_A_DEFENDING = 205068,
+    GO_CAPTURE_POINT_NORTH_H_DEFENDING = 205096,
+    GO_CAPTURE_POINT_EAST_A_DEFENDING = 205138,
+    GO_CAPTURE_POINT_EAST_H_DEFENDING = 205139,
+    GO_CAPTURE_POINT_WEST_A_DEFENDING = 205101,
+    GO_CAPTURE_POINT_WEST_H_DEFENDING = 205103,
 
     // Entrance gates and instance door
     GO_TOLBARAD_GATES = 206598,
@@ -160,32 +159,32 @@ enum TolBaradGOArtKit
 enum TolBaradText
 {
     // DEBUG Announcer
-    TB_TEXT_EAST_SPIRE_DAMAGED              = 1,
-    TB_TEXT_EAST_SPIRE_DESTROYED            = 2,
-    TB_TEXT_WEST_SPIRE_DAMAGED              = 3,
-    TB_TEXT_WEST_SPIRE_DESTROYED            = 4,
-    TB_TEXT_SOUTH_SPIRE_DAMAGED             = 5,
-    TB_TEXT_SOUTH_SPIRE_DESTROYED           = 6,
-    TB_TEXT_GARRISON_ALLIANCE_GAINED        = 7,
-    TB_TEXT_GARRISON_ALLIANCE_LOST          = 8,
-    TB_TEXT_GARRISON_HORDE_GAINED           = 9,
-    TB_TEXT_GARRISON_HORDE_LOST             = 10,
-    TB_TEXT_VIGIL_ALLIANCE_GAINED           = 11,
-    TB_TEXT_VIGIL_ALLIANCE_LOST             = 12,
-    TB_TEXT_VIGIL_HORDE_GAINED              = 13,
-    TB_TEXT_VIGIL_HORDE_LOST                = 14,
-    TB_TEXT_SLAGWORKS_ALLIANCE_GAINED       = 15,
-    TB_TEXT_SLAGWORKS_ALLIANCE_LOST         = 16,
-    TB_TEXT_SLAGWORKS_HORDE_GAINED          = 17,
-    TB_TEXT_SLAGWORKS_HORDE_LOST            = 18,
-    TB_TEXT_FORTRESS_DEFEND_ALLIANCE        = 19,
-    TB_TEXT_FORTRESS_DEFEND_HORDE           = 20,
-    TB_TEXT_FORTRESS_CAPTURE_ALLIANCE       = 21,
-    TB_TEXT_FORTRESS_CAPTURE_HORDE          = 22,
-    TB_TEXT_VEHICLE_OUTSIDE_WARNING         = 23,
-    TB_TEXT_PREPARATIONS_IN_5_MIN           = 24,
-    TB_TEXT_PREPARATIONS_IN_2_MIN           = 25,
-    TB_TEXT_PREPARATIONS_IN_1_MIN           = 26,
+    TB_TEXT_EAST_SPIRE_DAMAGED = 1,
+    TB_TEXT_EAST_SPIRE_DESTROYED = 2,
+    TB_TEXT_WEST_SPIRE_DAMAGED = 3,
+    TB_TEXT_WEST_SPIRE_DESTROYED = 4,
+    TB_TEXT_SOUTH_SPIRE_DAMAGED = 5,
+    TB_TEXT_SOUTH_SPIRE_DESTROYED = 6,
+    TB_TEXT_GARRISON_ALLIANCE_GAINED = 7,
+    TB_TEXT_GARRISON_ALLIANCE_LOST = 8,
+    TB_TEXT_GARRISON_HORDE_GAINED = 9,
+    TB_TEXT_GARRISON_HORDE_LOST = 10,
+    TB_TEXT_VIGIL_ALLIANCE_GAINED = 11,
+    TB_TEXT_VIGIL_ALLIANCE_LOST = 12,
+    TB_TEXT_VIGIL_HORDE_GAINED = 13,
+    TB_TEXT_VIGIL_HORDE_LOST = 14,
+    TB_TEXT_SLAGWORKS_ALLIANCE_GAINED = 15,
+    TB_TEXT_SLAGWORKS_ALLIANCE_LOST = 16,
+    TB_TEXT_SLAGWORKS_HORDE_GAINED = 17,
+    TB_TEXT_SLAGWORKS_HORDE_LOST = 18,
+    TB_TEXT_FORTRESS_DEFEND_ALLIANCE = 19,
+    TB_TEXT_FORTRESS_DEFEND_HORDE = 20,
+    TB_TEXT_FORTRESS_CAPTURE_ALLIANCE = 21,
+    TB_TEXT_FORTRESS_CAPTURE_HORDE = 22,
+    TB_TEXT_VEHICLE_OUTSIDE_WARNING = 23,
+    TB_TEXT_PREPARATIONS_IN_5_MIN = 24,
+    TB_TEXT_PREPARATIONS_IN_2_MIN = 25,
+    TB_TEXT_PREPARATIONS_IN_1_MIN = 26,
 };
 
 enum TolBaradEvent
@@ -262,25 +261,25 @@ Position const TBQuestInfantrySpawnData[TB_QUEST_INFANTRY_MAX] =
 // Guard NPCs
 enum TBGuardEntry
 {
-    NPC_BARADIN_GUARD                       = 51165,
-    NPC_HELLSCREAMS_SENTRY                  = 51166,
+    NPC_BARADIN_GUARD = 51165,
+    NPC_HELLSCREAMS_SENTRY = 51166,
 };
 
 uint8 const TB_GUARDS_MAX = 8;
 Position const GuardNPCSpawns[TB_GUARDS_MAX] =
 {
-//  { -837.3768f, 1196.082f, 114.2994f, 3.036873f },
-//  { -762.118f,  1195.259f, 107.2007f, 3.036873f },
-//  { -837.809f,  1179.842f, 114.1356f, 3.159046f },
-//  { -762.5504f, 1179.019f, 107.2137f, 3.159046f },
-    { -1272.951f, 964.8854f, 119.5782f, 3.193953f },
-    { -1274.394f, 997.6511f, 119.5743f, 3.193953f },
-    { -1248.226f, 1018.476f, 119.8113f, 1.605703f },
-    { -1218.948f, 943.5695f, 119.5994f, 4.625123f },
-    { -1195.417f, 965.5364f, 119.8113f, 0.0f },
-    { -1220.832f, 1018.497f, 119.8113f, 1.605703f },
-    { -1196.151f, 999.5121f, 119.5966f, 0.0f },
-    { -1249.304f, 942.9063f, 119.5782f, 4.625123f },
+    //  { -837.3768f, 1196.082f, 114.2994f, 3.036873f },
+    //  { -762.118f,  1195.259f, 107.2007f, 3.036873f },
+    //  { -837.809f,  1179.842f, 114.1356f, 3.159046f },
+    //  { -762.5504f, 1179.019f, 107.2137f, 3.159046f },
+        { -1272.951f, 964.8854f, 119.5782f, 3.193953f },
+        { -1274.394f, 997.6511f, 119.5743f, 3.193953f },
+        { -1248.226f, 1018.476f, 119.8113f, 1.605703f },
+        { -1218.948f, 943.5695f, 119.5994f, 4.625123f },
+        { -1195.417f, 965.5364f, 119.8113f, 0.0f },
+        { -1220.832f, 1018.497f, 119.8113f, 1.605703f },
+        { -1196.151f, 999.5121f, 119.5966f, 0.0f },
+        { -1249.304f, 942.9063f, 119.5782f, 4.625123f },
 };
 
 enum TBFactionNPCEntry
@@ -326,23 +325,23 @@ TBFactionNPCInfo const FactionNPCSpawns[TB_FACTION_NPC_MAX] =
 // Questing
 enum TBQuesting
 {
-    CELLBLOCK_THE_HOLE          = 0, // The Hole area
-    CELLBLOCK_D_BLOCK           = 1, // D-Block area
-    CELLBLOCK_CURSED_DEPTHS     = 2, // Cursed Depths area
-    CELLBLOCK_MAX               = 3,
+    CELLBLOCK_THE_HOLE = 0, // The Hole area
+    CELLBLOCK_D_BLOCK = 1, // D-Block area
+    CELLBLOCK_CURSED_DEPTHS = 2, // Cursed Depths area
+    CELLBLOCK_MAX = 3,
     CELLBLOCK_NONE,
 
     AREA_THE_HOLE = 5659,
     AREA_D_BLOCK = 5657,
     AREA_CURSED_DEPTHS = 5658,
 
-    GO_GATE_TO_THE_HOLE                     = 206845,
-    GO_GATE_D_BLOCK                         = 206844,
-    GO_CURSED_DEPTHS_GATE                   = 206843,
+    GO_GATE_TO_THE_HOLE = 206845,
+    GO_GATE_D_BLOCK = 206844,
+    GO_CURSED_DEPTHS_GATE = 206843,
 
-    GO_CRATE_OF_CELLBLOCK_RATIONS           = 206996,
-    GO_CURSED_SHACKLES                      = 206905,
-    GO_DUSTY_PRISON_JOURNAL                 = 206890,
+    GO_CRATE_OF_CELLBLOCK_RATIONS = 206996,
+    GO_CURSED_SHACKLES = 206905,
+    GO_DUSTY_PRISON_JOURNAL = 206890,
 };
 
 Position const RandomQuestgiverPos = { -1228.93f, 975.038f, 121.7153f, 5.969026f };
@@ -534,12 +533,32 @@ TBGraveyardInfo const TBGraveyards[BATTLEFIELD_TB_GRAVEYARD_MAX] =
  * Tol Barad capture point *
  * ####################### */
 
-class TolBaradCapturePoint : public BfCapturePoint
+class TolBaradCapturePoint : public BattlefieldControlZoneHandler
 {
-    public:
-        TolBaradCapturePoint(BattlefieldTB* battlefield, TeamId teamInControl);
+public:
+    TolBaradCapturePoint(BattlefieldTB* battlefield, TBCapturePointSpawnData const& data);
 
-        void SendChangePhase() override;
+    void HandleContestedEventHorde([[maybe_unused]] GameObject* controlZone) override;
+    void HandleContestedEventAlliance([[maybe_unused]] GameObject* controlZone) override;
+    void HandleProgressEventHorde([[maybe_unused]] GameObject* controlZone) override;
+    void HandleProgressEventAlliance([[maybe_unused]] GameObject* controlZone) override;
+    void HandleNeutralEventHorde([[maybe_unused]] GameObject* controlZone) override;
+    void HandleNeutralEventAlliance([[maybe_unused]] GameObject* controlZone) override;
+    void HandleNeutralEvent([[maybe_unused]] GameObject* controlZone) override;
+
+    uint32 GetWorldStateHordeControlled() const { return _worldstateHordeControlled; }
+    uint32 GetWorldStateAllianceControlled() const { return _worldstateAllianceControlled; }
+
+private:
+    uint32 _textIdHordeCaptured;
+    uint32 _textIdAllianceCaptured;
+    uint32 _textIdHordeLost;
+    uint32 _textIdAllianceLost;
+    uint32 _worldstateHordeControlled;
+    uint32 _worldstateAllianceControlled;
+    uint32 _worldstateHordeCapturing;
+    uint32 _worldstateAllianceCapturing;
+    uint32 _worldstateNeutral;
 };
 
 /* ##################### *
@@ -548,77 +567,77 @@ class TolBaradCapturePoint : public BfCapturePoint
 
 class BattlefieldTB : public Battlefield
 {
-    public:
-        using Battlefield::Battlefield;
-        ~BattlefieldTB();
+public:
+    using Battlefield::Battlefield;
+    ~BattlefieldTB();
 
-        void OnStartGrouping() override;
-        void OnBattleStart() override;
-        void OnBattleEnd(bool endByTimer) override;
+    void OnStartGrouping() override;
+    void OnBattleStart() override;
+    void OnBattleEnd(bool endByTimer) override;
 
-        void OnPlayerEnterZone(Player* player) override;
-        void OnPlayerLeaveZone(Player* player) override;
+    void OnPlayerEnterZone(Player* player) override;
+    void OnPlayerLeaveZone(Player* player) override;
 
-        void OnPlayerJoinWar(Player* player) override;
-        void OnPlayerLeaveWar(Player* player) override;
+    void OnPlayerJoinWar(Player* player) override;
+    void OnPlayerLeaveWar(Player* player) override;
 
-        bool Update(uint32 diff) override;
+    bool Update(uint32 diff) override;
 
-        void OnCreatureCreate(Creature* creature) override;
-        //void OnCreatureRemove(Creature* creature) override;
+    void OnCreatureCreate(Creature* creature) override;
+    //void OnCreatureRemove(Creature* creature) override;
 
-        void OnGameObjectCreate(GameObject* go) override;
+    void OnGameObjectCreate(GameObject* go) override;
 
-        void UpdateCapturedBaseCount();
-        //void UpdatedDestroyedTowerCount(TeamId team);
+    void UpdateCapturedBaseCount();
+    //void UpdatedDestroyedTowerCount(TeamId team);
 
-        //void DoCompleteOrIncrementAchievement(uint32 achievement, Player* player, uint8 incrementNumber = 1) override;
+    //void DoCompleteOrIncrementAchievement(uint32 achievement, Player* player, uint8 incrementNumber = 1) override;
 
-        bool SetupBattlefield() override;
+    bool SetupBattlefield() override;
 
-        void HandleKill(Player* killer, Unit* victim) override;
-        //void OnUnitDeath(Unit* unit) override;
-        void PromotePlayer(Player* killer);
-        void RemoveAurasFromPlayer(Player* player);
+    void HandleKill(Player* killer, Unit* victim) override;
+    //void OnUnitDeath(Unit* unit) override;
+    void PromotePlayer(Player* killer);
+    void RemoveAurasFromPlayer(Player* player);
 
-        void ProcessEvent(WorldObject* obj, uint32 eventId, WorldObject* invoker) override;
+    void ProcessEvent(WorldObject* obj, uint32 eventId, WorldObject* invoker) override;
 
-        void TowerDamaged(TBTowerId tbTowerId);
-        void TowerDestroyed(TBTowerId tbTowerId);
+    void TowerDamaged(TBTowerId tbTowerId);
+    void TowerDestroyed(TBTowerId tbTowerId);
 
-        // returns the graveyardId in the specified area.
-        //uint8 GetSpiritGraveyardId(uint32 areaId) const;
+    // returns the graveyardId in the specified area.
+    //uint8 GetSpiritGraveyardId(uint32 areaId) const;
 
-        void UpdateNPCsAndGameObjects();
-        void CreateCapturePoints();
+    void UpdateNPCsAndGameObjects();
+    void CreateCapturePoints();
 
-    protected:
-        // Minutes till battle preparation warnings
-        bool warnedFiveMinutes;
-        bool warnedTwoMinutes;
-        bool warnedOneMinute;
+protected:
+    // Minutes till battle preparation warnings
+    bool warnedFiveMinutes;
+    bool warnedTwoMinutes;
+    bool warnedOneMinute;
 
-        bool updatedNPCAndObjects;
-        uint32 m_updateObjectsTimer;
+    bool updatedNPCAndObjects;
+    uint32 m_updateObjectsTimer;
 
-        uint32 m_BonusTime;
+    uint32 m_BonusTime;
 
-        GuidSet BattleInactiveNPCs;
-        GuidSet BattleInactiveGOs;
+    GuidSet BattleInactiveNPCs;
+    GuidSet BattleInactiveGOs;
 
-        GuidSet TemporaryNPCs;
-        GuidSet TemporaryGOs;
+    GuidSet TemporaryNPCs;
+    GuidSet TemporaryGOs;
 
-        GuidSet Towers;
+    GuidSet Towers;
 
-        uint8 m_iCellblockRandom;
+    uint8 m_iCellblockRandom;
 
-        ObjectGuid TBGatesGUID;
-        ObjectGuid TBDoorGUID;
+    ObjectGuid TBGatesGUID;
+    ObjectGuid TBDoorGUID;
 
-        ObjectGuid m_gateToTheHoleGUID;
-        ObjectGuid m_gateDBlockGUID;
-        ObjectGuid m_gateCursedDepthsGUID;
+    ObjectGuid m_gateToTheHoleGUID;
+    ObjectGuid m_gateDBlockGUID;
+    ObjectGuid m_gateCursedDepthsGUID;
 };
 
 #endif

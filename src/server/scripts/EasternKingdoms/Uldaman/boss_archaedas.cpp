@@ -15,16 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: boss_archaedas
-SD%Complete: 100
-SDComment: Archaedas is activated when 1 person (was 3, changed in 3.0.8) clicks on his altar.
-Every 10 seconds he will awaken one of his minions along the wall.
-At 66%, he will awaken the 6 Guardians.
-At 33%, he will awaken the Vault Walkers
-On his death the vault door opens.
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "GameObject.h"
 #include "GameObjectAI.h"
@@ -67,12 +57,11 @@ class boss_archaedas : public CreatureScript
         {
         }
 
-        struct boss_archaedasAI : public ScriptedAI
+        struct boss_archaedasAI : public BossAI
         {
-            boss_archaedasAI(Creature* creature) : ScriptedAI(creature)
+            boss_archaedasAI(Creature* creature) : BossAI(creature, BOSS_ARCHAEDAS)
             {
                 Initialize();
-                instance = me->GetInstanceScript();
             }
 
             void Initialize()
@@ -97,6 +86,7 @@ class boss_archaedas : public CreatureScript
 
             void Reset() override
             {
+                _Reset();
                 Initialize();
 
                 instance->SetData(0, 5);    // respawn any dead minions
@@ -178,7 +168,7 @@ class boss_archaedas : public CreatureScript
                     ActivateMinion(instance->GetGuidData(7), true);   // EarthenGuardian3
                     ActivateMinion(instance->GetGuidData(8), true);   // EarthenGuardian4
                     ActivateMinion(instance->GetGuidData(9), true);   // EarthenGuardian5
-                    ActivateMinion(instance->GetGuidData(10), false); // EarthenGuardian6
+//                    ActivateMinion(instance->GetGuidData(10), false); // EarthenGuardian6
                     Talk(SAY_SUMMON_GUARDIANS);
                     bGuardiansAwake = true;
                 }
@@ -208,7 +198,7 @@ class boss_archaedas : public CreatureScript
 
             void JustDied (Unit* /*killer*/) override
             {
-                instance->SetData(DATA_ANCIENT_DOOR, DONE);      // open the vault door
+                _JustDied();
                 instance->SetData(DATA_MINIONS, SPECIAL);        // deactivate his minions
             }
         };

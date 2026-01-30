@@ -149,7 +149,7 @@ class npc_wrathion_mason : public CreatureScript
                         {
                             case EVENT_FIRST_MOVE:
                                 Talk(0);
-                                Start(false, false, player->GetGUID());
+                                Start(false, player->GetGUID());
                                 break;
                             case EVENT_THIRD_TALK:
                                 Talk(3);

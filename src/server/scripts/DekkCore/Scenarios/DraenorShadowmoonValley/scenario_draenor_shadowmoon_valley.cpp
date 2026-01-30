@@ -139,7 +139,6 @@ struct scenario_draenor_shadowmoon_valley_InstanceMapScript : public InstanceScr
         {
             PhasingHandler::RemovePhase(player, PHASE_THE_FATE_OF_KARABOR, true);
             PhasingHandler::RemovePhase(player, PHASE_THE_RIGHTEOUS_MARCH, true);
-            //player->SetPhaseId(Phase, true);
         });
         events.ScheduleEvent(DATA_FOLLOW_PROPHET_VELEN, 5s);
     }
@@ -269,7 +268,7 @@ struct scenario_draenor_shadowmoon_valley_InstanceMapScript : public InstanceScr
             {
                 yrel->AI()->Talk(3);
             }
-           // DoUpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, NPC_KRULL_79560);
+            DoUpdateCriteria(CriteriaType::KillCreature, NPC_KRULL_79560);
             //play visual            
 
             //delay
@@ -350,7 +349,7 @@ struct scenario_draenor_shadowmoon_valley_InstanceMapScript : public InstanceScr
         case 79869:
         case 79879:
         default:
-        //    DoUpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, 79534);
+            DoUpdateCriteria(CriteriaType::KillCreature, 79534);
            // DoKilledMonsterCredit(QUEST_THE_DEFENSE_OF_KARABOR, 79534);
             break;
         }
@@ -622,11 +621,9 @@ struct npc_prophet_velen_79043 : public ScriptedAI
         {
             if (me->IsWithinDist(player, 15.0f, false))
             {
-                if (/*!IsLock && */player->HasQuest(QUEST_THE_FATE_OF_KARABOR) && player->GetQuestStatus(QUEST_THE_FATE_OF_KARABOR) == QUEST_STATE_COMPLETE)
+                if (player->HasQuest(QUEST_THE_FATE_OF_KARABOR) && player->GetQuestStatus(QUEST_THE_FATE_OF_KARABOR) == QUEST_STATE_COMPLETE)
                 {
-                  //  IsLock = true;
                     player->CastSpell(player, SPELL_PLAY_SCENE_EPILOGUE, true);
-                   // SetUnlock(120000);
                 }
             }
         }
@@ -832,11 +829,9 @@ struct npc_yrel_73395 : public ScriptedAI
                 }
                 else
                 {
-                    if (/*!IsLock &&*/ player->HasQuest(QUEST_THE_DEFENSE_OF_KARABOR))
+                    if (player->HasQuest(QUEST_THE_DEFENSE_OF_KARABOR))
                     {
-                       // IsLock = true;
                         player->CastSpell(player, SPELL_DEFENSE_OF_KARABOR_CELEBRATION_SCENE, true);
-                       // SetUnlock(60000);
                     }
                 }
             }

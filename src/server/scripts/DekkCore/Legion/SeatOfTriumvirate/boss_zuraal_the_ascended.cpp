@@ -149,8 +149,6 @@ public:
 // 246134
 class spell_null_palm : public SpellScript
 {
-    PrepareSpellScript(spell_null_palm);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -166,8 +164,6 @@ class spell_null_palm : public SpellScript
 // 246913
 class aura_void_phased : public AuraScript
 {
-    PrepareAuraScript(aura_void_phased);
-
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         GetTarget()->SetHover(true);

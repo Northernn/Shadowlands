@@ -373,8 +373,6 @@ struct npc_naraxas_wormspeaker_devout : public ScriptedAI
 //200086
 class spell_naraxas_gain_energy : public AuraScript
 {
-    PrepareAuraScript(spell_naraxas_gain_energy);
-
     void OnTick(AuraEffect const* aurEff)
     {
         Unit* caster = GetCaster();

@@ -137,8 +137,7 @@ private:
         me->SetPowerType(POWER_ENERGY);
         me->SetPower(POWER_ENERGY, 0);
         me->SetMaxPower(POWER_ENERGY, 100);
-        me->RemoveAura(SPELL_LIQUEFY_CHANGE_MODEL);
-        me->AddAura(AURA_OVERRIDE_POWER_COLOR_RAGE, me);        
+        me->RemoveAura(SPELL_LIQUEFY_CHANGE_MODEL);   
     }
 
     void CleanEncounter(InstanceScript* instance, Creature* vectis)
@@ -321,8 +320,6 @@ private:
 //265208
 class spell_gestate_selector : public SpellScript
 {
-    PrepareSpellScript(spell_gestate_selector);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
@@ -345,8 +342,6 @@ class spell_gestate_selector : public SpellScript
 //265212
 class spell_gestate : public AuraScript
 {
-    PrepareAuraScript(spell_gestate);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {        
         if (Unit* target = GetTarget())
@@ -371,9 +366,7 @@ class spell_gestate : public AuraScript
 
 //276439
 class spell_omega_vector_target_selector : public SpellScript
-{
-    PrepareSpellScript(spell_omega_vector_target_selector);
-    int hosts = 0;
+{    int hosts = 0;
     int count = 0;
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
@@ -410,8 +403,6 @@ class spell_omega_vector_target_selector : public SpellScript
 //267160,267161,267162,267163
 class spell_omega_vector : public AuraScript
 {
-    PrepareAuraScript(spell_omega_vector);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* target = GetTarget())
@@ -446,8 +437,6 @@ class spell_omega_vector : public AuraScript
 //266459
 class spell_plague_bomb_cast : public SpellScript
 {
-    PrepareSpellScript(spell_plague_bomb_cast);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (Unit* caster = GetCaster())
@@ -477,8 +466,6 @@ class spell_plague_bomb_cast : public SpellScript
 //266948
 class spell_plague_bomb : public SpellScript
 {
-    PrepareSpellScript(spell_plague_bomb);
-
     bool hitplayers = false;
     Unit* bunny;
 
@@ -511,24 +498,9 @@ class spell_plague_bomb : public SpellScript
     }
 };
 
-//17917
-struct areatrigger_plague_bomb : AreaTriggerAI
-{
-    areatrigger_plague_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit && unit->IsPlayer())
-            if (Unit* dummy = unit->FindNearestCreature(NPC_PATHOGEN_BOMB, 10.0f))
-                dummy->RemoveAura(SPELL_PATHOGEN_BOMB_VISUAL);
-    }
-};
-
 //265370
 class spell_blood_geyser_damage : public SpellScript
 {
-    PrepareSpellScript(spell_blood_geyser_damage);
-
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* hitUnit = GetHitUnit())
@@ -547,8 +519,6 @@ class spell_blood_geyser_damage : public SpellScript
 //265281
 class spell_blood_geyser_aura : public AuraScript
 {
-    PrepareAuraScript(spell_blood_geyser_aura);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         int count = GetEffect(EFFECT_0)->GetAmount();
@@ -568,8 +538,6 @@ class spell_blood_geyser_aura : public AuraScript
 //265928
 class spell_blood_geyser_cast : public SpellScript
 {
-    PrepareSpellScript(spell_blood_geyser_cast);
-
     void HandleDummy(SpellEffIndex effIndex)
     {
         if (Unit* caster = GetCaster())
@@ -595,29 +563,9 @@ void MoveForward(float distance, AreaTrigger* at)
     at->SetDestination(movePos, 3500);    
 }
 
-//19185
-struct areatrigger_blood_geyser : AreaTriggerAI
-{
-    areatrigger_blood_geyser(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit)
-            if (Creature* vectis = unit->FindNearestCreature(NPC_VECTIS, 500.0f))
-                vectis->CastSpell(unit, SPELL_BLOOD_GEYSER_DAMAGE);
-    }
-
-    void OnCreate()
-    {
-        MoveForward(100.0f, this->at);
-    }
-};
-
 //265217
 class spell_liquefy : public SpellScript
 {
-    PrepareSpellScript(spell_liquefy);
-
     void HandleMove()
     {
         if (Unit* caster = GetCaster())
@@ -633,26 +581,9 @@ class spell_liquefy : public SpellScript
     }
 };
 
-//?
-struct areatrigger_liquefy : AreaTriggerAI
-{
-    areatrigger_liquefy(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit)
-    {
-        if (unit)
-        {
-            if (Creature* vectis = unit->FindNearestCreature(NPC_VECTIS, 100.0f))
-                vectis->CastSpell(unit, SPELL_LINGERING_INFECTION);
-        }
-    }
-};
-
 //267242
 class spell_contagion : public SpellScript
 {
-    PrepareSpellScript(spell_contagion);
-
     void HandleOnHit()
     {
         if (Unit* target = GetHitUnit())
@@ -689,8 +620,6 @@ class spell_contagion : public SpellScript
 //274990
 class aura_burning_lesions : public AuraScript
 {
-    PrepareAuraScript(aura_burning_lesions);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* caster = GetCaster())
@@ -713,8 +642,6 @@ class aura_burning_lesions : public AuraScript
 //265178
 class aura_evolving_affliction : public AuraScript
 {
-    PrepareAuraScript(aura_evolving_affliction);
-
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* target = GetTarget())
@@ -808,9 +735,6 @@ void AddSC_boss_vectis()
 {
     RegisterCreatureAI(boss_vectis);
     RegisterCreatureAI(npc_plague_amalgam);
-    RegisterAreaTriggerAI(areatrigger_liquefy);
-    RegisterAreaTriggerAI(areatrigger_plague_bomb);
-    RegisterAreaTriggerAI(areatrigger_blood_geyser);
     RegisterSpellScript(spell_gestate);
     RegisterSpellScript(spell_omega_vector);
     RegisterSpellScript(spell_blood_geyser_aura);

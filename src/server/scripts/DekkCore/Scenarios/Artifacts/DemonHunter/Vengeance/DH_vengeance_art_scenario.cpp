@@ -1,4 +1,4 @@
-﻿/*
+/*
     Dekk Core Team
     Demon Hunter Specialization: Vengeance
     To-Do: Last Boss (i havent sniffs)
@@ -102,13 +102,10 @@ public:
             if (Player* player = clicker->ToPlayer())
             {
                 player->CastSpell(player, 207941); // convers
-              //  me->setStandStateValue(0 & 0xFF);  // снимаем анимацию и прибивку
-               // me->SetByteValue(UNIT_FIELD_BYTES_1, 1, 0);
-              //  me->SetStandVisValue(uint8(0 >> 16) & 0xFF);
-               // me->SetMiscStandValue(uint8((0 >> 24) & 0xFF));
                 
-              //  if (InstanceScript* instance = clicker->GetInstanceScript())
-                 //   instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 47077); //Step 0 - complete
+                if (InstanceScript* instance = clicker->GetInstanceScript())
+                    instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 47077); //Step 0 - complete
+
                 me->RemoveNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
             }
         }
@@ -133,20 +130,20 @@ public:
         bool OnGossipHello(Player* player) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                //if (instance->getScenarionStep() == DATA_STAGE_2)
+                if (instance->getScenarionStep() == DATA_STAGE_2)
                 {
                     if (me->GetEntry() == FEL_PORTAL_1)
                     {
                         if (Creature* akvesh = me->FindNearestCreature(NPC_AKVESH, 50.0f, true))
                             akvesh->AI()->AttackStart(player);
-                       // instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 47138); //Step 1
+                        instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 47138); //Step 1
                     }
                     if (me->GetEntry() == FEL_PORTAL_2)
                     {
                         player->CastSpell(player, 208360);
                         player->CastSpell(player, 208374);
-                       // instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49925); //Step 1
-                       // instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49910); //Step 1
+                        instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49925); //Step 1
+                        instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49910); //Step 1
                     }
                     me->SetGoState(GO_STATE_READY);
                 }
@@ -206,12 +203,12 @@ public:
         void JustDied(Unit* who) override
         {
             Talk(0);
-          /*  if (InstanceScript* instance = who->GetInstanceScript())
+            if (InstanceScript* instance = who->GetInstanceScript())
             {
-                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49959);
-                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49960);
-                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49961);
-            }*/
+                instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49959);
+                instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49960);
+                instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49961);
+            }
         }
         
         void UpdateAI(uint32 diff) override
@@ -305,10 +302,10 @@ public:
         void JustDied(Unit* who) override
         {
             DoCast(208395); // convers
-           /* if (InstanceScript* instance = who->GetInstanceScript())
+            if (InstanceScript* instance = who->GetInstanceScript())
             {
-                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 47079);
-            }*/
+                instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 47079);
+            }
         }
         
         void UpdateAI(uint32 diff) override
@@ -319,7 +316,7 @@ public:
                 {
                     if (InstanceScript* instance = me->GetInstanceScript())
                     {
-                     //   if (instance->getScenarionStep() == DATA_STAGE_4)
+                        if (instance->getScenarionStep() == DATA_STAGE_4)
                         {
                             introDone = true;
                             me->SetVisible(true);
@@ -327,8 +324,8 @@ public:
                             me->GetMotionMaster()->MovePoint(0, -2761.63f, -79.27f, 46.63f);
                             me->RemoveUnitFlag(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NOT_ATTACKABLE_1);
                         }
-                       // else
-                         //   timercheck = 3000;
+                        else
+                            timercheck = 3000;
                     }else
                         timercheck = 3000;
                 }
@@ -365,8 +362,8 @@ public:
                         }
                         break;
                     case 3:
-                       // if(Player* pl = me->FindNearestPlayer(50.0f))
-                         //   pl->SetAuraStack(215978, pl, 5);
+                        if(Player* pl = me->FindNearestPlayer(50.0f))
+                            pl->SetAuraStack(215978, pl, 5);
                         break;
                 }
             }
@@ -390,8 +387,6 @@ class spell_creeping_doom : public SpellScriptLoader
 
         class spell_creeping_doom_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_creeping_doom_AuraScript);
-
             void OnPeriodic(AuraEffect const*aurEff)
             {
                 if (!GetTarget())
@@ -444,7 +439,7 @@ public:
         {
             if (InstanceScript* instance = me->GetInstanceScript())
             {
-              //  if (instance->getScenarionStep() == DATA_STAGE_5)
+                if (instance->getScenarionStep() == DATA_STAGE_5)
                 {
                     std::list<Player*> list;
                     list.clear();
@@ -462,7 +457,7 @@ public:
                            
                            if ((*itr)->HasAura(188501))
                            {
-                           //    instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49972);
+                               instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49972);
                                me->SetLootState(GO_READY);
                                me->UseDoorOrButton(10000, false, (*itr));
                            }
@@ -537,10 +532,10 @@ public:
         void JustDied(Unit* who) override
         {
             DoCast(208475); // convers
-            // me->SummonGameObject(248785, -2748.406f, -328.1875f, 38.34308f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, DAY);
-        //    me->SummonCreature(105155, -2748.406f, -328.1875f, 38.34308f, 1.93f);
-         //   if (InstanceScript* instance = who->GetInstanceScript())
-              //      instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 47080); //Step last - complete
+           // me->SummonGameObject(248785, -2748.406f, -328.1875f, 38.34308f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0s);
+            me->SummonCreature(105155, -2748.406f, -328.1875f, 38.34308f, 1.93f);
+            if (InstanceScript* instance = who->GetInstanceScript())
+                    instance->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 47080); //Step last - complete
         }
         
         void UpdateAI(uint32 diff) override
@@ -559,7 +554,7 @@ public:
                 {
                     case 1:
                         
-                       // events.RescheduleEvent(EVENT_1, urand(6000, 11000));
+                        events.RescheduleEvent(1, 8s);
                         break;
                 }
             }
@@ -593,26 +588,13 @@ public:
                     target->CastSpell(target, 208300, true);  // on loot
                 }
                 
-              //  target->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 49999);
-              //  target->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_COMPLETE_SCENARIO, 961, 1);
+             //   target->ToPlayer()->DoUpdateCriteria(CriteriaType::AnyoneTriggerGameEventScenario, 49999);
+            //    target->ToPlayer()->DoUpdateCriteria(CRITERIA_TYPE_COMPLETE_SCENARIO, 961, 1);
                 if (Creature* trigger = go->FindNearestCreature(105155, 20.0f))
                     trigger->DespawnOrUnsummon();
 
                 target->ToPlayer()->KilledMonsterCredit(99250);
                 target->ToPlayer()->CompleteQuest(41863);
-               // if (Creature* trigget = target->SummonCreature(99229, -2726.35f, -307.24f, 30.97f, 3.11f))
-              //  {
-                  //  target->ToPlayer()->SetPhaseMask(1, true);
-                  //  target->ToPlayer()->GetPhaseMgr().SetCustomPhase(1);
-                  //  trigget->AddPlayerInPersonnalVisibilityList(target->GetGUID());
-                  //  trigget->SetPhaseMask(1, true);
-              //  }
-              //  if (Creature* trigget = target->SummonCreature(99227, -2734.72f, -304.77f, 30.97f, 3.19f))
-              //  {
-               //     target->ToPlayer()->GetPhaseMgr().SetCustomPhase(1);
-              //      trigget->AddPlayerInPersonnalVisibilityList(target->GetGUID());
-               //     trigget->SetPhaseMask(1, true);
-              //  }
                 
             }
         }
@@ -624,7 +606,7 @@ void AddSC_DH_vengeance_art_scenario()
 {
     new npc_illidari_fel_bat();
     new npc_allari_souleater();
-    new go_portal_fel_soul();
+//    new go_portal_fel_soul(); not now id atm 
     new npc_saera_and_taraar();
     new npc_gorgonnash();
     new spell_creeping_doom();

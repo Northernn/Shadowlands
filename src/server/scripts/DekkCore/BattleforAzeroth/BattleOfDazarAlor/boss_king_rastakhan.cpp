@@ -27,7 +27,7 @@ enum Spells
     SPELL_DREAD_REAPING_PORTAL_VISUAL = 287109,
     SPELL_INEVITABLE_END_PULL_CREATE_AT = 287333,
     SPELL_INEVITABLE_END_INSTAKILL = 288576,
-    SPELL_UNLIVING_PASSIVE = 284377,    
+    SPELL_UNLIVING_PASSIVE = 284377,
     SPELL_AURA_OF_DEATH_MAIN = 289924,
     SPELL_AURA_OF_DEATH = 285190,
     SPELL_CARESS_OF_DEATH = 285213,
@@ -36,14 +36,14 @@ enum Spells
     SPELL_BWONSAMDIS_BOON = 284446,
     SPELL_BWONSAMDIS_BOON_BUFF = 289169, // script on apply, ever 15s addstack
     SPELL_WITHERING_BURST_DAMAGE = 288053,
-    SPELL_UNDYING_RELENTLESSNESS = 289162,    
+    SPELL_UNDYING_RELENTLESSNESS = 289162,
     SPELL_ALL_ENCOMPASSING_DEATH = 289890,
     SPELL_SPIRIT_EXPULSION = 284521,
     SPELL_DEATHLY_WITHERING = 285195,
     SPELL_SEAL_OF_BWONSAMDI_MISSILE = 286669,
     SPELL_SEAL_OF_BWONSAMDI_CREATE_AT = 286664,
     SPELL_SEAL_OF_BWONSAMDI_DAMAGE = 286671, //script on hit
-    SPELL_BWONSAMDIS_WRATH = 286672, 
+    SPELL_BWONSAMDIS_WRATH = 286672,
     SPELL_PLAGUE_OF_TOAD_JUMP = 284917,
     SPELL_PLAGUE_OF_TOAD_CREATE_AT = 284918,
     SPELL_PLAGUE_OF_TOAD_PERSONAL_AT = 285041,
@@ -83,7 +83,7 @@ struct boss_king_rastakhan : public BossAI
 {
     boss_king_rastakhan(Creature* creature) : BossAI(creature, DATA_KING_RASTAKHAN) { }
 
-private:    
+private:
     Creature* GetBwonsamdi() { return me->FindNearestCreature(NPC_BWONSAMDI_ENCOUNTER, 150.0f, true); }
     uint8 phase;
     bool at10;
@@ -96,7 +96,7 @@ private:
             bwonsamdi->ClearUnitState(UNIT_STAND_STATE_SIT_HIGH_CHAIR);
         me->SetReactState(REACT_DEFENSIVE);
         me->SetVisible(true);
-        me->RemoveNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);        
+        me->RemoveNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
         me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_UNINTERACTIBLE));
         me->SetReactState(REACT_PASSIVE);
         this->phase = 0;
@@ -104,13 +104,14 @@ private:
             me->SummonCreature(NPC_HEADHUNTER_GALWANA, -1232.223f, 807.1162f, 351.649f, 0.051f, TEMPSUMMON_MANUAL_DESPAWN);
     }
 
-    void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*done_by*/, uint32& /*damage*/, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HealthBelowPct(60) && this->phase == 2)
         {
             this->phase = 3;
             DoAction(ACTION_PHASE_THREE);
         }
+
         if (me->HealthBelowPct(10) && !at10)
         {
             at10 = true;
@@ -123,7 +124,7 @@ private:
         if (victim->IsPlayer() && roll_chance_f(15))
             Talk(8);
     }
-    
+
     void JustSummoned(Creature* summon) override
     {
         summons.Summon(summon);
@@ -170,14 +171,14 @@ private:
             if (Creature* bwonsamdi = GetBwonsamdi())
             {
                 bwonsamdi->RemoveAura(SPELL_UNLIVING_PASSIVE);
-                bwonsamdi->CastSpell(me, SPELL_BWONSAMDIS_BOON, false);                
-                me->GetScheduler().Schedule(5300ms, [this](TaskContext context)
+                bwonsamdi->CastSpell(me, SPELL_BWONSAMDIS_BOON, false);
+                me->GetScheduler().Schedule(5300ms, [this](TaskContext /*context*/)
                 {
                     me->AddAura(SPELL_BWONSAMDIS_BOON_BUFF, me);
                     me->AddAura(SPELL_ALL_ENCOMPASSING_DEATH, me);
                     me->SetDisplayId(me->GetNativeDisplayId());
                 });
-                bwonsamdi->GetScheduler().Schedule(6000ms, [bwonsamdi](TaskContext context)
+                bwonsamdi->GetScheduler().Schedule(6000ms, [bwonsamdi](TaskContext /*context*/)
                 {
                     bwonsamdi->AI()->Talk(1);
                 });
@@ -199,7 +200,7 @@ private:
                 Talk(6);
                 if (Creature* bwonsamdi = GetBwonsamdi())
                 {
-                    bwonsamdi->GetScheduler().Schedule(6000ms, [bwonsamdi](TaskContext context)
+                    bwonsamdi->GetScheduler().Schedule(6000ms, [bwonsamdi](TaskContext /*context*/)
                     {
                         bwonsamdi->AI()->Talk(3);
                     });
@@ -254,7 +255,7 @@ private:
         }
         }
     }
-    
+
     void ExecuteEvent(uint32 eventId) override
     {
         switch (eventId)
@@ -264,7 +265,7 @@ private:
             if (Unit* target = SelectTarget(SelectTargetMethod::MaxDistance, 0, 100.f, true))
             {
                 me->CastSpell(target, SPELL_SCORCHING_DETONATION_DUMMY_DAMAGE_AURA, false);
-                target->GetScheduler().Schedule(5100ms, [this, target](TaskContext context)
+                target->GetScheduler().Schedule(5100ms, [this, target](TaskContext /*context*/)
                 {
                     if (target)
                         return;
@@ -311,12 +312,12 @@ private:
             me->CastSpell(nullptr, SPELL_INEVITABLE_END_PULL_CREATE_AT, false);
             std::list<Player*> playerList;
             me->GetPlayerListInGrid(playerList, 100.0f);
-            for (auto& targets : playerList)
-            {
-                /*targets->AddUnitState(UNIT_STATE_LOST_CONTROL);
-                targets->SetWalk(true);
-                targets->GetMotionMaster()->MovePoint(0, me->GetPosition(), true);*/
-            }
+//            for (auto& targets : playerList)
+//            {
+//                /*targets->AddUnitState(UNIT_STATE_LOST_CONTROL);
+//                targets->SetWalk(true);
+//                targets->GetMotionMaster()->MovePoint(0, me->GetPosition(), true);*/
+//            }
             events.Repeat(60s);
             break;
         }
@@ -376,7 +377,7 @@ private:
         {
         case NPC_SIEGEBREAKER_ROKA:
             ScriptedAI::Reset();
-            me->SetReactState(REACT_DEFENSIVE);            
+            me->SetReactState(REACT_DEFENSIVE);
             me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_UNINTERACTIBLE));
             me->SetPowerType(POWER_MANA);
             me->SetMaxPower(POWER_MANA, 100);
@@ -401,7 +402,7 @@ private:
             break;
         }
     }
-    
+
     void SpellHitTarget(WorldObject*  target, SpellInfo const* spellInfo) override
     {
         switch (spellInfo->Id)
@@ -416,7 +417,7 @@ private:
         }
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit*) override
     {
         switch (me->GetEntry())
         {
@@ -435,13 +436,11 @@ private:
             }
             events.ScheduleEvent(SPELL_METEOR_LEAP, 5s);
             break;
-
         case NPC_PRELATE_ZALAN:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             events.ScheduleEvent(SEAL_OF_PURIFICATION_CREATE_AT, 5s);
             break;
-
         case NPC_HEADHUNTER_GALWANA:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
@@ -450,10 +449,8 @@ private:
         }
     }
 
-
     void OnSpellCast(SpellInfo const* spell) override
     {
-
         switch (spell->Id)
         {
         case SPELL_METEOR_LEAP:
@@ -476,7 +473,6 @@ private:
             me->CastSpell(nullptr, SEAL_OF_PURIFICATION_CREATE_AT, true);
             events.Repeat(30s);
             break;
-
         case SPELL_GRIEVOUS_AXE:
             DoCastRandom(SPELL_GRIEVOUS_AXE, 50.0f, false);
             events.Repeat(15s, 20s);
@@ -492,12 +488,10 @@ private:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             break;
-
         case NPC_PRELATE_ZALAN:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             break;
-
         case NPC_HEADHUNTER_GALWANA:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -506,7 +500,7 @@ private:
     }
 
     void JustDied(Unit* /*who*/) override
-    {        
+    {
         switch (me->GetEntry())
         {
         case NPC_SIEGEBREAKER_ROKA:
@@ -528,97 +522,9 @@ private:
         EventMap events;
 };
 
-//20000, 286537
-struct at_seal_of_purification : public AreaTriggerAI
-{
-    at_seal_of_purification(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnInitialize() override
-    {
-        Unit* caster = at->GetCaster();
-        if (!caster)
-            return;
-
-        Position movePos = caster->GetPosition();
-        at->MovePosition(movePos, 30.0f, 0.0f);
-        at->SetDestination(movePos, 10000);
-        at->SetDuration(10000);
-    }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->IsPlayer() && !unit->HasAura(SPELL_SEAL_OF_PURIFICATION_DAMAGE))
-            at->GetCaster()->AddAura(SPELL_SEAL_OF_PURIFICATION_DAMAGE, unit);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (unit->IsPlayer() && unit->HasAura(SPELL_SEAL_OF_PURIFICATION_DAMAGE))
-            unit->RemoveAura(SPELL_SEAL_OF_PURIFICATION_DAMAGE);
-    }
-};
-
-//20024, 287116
-struct at_dread_reaping : public AreaTriggerAI
-{
-    at_dread_reaping(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnInitialize() override
-    {
-        Unit* caster = at->GetCaster();
-        if (!caster)
-            return;
-
-        Position moveRandom = at->GetRandomNearPosition(30.0f);
-        at->MovePosition(moveRandom, 30.0f, 0.0f);
-        at->SetDestination(moveRandom, 10000);
-    }
-
-    void OnDestinationReached() override
-    { 
-        Position moveRandom = at->GetRandomNearPosition(30.0f);
-        at->MovePosition(moveRandom, 30.0f, 0.0f);
-        at->SetDestination(moveRandom, 10000);
-    }
-
-    void OnCreate() override
-    {
-        at->SetDuration(300000);
-    }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->IsPlayer() && !unit->HasAura(SPELL_DREAD_REAPING_AT_DAMAGE))
-            at->GetCaster()->AddAura(SPELL_DREAD_REAPING_AT_DAMAGE, unit);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (unit->IsPlayer() && unit->HasAura(SPELL_DREAD_REAPING_AT_DAMAGE))
-            unit->RemoveAura(SPELL_DREAD_REAPING_AT_DAMAGE);
-    }
-};
-
-//20025, 287333
-struct at_inevitable_end_pull : public AreaTriggerAI
-{
-    at_inevitable_end_pull(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->IsPlayer())
-        {
-            unit->ClearUnitState(UNIT_STATE_LOST_CONTROL);
-            unit->CastSpell(unit, SPELL_INEVITABLE_END_INSTAKILL);
-        }
-    }
-};
-
 //285349
 class aura_plague_of_fire : public AuraScript
 {
-    PrepareAuraScript(aura_plague_of_fire);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         std::list<Player*> playerList;
@@ -665,7 +571,7 @@ private:
     {
         if (!me->IsInCombat())
             return;
-        
+
         if (target->IsPlayer() && target->GetDistance2d(me) <= 30.0f && !target->HasAura(SPELL_AURA_OF_DEATH))
         {
             me->AddAura(SPELL_AURA_OF_DEATH, target);
@@ -704,7 +610,7 @@ private:
         });
     }
 
-    void DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* /*done_by*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
         if (me->HasAura(SPELL_UNLIVING_PASSIVE))
         {
@@ -721,9 +627,11 @@ private:
         }
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit*) override
     {
-        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+        if (instance)
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+
         events.ScheduleEvent(SPELL_AURA_OF_DEATH_MAIN, 100s);
         events.ScheduleEvent(SPELL_CARESS_OF_DEATH, 7s);
     }
@@ -757,8 +665,6 @@ private:
 //288449
 class aura_deaths_door : public AuraScript
 {
-    PrepareAuraScript(aura_deaths_door);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (GetTarget())
@@ -767,7 +673,7 @@ class aura_deaths_door : public AuraScript
 
     void Register() override
     {
-        OnEffectRemove += AuraEffectRemoveFn(aura_deaths_door::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);        
+        OnEffectRemove += AuraEffectRemoveFn(aura_deaths_door::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -787,7 +693,7 @@ struct npc_phantom_generic : public ScriptedAI
         ScriptedAI::Reset();
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit*) override
     {
         switch (me->GetEntry())
         {
@@ -846,8 +752,8 @@ private:
 //146731,146766
 struct npc_king_rastakhan_static_generic : public ScriptedAI
 {
-    npc_king_rastakhan_static_generic(Creature* c) : ScriptedAI(c) 
-    { 
+    npc_king_rastakhan_static_generic(Creature* c) : ScriptedAI(c)
+    {
         SetCombatMovement(false);
     }
 
@@ -865,14 +771,13 @@ struct npc_king_rastakhan_static_generic : public ScriptedAI
         }
     }
 
-    void JustEngagedWith(Unit* who) override
+    void JustEngagedWith(Unit*) override
     {
         switch (me->GetEntry())
         {
         case NPC_ZOMBIE_DUST_TOTEM:
             events.ScheduleEvent(SPELL_ZOMBIE_DUST_MIND_CONTROL, 5s);
             break;
-
         case NPC_GREATER_SERPENT_TOTEM:
             events.ScheduleEvent(SPELL_SERPENTS_BREATH, 5s);
             break;
@@ -915,62 +820,22 @@ private:
         me->CastSpell(nullptr, SPELL_PLAGUE_OF_TOAD_PERSONAL_AT, true);
         me->GetScheduler().Schedule(1500ms, [this](TaskContext context)
         {
-            Position AreatriggerPos = me->GetPositionX() + 10.0f;  
+            Position AreatriggerPos = me->GetPositionX() + 10.0f;
             jumpCount++;
             me->CastSpell(AreatriggerPos, SPELL_PLAGUE_OF_TOAD_JUMP, true);
+
             if (IsHeroic() || IsMythic())
                 me->CastSpell(AreatriggerPos, SPELL_PLAGUE_OF_TOAD_CREATE_AT, true);
-            if (this->jumpCount = !3)
+
+            if (jumpCount != 3)
                 context.Repeat(2s);
         });
-    }
-};
-
-//40022, 285041, personal
-struct at_plague_of_toads_personal : public AreaTriggerAI
-{
-    at_plague_of_toads_personal(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        return;
-
-        if (unit->IsPlayer() && !unit->HasAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE))
-            at->GetCaster()->AddAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE, unit);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        return;
-
-        if (unit->IsPlayer() && unit->HasAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE))
-            unit->RemoveAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE);
-    }
-};
-
-//40021, 284918, pool, at_plague_of_toads_pool
-struct at_plague_of_toads_pool : public AreaTriggerAI
-{
-    at_plague_of_toads_pool(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (unit->IsPlayer() && !unit->HasAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE))
-            at->GetCaster()->AddAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE, unit);
-    }
-
-    void OnUnitExit(Unit* unit) override
-    {
-        if (unit->IsPlayer() && unit->HasAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE))
-            unit->RemoveAura(SPELL_POISON_TOAD_SLIME_AT_DAMAGE);
     }
 };
 
 //289169
 class aura_bwonsamdis_toon : public AuraScript
 {
-    PrepareAuraScript(aura_bwonsamdis_toon);
-
     void OnApply(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
@@ -994,39 +859,15 @@ class aura_bwonsamdis_toon : public AuraScript
     }
 };
 
-//40019, 288048, 148351
-struct at_death_rift : public AreaTriggerAI
-{
-    at_death_rift(AreaTrigger* at) : AreaTriggerAI(at) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        if (!unit->IsPlayer())
-            return;
-
-        if (unit->HasAura(SPELL_DEATHLY_WITHERING))
-        {
-            unit->RemoveAurasDueToSpell(SPELL_DEATHLY_WITHERING);
-            at->GetCaster()->CastSpell(unit->GetPosition(), SPELL_WITHERING_BURST_DAMAGE, true);
-        }
-    }
-};
-
 void AddSC_boss_king_rastakhan()
 {
     RegisterCreatureAI(boss_king_rastakhan);
     RegisterCreatureAI(npc_king_rastakhan_minion);
-    RegisterAreaTriggerAI(at_seal_of_purification);
-    RegisterAreaTriggerAI(at_dread_reaping);
-    RegisterAreaTriggerAI(at_inevitable_end_pull);
     RegisterSpellScript(aura_plague_of_fire);
     RegisterCreatureAI(boss_bwonsamdi);
     RegisterSpellScript(aura_deaths_door);
     RegisterCreatureAI(npc_phantom_generic);
     RegisterCreatureAI(npc_king_rastakhan_static_generic);
     RegisterCreatureAI(npc_plague_toad);
-    RegisterAreaTriggerAI(at_plague_of_toads_personal);
-    RegisterAreaTriggerAI(at_plague_of_toads_pool);
     RegisterSpellScript(aura_bwonsamdis_toon);
-    RegisterAreaTriggerAI(at_death_rift);
 }

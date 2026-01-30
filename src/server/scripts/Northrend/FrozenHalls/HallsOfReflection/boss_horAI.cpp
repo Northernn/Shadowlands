@@ -37,13 +37,13 @@ void boss_horAI::DoAction(int32 actionId)
 {
     switch (actionId)
     {
-        case ACTION_ENTER_COMBAT: // called by InstanceScript when boss shall enter in combat.
-            me->SetImmuneToAll(false);
-            me->SetReactState(REACT_AGGRESSIVE);
-            DoZoneInCombat(me);
-            break;
-        default:
-            break;
+    case ACTION_ENTER_COMBAT: // called by InstanceScript when boss shall enter in combat.
+        me->SetImmuneToAll(false);
+        me->SetReactState(REACT_AGGRESSIVE);
+        DoZoneInCombat(me);
+        break;
+    default:
+        break;
     }
 }
 

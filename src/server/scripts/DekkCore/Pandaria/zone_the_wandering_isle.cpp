@@ -41,6 +41,9 @@ enum TheWanderingIsleData
     QUEST_SHU_THE_SPIRIT_OF_WATER = 29678,
     QUEST_A_NEW_FRIEND            = 29679,
     QUEST_THE_SOURCE_OF_OUR_LIVELIHOOD = 29680,
+    QUEST_NEW_FATE = 31450,
+    QUEST_PASSING_WISDOM = 29790,
+    QUEST_SUF_SHUN_ZI = 29791,
 
     SPELL_MEDITATION_TIMER_BAR = 116421,
 };
@@ -67,8 +70,6 @@ public:
 
 class spell_summon_troublemaker : public SpellScript
 {
-    PrepareSpellScript(spell_summon_troublemaker);
-
     void HandleSummon(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
@@ -105,8 +106,6 @@ enum MeditationTimerSpells
 
 class spell_meditation_timer_bar : public AuraScript
 {
-    PrepareAuraScript(spell_meditation_timer_bar);
-
     void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
     {
         if (Unit* target = GetTarget())
@@ -137,8 +136,6 @@ enum CaveOfScrollsCompTimerAura
 
 class spell_cave_of_scrolls_comp_timer_aura : public AuraScript
 {
-    PrepareAuraScript(spell_cave_of_scrolls_comp_timer_aura);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* target = GetTarget())
@@ -169,8 +166,6 @@ public:
 
 class spell_summon_living_air : public SpellScript
 {
-    PrepareSpellScript(spell_summon_living_air);
-
     void HandleSummon(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
@@ -241,8 +236,6 @@ public:
 
     class spell_fan_the_flames_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_fan_the_flames_AuraScript);
-
         uint32 counter = 0;
 
         void HandlePeriodic(AuraEffect const* /*aurEff*/)
@@ -303,25 +296,6 @@ public:
 enum QuestDisciplesChallengeSpells
 {
     SPELL_GENERIC_QUEST_INVISIBILITY_DETECTION = 60922
-};
-
-class q_disciples_challenge : public QuestScript
-{
-public:
-    q_disciples_challenge() : QuestScript("q_disciples_challenge") { }
-
-    void OnQuestStatusChange(Player* player, Quest const* /*quest*/, QuestStatus /*oldStatus*/, QuestStatus newStatus) override
-    {
-        if (newStatus == QUEST_STATUS_COMPLETE)
-        {
-            player->AddAura(SPELL_GENERIC_QUEST_INVISIBILITY_DETECTION, player);
-        }
-
-        if (newStatus == QUEST_STATUS_FAILED)
-        {
-            player->RemoveAura(SPELL_GENERIC_QUEST_INVISIBILITY_DETECTION);
-        }
-    }
 };
 
 enum SingingPoolsATSpells
@@ -433,67 +407,6 @@ enum BalancePoleSpells
     SPELL_TRAINING_BELL_RIDE_VEHICLE = 107049
 };
 
-class npc_balance_pole : public CreatureScript
-{
-public:
-    npc_balance_pole() : CreatureScript("npc_balance_pole") { }
-
-    struct npc_balance_poleAI : public ScriptedAI
-    {
-        npc_balance_poleAI(Creature* creature) : ScriptedAI(creature) {
-            _passengerGuid.Clear();
-        }
-
-        void PassengerBoarded(Unit* passenger, int8 /*seat*/, bool apply) override
-        {
-            if (passenger->GetTypeId() == TYPEID_PLAYER)
-            {
-                _passengerGuid = passenger->GetGUID();
-
-                if (!apply)
-                    _events.ScheduleEvent(EVENT_CAST_TRANSFORM, 1s);
-                else
-                {
-                    if (me->GetEntry() == NPC_TRAINING_BELL_BALANCE_POLE)
-                        DoCast(passenger, SPELL_TRAINING_BELL_FORCECAST_RIDE_VEHICLE, true);
-                }
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            _events.Update(diff);
-
-            while (uint32 eventId = _events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_CAST_TRANSFORM:
-                    // Transform is casted only when in frog pool
-                    Unit* passenger = ObjectAccessor::GetUnit(*me, _passengerGuid);
-                    if (passenger->GetPositionZ() > 116.0f && !passenger->HasAura(SPELL_TRAINING_BELL_RIDE_VEHICLE) && !passenger->HasAura(SPELL_RIDE_VEHICLE_POLE))
-                    {
-                        passenger->CastSpell(passenger, SPELL_CURSE_OF_THE_FROG, true);
-
-                        if (passenger->HasAura(SPELL_TRAINING_BELL_EXCLUSION_AURA))
-                            passenger->RemoveAura(SPELL_TRAINING_BELL_EXCLUSION_AURA);
-                    }
-                    break;
-                }
-            }
-        }
-
-    private:
-        EventMap _events;
-        ObjectGuid _passengerGuid;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_balance_poleAI(creature);
-    }
-};
-
 enum TushuiMonkOnPoleEvents
 {
     EVENT_THROW_ROCK = 1,
@@ -516,149 +429,6 @@ enum TushuiMonkOnPoleSpells
 enum TushuiMonkOnPoleMisc
 {
     QUEST_LESSON_OF_BALANCED_ROCK = 29663
-};
-
-class npc_tushui_monk_on_pole : public CreatureScript
-{
-public:
-    npc_tushui_monk_on_pole() : CreatureScript("npc_tushui_monk_on_pole") { }
-
-    struct npc_tushui_monk_on_poleAI : public ScriptedAI
-    {
-        npc_tushui_monk_on_poleAI(Creature* creature) : ScriptedAI(creature) { }
-
-        void Reset() override
-        {
-            _events.Reset();
-            _events.ScheduleEvent(EVENT_SWITCH_POLE, 0s);
-            me->RestoreFaction();
-            me->SetReactState(REACT_DEFENSIVE);
-        }
-
-        void SpellHit(WorldObject* caster, SpellInfo const* spell) override
-        {
-            if (spell->Id == SPELL_FORCECAST_RIDE_POLE)
-                DoCast(caster->ToUnit(), SPELL_MONK_RIDE_POLE, true);
-        }
-
-        void JustEngagedWith(Unit* who) override
-        {
-            _events.ScheduleEvent(EVENT_THROW_ROCK, 0s);
-        }
-
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
-        {
-            if (damage >= me->GetHealth())
-            {
-                me->SetHealth(10);
-                _events.Reset();
-                me->RemoveAllAuras();
-                me->SetFaction(35);
-                me->SetUnitFlag(UnitFlags(UNIT_FLAG_CAN_SWIM | UNIT_FLAG_IMMUNE_TO_PC));
-                me->AttackStop();
-                attacker->AttackStop();
-                me->_ExitVehicle();
-                attacker->ToPlayer()->KilledMonsterCredit(NPC_MONK_ON_POLE_1);
-                //_events.ScheduleEvent(EVENT_DESPAWN, 1000); // will cause crash if npc is dead. -Varjgard
-                me->ForcedDespawn(); // tempfix.
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            _events.Update(diff);
-
-            while (uint32 eventId = _events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_THROW_ROCK:
-                    if (!me->IsWithinMeleeRange(me->GetVictim()))
-                        DoCastVictim(SPELL_THROW_ROCK);
-                    _events.ScheduleEvent(EVENT_THROW_ROCK, 2500ms);
-                    break;
-                case EVENT_SWITCH_POLE:
-                    if (!me->IsInCombat())
-                    {
-                        SwitchPole();
-                        _events.ScheduleEvent(EVENT_SWITCH_POLE, Seconds(urand(15, 30)));
-                    }
-                    break;
-                    //case EVENT_DESPAWN:
-                        // Transform is casted only when in frog pool
-                        //if (me->FindNearestCreature(NPC_CURSED_POOL_CONTROLLER, 71.0f, true))
-                        //    DoCastSelf(SPELL_CURSE_OF_THE_FROG, true);
-                        //ClearThreadList();
-                        //me->SetWalk(true);
-                        //MoveForward(10.0f);
-                        //me->DespawnOrUnsummon(3000);
-                        //break;
-                }
-            }
-
-            DoMeleeAttackIfReady();
-        }
-
-    private:
-        EventMap _events;
-
-        void SwitchPole()
-        {
-            std::list<Creature*> polesList;
-            std::list<Creature*> polesList2;
-            // This stores objects that are too far away due to big combat reach
-            me->GetCreatureListWithEntryInGrid(polesList, NPC_BALANCE_POLE_1, 1.0f);
-            me->GetCreatureListWithEntryInGrid(polesList2, NPC_BALANCE_POLE_2, 1.0f);
-            // Join both lists with possible different NPC entries
-            polesList.splice(polesList.end(), polesList2);
-            // Convert list to vector, so we can access iterator to be able to shuffle the list
-            std::vector<Creature*> balancePolesList{ std::make_move_iterator(std::begin(polesList)), std::make_move_iterator(std::end(polesList)) };
-            // Shuffle the list so NPCs won't jump always on the same poles
-            Trinity::Containers::RandomShuffle(balancePolesList);
-
-            for (std::vector<Creature*>::const_iterator itr = balancePolesList.begin(); itr != balancePolesList.end(); ++itr)
-            {
-                Position offset;
-                offset.m_positionX = fabsf((*itr)->GetPositionX() - me->GetPositionX());
-                offset.m_positionY = fabsf((*itr)->GetPositionY() - me->GetPositionY());
-
-                // Object is too far
-                if (offset.m_positionX > 5.0f || offset.m_positionY > 5.0f)
-                    continue;
-
-                if (!(*itr)->HasAura(SPELL_MONK_RIDE_POLE) && !(*itr)->HasAura(SPELL_RIDE_VEHICLE_POLE))
-                {
-                    (*itr)->CastSpell(me, SPELL_FORCECAST_RIDE_POLE, true);
-                    break;
-                }
-            }
-        }
-
-        void ClearThreadList()
-        {
-            //  std::list<HostileReference*> threatList = me->GetThreatManager().getThreatList();;
-            //  for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
-             //     if (Unit* target = (*itr)->getTarget()->ToUnit())
-              //        target->ClearInCombat();
-        }
-
-        void MoveForward(float distance)
-        {
-            Position movePos;
-            float ori = me->GetOrientation();
-            float x = me->GetPositionX() + distance * cos(ori);
-            float y = me->GetPositionY() + distance * sin(ori);
-            float z = me->GetPositionZ();
-            me->UpdateGroundPositionZ(x, y, z);
-            movePos = { x, y, z };
-            me->GetMotionMaster()->MovePoint(1, movePos);
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_tushui_monk_on_poleAI(creature);
-    }
 };
 
 class at_singing_pools_training_bell : public AreaTriggerScript
@@ -684,8 +454,6 @@ public:
 
     class spell_rock_jump_a_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_rock_jump_a_SpellScript);
-
         void HandleJumpDest(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -714,126 +482,6 @@ public:
     SpellScript* GetSpellScript() const override
     {
         return new spell_rock_jump_a_SpellScript();
-    }
-};
-
-class spell_jump_to_front_right : public SpellScriptLoader
-{
-public:
-    spell_jump_to_front_right() : SpellScriptLoader("spell_jump_to_front_right") { }
-
-    class spell_jump_to_front_right_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_jump_to_front_right_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                Position const jumpPos = { 1111.13f, 2850.21f, 94.6873f };
-                caster->GetMotionMaster()->MoveJump(jumpPos, 12, 15);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHit += SpellEffectFn(spell_jump_to_front_right_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_jump_to_front_right_SpellScript();
-    }
-};
-
-class spell_jump_to_front_left : public SpellScriptLoader
-{
-public:
-    spell_jump_to_front_left() : SpellScriptLoader("spell_jump_to_front_left") { }
-
-    class spell_jump_to_front_left_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_jump_to_front_left_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                Position const jumpPos = { 1100.83f, 2881.36f, 94.0386f };
-                caster->GetMotionMaster()->MoveJump(jumpPos, 12, 15);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHit += SpellEffectFn(spell_jump_to_front_left_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_jump_to_front_left_SpellScript();
-    }
-};
-
-class spell_jump_to_back_right : public SpellScriptLoader
-{
-public:
-    spell_jump_to_back_right() : SpellScriptLoader("spell_jump_to_back_right") { }
-
-    class spell_jump_to_back_right_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_jump_to_back_right_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                Position const jumpPos = { 1127.26f, 2859.8f, 97.2817f };
-                caster->GetMotionMaster()->MoveJump(jumpPos, 12, 15);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHit += SpellEffectFn(spell_jump_to_back_right_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_jump_to_back_right_SpellScript();
-    }
-};
-
-class spell_jump_to_back_left : public SpellScriptLoader
-{
-public:
-    spell_jump_to_back_left() : SpellScriptLoader("spell_jump_to_back_left") { }
-
-    class spell_jump_to_back_left_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_jump_to_back_left_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                Position const jumpPos = { 1120.16f, 2882.66f, 96.345f };
-                caster->GetMotionMaster()->MoveJump(jumpPos, 12, 15);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHit += SpellEffectFn(spell_jump_to_back_left_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_jump_to_back_left_SpellScript();
     }
 };
 
@@ -867,114 +515,6 @@ enum ShuData
     DATA_JUMP_POSITION = 1
 };
 
-class npc_shu_playing : public CreatureScript
-{
-public:
-    npc_shu_playing() : CreatureScript("npc_shu_playing") { }
-
-    struct npc_shu_playingAI : public ScriptedAI
-    {
-        npc_shu_playingAI(Creature* creature) : ScriptedAI(creature) { }
-
-        void Initialize()
-        {
-            jumpPosition = 1;
-            positionBefore = 1;
-            startAI = true;
-        }
-
-        void Reset() override
-        {
-            events.Reset();
-            Initialize();
-        }
-
-        void MovementInform(uint32 type, uint32 id) override
-        {
-            if (type == EFFECT_MOTION_TYPE && id == EVENT_JUMP)
-                events.ScheduleEvent(EVENT_SET_ORIENTATION, 500ms);
-        }
-
-        uint32 GetData(uint32 id) const override
-        {
-            if (id == DATA_JUMP_POSITION)
-                return jumpPosition;
-
-            return false;
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            if (startAI)
-            {
-                events.ScheduleEvent(EVENT_JUMP_SPELL, 1s);
-                startAI = false;
-            }
-
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_JUMP_SPELL:
-                    if (urand(0, 2) != 0)
-                        jumpPosition = urand(JUMP_POSITION_1, JUMP_POSITION_4);
-                    else
-                        jumpPosition = positionBefore;
-
-                    if (jumpPosition == positionBefore)
-                    {
-                    events.CancelEvent(EVENT_SET_ORIENTATION);
-                    events.ScheduleEvent(EVENT_SUMMON, 1500ms);
-                    }
-                    else
-                    {
-                        DoCast(jumpSpells[jumpPosition]);
-                        positionBefore = jumpPosition;
-                    }
-                    break;
-                case EVENT_SET_ORIENTATION:
-                    switch (jumpPosition)
-                    {
-                    case JUMP_POSITION_1:
-                        me->SetFacingTo(1.32645f);
-                        break;
-                    case JUMP_POSITION_2:
-                        me->SetFacingTo(5.654867f);
-                        break;
-                    case JUMP_POSITION_3:
-                        me->SetFacingTo(2.338741f);
-                        break;
-                    case JUMP_POSITION_4:
-                        me->SetFacingTo(4.34587f);
-                        break;
-                    }
-                    events.ScheduleEvent(EVENT_SUMMON, 1500ms);
-                    break;
-                case EVENT_SUMMON:
-                    DoCast(SPELL_SUMMON_WATER_SPOUT);
-                    DoCast(SPELL_WATER_SPOUT);
-                    events.ScheduleEvent(EVENT_JUMP_SPELL, 6s);
-                    break;
-                }
-            }
-        }
-
-    private:
-        EventMap events;
-        uint32 jumpSpells[4] = { SPELL_JUMP_FRONT_RIGHT, SPELL_JUMP_FRONT_LEFT, SPELL_JUMP_BACK_RIGHT, SPELL_JUMP_BACK_LEFT };
-        uint8 jumpPosition;
-        uint8 positionBefore;
-        bool startAI;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_shu_playingAI(creature);
-    }
-};
-
 class spell_summon_water_spout : public SpellScriptLoader
 {
 public:
@@ -982,8 +522,6 @@ public:
 
     class spell_summon_water_spout_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_summon_water_spout_SpellScript);
-
         void HandleSummon(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -1066,8 +604,6 @@ public:
 
     class spell_water_spout_quest_credit_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_water_spout_quest_credit_SpellScript);
-
         void HandleScript()
         {
             if (Player* target = GetHitPlayer())
@@ -1099,8 +635,6 @@ public:
 
     class spell_aysa_congrats_timer_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_aysa_congrats_timer_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -1127,8 +661,6 @@ public:
 
     class spell_aysa_congrats_trigger_aura_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_aysa_congrats_trigger_aura_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -1185,8 +717,6 @@ public:
 
     class spell_monkey_wisdom_text_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_monkey_wisdom_text_SpellScript);
-
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             if (!sBroadcastTextStore.LookupEntry(TEXT_MONKEY_WISDOM) || !sBroadcastTextStore.LookupEntry(TEXT_MONKEY_WISDOM_2) ||
@@ -1233,8 +763,6 @@ public:
 
     class spell_ruk_ruk_ooksplosions_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ruk_ruk_ooksplosions_AuraScript);
-
         void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
         {
             Unit* caster = GetCaster();
@@ -1349,7 +877,7 @@ public:
                     float y = me->GetPositionY() + radius * sin(ori);
                     me->UpdateGroundPositionZ(x, y, z);
                     _pos = { x, y, z };
-                    me->SendPlaySpellVisual(_pos, 0.0f, SPELL_AIM_VISUAL, 0, 0, 2.0f);
+                    me->SendPlaySpellVisual(_pos, SPELL_AIM_VISUAL, true, 0.0f,  0, 0, 2.0f);
                 }
                 else
                     break;
@@ -1494,179 +1022,6 @@ Position ZhaoPos[] =
     {699.134f, 4170.06f, 216.06f}, // Center
 };
 
-//55786
-class npc_zhaoren : public CreatureScript
-{
-public:
-    npc_zhaoren() : CreatureScript("npc_zhaoren") { }
-
-    struct npc_zhaorenAI : public ScriptedAI
-    {
-        npc_zhaorenAI(Creature* creature) : ScriptedAI(creature) { }
-
-        Position const pos = { 723.163f, 4163.8f, 204.999f };
-
-    public:
-        uint8 phase;
-        bool _sweepScheduled;
-
-        void Reset() override
-        {
-            events.Reset();
-            me->SetReactState(REACT_PASSIVE);
-            me->setActive(true);
-            phase = 0;
-            _sweepScheduled = false;
-
-            if (Creature* creature = me->FindNearestCreature(NPC_JI_FIREPAW, me->GetVisibilityRange(), true))
-                creature->AI()->SetData(DATA_EVADE, DATA_EVADE);
-
-            std::list<Creature*> fireworks;
-            me->GetCreatureListWithEntryInGrid(fireworks, NPC_FIREWORK, me->GetVisibilityRange());
-            for (std::list<Creature*>::iterator itr = fireworks.begin(); itr != fireworks.end(); ++itr)
-            {
-                (*itr)->RemoveAura(SPELL_FIREWORK_INACTIVE);
-                (*itr)->AI()->SetData(DATA_1, DATA_1);
-            }
-            me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MovePoint(0, ZhaoPos[0].GetPositionX(), ZhaoPos[0].GetPositionY(), ZhaoPos[0].GetPositionZ());
-        }
-
-        void JustEngagedWith(Unit* who) override
-        {
-            me->GetMotionMaster()->MovePath(ZHAOREN_PATH, true);
-            events.SetPhase(PHASE_FLYING);
-            events.ScheduleEvent(EVENT_LIGHTNING, 5s);
-        }
-
-        void SpellHit(WorldObject* caster, SpellInfo const* spell) override
-        {
-            if (spell->Id == SPELL_OVERPACKED_FIREWORK)
-            {
-                if (!me->IsInCombat())
-                    me->Attack(caster->ToUnit(), true);
-            }
-        }
-
-        void MovementInform(uint32 type, uint32 id) override
-        {
-            if (type == POINT_MOTION_TYPE && id == EVENT_MOVE_CENTER)
-                events.ScheduleEvent(EVENT_STUN, 0s);
-        }
-
-        void KilledUnit(Unit* who) override
-        {
-            if (who->IsPlayer())
-                //  if (me->GetThreatManager().GetThreatListSize().empty())
-                me->ForcedDespawn(0, 10s);
-        }
-
-        void JustDied(Unit* /*killer*/) override
-        {
-            DoCastAOE(SPELL_FORCECAST_SUMMON_SHANG, true);
-
-            if (Creature* creature = me->FindNearestCreature(NPC_JI_FIREPAW, me->GetVisibilityRange(), true))
-                creature->AI()->SetData(DATA_ZHAOREN_DEATH, DATA_ZHAOREN_DEATH);
-            if (Creature* creature = me->FindNearestCreature(NPC_AYSA_CLOUDSINGER, me->GetVisibilityRange(), true))
-                creature->AI()->SetData(DATA_ZHAOREN_DEATH, DATA_ZHAOREN_DEATH);
-            if (Creature* creature = me->FindNearestCreature(NPC_DAFENG, me->GetVisibilityRange(), true))
-                creature->AI()->SetData(DATA_ZHAOREN_DEATH, DATA_ZHAOREN_DEATH);
-            me->ForcedDespawn(10000, 10s);
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-            if (phase == 0 && HealthBelowPct(85))
-            {
-                phase++;
-                if (Creature* creature = me->FindNearestCreature(NPC_AYSA_CLOUDSINGER, me->GetVisibilityRange(), true))
-                    creature->AI()->SetData(DATA_1, DATA_1);
-            }
-            if (phase == 1 && HealthBelowPct(75))
-            {
-                phase++;
-                events.SetPhase(PHASE_GROUNDED);
-                events.CancelEvent(EVENT_LIGHTNING);
-                events.ScheduleEvent(EVENT_MOVE_CENTER, 0s);
-            }
-            if (phase == 2 && HealthBelowPct(25))
-            {
-                phase++;
-                events.SetPhase(PHASE_STAY_IN_CENTER);
-                events.CancelEvent(EVENT_LIGHTNING);
-                events.ScheduleEvent(EVENT_MOVE_CENTER, 0s);
-            }
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    /*    case EVENT_LIGHTNING:
-                        {
-                            //std::list<HostileReference*> threatList = me->GetThreatManager().getThreatList();
-                          //  if (!threatList.empty())
-                            {
-                                for (HostileReference* ref : threatList)
-                                    if (ref->getTarget()->IsPlayer())
-                                        DoCast(ref->getTarget(), SPELL_LIGHTNING_POOL);
-
-                                events.ScheduleEvent(EVENT_LIGHTNING, events.IsInPhase(PHASE_FLYING) ? 5000 : 3500);
-                                if (!_sweepScheduled && events.IsInPhase(PHASE_STAY_IN_CENTER))
-                                {
-                                    events.ScheduleEvent(EVENT_SWEEP, 15000, 0, PHASE_STAY_IN_CENTER);
-                                    _sweepScheduled = true;
-                                }
-                            }
-                            else
-                            me->ForcedDespawn(0, 10s);
-                            break;
-                        }*/
-                case EVENT_MOVE_CENTER:
-                    me->GetMotionMaster()->MovePoint(EVENT_MOVE_CENTER, pos);
-                    break;
-
-                case EVENT_STUN:
-                    DoCast(SPELL_STUNNED_BY_FIREWORKS);
-                    events.ScheduleEvent(EVENT_SWEEP, 12s);
-                    if (Creature* creature = me->FindNearestCreature(NPC_AYSA_CLOUDSINGER, me->GetVisibilityRange(), true))
-                    {
-                        if (phase == 2)
-                            creature->AI()->SetData(DATA_COMBAT, DATA_COMBAT);
-                        else if (phase == 3)
-                            creature->AI()->SetData(DATA_AYSA_TALK_3, DATA_AYSA_TALK_3);
-                    }
-                    if (Creature* creature = me->FindNearestCreature(NPC_JI_FIREPAW, me->GetVisibilityRange(), true))
-                        creature->AI()->SetData(DATA_COMBAT, DATA_COMBAT);
-                    break;
-
-                case EVENT_SWEEP:
-                    events.CancelEvent(EVENT_LIGHTNING);
-                    DoCast(SPELL_SERPENT_SWEEP);
-                    _sweepScheduled = false;
-                    events.ScheduleEvent(EVENT_LIGHTNING, 3500ms, 0, PHASE_STAY_IN_CENTER);
-                    events.ScheduleEvent(EVENT_RESUME_WP, 5s, 0, PHASE_GROUNDED);
-                    if (events.IsInPhase(PHASE_GROUNDED))
-                        if (Creature* creature = me->FindNearestCreature(NPC_JI_FIREPAW, me->GetVisibilityRange(), true))
-                            creature->AI()->SetData(DATA_PHASE_OOC, DATA_PHASE_OOC);
-                    break;
-                case EVENT_RESUME_WP:
-                    me->GetMotionMaster()->MovePath(ZHAOREN_PATH, true);
-                    events.SetPhase(PHASE_FLYING);
-                    events.ScheduleEvent(EVENT_LIGHTNING, 5s);
-                    break;
-                }
-            }
-        }
-    private:
-        EventMap events;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_zhaorenAI(creature);
-    }
-};
-
 enum SpellMasterShangFinalEscortNPCs
 {
     NPC_MASTER_SHANG = 55672
@@ -1679,8 +1034,6 @@ public:
 
     class spell_master_shang_final_escort_say_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_master_shang_final_escort_say_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -1794,8 +1147,6 @@ public:
 
     class spell_injured_sailor_feign_death_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_injured_sailor_feign_death_AuraScript);
-
         void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();
@@ -1830,8 +1181,6 @@ public:
 
     class spell_rescue_injured_sailor_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_rescue_injured_sailor_SpellScript);
-
         bool Load() override
         {
             return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -1884,7 +1233,7 @@ public:
         if (player->IsAlive() && player->IsVehicle() && player->GetQuestStatus(QUEST_NONE_LEFT_BEHIND) == QUEST_STATUS_INCOMPLETE)
         {
                 if (Creature* creature = player->FindNearestCreature(NPC_INJURED_SAILOR, 1.0f, true))
-                    creature->CastSpell(player, SPELL_CANCEL_RESCUE_AURA, true);     
+                    creature->CastSpell(player, SPELL_CANCEL_RESCUE_AURA, true);
         }
 
         return true;
@@ -2057,8 +1406,6 @@ public:
 
     class spell_tempered_fury_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_tempered_fury_SpellScript);
-
         void HandleJumpDest(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -2259,8 +1606,6 @@ public:
 
     class spell_summon_deep_sea_aggressor_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_summon_deep_sea_aggressor_SpellScript);
-
         void HandleSummon(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -2303,27 +1648,6 @@ public:
     SpellScript* GetSpellScript() const override
     {
         return new spell_summon_deep_sea_aggressor_SpellScript();
-    }
-};
-
-class areatrigger_healing_sphere : public AreaTriggerEntityScript
-{
-public:
-    areatrigger_healing_sphere() : AreaTriggerEntityScript("areatrigger_healing_sphere") { }
-
-    struct areatrigger_healing_sphereAI : AreaTriggerAI
-    {
-        areatrigger_healing_sphereAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-        void OnUnitEnter(Unit* /*unit*/) override
-        {
-            at->SetDuration(0);
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new areatrigger_healing_sphereAI(areatrigger);
     }
 };
 
@@ -2401,8 +1725,6 @@ public:
 
     class spell_healing_shenzin_su_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_healing_shenzin_su_AuraScript);
-
         void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
         {
             if (Unit* target = GetTarget())
@@ -2442,8 +1764,6 @@ public:
 
     class spell_turtle_healed_phase_timer_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_turtle_healed_phase_timer_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -2476,8 +1796,6 @@ public:
 
     class spell_ally_horde_argument_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ally_horde_argument_AuraScript);
-
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -2512,8 +1830,6 @@ public:
 
     class spell_pandaren_faction_choice_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_pandaren_faction_choice_SpellScript);
-
         void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
@@ -2540,8 +1856,6 @@ public:
 
     class spell_faction_choice_trigger_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_faction_choice_trigger_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -2573,8 +1887,6 @@ public:
 
     class spell_balloon_exit_timer_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_balloon_exit_timer_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
@@ -2638,171 +1950,6 @@ public:
     {
         return new npc_ji_firepaw_escortAI(creature);
     }
-};
-
-class npc_ji_firepaw : public CreatureScript
-{
-public:
-    npc_ji_firepaw() : CreatureScript("npc_ji_firepaw")
-    {
-        isSummoned = false;
-    }
-
-    bool isSummoned;
-
-    struct npc_ji_firepawAI : public ScriptedAI
-    {
-        npc_ji_firepawAI(Creature* creature) : ScriptedAI(creature) { }
-    };
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_ji_firepawAI(creature);
-    }
-
-    void SummonHiFirepawHelper(Player* summoner, uint32 entry)
-    {
-        //uint32 phase = summoner->GetPhaseMask();
-        uint32 team = summoner->GetTeam();
-        Position pos;
-
-        // summoner->GetPosition(&pos);
-
-        Guardian* summon = new Guardian(NULL, summoner, false);
-
-        //  if (!summon->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), summoner->GetMap(), phase, entry, 0, team, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
-        {
-            delete summon;
-            return;
-        }
-
-
-
-        summon->SetHomePosition(pos);
-        summon->InitStats(0);
-        summoner->GetMap()->AddToMap(summon->ToCreature());
-        summon->InitSummon();
-        summon->InitStatsForLevel(10);
-        summon->SetFollowAngle(summoner->GetAbsoluteAngle(summon));
-        summon->SetReactState(REACT_AGGRESSIVE);
-
-    }
-
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
-    {
-        std::list<Creature*> summonList;
-        GetCreatureListWithEntryInGrid(summonList, player, 59960, 6.0f);
-
-        for (auto summoned : summonList)
-            isSummoned = true;
-
-        if (isSummoned == false)
-        {
-            if (quest->GetQuestId() == 29779)
-            {
-                SummonHiFirepawHelper(player, 59960);
-                isSummoned = true;
-            }
-
-            if (quest->GetQuestId() == 29780)
-            {
-                SummonHiFirepawHelper(player, 59960);
-                isSummoned = true;
-            }
-
-            if (quest->GetQuestId() == 29781)
-            {
-                SummonHiFirepawHelper(player, 59960);
-                isSummoned = true;
-            }
-        }
-
-        return true;
-    }
-};
-
-class mob_tushui_trainee : public CreatureScript
-{
-public:
-    mob_tushui_trainee() : CreatureScript("mob_tushui_trainee") { }
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new mob_tushui_trainee_AI(creature);
-    }
-
-    struct mob_tushui_trainee_AI : public ScriptedAI
-    {
-        mob_tushui_trainee_AI(Creature* creature) : ScriptedAI(creature) {}
-
-        enum data
-        {
-            EVENT_1 = 1,
-            EVENT_2 = 2,
-            EVENT_3 = 3,
-            SPELL = 109080,
-        };
-
-        void Reset() override
-        {
-            events.Reset();
-            me->SetReactState(REACT_DEFENSIVE);
-            if (!me->isMoving())
-                me->RemoveUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_UNINTERACTIBLE));
-            events.RescheduleEvent(EVENT_3, 0s);
-        }
-
-        void JustEngagedWith(Unit* unit) override
-        {
-            events.CancelEvent(EVENT_2);
-            events.CancelEvent(EVENT_3);
-            events.RescheduleEvent(EVENT_1, 4s);
-        }
-
-    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/)override
-        {
-            if (me->HealthBelowPctDamaged((int32)25, damage))
-            {
-                if (attacker->IsPlayer())
-                    attacker->ToPlayer()->KilledMonsterCredit(54586);
-                me->SetUnitFlag(UnitFlags(UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_UNINTERACTIBLE));
-                me->CombatStop();
-                me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
-                me->AI()->Talk(0);
-                me->SetFullHealth();
-                me->DespawnOrUnsummon(3s);
-                damage = 0;
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            UpdateVictim();
-
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_1:
-                    if (me->GetVictim())
-                        me->CastSpell(me->GetVictim(), SPELL, true);
-                    events.RescheduleEvent(EVENT_1, 4s);
-                    break;
-                case EVENT_2:
-                    me->HandleEmoteCommand(EMOTE_ONESHOT_MONKOFFENSE_ATTACKUNARMEDOFF);
-                    events.RescheduleEvent(EVENT_3, 1s);
-                    break;
-                case EVENT_3:
-                    me->HandleEmoteCommand(EMOTE_STATE_MONKOFFENSE_READYUNARMED);
-                    events.RescheduleEvent(EVENT_2, 3s + Seconds((urand(0, 3))));
-                    break;
-                }
-            }
-            DoMeleeAttackIfReady();
-        }
-        EventMap events;
-    };
 };
 
 // Should be done by summon npc 59591
@@ -3080,15 +2227,15 @@ enum eMiscMinDimwindFinal
 Position const ThiftScampPoints[] =
 {
     { 1293.51f, 3528.53f, 98.0433f, 4.67748f }, // Thift Amberleaf Scamp 1
-    { 1294.22f, 3519.09f, 100.127f, 2.02458f }, // Thift Amberleaf Scamp 2 
+    { 1294.22f, 3519.09f, 100.127f, 2.02458f }, // Thift Amberleaf Scamp 2
     { 1288.38f, 3528.15f, 96.9992f, 5.27089f }, // Thift Amberleaf Scamp 3
 };
 
 // Positions were the Amberleaf Scamp Thift will run away.
 Position const ThiftEscapePoints[] =
 {
-    { 1342.825928f, 3514.124268f, 101.61726f }, // Amberleaf Scamp Thift 1 
-    { 1325.679932f, 3471.875244f, 112.65136f }, // Amberleaf Scamp Thift 2 
+    { 1342.825928f, 3514.124268f, 101.61726f }, // Amberleaf Scamp Thift 1
+    { 1325.679932f, 3471.875244f, 112.65136f }, // Amberleaf Scamp Thift 2
     { 1251.993408f, 3560.332275f, 101.59293f }  // Amberleaf Scamp Thift 3
 };
 
@@ -3112,14 +2259,18 @@ public:
 
         uint64 m_checkTimer;
 
-        void Reset()
+        void Reset() override
         {
             m_checkTimer = 2000;
+            events.Reset();
+        }
 
+        void JustEngagedWith(Unit* /*who*/) override
+        {
             events.ScheduleEvent(EVENT_SUMMON_SCAMP_1, 4s);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(const uint32 diff) override
         {
             events.Update(diff);
 
@@ -3139,6 +2290,7 @@ public:
                         me->ToUnit()->UpdateObjectVisibility(true);
                     }
                 }
+
                 m_checkTimer = 2500;
             }
             else
@@ -3151,14 +2303,19 @@ public:
                 switch (eventId)
                 {
                 case EVENT_SUMMON_SCAMP_1:
-                    if (thiftScamp1 = me->SummonCreature(NPC_AMBERLEAF_SCAMP_, ThiftScampPoints[0], TEMPSUMMON_TIMED_DESPAWN, 15s))
+                    if (auto _thiftScamp1 = me->SummonCreature(NPC_AMBERLEAF_SCAMP_, ThiftScampPoints[0], TEMPSUMMON_TIMED_DESPAWN, 15s))
+                    {
+                        thiftScamp1 = _thiftScamp1;
                         PhasingHandler::AddPhase(thiftScamp1, 65504, true);
+                    }
+
                     events.ScheduleEvent(EVENT_KEG_CARRY_1, Seconds(irand(2, 4)));
                     events.CancelEvent(EVENT_SUMMON_SCAMP_1);
                     break;
                 case EVENT_KEG_CARRY_1:
                     if (thiftScamp1)
                         thiftScamp1->CastSpell(thiftScamp1, SPELL_KEG_CARRY, true);
+
                     events.ScheduleEvent(EVENT_RUNAWAY_1, Seconds(irand(4, 6)));
                     events.CancelEvent(EVENT_KEG_CARRY_1);
                     break;
@@ -3169,38 +2326,50 @@ public:
                     events.CancelEvent(EVENT_RUNAWAY_1);
                     break;
                 case EVENT_SUMMON_SCAMP_2:
-                    if (thiftScamp2 = me->SummonCreature(NPC_AMBERLEAF_SCAMP_, ThiftScampPoints[1], TEMPSUMMON_TIMED_DESPAWN, 15s))
+                    if (auto _thiftScamp2 = me->SummonCreature(NPC_AMBERLEAF_SCAMP_, ThiftScampPoints[1], TEMPSUMMON_TIMED_DESPAWN, 15s))
+                    {
+                        thiftScamp2 = _thiftScamp2;
                         PhasingHandler::AddPhase(thiftScamp2, 65504, true);
+                    }
+
                     events.ScheduleEvent(EVENT_KEG_CARRY_2, Seconds(irand(2, 4)));
                     events.CancelEvent(EVENT_SUMMON_SCAMP_2);
                     break;
                 case EVENT_KEG_CARRY_2:
                     if (thiftScamp2)
                         thiftScamp2->CastSpell(thiftScamp2, SPELL_KEG_CARRY, true);
+
                     events.ScheduleEvent(EVENT_RUNAWAY_2, Seconds(irand(4, 6)));
                     events.CancelEvent(EVENT_KEG_CARRY_2);
                     break;
                 case EVENT_RUNAWAY_2:
                     if (thiftScamp2)
                         thiftScamp2->GetMotionMaster()->MovePoint(0, ThiftEscapePoints[1]);
+
                     events.ScheduleEvent(EVENT_SUMMON_SCAMP_3, Seconds(irand(2, 6)));
                     events.CancelEvent(EVENT_RUNAWAY_2);
                     break;
                 case EVENT_SUMMON_SCAMP_3:
-                    if (thiftScamp3 = me->SummonCreature(NPC_AMBERLEAF_SCAMP_, ThiftScampPoints[2], TEMPSUMMON_TIMED_DESPAWN, 15s))
+                    if (auto _thiftScamp3 = me->SummonCreature(NPC_AMBERLEAF_SCAMP_, ThiftScampPoints[2], TEMPSUMMON_TIMED_DESPAWN, 15s))
+                    {
+                        thiftScamp3 = _thiftScamp3;
                         PhasingHandler::AddPhase(thiftScamp3, 65504, true);
+                    }
+
                     events.ScheduleEvent(EVENT_KEG_CARRY_3, Seconds(irand(2, 4)));
                     events.CancelEvent(EVENT_SUMMON_SCAMP_3);
                     break;
                 case EVENT_KEG_CARRY_3:
                     if (thiftScamp3)
                         thiftScamp3->CastSpell(thiftScamp3, SPELL_KEG_CARRY, true);
+
                     events.ScheduleEvent(EVENT_RUNAWAY_3, Seconds(irand(4, 6)));
                     events.CancelEvent(EVENT_KEG_CARRY_3);
                     break;
                 case EVENT_RUNAWAY_3:
                     if (thiftScamp3)
                         thiftScamp3->GetMotionMaster()->MovePoint(0, ThiftEscapePoints[2]);
+
                     events.ScheduleEvent(EVENT_SUMMON_SCAMP_1, Seconds(irand(2, 6)));
                     events.CancelEvent(EVENT_RUNAWAY_3);
                     break;
@@ -3257,10 +2426,10 @@ enum eEventsMinDimwind
 Position const EscapePoints[] =
 {
     { 1462.280762f, 3571.749268f, 87.852112f }, // Amberleaf Scamp 1
-    { 1412.113770f, 3581.308594f, 89.331223f }, // Amberleaf Scamp 2 
+    { 1412.113770f, 3581.308594f, 89.331223f }, // Amberleaf Scamp 2
     { 1390.180664f, 3581.708008f, 91.498085f }, // Amberleaf Scamp 3
-    { 1371.005249f, 3575.204102f, 91.947105f }, // Amberleaf Scamp 4 
-    { 1374.989258f, 3539.136230f, 93.007309f }, // Amberleaf Scamp 5 
+    { 1371.005249f, 3575.204102f, 91.947105f }, // Amberleaf Scamp 4
+    { 1374.989258f, 3539.136230f, 93.007309f }, // Amberleaf Scamp 5
 };
 
 // Min Dimwind summon WayPoints
@@ -3487,11 +2656,11 @@ enum eMiscMinDimwind
 // Amberleaf Scamp temporaly summoned positions, this positions are constants, not randomly created.
 Position const AmberleafScampPoints[] =
 {
-    { 1418.814941f, 3538.107422f, 85.971985f, 4.17430f }, // Amberleaf Scamp 1 
-    { 1413.725342f, 3542.623047f, 87.532526f, 4.92588f }, // Amberleaf Scamp 2  
-    { 1411.864380f, 3540.173340f, 87.579727f, 5.02405f }, // Amberleaf Scamp 3 
-    { 1408.024048f, 3539.550049f, 87.931252f, 6.01367f }, // Amberleaf Scamp 4 
-    { 1408.695435f, 3534.402100f, 86.883087f, 5.99031f }, // Amberleaf Scamp 5  
+    { 1418.814941f, 3538.107422f, 85.971985f, 4.17430f }, // Amberleaf Scamp 1
+    { 1413.725342f, 3542.623047f, 87.532526f, 4.92588f }, // Amberleaf Scamp 2
+    { 1411.864380f, 3540.173340f, 87.579727f, 5.02405f }, // Amberleaf Scamp 3
+    { 1408.024048f, 3539.550049f, 87.931252f, 6.01367f }, // Amberleaf Scamp 4
+    { 1408.695435f, 3534.402100f, 86.883087f, 5.99031f }, // Amberleaf Scamp 5
 };
 
 class mob_min_dimwind : public CreatureScript
@@ -3717,7 +2886,7 @@ private:
                         player->PrepareQuestMenu(player->GetGUID());
                     }*/
               if (player->GetQuestStatus(QUEST_SHU_THE_SPIRIT_OF_WATER) == QUEST_STATUS_REWARDED
-                  && !player->HasQuest(QUEST_THE_SOURCE_OF_OUR_LIVELIHOOD) 
+                  && !player->HasQuest(QUEST_THE_SOURCE_OF_OUR_LIVELIHOOD)
                   && !player->HasQuest(QUEST_A_NEW_FRIEND))
                 if (!quest_accept)
                 {
@@ -3752,8 +2921,6 @@ private:
     }
 };
 
-
-
 void AddSC_the_wandering_isle()
 {
     RegisterSpellScript(spell_summon_troublemaker);
@@ -3762,10 +2929,6 @@ void AddSC_the_wandering_isle()
     RegisterSpellScript(spell_summon_living_air);
     RegisterSpellScript(spell_fan_the_flames);
     RegisterSpellScript(spell_rock_jump_a);
-    RegisterSpellScript(spell_jump_to_front_right);
-    RegisterSpellScript(spell_jump_to_front_left);
-    RegisterSpellScript(spell_jump_to_back_right);
-    RegisterSpellScript(spell_jump_to_back_left);
     RegisterSpellScript(spell_summon_water_spout);
     RegisterSpellScript(spell_water_spout_quest_credit);
     RegisterSpellScript(spell_aysa_congrats_timer);
@@ -3780,7 +2943,7 @@ void AddSC_the_wandering_isle()
     RegisterSpellScript(spell_healing_shenzin_su);
     RegisterSpellScript(spell_turtle_healed_phase_timer);
     RegisterSpellScript(spell_ally_horde_argument);
-    RegisterSpellScript(spell_pandaren_faction_choice);
+    new spell_pandaren_faction_choice();
     RegisterSpellScript(spell_faction_choice_trigger);
     RegisterSpellScript(spell_balloon_exit_timer);
 
@@ -3789,31 +2952,19 @@ void AddSC_the_wandering_isle()
     new at_singing_pools_training_bell();
     new at_temple_of_five_dawns_summon_zhaoren();
     new at_wreck_of_the_skyseeker_injured_sailor();
-    new areatrigger_healing_sphere();
-
     new q_the_way_of_the_tushui();
     new q_only_the_worthy_shall_pass();
     new q_passion_of_shenzin_su();
-    new q_disciples_challenge();
-
-    new npc_balance_pole();
-    new npc_tushui_monk_on_pole();
-    new npc_shu_playing();
     new npc_ji_firepaw_escort();
     new npc_ruk_ruk();
     new npc_ruk_ruk_rocket();
-    new npc_zhaoren;
-    new npc_ji_firepaw();
     new npc_shen_zin_shu_bunny();
     new npc_aysa_vordraka_fight();
     new npc_vordraka();
     new npc_healers_active_bunny();
-    new mob_tushui_trainee();
     new mob_master_shang_xi();
     new boss_jaomin_ro();
-
     new go_break_gong();
-
     new mob_min_dimwind_final();
     new mob_min_dimwind_summon();
     new mob_min_dimwind();
@@ -3821,4 +2972,3 @@ void AddSC_the_wandering_isle()
     RegisterCreatureAI(npc_wu_song_village_57132_65472);
     RegisterCreatureAI(npc_aysa_cloudsinger_54975);
 }
-

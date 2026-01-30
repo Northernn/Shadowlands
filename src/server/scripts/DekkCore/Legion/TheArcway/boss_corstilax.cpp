@@ -304,8 +304,6 @@ class spell_corstilax_cleansing_force : public SpellScriptLoader
 
         class spell_corstilax_cleansing_force_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_corstilax_cleansing_force_AuraScript);
-
             uint8 stack = 0;
             uint16 m_Timer = 2000;
 

@@ -55,72 +55,6 @@
 #define GOSSIP_ACCEPT_DUEL "Let''s duel"
 #define EVENT_SPECIAL 20
 
-class scene_azsuna_runes : public SceneScript
-{
-public:
-    scene_azsuna_runes() : SceneScript("scene_azsuna_runes") { }
-
-    // Called when a player receive trigger from scene
-    void OnSceneTriggerEvent(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* sceneTemplate, std::string const& triggerName) override
-    {
-        if (triggerName == "Credit")
-        {
-            uint32 killCreditEntry = 0;
-
-            switch (sceneTemplate->ScenePackageId)
-            {
-            case 1378: //Azsuna - Academy - Runes A(Arcane, Quest) - PRK
-            case 1695: //Azsuna - Academy - Runes D(Arcane: Sophomore) - PRK
-            case 1696: //Azsuna - Academy - Runes E(Arcane: Junior) - PRK
-            case 1697: //Azsuna - Academy - Runes F(Arcane: Senior) - PRK
-                killCreditEntry = 89655;
-                break;
-            case 1379: //Azsuna - Academy - Runes B(Fire, Quest) - PRK
-            case 1698: //Azsuna - Academy - Runes G(Fire: Freshman) - PRK
-            case 1699: //Azsuna - Academy - Runes H(Fire: Junior) - PRK
-            case 1700: //Azsuna - Academy - Runes I(Fire: Senior) - PRK
-                killCreditEntry = 89656;
-                break;
-            case 1380: //Azsuna - Academy - Runes C(Frost, Quest) - PRK
-            case 1701: //Azsuna - Academy - Runes J(Frost: Freshman) - PRK
-            case 1702: //Azsuna - Academy - Runes K(Frost: Junior) - PRK
-            case 1703: //Azsuna - Academy - Runes L(Frost: Senior) - PRK
-                killCreditEntry = 89657;
-                break;
-            }
-
-            if (killCreditEntry)
-                player->KilledMonsterCredit(killCreditEntry);
-        }
-    }
-
-    void OnSceneComplete(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* sceneTemplate) override
-    {
-        uint32 nextSceneSpellId = 0;
-
-        switch (sceneTemplate->ScenePackageId)
-        {
-        case 1378: nextSceneSpellId = 223283; break; //Azsuna - Academy - Runes A(Arcane, Quest) - PRK, next : fire quest
-        case 1379: nextSceneSpellId = 223287; break; //Azsuna - Academy - Runes B(Fire, Quest) - PRK, next : frost quest
-        default:
-        case 1695: //Azsuna - Academy - Runes D(Arcane: Sophomore) - PRK
-        case 1696: //Azsuna - Academy - Runes E(Arcane: Junior) - PRK
-        case 1697: //Azsuna - Academy - Runes F(Arcane: Senior) - PRK
-        case 1698: //Azsuna - Academy - Runes G(Fire: Freshman) - PRK
-        case 1699: //Azsuna - Academy - Runes H(Fire: Junior) - PRK
-        case 1700: //Azsuna - Academy - Runes I(Fire: Senior) - PRK
-        case 1380: //Azsuna - Academy - Runes C(Frost, Quest) - PRK
-        case 1701: //Azsuna - Academy - Runes J(Frost: Freshman) - PRK
-        case 1702: //Azsuna - Academy - Runes K(Frost: Junior) - PRK
-        case 1703: //Azsuna - Academy - Runes L(Frost: Senior) - PRK
-            break;
-        }
-
-        if (nextSceneSpellId)
-            player->CastSpell(player, nextSceneSpellId, true);
-    }
-};
-
 // 93326
 class npc_archmage_khadgar_93337 : public CreatureScript
 {
@@ -639,8 +573,6 @@ public:
 
     class spell_gen_radiant_ley_crystal_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_gen_radiant_ley_crystal_SpellScript);
-
         SpellCastResult CheckRequirement()
         {
             if (Unit* caster = GetCaster())
@@ -693,8 +625,6 @@ public:
 
     class spell_word_of_versatility_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_word_of_versatility_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())
@@ -785,8 +715,6 @@ public:
 // 210543 - Rally the Nightwatchers
 class spell_rally_the_nightwatchers : public SpellScript
 {
-    PrepareSpellScript(spell_rally_the_nightwatchers);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
 
@@ -1170,8 +1098,6 @@ public:
 //212782
 class spell_Wand_Practice : public SpellScript
 {
-    PrepareSpellScript(spell_Wand_Practice);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
 
@@ -1387,8 +1313,6 @@ public:
 // 211441 - drop-stone
 class spell_drop_stone : public SpellScript
 {
-    PrepareSpellScript(spell_drop_stone);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         if (Unit* caster = GetCaster())
@@ -1479,57 +1403,6 @@ public:
     CreatureAI* GetAI(Creature* creature) const override
     {
         return new npc_lucid_strength_89939AI(creature);
-    }
-};
-
-struct mana_drained_90880 : public ScriptedAI
-{
-    mana_drained_90880(Creature* creature) : ScriptedAI(creature) { me->SetAIAnimKitId(0); }
-
-    void OnSpellClick(Unit* clicker, bool /*result*/)
-    {
-        if (Player* player = clicker->ToPlayer())
-        {
-            if (player->GetQuestStatus(42271) == QUEST_STATUS_INCOMPLETE)
-            {
-                if (player->GetQuestObjectiveProgress(42271, 3))
-
-                {
-                    me->SetAIAnimKitId(4061);
-                    player->KilledMonsterCredit(90880);
-                    me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_STAND);
-                    me->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE);
-                }
-            }
-        }
-    }
-    void MoveInLineOfSight(Unit* who) override
-    {
-        if (Player* player = who->ToPlayer())
-        {
-            if (player->GetQuestStatus(42271) == QUEST_STATUS_INCOMPLETE)
-            {
-                if (player->IsInDist(me, 15.0f))
-                {
-                    if (player->GetQuestObjectiveProgress(42271, 4))
-                    {
-                        if (!me->FindNearestCreature(900880, 70.0f))
-                        {
-                            {
-                                me->SummonCreature(900880, Position(642.059f, 6607.97f, 60.1522f, 1.73476f), TEMPSUMMON_MANUAL_DESPAWN);
-                            }
-                        }
-                    }
-                }
-            }
-            if (player->GetQuestStatus(42271) == QUEST_STATUS_INCOMPLETE)
-            {
-                if (player->GetQuestObjectiveProgress(42271, 3))
-                {
-                    me->SetNpcFlag(UNIT_NPC_FLAG_SPELLCLICK);
-                }
-            }
-        }
     }
 };
 
@@ -2083,48 +1956,7 @@ public:
 
     };
 };
-/*
-// 119454 119483
-class npc_invasion_azsuna_misc : public CreatureScript
-{
-public:
-    npc_invasion_azsuna_misc() : CreatureScript("npc_invasion_azsuna_misc") { }
 
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_invasion_azsuna_miscAI(creature);
-    }
-
-    struct npc_invasion_azsuna_miscAI : ScriptedAI
-    {
-        npc_invasion_azsuna_miscAI(Creature* creature) : ScriptedAI(creature) {}
-
-      /*  void OnSpellClick(Unit* clicker) //override
-        {
-            if (!clicker->IsPlayer())
-                return;
-
-            me->RemoveUnitFlag(UnitFlags(UNIT_NPC_FLAG_SPELLCLICK));
-
-            uint32 criteria = 0;
-
-            switch (me->GetEntry())
-            {
-            case 119483:
-                criteria = 56889;
-                break;
-            case 119454:
-                criteria = 56895;
-                break;
-            }
-            if (criteria)
-               // clicker->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 56889);
-            me->DespawnOrUnsummon(100ms);
-
-     //   }
-   // };
-};
-*/
 // 119456 119459
 class npc_invasion_azsuna_dragons : public CreatureScript
 {
@@ -2146,14 +1978,14 @@ public:
             me->SetUnitFlag(UnitFlags(UNIT_NPC_FLAG_SPELLCLICK));
         }
 
-       /* void OnSpellClick(Unit* clicker) //override
+        void OnSpellClick(Unit* clicker, bool /*result*/) override
         {
             if (me->GetEntry() == 119459)
            //     clicker->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 56885);
           //  else
                 clicker->CastSpell(me, 52391, true); //Ride Veh
         }
-        */
+       
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply) override
         {
            // SetFlyMode(true);
@@ -2263,10 +2095,8 @@ public:
 void AddSC_azsuna()
 {
     new npc_invasion_azsuna_bes();
-    //new npc_invasion_azsuna_misc();
     new npc_invasion_azsuna_dragons();
     new npc_invasion_azsuna_acstris();
-    new scene_azsuna_runes();
     new questnpc_soul_gem();
     RegisterCreatureAI(questnpc_mana_drained_whelpling);
     new npc_prince_farondis();
@@ -2297,7 +2127,6 @@ void AddSC_azsuna()
     RegisterSpellScript(spell_drop_stone);
     new npc_agapant_90543();
     new npc_lucid_strength_89939();
-    RegisterCreatureAI(mana_drained_90880);
     RegisterCreatureAI(mana_drained_900880);
     RegisterCreatureAI(npc_quest_1970196);
     new npc_demon_90402();

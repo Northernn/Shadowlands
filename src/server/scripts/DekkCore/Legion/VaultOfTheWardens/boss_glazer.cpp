@@ -415,8 +415,6 @@ public:
 
     class spell_glazer_beam_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_glazer_beam_SpellScript);
-
         void HandleOnHit()
         {
             if (!GetCaster() || !GetHitUnit() || GetCaster()->GetTypeId() != TYPEID_PLAYER)
@@ -445,8 +443,6 @@ public:
 
     class spell_glazer_radiation_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_glazer_radiation_SpellScript);
-
         uint8 stack = 0;
         int32 damage = 0;
 

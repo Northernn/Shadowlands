@@ -54,17 +54,28 @@ void UnitAI::OnCharmed(bool isNew)
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
 {
     if (victim && me->Attack(victim, false))
-        me->GetMotionMaster()->MoveChase(victim, dist);
+        me->GetMotionMaster()->MoveChase(victim, ChaseRange(dist), {}, GetBaseAttackSpell());
 }
 
 void UnitAI::DoMeleeAttackIfReady()
 {
-    if (me->HasUnitState(UNIT_STATE_CASTING))
+    if (me->IsCreature() && !me->ToCreature()->CanMelee())
         return;
+
+    if (me->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Spell* channeledSpell = me->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        if (!channeledSpell || !channeledSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_ALLOW_ACTIONS_DURING_CHANNEL))
+            return;
+    }
 
     Unit* victim = me->GetVictim();
 
     if (!me->IsWithinMeleeRange(victim))
+        return;
+
+    // Check that the victim is in front of the unit
+    if (!me->HasInArc(2 * float(M_PI) / 3, victim))
         return;
 
     //Make sure our attack is ready and we aren't currently casting before checking distance
@@ -510,7 +521,7 @@ void UnitAI::DoCastRandom(uint32 spellId, float dist, bool triggered, int32 aura
     if (me->HasUnitState(UNIT_STATE_CASTING) && !triggered)
         return;
 
-    if (Unit* target = SelectTarget(SelectTargetMethod::Random, position, dist, true, aura))
+    if (Unit* target = SelectTarget(SelectTargetMethod::Random, position, dist, true, true, aura))
         me->CastSpell(target, spellId, triggered);
 }
 
@@ -527,7 +538,7 @@ void UnitAI::DoCastRandomFriendlyCreature(uint32 spellId, float dist, bool trigg
     }
 }
 
-void UnitAI::DoCastAI(uint32 spellId)
+void UnitAI::DoCastAI(uint32 /*spellId*/)
 {
 }
 // < DekkCore

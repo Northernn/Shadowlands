@@ -358,8 +358,6 @@ class spell_shadow_pan_flare: public SpellScriptLoader
 
         class spell_shadow_pan_flare_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_shadow_pan_flare_SpellScript);
-
             void HandleOnHit()
             {
                 if (Unit* caster = GetCaster()->ToPlayer())

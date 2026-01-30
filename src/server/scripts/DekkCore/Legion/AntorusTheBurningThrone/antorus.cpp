@@ -239,8 +239,6 @@ public:
 // 252621
 class spell_atbt_bound_by_fel : public AuraScript
 {
-    PrepareAuraScript(spell_atbt_bound_by_fel);
-
     ObjectGuid second{};
 
     void OnTick(AuraEffect const* /*aurEff*/)
@@ -294,8 +292,6 @@ class spell_atbt_bound_by_fel : public AuraScript
 // 253600
 class spell_atbt_soulburn : public AuraScript
 {
-    PrepareAuraScript(spell_atbt_soulburn);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Unit* target = GetTarget();
@@ -327,8 +323,6 @@ class spell_atbt_soulburn : public AuraScript
 // 252740
 class spell_atbt_anihilation : public SpellScript
 {
-    PrepareSpellScript(spell_atbt_anihilation);
-
     bool check = false;
 
     void HandleAfterCast()
@@ -359,8 +353,6 @@ public:
 
     class spell_vantus_rune_antorus_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_vantus_rune_antorus_AuraScript);
-
         uint16 checkOnProc;
         uint16 checkOnRemove;
 
@@ -555,8 +547,6 @@ public:
 
     class spell_vantus_rune_antorus_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_vantus_rune_antorus_SpellScript);
-
         SpellCastResult CheckCast()
         {
             if (auto player = GetCaster()->ToPlayer())
@@ -581,8 +571,6 @@ public:
 
 class spell_vantus_rune_antorus_choose : public SpellScript
 {
-    PrepareSpellScript(spell_vantus_rune_antorus_choose);
-
     SpellCastResult CheckCast()
     {
         if (auto player = GetCaster()->ToPlayer())

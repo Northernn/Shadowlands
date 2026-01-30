@@ -23,6 +23,9 @@
 #include "Chat.h"
 #include "SpellAuraEffects.h"
 #include "SpellMgr.h"
+#include "MotionMaster.h"
+#include "TemporarySummon.h"
+#include "Hoff.h" // < Hoff
 
 uint32 BrawlersBoss[MAX_BRAWLERS_RANK][BOSS_PER_RANK] =
 {
@@ -52,16 +55,33 @@ uint32 BrawlersFightAmbiance[MAX_BRAWLERS_GUILDS] =
     131338, 136329
 };
 
+enum EBrawlerAudienceReaction
+{
+    BRAWLER_AUDIENCE_REACTION_POSITIVE,
+    BRAWLER_AUDIENCE_REACTION_NEGATIVE,
+    BRAWLER_AUDIENCE_REACTION_WIN,
+    BRAWLER_AUDIENCE_REACTION_LOSS
+};
+
+uint32 BrawlerAudienceReaction[4][MAX_BRAWLERS_GUILDS] =
+{
+    {34757, 34761}, // BRAWLER_REACTION_POSITIVE
+    {34756, 34760}, // BRAWLER_REACTION_NEGATIVE
+    {34758, 34762}, // BRAWLER_REACTION_WIN
+    {34755, 34759} // BRAWLER_REACTION_LOSS
+};
+
+
 Position const BrawlersTeleportLocations[] =
 {
     {-107.07f, 2500.48f, -49.10f, 3.19f}, // start alliance
     {-88.36f, 2471.78f, -43.11f, 2.08f}, // end alliance
     {2032.42f, -4764.95f, 86.77f, 1.57f}, // start horde
     {1996.72f, -4767.74f, 86.77f, 0.45f},// end horde
-    
+
     {-132.49f, 2499.12f, -49.10f, 0.01f}, // boss alliance
     {2030.56f, -4739.14f, 86.77f, 4.71f}, // boss horde
-    
+
     {-140.43f, 2516.33f, -49.10f, 6.24f}, // SPECIAL: Nibleah A
     {2049.56f, -4734.45f, 86.76f, 4.71f}  // SPECIAL: Nibleah H
 };
@@ -88,7 +108,13 @@ void BrawlersGuild::Update(uint32 diff)
             RemovePlayer(it);
 
     if (!ObjectAccessor::FindPlayer(_current))
+    {
         EndCombat(false);
+    }
+    else
+    {
+        CheckBossState();
+    }
 
     auto needUpdateAura = !_removeList.empty();
 
@@ -179,32 +205,37 @@ void BrawlersGuild::UpdateBrawl(uint32 diff)
             _current = _waitList.front();
             RemovePlayer(_current);
 
-            if (auto player = ObjectAccessor::FindPlayer(_current))
+            if (Player* player = ObjectAccessor::FindPlayer(_current))
             {
                 player->RemoveAura(SPELL_QUEUED_FOR_BRAWL);
-             //CHECK LATER   player->TeleportTo(player->GetMapId(), &BrawlersTeleportLocations[player->GetTeamId() == TEAM_ALLIANCE ? 0 : 2]);
+                player->TeleportTo(player->GetMapId(), BrawlersTeleportLocations[player->GetTeamId() == TEAM_ALLIANCE ? 0 : 2]);
 
-                player->AddDelayedEvent(500, [player]() -> void
-                {
-                    player->CastSpell(player, SPELL_ARENA_TELEPORTATION, true);
-                });
+                player->AddDelayedEvent(25, [player]() -> void
+                    {
+                        player->CastSpell(player, SPELL_ARENA_TELEPORTATION, true);
+                    });
+
+                player->PlayDirectSound(BrawlerAudienceReaction[BRAWLER_AUDIENCE_REACTION_POSITIVE][_ID]);
+
 
                 _prepareCombatTimer.SetCurrent(0);
                 _prepareCombatTimer.SetInterval(6000);
                 SetBrawlState(BRAWL_STATE_PREPARE_COMBAT);
 
-             // if (auto ann = ObjectAccessor::FindCreature(_announcer))
-             //  {
-             //      ann->GetMotionMaster()->Clear();
-             //      ann->GetMotionMaster()->MovePath((player->GetTeamId() == TEAM_ALLIANCE ? 11854502 : 11854503), true);
-             //      uint32 repRank = GetPlayerRank(player) + 1;
-             //      ObjectGuid player_guid = player->GetGUID();
-             //
-             //      ann->AddDelayedEvent(1000, [ann, repRank, player_guid]() -> void
-             //      {
-             //          ann->AI()->Talk(repRank, player_guid);
-             //      });
-             //  }
+                if (auto ann = Hoff::FindMapCreature(m_map, _announcer))
+                {
+                    PlayFightSound(true);
+
+                    ann->GetMotionMaster()->Clear();
+                    ann->GetMotionMaster()->MovePath((player->GetTeamId() == TEAM_ALLIANCE ? 11854504 : 11854503), false);
+                    uint32 repRank = GetPlayerRank(player);
+                    //ObjectGuid player_guid = player->GetGUID();
+
+                    ann->AddDelayedEvent(1000, [ann, repRank, player]() -> void
+                        {
+                            ann->AI()->Talk(repRank, player);
+                        });
+                }
 
             }
         }
@@ -212,11 +243,16 @@ void BrawlersGuild::UpdateBrawl(uint32 diff)
     case BRAWL_STATE_PREPARE_COMBAT:
         if (_prepareCombatTimer.Passed())
         {
-            if (auto player = ObjectAccessor::FindPlayer(_current))
+            if (Player* player = ObjectAccessor::FindPlayer(_current))
             {
-               // if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_ARENA_FORCE_REACTION, DIFFICULTY_NONE))
-                   // if (Aura* aura = Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, player, player))
-                  //      aura->ApplyForTargets();
+                if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_ARENA_FORCE_REACTION, DIFFICULTY_NONE))
+                {
+                    if (Aura* FoundAura = player->GetAura(SPELL_ARENA_FORCE_REACTION))
+                    {
+                        player->RemoveAura(FoundAura);
+                    }
+                    player->AddAura(spellInfo, MAX_EFFECT_MASK, player);
+                }
 
                 if (auto entry = GetBossForPlayer(player))
                 {
@@ -225,16 +261,26 @@ void BrawlersGuild::UpdateBrawl(uint32 diff)
                     if (entry == NPC_NIBBLEH) // hack
                         select_points += 2;
 
-                  // if (auto summon = static_cast<Creature*>(player->SummonCreature(entry, BrawlersTeleportLocations[select_points], TEMPSUMMON_TIMED_DESPAWN, 120s)))
-                  // {
-                  //     _boss = summon->GetGUID();
-                  //     _combatTimer.SetCurrent(0);
-                  //     _combatTimer.SetInterval(120000);
-                  //     SetBrawlState(BRAWL_STATE_COMBAT);
-                  //     PlayFightSound(true, summon->GetEntry());
-                  //     summon->CastSpell(summon, 132633);
-                  //     return;
-                  // }
+                    Position BossPos = BrawlersTeleportLocations[select_points];
+                    if (TempSummon* summon = player->SummonCreature(entry, BossPos.GetPositionX(), BossPos.GetPositionY(), BossPos.GetPositionZ(), BossPos.GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 120s, player->GetGUID()))
+                    {
+                        _boss = summon->GetGUID();
+                        _combatTimer.SetCurrent(0);
+                        _combatTimer.SetInterval(120000);
+                        SetBrawlState(BRAWL_STATE_COMBAT);
+
+                        if (auto ann = Hoff::FindMapCreature(m_map, _announcer))
+                        {
+                            if (summon)
+                            {
+                                ann->AI()->SetData(summon->GetEntry(), 0);
+                            }
+                        }
+
+                        player->PlayDirectSound(BrawlerAudienceReaction[BRAWLER_AUDIENCE_REACTION_POSITIVE][_ID]);
+                        summon->CastSpell(summon, 132633);
+                        return;
+                    }
                 }
             }
             _prepareCombatTimer.SetCurrent(0);
@@ -263,32 +309,71 @@ void BrawlersGuild::UpdateBrawl(uint32 diff)
 
 void BrawlersGuild::EndCombat(bool win, bool time)
 {
-//    PlayFightSound(false);
+    PlayFightSound(false);
 
-    if (auto player = ObjectAccessor::FindPlayer(_current))
+    if (Player* player = ObjectAccessor::FindPlayer(_current))
     {
-        player->AddDelayedEvent(1000, [player]() -> void
+        if (!player->IsAlive())
         {
-         //   player->TeleportTo(player->GetMapId(), &BrawlersTeleportLocations[player->GetTeamId() == TEAM_ALLIANCE ? 1 : 3]);
+            player->CreateCorpse();
+            player->SpawnCorpseBones(false);
 
-            player->AddDelayedEvent(500, [player]() -> void
-            {
-                player->CastSpell(player, SPELL_ARENA_TELEPORTATION, true);
-            });
+            player->TeleportTo(player->GetMapId(), BrawlersTeleportLocations[player->GetTeamId() == TEAM_ALLIANCE ? 1 : 3]);
 
-            player->RemoveAura(SPELL_MOVE_FORWARD);
-            player->RemoveAura(SPELL_ARENA_FORCE_REACTION);
-        });
+            player->AddDelayedEvent(25, [player]() -> void
+                {
+                    player->CastSpell(player, SPELL_ARENA_TELEPORTATION, true);
+                });
+
+            player->AddDelayedEvent(2000, [player]() -> void
+                {
+                    if (!player->IsAlive())
+                    {
+                        player->ResurrectPlayer(1.0f);
+                    }
+
+                    if (Aura* FoundAura = player->GetAura(SPELL_ARENA_FORCE_REACTION))
+                    {
+                        player->RemoveAura(FoundAura);
+                    }
+
+                    if (Aura* FoundAura = player->GetAura(SPELL_MOVE_FORWARD))
+                    {
+                        player->RemoveAura(FoundAura);
+                    }
+                });
+        }
+        else
+        {
+            player->AddDelayedEvent(2000, [player]() -> void
+                {
+                    player->TeleportTo(player->GetMapId(), BrawlersTeleportLocations[player->GetTeamId() == TEAM_ALLIANCE ? 1 : 3]);
+
+                    if (Aura* FoundAura = player->GetAura(SPELL_ARENA_FORCE_REACTION))
+                    {
+                        player->RemoveAura(FoundAura);
+                    }
+
+                    if (Aura* FoundAura = player->GetAura(SPELL_MOVE_FORWARD))
+                    {
+                        player->RemoveAura(FoundAura);
+                    }
+                });
+
+            player->AddDelayedEvent(2025, [player]() -> void
+                {
+                    player->CastSpell(player, SPELL_ARENA_TELEPORTATION, true);
+                });
+        }
 
         _transitionTimer.SetCurrent(0);
         _transitionTimer.SetInterval(5000);
 
-        player->ResurrectPlayer(1.0f);
-        player->SpawnCorpseBones();
-
         if (win)
         {
-           // player->SendPlaySound(BrawlersSound[_ID][VICTORY], true);
+            player->PlayDirectSound(BrawlerAudienceReaction[BRAWLER_AUDIENCE_REACTION_WIN][_ID]);
+
+            player->PlayDirectSound(BrawlersSound[_ID][VICTORY]);
             player->AddItem(92718, 1);
 
             auto rep = player->GetReputation(BrawlersFaction[player->GetTeamId()]) + REPUTATION_PER_RANK;
@@ -333,14 +418,24 @@ void BrawlersGuild::EndCombat(bool win, bool time)
                 if (auto achievementEntry = sAchievementStore.LookupEntry(ACHIEVEMENT_WIN_BRAWL_H))
                     player->CompletedAchievement(achievementEntry);
 
-          //  if (auto ann = ObjectAccessor::FindCreature(_announcer))
-          //      ann->AI()->Talk(9, player->GetGUID());
+            if (auto ann = Hoff::FindMapCreature(m_map, _announcer))
+            {
+                ann->GetMotionMaster()->Clear();
+                ann->GetMotionMaster()->MovePath((player->GetTeamId() == TEAM_ALLIANCE ? 11854502 : 11854503), true);
+                ann->AI()->Talk(YELL_BIZMO_PLAYER_WIN, player);
+            }
         }
         else
         {
-           // player->SendPlaySound(BrawlersSound[_ID][DEFEAT], true);
-           // if (auto ann = ObjectAccessor::FindCreature(_announcer))
-           //     ann->AI()->Talk(10, player->GetGUID());
+            player->PlayDirectSound(BrawlerAudienceReaction[BRAWLER_AUDIENCE_REACTION_LOSS][_ID]);
+            player->PlayDirectSound(BrawlersSound[_ID][DEFEAT]);
+
+            if (auto ann = Hoff::FindMapCreature(m_map, _announcer))
+            {
+                ann->GetMotionMaster()->Clear();
+                ann->GetMotionMaster()->MovePath((player->GetTeamId() == TEAM_ALLIANCE ? 11854502 : 11854503), true);
+                ann->AI()->Talk(YELL_BIZMO_PLAYER_LOSS, player);
+            }
         }
 
         if (time)
@@ -349,22 +444,28 @@ void BrawlersGuild::EndCombat(bool win, bool time)
             player->CastSpell(player, SPELL_EXPLOSION_1, true);
             player->CastSpell(player, SPELL_EXPLOSION_2, true);
             player->CastSpell(player, SPELL_EXPLOSION_3, true);
-            // player->Kill(player);
         }
         player->SaveToDB();
     }
 
     _current.Clear();
 
-  //if (auto cboss = ObjectAccessor::FindCreature(_boss))
-  //{
-  //    cboss->AI()->JustDied(nullptr); // for remove adds, AT and some
-  //
-  //    cboss->DespawnOrUnsummon(1000);
-  //}
+    if (auto cboss = Hoff::FindMapCreature(m_map, _boss))
+    {
+        cboss->AI()->JustDied(nullptr); // for remove adds, AT and some
+
+        cboss->AddDelayedEvent(2000, [cboss]() -> void
+            {
+                cboss->DespawnOrUnsummon();
+            });
+    }
 
     _boss.Clear();
-    SetBrawlState(BRAWL_STATE_TRANSITION);
+
+    if (_brawlState == BRAWL_STATE_COMBAT)
+    {
+        SetBrawlState(BRAWL_STATE_TRANSITION);
+    }
 }
 
 uint32 BrawlersGuild::GetPlayerRank(Player* player)
@@ -397,10 +498,32 @@ uint32 BrawlersGuild::GetBossForPlayer(Player* player)
     return 0;
 }
 
+void BrawlersGuild::CheckBossState()
+{
+    if (Creature* cboss = Hoff::FindMapCreature(m_map, _boss))
+    {
+        if (!cboss->IsAlive())
+        {
+            BossReport(_current, true);
+            return;
+        }
+    }
+    if (Player* CurrentPlayer = ObjectAccessor::FindPlayer(_current))
+    {
+        if (!CurrentPlayer->IsAlive())
+        {
+            BossReport(_current, false);
+            return;
+        }
+    }
+}
+
 void BrawlersGuild::BossReport(ObjectGuid guid, bool win)
 {
-    if (_current == guid)
+    if (_current == guid && _brawlState == BRAWL_STATE_COMBAT)
+    {
         EndCombat(win);
+    }
 }
 
 bool BrawlersGuild::IsPlayerInBrawl(Player* player)
@@ -421,20 +544,18 @@ void BrawlersGuild::SetAnnouncer(ObjectGuid guid)
     _announcer = guid;
 }
 
-//void BrawlersGuild::PlayFightSound(bool play, uint32 boss)
-//{
-//    if (auto ann = ObjectAccessor::FindCreature(_announcer))
-//    {
-//        if (play)
-//        {
-//            ann->CastSpell(ann, BrawlersFightAmbiance[_ID], true);
-//            if (boss)
-//                ann->AI()->SetData(boss, 0);
-//        }
-//        else
-//            ann->RemoveAura(BrawlersFightAmbiance[_ID]);
-//    }
-//}
+void BrawlersGuild::PlayFightSound(bool play)
+{
+    if (auto ann = Hoff::FindMapCreature(m_map, _announcer))
+    {
+        if (play)
+        {
+            ann->CastSpell(ann, BrawlersFightAmbiance[_ID], true);
+        }
+        else
+            ann->RemoveAura(BrawlersFightAmbiance[_ID]);
+    }
+}
 
 uint32 BrawlersGuild::GetPlayerPosition(Player* player)
 {

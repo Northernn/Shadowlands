@@ -32,6 +32,9 @@
 #include "WorldStateMgr.h"
 #include <boost/dynamic_bitset.hpp>
 #include <numeric>
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 MapManager::MapManager()
     : _freeInstanceIds(std::make_unique<InstanceIds>()), _nextInstanceId(0), _scheduledScripts(0)
@@ -47,6 +50,17 @@ void MapManager::Initialize()
     Map::InitStateMachine();
 
     int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
+
+#if ELUNA
+    if (num_threads > 1)
+    {
+        // Force 1 thread for Eluna as lua is single threaded. By default thread count is 1
+        // This should allow us not to use mutex locks
+        TC_LOG_ERROR("maps", "Map update threads set to %i, when Eluna only allows 1, changing to 1", num_threads);
+        num_threads = 4;
+    }
+#endif
+
     // Start mtmaps if needed.
     if (num_threads > 0)
         m_updater.activate(num_threads);
@@ -87,15 +101,15 @@ InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, Instanc
     MapEntry const* entry = sMapStore.LookupEntry(mapId);
     if (!entry)
     {
-        TC_LOG_ERROR("maps", "CreateInstance: no entry for map %d", mapId);
+        TC_LOG_ERROR("maps", "CreateInstance: no entry for map {}", mapId);
         ABORT();
     }
 
     // some instances only have one difficulty
     sDB2Manager.GetDownscaledMapDifficultyData(mapId, difficulty);
 
-    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %smap instance %d for %d created with difficulty %s",
-        instanceLock && instanceLock->GetInstanceId() ? "" : "new ", instanceId, mapId, sDifficultyStore.AssertEntry(difficulty)->Name[sWorld->GetDefaultDbcLocale()]);
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: {}map instance {} for {} created with difficulty {}",
+        instanceLock && instanceLock->IsNew() ? "" : "new ", instanceId, mapId, sDifficultyStore.AssertEntry(difficulty)->Name[sWorld->GetDefaultDbcLocale()]);
 
     InstanceMap* map = new InstanceMap(mapId, i_gridCleanUpDelay, instanceId, difficulty, team, instanceLock);
     ASSERT(map->IsDungeon());
@@ -106,7 +120,7 @@ InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, Instanc
         map->TrySetOwningGroup(group);
 
     map->CreateInstanceData();
-    map->SetInstanceScenario(sScenarioMgr->CreateInstanceScenario(map, team));
+    map->SetInstanceScenario(sScenarioMgr->CreateInstanceScenario(map, team, nullptr));
 
     if (sWorld->getBoolConfig(CONFIG_INSTANCEMAP_LOAD_GRIDS))
         map->LoadAllCells();
@@ -116,7 +130,7 @@ InstanceMap* MapManager::CreateInstance(uint32 mapId, uint32 instanceId, Instanc
 
 BattlegroundMap* MapManager::CreateBattleground(uint32 mapId, uint32 instanceId, Battleground* bg)
 {
-    TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg %d for %d created.", instanceId, mapId);
+    TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg {} for {} created.", instanceId, mapId);
 
     BattlegroundMap* map = new BattlegroundMap(mapId, i_gridCleanUpDelay, instanceId, DIFFICULTY_NONE);
     ASSERT(map->IsBattlegroundOrArena());
@@ -154,7 +168,7 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player)
     if (entry->IsBattlegroundOrArena())
     {
         // instantiate or find existing bg map for player
-         // the instance id is set in battlegroundid
+        // the instance id is set in battlegroundid
         newInstanceId = player->GetBattlegroundId();
         if (!newInstanceId)
             return nullptr;
@@ -219,7 +233,6 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player)
                 player->SetRecentInstance(mapId, newInstanceId);
         }
     }
-
     else if (entry->IsGarrison())
     {
         newInstanceId = player->GetGUID().GetCounter();
@@ -242,6 +255,12 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player)
         i_maps[{ map->GetId(), map->GetInstanceId() }] = map;
 
     return map;
+}
+
+Map* MapManager::CreateBaseMap(uint32 id)
+{
+// TODO
+    return nullptr;
 }
 
 Map* MapManager::FindMap(uint32 mapId, uint32 instanceId) const
@@ -439,8 +458,11 @@ void MapManager::FreeInstanceId(uint32 instanceId)
     // If freed instance id is lower than the next id available for new instances, use the freed one instead
     _nextInstanceId = std::min(instanceId, _nextInstanceId);
     _freeInstanceIds->set(instanceId, true);
-}
 
+#ifdef ELUNA
+    sEluna->FreeInstanceId(instanceId);
+#endif
+}
 
 // hack to allow conditions to access what faction owns the map (these worldstates should not be set on these maps)
 class SplitByFactionMapScript : public WorldMapScript
@@ -461,5 +483,5 @@ void MapManager::AddSC_BuiltInScripts()
 {
     for (MapEntry const* mapEntry : sMapStore)
         if (mapEntry->IsWorldMap() && mapEntry->IsSplitByFaction())
-            new SplitByFactionMapScript(Trinity::StringFormat("world_map_set_faction_worldstates_%u", mapEntry->ID).c_str(), mapEntry->ID);
+            new SplitByFactionMapScript(Trinity::StringFormat("world_map_set_faction_worldstates_{}", mapEntry->ID).c_str(), mapEntry->ID);
 }

@@ -59,7 +59,7 @@ uint32 DamageEventMap::OnDamageTaken(uint32 damageTaken)
     {
         if (_phase && (itr->second & PHASE_MASK) && !((itr->second >> 48) & _phase))
             itr = _eventMap.erase(itr);
-        else if (_target->HealthWillBeBelowPctDamaged(itr->first, damageTaken))
+        else if (_target->HealthBelowPctDamaged(itr->first, damageTaken))
         {
             uint32 eventId = (itr->second & EVENT_MASK);
             _lastEvent = itr->second; // include phase/group

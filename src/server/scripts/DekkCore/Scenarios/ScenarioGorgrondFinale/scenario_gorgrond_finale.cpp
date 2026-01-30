@@ -446,8 +446,6 @@ private:
 //172812 
 class spell_rune_of_earth_172812 : public SpellScript
 {
-    PrepareSpellScript(spell_rune_of_earth_172812);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         if (!GetCaster())

@@ -22,6 +22,15 @@
 #include "InstanceScript.h"
 #include "Map.h"
 
+static constexpr DungeonEncounterData Encounters[] =
+{
+    { DATA_BLASTMASTER_EVENT, { { 379 } } },
+    { DATA_VICIOUS_FALLOUT  , { { 378 } } },
+    { DATA_ELECTROCUTIONER  , { { 380 } } },
+    { DATA_CROWD_PUMMELER   , { { 381 } } },
+    { DATA_THERMAPLUGG      , { { 382 } } },
+};
+
 class instance_gnomeregan : public InstanceMapScript
 {
 public:
@@ -38,6 +47,7 @@ public:
         {
             SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
+            LoadDungeonEncounterData(Encounters);
         }
 
         ObjectGuid uiCaveInLeftGUID;
@@ -49,9 +59,9 @@ public:
         {
             switch (creature->GetEntry())
             {
-                case NPC_BLASTMASTER_EMI_SHORTFUSE:
-                    uiBlastmasterEmiShortfuseGUID = creature->GetGUID();
-                    break;
+            case NPC_BLASTMASTER_EMI_SHORTFUSE:
+                uiBlastmasterEmiShortfuseGUID = creature->GetGUID();
+                break;
             }
         }
 
@@ -59,12 +69,12 @@ public:
         {
             switch (go->GetEntry())
             {
-                case GO_CAVE_IN_LEFT:
-                    uiCaveInLeftGUID = go->GetGUID();
-                    break;
-                case GO_CAVE_IN_RIGHT:
-                    uiCaveInRightGUID = go->GetGUID();
-                    break;
+            case GO_CAVE_IN_LEFT:
+                uiCaveInLeftGUID = go->GetGUID();
+                break;
+            case GO_CAVE_IN_RIGHT:
+                uiCaveInRightGUID = go->GetGUID();
+                break;
             }
         }
 
@@ -74,18 +84,18 @@ public:
             if (creature)
                 switch (creature->GetEntry())
                 {
-                    case NPC_VICIOUS_FALLOUT:
-                        SetBossState(DATA_VICIOUS_FALLOUT, DONE);
-                        break;
-                    case NPC_ELECTROCUTIONER:
-                        SetBossState(DATA_ELECTROCUTIONER, DONE);
-                        break;
-                    case NPC_CROWD_PUMMELER:
-                        SetBossState(DATA_CROWD_PUMMELER, DONE);
-                        break;
-                    case NPC_MEKGINEER:
-                        SetBossState(DATA_THERMAPLUGG, DONE);
-                        break;
+                case NPC_VICIOUS_FALLOUT:
+                    SetBossState(DATA_VICIOUS_FALLOUT, DONE);
+                    break;
+                case NPC_ELECTROCUTIONER:
+                    SetBossState(DATA_ELECTROCUTIONER, DONE);
+                    break;
+                case NPC_CROWD_PUMMELER:
+                    SetBossState(DATA_CROWD_PUMMELER, DONE);
+                    break;
+                case NPC_MEKGINEER:
+                    SetBossState(DATA_THERMAPLUGG, DONE);
+                    break;
                 }
         }
 
@@ -93,9 +103,9 @@ public:
         {
             switch (uiType)
             {
-                case DATA_GO_CAVE_IN_LEFT:              return uiCaveInLeftGUID;
-                case DATA_GO_CAVE_IN_RIGHT:             return uiCaveInRightGUID;
-                case DATA_NPC_BASTMASTER_EMI_SHORTFUSE: return uiBlastmasterEmiShortfuseGUID;
+            case DATA_GO_CAVE_IN_LEFT:              return uiCaveInLeftGUID;
+            case DATA_GO_CAVE_IN_RIGHT:             return uiCaveInRightGUID;
+            case DATA_NPC_BASTMASTER_EMI_SHORTFUSE: return uiBlastmasterEmiShortfuseGUID;
             }
 
             return ObjectGuid::Empty;

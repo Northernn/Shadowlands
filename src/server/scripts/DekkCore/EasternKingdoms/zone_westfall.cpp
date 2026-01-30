@@ -65,9 +65,9 @@ public:
         std::vector<Position> const ThugPositions =
         {
             { -9859.36f, 1332.42f,  41.985f, 2.49f },
-            //{ -9862.51f, 1332.079f, 41.985f, 0.85f },
-           // { -9863.49f, 1335.489f, 41.985f, 5.63f },
-           // { -9860.42f, 1335.459f, 41.985f, 4.11f },
+            { -9862.51f, 1332.079f, 41.985f, 0.85f },
+            { -9863.49f, 1335.489f, 41.985f, 5.63f },
+            { -9860.42f, 1335.459f, 41.985f, 4.11f },
         };
 
         bool bSummoned;
@@ -91,13 +91,16 @@ public:
 
             if (!who->IsPlayer())
                 return;
+            auto player = who->ToPlayer();
 
-            if (who->ToPlayer()->GetQuestStatus(QUEST_LOUS_PARTING_THOUGHTS) == QUEST_STATUS_INCOMPLETE)
+            auto* questData = player->GetQuestStatusData(QUEST_LOUS_PARTING_THOUGHTS);
+            if (player->GetQuestStatus(QUEST_LOUS_PARTING_THOUGHTS) == QUEST_STATUS_INCOMPLETE && !questData->Explored)
             {
                 if (who->IsWithinDistInMap(me, 20.0f) && !bSummoned)
                 {
                     PlayerGUID = who->GetGUID();
                     StartEvent();
+                    questData->Explored = true;
                 }
             }
         }
@@ -138,7 +141,7 @@ public:
                         {
                             case 0:
                             {
-                                if (Creature* thug = GetThug(0))
+                                if (Creature* thug = GetThug(1))
                                     thug->Say("Did you... did you meet her?", LANG_UNIVERSAL);
                                 SummonTimer = 3500;
                                 Phase++;
@@ -146,7 +149,7 @@ public:
                             }
                             case 1:
                             {
-                                if (Creature* thug = GetThug(1))
+                                if (Creature* thug = GetThug(0))
                                     thug->Say("Yep. She's for real?", LANG_UNIVERSAL);
                                 SummonTimer = 4000;
                                 Phase++;
@@ -154,7 +157,7 @@ public:
                             }
                             case 2:
                             {
-                                if (Creature* thug = GetThug(1))
+                                if (Creature* thug = GetThug(0))
                                     thug->Say("She wanted me to tell you that she appreciates the job that we did for her on the Furlbrows. Gave me a pile o'gold to split with you all.", LANG_UNIVERSAL);
                                 SummonTimer = 7000;
                                 Phase++;
@@ -162,7 +165,7 @@ public:
                             }
                             case 3:
                             {
-                                if (Creature* thug = GetThug(2))
+                                if (Creature* thug = GetThug(3))
                                     thug->Say(" See her face. It is really...", LANG_UNIVERSAL);
                                 SummonTimer = 4000;
                                 Phase++;
@@ -180,7 +183,7 @@ public:
                             }
                             case 5:
                             {
-                                if (Creature* thug = GetThug(0))
+                                if (Creature* thug = GetThug(2))
                                     thug->Say("Whoa, what do we have here? Looks like we have ourselves an eavesdropper, boys.", LANG_UNIVERSAL);
                                 SummonTimer = 4500;
                                 Phase++;
@@ -188,7 +191,7 @@ public:
                             }
                             case 6:
                             {
-                                if (Creature* thug = GetThug(0))
+                                if (Creature* thug = GetThug(1))
                                     thug->Say("Only one thing to do with a louisy, good-for-nothin eavesdropper.", LANG_UNIVERSAL);
                                 SummonTimer = 4500;
                                 Phase++;
@@ -233,6 +236,9 @@ public:
                             {
                                 if (Player* player = ObjectAccessor::GetPlayer(*me, PlayerGUID))
                                 {
+                                    player->KilledMonsterCredit(42417, PlayerGUID);
+                                    player->KilledMonsterCredit(42417, PlayerGUID);
+                                    player->KilledMonsterCredit(42417, PlayerGUID);
                                     player->KilledMonsterCredit(42417, PlayerGUID);
                                     if (!player->GetPhaseShift().HasPhase(171))
                                         PhasingHandler::AddPhase(player, 171, true);
@@ -454,151 +460,6 @@ enum edrifter
 #define GOSSIP_HELLO_DRIFTER1 "Did you see who killed the Furlbrows?"
 #define GOSSIP_HELLO_DRIFTER2 "Maybe a couple copper will loosen your tongue. Now tell me, did you see who killed the Furlbrows?"
 
-class npc_westplains_drifter : public CreatureScript
-{
-public:
-    npc_westplains_drifter() : CreatureScript("npc_westplains_drifter") { }
-
-    struct npc_westplains_drifterAI : public ScriptedAI
-    {
-        npc_westplains_drifterAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool OnGossipHello(Player* player) override
-        {
-            if (player->GetQuestStatus(26209) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_HELLO_DRIFTER1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
-            if (player->GetQuestStatus(26209) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_HELLO_DRIFTER2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-            SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
-        {
-            player->PlayerTalkClass->ClearMenus();
-            if (action == GOSSIP_ACTION_INFO_DEF + 1)
-            {
-                switch (rand() % 7)
-                { // Say needs moved to me_texts
-                case 0:
-                {
-                    me->Say("Listen, pal. I don't want any trouble, ok? I didn't see who murdered 'em, but I sure heard it! Lots of yelling. Human voices... you dig? Now get out of here before I change my mind about beating you up and takin' your shoes.", LANG_UNIVERSAL);
-                    player->KilledMonsterCredit(CREDIT_SAY1);
-                    me->SetStandState(UNIT_STAND_STATE_STAND);
-                    me->DespawnOrUnsummon(5s);
-                    break;
-                }
-                case 1:
-                {
-                    me->Say("I didn't see who killed 'm, bub/sis, but I got a whiff. Smelled rich, kinda like you. Damn shame too. Furlbrows were a fixture around here. Nice people, always willin' to share a meal or a patch of dirt.", LANG_UNIVERSAL);
-                    player->KilledMonsterCredit(CREDIT_SAY2);
-                    me->SetStandState(UNIT_STAND_STATE_STAND);
-                    me->DespawnOrUnsummon(5s);
-                    break;
-                }
-                case 2:
-                {
-                    me->Say("Who killed the Furlbrows? I'll tell you who killed the Furlbrows: KING VARIAN WRYNN. THAT'S WHO! And he's killin' the rest of us too. One bum at a time. The only thing I can tell you is that I saw some gnolls leavin' the place a few hours before the law arrived.", LANG_UNIVERSAL);
-                    player->KilledMonsterCredit(CREDIT_SAY3);
-                    me->SetStandState(UNIT_STAND_STATE_STAND);
-                    me->DespawnOrUnsummon(5s);
-                    break;
-                }
-                case 3:
-                {
-                    me->Say("Between you, me, and the tree, murlocs killed the Furlbrows. Yep, saw 'em with my own two eyes. Think they'd been casin' the joint for days, maybe months. They left in a hurry once they got wind of 'Johnny Law' and the idiot brigade over there...", LANG_UNIVERSAL);
-                    player->KilledMonsterCredit(CREDIT_SAY4);
-                    me->SetStandState(UNIT_STAND_STATE_STAND);
-                    me->DespawnOrUnsummon(5s);
-                    break;
-                } CloseGossipMenuFor(player);
-                }
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 2)
-            {
-                if (!player->HasEnoughMoney(uint64(2)))
-                {
-                    player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
-                    CloseGossipMenuFor(player);
-                }
-                else
-                {
-                    player->ModifyMoney(-2);
-                    switch (rand() % 7)
-                    {
-                    case 0:
-                    {
-                        me->Say("Listen, pal. I don't want any trouble, ok? I didn't see who murdered 'em, but I sure heard it! Lots of yelling. Human voices... you dig? Now get out of here before I change my mind about beating you up and takin' your shoes.", LANG_UNIVERSAL);
-                        player->KilledMonsterCredit(CREDIT_SAY1);
-                        me->DespawnOrUnsummon(5s);
-                        break;
-                    }
-                    case 1:
-                    {
-                        me->Say("I didn't see who killed 'm, bub/sis, but I got a whiff. Smelled rich, kinda like you. Damn shame too. Furlbrows were a fixture around here. Nice people, always willin' to share a meal or a patch of dirt.", LANG_UNIVERSAL);
-                        player->KilledMonsterCredit(CREDIT_SAY2);
-                        me->DespawnOrUnsummon(5s);
-                        break;
-                    }
-                    case 2:
-                    {
-                        me->Say("Who killed the Furlbrows? I'll tell you who killed the Furlbrows: KING VARIAN WRYNN. THAT'S WHO! And he's killin' the rest of us too. One bum at a time. The only thing I can tell you is that I saw some gnolls leavin' the place a few hours before the law arrived.", LANG_UNIVERSAL);
-                        player->KilledMonsterCredit(CREDIT_SAY3);
-                        me->DespawnOrUnsummon(5s);
-                        break;
-                    }
-                    case 3:
-                    {
-                        me->Say("Between you, me, and the tree, murlocs killed the Furlbrows. Yep, saw 'em with my own two eyes. Think they'd been casin' the joint for days, maybe months. They left in a hurry once they got wind of 'Johnny Law' and the idiot brigade over there...", LANG_UNIVERSAL);
-                        player->KilledMonsterCredit(CREDIT_SAY4);
-                        me->DespawnOrUnsummon(5s);
-                        break;
-                    }
-                    case 4:
-                    {
-                        me->Say("I wonder if it's possible to eat rocks? Got plenty of rocks around here. Just imagine it! I'd be the richest person in the world for making that discovery!", LANG_UNIVERSAL);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->AI()->AttackStart(player);
-                        break;
-                    }
-                    case 5:
-                    {
-                        me->Say("Looks like I found us a savory and clean piece of dirt! Tonight we eat like kings, Mr. Penguin! Of course I'll share it with you! You're my best friend!", LANG_UNIVERSAL);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->AI()->AttackStart(player);
-                        break;
-                    }
-                    case 6:
-                    {
-                        me->Say("HAHAHAH! Good one, Mr. Penguin! GOOD ONE!", LANG_UNIVERSAL);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->AI()->AttackStart(player);
-                        break;
-                    }
-                    case 7:
-                    {
-                        me->Say("What happened to me? I used to be the king of Stormwind!", LANG_UNIVERSAL);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->AI()->AttackStart(player);
-                        break;
-
-                        CloseGossipMenuFor(player);
-                    }
-                    }
-                }
-            }
-            return true;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_westplains_drifterAI(creature);
-    }
-};
 
 /*##############
 npc_crate_Jangelode_Mine#
@@ -1768,44 +1629,44 @@ public:
     };
 };
 
-class npc_fire_trigger : public CreatureScript
-{
-public:
-    npc_fire_trigger() : CreatureScript("npc_fire_trigger") {}
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_fire_triggerAI(creature);
-    }
-
-    struct npc_fire_triggerAI : public ScriptedAI
-    {
-        npc_fire_triggerAI(Creature* creature) : ScriptedAI(creature) {}
-
-        uint32 StopFireTimer;
-
-        void Reset() override
-        {
-            me->CastSpell(me, 71025, true);
-        }
-
-        void SpellHit(WorldObject* /*caster*/, const SpellInfo* spell) override
-        {
-            if (spell->Id == SPELL_TOSS_TORCH)
-            {
-                me->CastSpell(me, 71025, true);
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {            
-            if (StopFireTimer <= diff)
-            {
-            me->RemoveAurasDueToSpell(71025);
-            }else StopFireTimer -= diff;
-        }
-    };
-};
+// class npc_fire_trigger : public CreatureScript
+// {
+// public:
+//     npc_fire_trigger() : CreatureScript("npc_fire_trigger") {}
+// 
+//     CreatureAI* GetAI(Creature* creature) const override
+//     {
+//         return new npc_fire_triggerAI(creature);
+//     }
+// 
+//     struct npc_fire_triggerAI : public ScriptedAI
+//     {
+//         npc_fire_triggerAI(Creature* creature) : ScriptedAI(creature) {}
+// 
+//         uint32 StopFireTimer;
+// 
+//         void Reset() override
+//         {
+//             me->CastSpell(me, 71025, true);
+//         }
+// 
+//         void SpellHit(WorldObject* /*caster*/, const SpellInfo* spell) override
+//         {
+//             if (spell->Id == SPELL_TOSS_TORCH)
+//             {
+//                 me->CastSpell(me, 71025, true);
+//             }
+//         }
+// 
+//         void UpdateAI(uint32 diff) override
+//         {            
+//             if (StopFireTimer <= diff)
+//             {
+//             me->RemoveAurasDueToSpell(71025);
+//             }else StopFireTimer -= diff;
+//         }
+//     };
+// };
 
 class npc_summoner : public CreatureScript
 {
@@ -2098,13 +1959,12 @@ void AddSC_DekkCore_westfall()
 {
     new npc_thug();
     new npc_horatio();
-    new npc_westplains_drifter();
     new npc_crate_mine();
     new npc_shadowy_trigger();
     new npc_shadowy_tower();
     new npc_rise_br();
     new npc_defias_blackguard();
-    new npc_fire_trigger();
+    //new npc_fire_trigger();
     new npc_summoner();
     new npc_horatio_investigate();
     new npc_hungry_hobo();

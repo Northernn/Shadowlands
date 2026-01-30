@@ -351,6 +351,8 @@ public:
     }
 };
 
+static constexpr uint32 PATH_ESCORT_GRYPHON = 283930;
+
 class npc_black_knight_skeletal_gryphon : public CreatureScript
 {
 public:
@@ -360,7 +362,8 @@ public:
     {
         npc_black_knight_skeletal_gryphonAI(Creature* creature) : EscortAI(creature)
         {
-            Start(false, true);
+            LoadPath(PATH_ESCORT_GRYPHON);
+            Start(false);
         }
 
         void UpdateAI(uint32 uiDiff) override
@@ -381,8 +384,6 @@ public:
 // 67751 - Ghoul Explode
 class spell_black_knight_ghoul_explode : public SpellScript
 {
-    PrepareSpellScript(spell_black_knight_ghoul_explode);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_0).CalcValue()) });
@@ -403,8 +404,6 @@ class spell_black_knight_ghoul_explode : public SpellScript
 // 67889 - Ghoul Explode
 class spell_black_knight_ghoul_explode_risen_ghoul : public SpellScript
 {
-    PrepareSpellScript(spell_black_knight_ghoul_explode_risen_ghoul);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ uint32(spellInfo->GetEffect(EFFECT_1).CalcValue()) });

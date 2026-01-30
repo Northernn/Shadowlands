@@ -67,7 +67,8 @@ public:
             { "suggestionticket",   HandleGoTicketCommand<SuggestionTicket>,rbac::RBAC_PERM_COMMAND_GO,             Console::No },
             { "offset",             HandleGoOffsetCommand,                  rbac::RBAC_PERM_COMMAND_GO,             Console::No },
             { "instance",           HandleGoInstanceCommand,                rbac::RBAC_PERM_COMMAND_GO,             Console::No },
-            { "boss",               HandleGoBossCommand,                    rbac::RBAC_PERM_COMMAND_GO,             Console::No }
+            { "boss",               HandleGoBossCommand,                    rbac::RBAC_PERM_COMMAND_GO,             Console::No },
+            { "firstCollision",     HandleGoFirstCollisionCommand,          rbac::RBAC_PERM_COMMAND_GO,             Console::No },
         };
 
         static ChatCommandTable commandTable =
@@ -232,7 +233,7 @@ public:
             player->SaveRecallPosition(); // save only in non-flight case
 
         std::shared_ptr<TerrainInfo> terrain = sTerrainMgr.LoadTerrain(mapId);
-        float z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), x, y));
+        float z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), mapId, x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), mapId, x, y));
 
         player->TeleportTo(mapId, x, y, z, player->GetOrientation());
         return true;
@@ -291,7 +292,7 @@ public:
             player->SaveRecallPosition(); // save only in non-flight case
 
         std::shared_ptr<TerrainInfo> terrain = sTerrainMgr.LoadTerrain(mapId);
-        z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), x, y));
+        z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), mapId, x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), mapId, x, y));
 
         player->TeleportTo(mapId, x, y, z, 0.0f);
         return true;
@@ -338,14 +339,16 @@ public:
         }
 
         // update to parent zone if exist (client map show only zones without parents)
-        AreaTableEntry const* zoneEntry = areaEntry->ParentAreaID ? sAreaTableStore.LookupEntry(areaEntry->ParentAreaID) : areaEntry;
+        AreaTableEntry const* zoneEntry = areaEntry->ParentAreaID && areaEntry->GetFlags().HasFlag(AreaFlags::IsSubzone)
+            ? sAreaTableStore.LookupEntry(areaEntry->ParentAreaID)
+            : areaEntry;
         ASSERT(zoneEntry);
 
         x /= 100.0f;
         y /= 100.0f;
 
         std::shared_ptr<TerrainInfo> terrain = sTerrainMgr.LoadTerrain(zoneEntry->ContinentID);
-        if (!sDB2Manager.Zone2MapCoordinates(areaEntry->ParentAreaID ? uint32(areaEntry->ParentAreaID) : areaId, x, y))
+        if (!sDB2Manager.Zone2MapCoordinates(zoneEntry->ID, x, y))
         {
             handler->PSendSysMessage(LANG_INVALID_ZONE_MAP, areaId, areaEntry->AreaName[handler->GetSessionDbcLocale()], terrain->GetId(), terrain->GetMapName());
             handler->SetSentErrorMessage(true);
@@ -365,7 +368,7 @@ public:
         else
             player->SaveRecallPosition(); // save only in non-flight case
 
-        float z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), x, y));
+        float z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), zoneEntry->ContinentID, x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), zoneEntry->ContinentID, x, y));
 
         player->TeleportTo(zoneEntry->ContinentID, x, y, z, player->GetOrientation());
         return true;
@@ -394,7 +397,7 @@ public:
                 return false;
             }
             std::shared_ptr<TerrainInfo> terrain = sTerrainMgr.LoadTerrain(mapId);
-            z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), x, y));
+            z = std::max(terrain->GetStaticHeight(PhasingHandler::GetEmptyPhaseShift(), mapId, x, y, MAX_HEIGHT), terrain->GetWaterLevel(PhasingHandler::GetEmptyPhaseShift(), mapId, x, y));
         }
 
         return DoTeleport(handler, { x, y, *z, o.value_or(0.0f) }, mapId);
@@ -520,16 +523,13 @@ public:
         if (needles.empty())
             return false;
 
-        std::multimap<uint32, CreatureTemplate const*> matches;
+        std::multimap<uint32, CreatureTemplate const*, std::greater<uint32>> matches;
         std::unordered_map<uint32, std::vector<CreatureData const*>> spawnLookup;
 
         // find all boss flagged mobs that match our needles
         for (auto const& pair : sObjectMgr->GetCreatureTemplates())
         {
             CreatureTemplate const& data = pair.second;
-            if (!(data.flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS))
-                continue;
-
             uint32 count = 0;
             std::string const& scriptName = sObjectMgr->GetScriptName(data.ScriptID);
             for (std::string_view label : needles)
@@ -539,7 +539,7 @@ public:
             if (count)
             {
                 matches.emplace(count, &data);
-                (void)spawnLookup[data.Entry]; // inserts default-constructed vector
+                spawnLookup.try_emplace(data.Entry);    // inserts default-constructed vector
             }
         }
 
@@ -567,7 +567,7 @@ public:
         }
 
         // see if we have multiple equal matches left
-        auto it = matches.crbegin(), end = matches.crend();
+        auto it = matches.cbegin(), end = matches.cend();
         uint32 const maxCount = it->first;
         if ((++it) != end && it->first == maxCount)
         {
@@ -580,7 +580,7 @@ public:
             return false;
         }
 
-        CreatureTemplate const* const boss = matches.crbegin()->second;
+        CreatureTemplate const* const boss = matches.cbegin()->second;
         std::vector<CreatureData const*> const& spawns = spawnLookup[boss->Entry];
         ASSERT(!spawns.empty());
 
@@ -614,6 +614,14 @@ public:
         }
 
         handler->PSendSysMessage(LANG_COMMAND_WENT_TO_BOSS, boss->Name.c_str(), boss->Entry, spawn->spawnId);
+        return true;
+    }
+
+    static bool HandleGoFirstCollisionCommand(ChatHandler* handler, Optional<float> dist)
+    {
+        Unit* unit = handler->getSelectedUnit();
+        Position newPosition = unit->GetFirstCollisionPosition(dist ? *dist : 50.f, 0.f);
+        unit->NearTeleportTo(newPosition);
         return true;
     }
 };

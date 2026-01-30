@@ -89,12 +89,10 @@ public:
         {
             if (player->GetTeamId() == TEAM_ALLIANCE)
             {
-                if (!player->GetQuestObjectiveCounter(272833))
                     player->KilledMonsterCredit(79537);
             }
             else
             {
-                if (!player->GetQuestObjectiveCounter(272869))
                     player->KilledMonsterCredit(78996);
             }
         }
@@ -122,9 +120,7 @@ public:
         {
             if (triggerEvent == "Phase")
             {
-                if (!player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjEnterTheArena))
-                    player->KilledMonsterCredit(TanaanKillCredits::CreditEnterTheArena);
-
+                player->KilledMonsterCredit(TanaanKillCredits::CreditEnterTheArena);
                 player->AddAura(TanaanPhases::PhaseArenaFight, player);
                 player->AddAura(player->GetTeamId() == TEAM_ALLIANCE ? TanaanPhases::PhaseArenaFightAlliance : TanaanPhases::PhaseArenaFightHorde, player);
                 player->AddAura(TanaanPhases::PhaseArenaEntranceGateClose, player);
@@ -164,62 +160,6 @@ public:
         if (triggerEvent == "EarlyPhase")
             player->KilledMonsterCredit(TanaanKillCredits::CreditEscapeKargathArena);
     }
-};
-
-/// 78560 - Archmage Khadgar
-class npc_archmage_khadgar_bridge : public CreatureScript
-{
-public:
-    npc_archmage_khadgar_bridge() : CreatureScript("npc_archmage_khadgar_bridge") { }
-
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest) override
-    {
-        switch (quest->GetQuestId())
-        {
-            case TanaanQuests::QuestKargatharProvingGrounds:
-            {
-                if (TempSummon* summon = player->SummonCreature(TanaanCreatures::NpcArchmageKhadgarSum, creature->GetPosition(), TEMPSUMMON_MANUAL_DESPAWN, 0s))
-                {
-                    summon->AI()->SetGUID(player->GetGUID());
-                    player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneBridgeDestruction, SceneFlag::None);
-                }
-
-                break;
-            }
-            case TanaanQuests::QuestKillYourHundred:
-            {
-                player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneEnterKarGathArena, SceneFlag::NotCancelable/* | SCENEFLAG_UNK16 */);
-                break;
-            }
-            default:
-                break;
-        }
-
-        return true;
-    }
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_archmage_khadgar_bridgeAI(creature);
-    }
-
-    struct npc_archmage_khadgar_bridgeAI : public ScriptedAI
-    {
-        npc_archmage_khadgar_bridgeAI(Creature* creature) : ScriptedAI(creature) { }
-
-        // TODO : GossipSelect
-        void MoveInLineOfSight(Unit* who) override
-        {
-            if (Player* player = who->ToPlayer())
-            {
-                if (player->GetQuestStatus(TanaanQuests::QuestAltarAltercation) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjBloodRitualOrbDestroyed) >= 3)
-                        player->KilledMonsterCredit(TanaanKillCredits::CreditFindKhadgarAtBridge);
-                }
-            }
-        }
-    };
 };
 
 /// 80244 - Archmage Khadgar (summoned)
@@ -282,7 +222,7 @@ public:
                 me->SetFacingTo(6.242590f);
 
                 if (Player* pSummoner = ObjectAccessor::FindPlayer(m_SummonerGuid))
-                    if (pSummoner && !pSummoner->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjFollowKhadgar))
+                    if (pSummoner)
                         pSummoner->KilledMonsterCredit(TanaanKillCredits::CreditFollowKhadgar);
 
                 me->DespawnOrUnsummon();
@@ -361,91 +301,6 @@ Position handBrawlerSpawnPositions[7] =
 };
 
 std::map<ObjectGuid, std::list<ObjectGuid> > arenaFighterCountByNpc;
-
-/// 79097 - Kargath Bladefist
-class npc_kargath_bladefist : public CreatureScript
-{
-public:
-    npc_kargath_bladefist() : CreatureScript("npc_kargath_bladefist") { }
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_kargath_bladefistAI(creature);
-    }
-
-    struct npc_kargath_bladefistAI : public ScriptedAI
-    {
-        npc_kargath_bladefistAI(Creature* creature) : ScriptedAI(creature) { }
-
-        const uint8 MAX_INITIAL_SPAWN = 30;
-
-        EventMap m_Events;
-
-        enum eDatas
-        {
-            EventCleararenaFighterCountByNpc = 1,
-
-            MaxInitialSpawn = 30
-        };
-
-
-        void Reset() override
-        {
-            m_Events.Reset();
-            m_Events.ScheduleEvent(EventCleararenaFighterCountByNpc, Seconds(10));
-
-            me->SetUnitFlag(UNIT_FLAG_REMOVE_CLIENT_CONTROL);
-
-            for (uint8 i = 0; i < MAX_INITIAL_SPAWN; ++i)
-                me->SummonCreature(TanaanCreatures::NpcShatteredHandBrawler, handBrawlerSpawnPositions[urand(0, 6)], TEMPSUMMON_CORPSE_DESPAWN);
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            m_Events.Update(diff);
-
-            std::list<ObjectGuid> guidsToRemove;
-
-            if (m_Events.ExecuteEvent() == eDatas::EventCleararenaFighterCountByNpc)
-            {
-                for (auto attackerGuids : arenaFighterCountByNpc)
-                {
-                    for (ObjectGuid brawlerGuid : arenaFighterCountByNpc[attackerGuids.first])
-                    {
-                        Creature* brawler = ObjectAccessor::GetCreature(*me, brawlerGuid);
-
-                        if (brawler && brawler->IsAlive())
-                            continue;
-
-                        guidsToRemove.push_back(brawlerGuid);
-                    }
-                }
-
-                for (auto attackerGuids : arenaFighterCountByNpc)
-                {
-                    for (ObjectGuid guid : guidsToRemove)
-                    {
-                        arenaFighterCountByNpc[attackerGuids.first].remove(guid);
-                    }
-                }
-
-                m_Events.Repeat(Seconds(10));
-            }
-        }
-
-        void DoAction(int32 const action) override
-        {
-            // Spawn next brawler
-            if (action == 1)
-            {
-                me->GetScheduler().Schedule(Milliseconds(500), [](TaskContext context) -> void
-                {
-                    GetContextUnit()->SummonCreature(TanaanCreatures::NpcShatteredHandBrawler, handBrawlerSpawnPositions[urand(0, 6)], TEMPSUMMON_CORPSE_DESPAWN);
-                });
-            }
-        }
-    };
-};
 
 /// 82057 - Shattered Hand Brawler
 /// 82057 - Shattered Hand Brawler
@@ -561,20 +416,14 @@ struct npc_shattered_hand_brawler : public ScriptedAI
 
         for (auto player : playerList)
         {
-            if (!player->HasQuest(TanaanQuests::QuestKillYourHundred) || !player->IsInPhase(me))
+            if (!player->HasQuest(TanaanQuests::QuestKillYourHundred) || !player->InSamePhase(me))
                 continue;
-
-            if (player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjCombattantSlainAddHidden) == 99)
-                continue;
-
-            if (player->GetQuestObjectiveCounter(TanaanQuestObjectives::ObjCombattantSlainAddHidden) == 98)
-            {
+           
                 player->RemoveAurasDueToSpell(TanaanPhases::PhaseArenaFight);
                 player->RemoveAurasDueToSpell(TanaanPhases::PhaseArenaFightAlliance);
                 player->RemoveAurasDueToSpell(TanaanPhases::PhaseArenaFightHorde);
                 player->RemoveAurasDueToSpell(TanaanPhases::PhaseArenaExitGateClose);
                 player->GetSceneMgr().PlaySceneByPackageId(TanaanSceneObjects::SceneEscapingTheArena, SceneFlag::NotCancelable);
-            }
 
             player->KilledMonsterCredit(TanaanKillCredits::CreditCombattantSlainInArena);
             player->KilledMonsterCredit(TanaanKillCredits::CreditCombattantSlainAdd);
@@ -699,9 +548,7 @@ public:
 
 void AddSC_tanaan_intro_shattered_hand()
 {
-    new npc_archmage_khadgar_bridge();
     new npc_tanaan_khadgar_bridge();
-    new npc_kargath_bladefist();
     RegisterCreatureAI(npc_shattered_hand_brawler);
     RegisterCreatureAI(npc_tanaan_arena_helper);
     new npc_tanaan_napestone_riverbeast();

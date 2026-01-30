@@ -457,8 +457,6 @@ namespace Instances { namespace Bloodmaul
 
             class spell_roltall_scorching_aura_AuraScript : public AuraScript
             {
-                PrepareAuraScript(spell_roltall_scorching_aura_AuraScript);
-
                 enum eSpells
                 {
                     ScorchingAuraDebuff = 167739
@@ -485,43 +483,6 @@ namespace Instances { namespace Bloodmaul
             AuraScript* GetAuraScript() const override
             {
                 return new spell_roltall_scorching_aura_AuraScript();
-            }
-    };
-
-    /// Heat Wave - 152867
-    class areatrigger_roltall_heat_wave : public AreaTriggerAI
-    {
-        public:
-            areatrigger_roltall_heat_wave(AreaTrigger* areaTrigger) : AreaTriggerAI(areaTrigger) { }
-
-            enum eSpells
-            {
-                SpellPeriodicDamage = 152897
-            };
-
-            void OnUnitEnter(Unit* unit) override
-            {
-                if (Unit* caster = at->GetCaster())
-                {
-                    if (Player* player = unit->ToPlayer())
-                    {
-                       // player->ApplyMovementForce(at->GetGUID(), s_HeatWavePos, -7.0f, 0);
-
-                        if (!player->HasAura(eSpells::SpellPeriodicDamage))
-                            caster->CastSpell(player, eSpells::SpellPeriodicDamage, true);
-                    }
-                }
-            }
-
-            void OnUnitExit(Unit* unit) override
-            {
-                if (Player* player = unit->ToPlayer())
-                {
-                    player->RemoveMovementForce(at->GetGUID());
-
-                    if (player->HasAura(eSpells::SpellPeriodicDamage))
-                        player->RemoveAurasDueToSpell(eSpells::SpellPeriodicDamage);
-                }
             }
     };
 
@@ -561,6 +522,5 @@ void AddSC_boss_roltall()
     new Instances::Bloodmaul::boss_roltall();
     new Instances::Bloodmaul::npc_fiery_boulder();
     new Instances::Bloodmaul::spell_roltall_scorching_aura();
-    RegisterAreaTriggerAI(Instances::Bloodmaul::areatrigger_roltall_heat_wave);
     RegisterAreaTriggerAI(Instances::Bloodmaul::areatrigger_roltall_burning_slag);
 }

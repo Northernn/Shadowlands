@@ -223,8 +223,6 @@ public:
 
     class spell_ivanyr_overcharge_mana_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ivanyr_overcharge_mana_AuraScript);
-
         uint16 tickTimer = 1000;
 
         void OnTick(AuraEffect const* aurEff)
@@ -268,8 +266,6 @@ public:
 
     class spell_ivanyr_charged_bolt_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_ivanyr_charged_bolt_AuraScript);
-
         uint8 chargeCount = 0;
 
         void OnTick(AuraEffect const* aurEff)

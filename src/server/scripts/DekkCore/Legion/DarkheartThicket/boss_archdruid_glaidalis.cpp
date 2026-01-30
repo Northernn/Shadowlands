@@ -278,8 +278,6 @@ struct npc_glaidalis_nightmare_abomination : public ScriptedAI
 //196346
 class spell_glaidalis_grievous_leap : public SpellScript
 {
-    PrepareSpellScript(spell_glaidalis_grievous_leap);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         Unit* caster = GetCaster();
@@ -310,8 +308,6 @@ class spell_glaidalis_grievous_leap : public SpellScript
 //196376
 class spell_glaidalis_grievous_tear : public AuraScript
 {
-    PrepareAuraScript(spell_glaidalis_grievous_tear);
-
         uint32 checkTimer = 500;
 
     void OnUpdate(AuraEffect const* auraEffect)
@@ -336,8 +332,6 @@ class spell_glaidalis_grievous_tear : public AuraScript
 //200684 trash
 class spell_nightmare_toxin : public AuraScript
 {
-    PrepareAuraScript(spell_nightmare_toxin);
-
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (!GetTarget())
@@ -356,8 +350,6 @@ class spell_nightmare_toxin : public AuraScript
 //225484 trash
 class spell_nightclaw_grievous_rip : public AuraScript
 {
-    PrepareAuraScript(spell_nightclaw_grievous_rip);
-
         uint32 checkTimer = 500;
 
         void OnUpdate(AuraEffect const* auraEffect)

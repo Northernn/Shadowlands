@@ -391,8 +391,6 @@ public:
 
     class spell_fulminant_scatter_area_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_fulminant_scatter_area_SpellScript);
-
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             return ValidateSpellInfo
@@ -445,8 +443,6 @@ public:
 
     class spell_chaotoid_compress_the_void_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_chaotoid_compress_the_void_SpellScript);
-
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             return ValidateSpellInfo({ SPELL_COMPRESS_THE_VOID_JUMP });

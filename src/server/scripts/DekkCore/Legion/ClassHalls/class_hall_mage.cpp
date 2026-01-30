@@ -343,7 +343,7 @@ public:
         if (choiceId != PLAYER_CHOICE_MAGE_SELECTION)
             return;
 
-        TC_LOG_ERROR("server.worldserver", "mage_playerchoice %u, %u", choiceId, responseId);
+        TC_LOG_ERROR("server.worldserver", "mage_playerchoice {}, {}", choiceId, responseId);
         if (player->HasQuest(QUEST_A_MAGES_WEAPON))
         {
 
@@ -365,7 +365,7 @@ public:
 //
 //    //bool OnGossipHello(Player* player, GameObject* go) override
 //   // {
-//        ///TC_LOG_ERROR("server.worldserver", "go_finding_bonchill_note %u", go->GetEntry());
+//        ///TC_LOG_ERROR("server.worldserver", "go_finding_bonchill_note {}", go->GetEntry());
 //       // if (!player->GetQuestObjectiveData(QUEST_FINDING_BONCHILL, 0))
 //      //  {
 //            switch (go->GetEntry())

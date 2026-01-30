@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -64,7 +64,7 @@ struct boss_hadal_darkfathom : public BossAI
 		events.ScheduleEvent(EVENT_BREAK_WATER, 5s);
 	}
 
-	void JustDied(Unit* u) override
+	void JustDied(Unit*) override
 	{
 		_JustDied();
 		Talk(SAY_DEATH);

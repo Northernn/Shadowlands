@@ -1323,8 +1323,6 @@ struct npc_phoenix_egg_tk : public ScriptedAI
 // 35941 - Gravity Lapse
 class spell_kael_gravity_lapse : public SpellScript
 {
-    PrepareSpellScript(spell_kael_gravity_lapse);
-
 public:
     spell_kael_gravity_lapse()
     {
@@ -1356,8 +1354,6 @@ private:
 // 36730 - Flame Strike
 class spell_kaelthas_flame_strike : public AuraScript
 {
-    PrepareAuraScript(spell_kaelthas_flame_strike);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_FLAME_STRIKE_DAMAGE });
@@ -1378,8 +1374,6 @@ class spell_kaelthas_flame_strike : public AuraScript
 // 36976 - Summon Weapons
 class spell_kaelthas_summon_weapons : public SpellScript
 {
-    PrepareSpellScript(spell_kaelthas_summon_weapons);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(SummonWeaponsSpells);
@@ -1401,8 +1395,6 @@ class spell_kaelthas_summon_weapons : public SpellScript
 // 39497 - Remove Enchanted Weapons
 class spell_kaelthas_remove_weapons : public SpellScript
 {
-    PrepareSpellScript(spell_kaelthas_remove_weapons);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(RemoveWeaponsSpells);
@@ -1412,7 +1404,7 @@ class spell_kaelthas_remove_weapons : public SpellScript
     {
         if (Player* player = GetHitPlayer())
             for (uint32 spells : RemoveWeaponsSpells)
-                player->CastSpell(player, spells, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST));
+                player->CastSpell(player, spells, TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
     }
 
     void Register() override

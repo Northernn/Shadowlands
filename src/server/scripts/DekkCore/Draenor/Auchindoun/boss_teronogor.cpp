@@ -183,7 +183,6 @@ struct boss_teronogor : public BossAI
                 SetData(DataSoulTransport2, 0);
                 SetData(DataSoulTransport3, 0);
                 SetData(DataSoulTransport4, 0);
-         
 
                 me->AddAura(eTerongorSpells::SpellTeronogorShield, me);
                 me->CastSpell(me, eTerongorSpells::SpellDemonicCircleVisual);
@@ -202,9 +201,9 @@ struct boss_teronogor : public BossAI
             instance->SetBossState(eAuchindounDatas::DataBossTeronogor, EncounterState::FAIL);
     }
 
-void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
     {
-        if(me->HealthWillBeBelowPctDamaged(75, damage) && !m_SecondPhase)
+        if (me->HealthBelowPctDamaged(75, damage) && !m_SecondPhase)
         {
             events.Reset();
             me->AttackStop();
@@ -215,7 +214,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
         }
     }
 
-    void DoAction(int32 p_Action)
+    void DoAction(int32 p_Action) override
     {
         switch (p_Action)
         {
@@ -239,34 +238,34 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
         {
             events.Reset();
 
-            switch ((eTeronogorTransformations::TransformationAffliction, eTeronogorTransformations::TransformationDemonology))
+            switch (urand(eTeronogorTransformations::TransformationAffliction, eTeronogorTransformations::TransformationDemonology))
             {
             case eTeronogorTransformations::TransformationAffliction: // Mender Elum - Affliction
                 events.Reset();
                 Talk(eTerongorTalks::TERONGOR_EVENT_03);
-                events.ScheduleEvent(eTerongorEvents::EventShadowBolt, (8s, 10s));
+                events.ScheduleEvent(eTerongorEvents::EventShadowBolt, 8s, 10s);
                 events.ScheduleEvent(eTerongorEvents::EventCurseOfExhaustion, 13s);
-                events.ScheduleEvent(eTerongorEvents::EventSeedOfMalevolence, (22s, 25s));
+                events.ScheduleEvent(eTerongorEvents::EventSeedOfMalevolence, 22s, 25s);
                 events.ScheduleEvent(eTerongorEvents::EventAgony, 16s);
-                events.ScheduleEvent(eTerongorEvents::EventDrainLife, (13s, 16s));
-                events.ScheduleEvent(eTerongorEvents::EventUnstableAffliction, 20s);             
+                events.ScheduleEvent(eTerongorEvents::EventDrainLife, 13s, 16s);
+                events.ScheduleEvent(eTerongorEvents::EventUnstableAffliction, 20s);
                 break;
             case eTeronogorTransformations::TransformationDestruction: // Arcanist Jorra's - destruction
                 events.Reset();
                 Talk(eTerongorTalks::TERONGOR_EVENT_01);
                 events.ScheduleEvent(eTerongorEvents::EventChaosBolt, 20s);
-                events.ScheduleEvent(eTerongorEvents::EventImmolate, (10s, 14s));
-                events.ScheduleEvent(eTerongorEvents::EventConflagrate, (8s, 10s));
+                events.ScheduleEvent(eTerongorEvents::EventImmolate, 10s, 14s);
+                events.ScheduleEvent(eTerongorEvents::EventConflagrate, 8s, 10s);
                 events.ScheduleEvent(eTerongorEvents::EventRainOfFire, 24s);
                 events.ScheduleEvent(eTerongorEvents::EventIncinrate, 16s);
                 break;
             case eTeronogorTransformations::TransformationDemonology: // Vindication Iruun's - demonology
                 events.Reset();
                 Talk(eTerongorTalks::TERONGOR_EVENT_02);
-                events.ScheduleEvent(eTerongorEvents::EventDoom, (8s, 12s));
-                events.ScheduleEvent(eTerongorEvents::EventDemonicLeap, (10s, 14s));
+                events.ScheduleEvent(eTerongorEvents::EventDoom, 8s, 12s);
+                events.ScheduleEvent(eTerongorEvents::EventDemonicLeap, 10s, 14s);
                 events.ScheduleEvent(eTerongorEvents::EventCurseOfExhaustion, 18s);
-                events.ScheduleEvent(eTerongorEvents::EventCorruption, (10s, 14s));
+                events.ScheduleEvent(eTerongorEvents::EventCorruption, 10s, 14s);
                 events.ScheduleEvent(eTerongorEvents::EventChaosBolt, 25s);
                 events.ScheduleEvent(eTerongorEvents::EventTouchOfChaos, 16s);
                 break;
@@ -285,8 +284,8 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
         me->RemoveAllAuras();
         Talk(eTerongorTalks::TERONGOR_AGGRO_01);
         me->RemoveAura(eTerongorSpells::SpellTeronogorShield);
-        events.ScheduleEvent(eTerongorEvents::EventShadowBolt, (8s, 16s));
-        events.ScheduleEvent(eTerongorEvents::EventCorruption, (10s, 12s));
+        events.ScheduleEvent(eTerongorEvents::EventShadowBolt, 14s);
+        events.ScheduleEvent(eTerongorEvents::EventCorruption, 11s);
         events.ScheduleEvent(eTerongorEvents::EventRainOfFire, 21s);
         events.ScheduleEvent(eTerongorEvents::EventDrainLife, 16s);
 
@@ -435,7 +434,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                 me->CastSpell(l_Random, eTerongorSpells::SpellSeedOfMalevolenceApplyAura);
 
-            events.ScheduleEvent(eTerongorEvents::EventSeedOfMalevolence, (22s, 25s));
+            events.ScheduleEvent(eTerongorEvents::EventSeedOfMalevolence, 23s);
             break;
         }
         case eTerongorEvents::EventChaosBolt:
@@ -459,7 +458,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             if (Unit* l_Target = me->GetVictim())
                 me->CastSpell(l_Target, eTerongorSpells::SpellConflagrate);
 
-            events.ScheduleEvent(eTerongorEvents::EventConflagrate, (15s, 20s));
+            events.ScheduleEvent(eTerongorEvents::EventConflagrate, 17s);
             break;
         }
         case eTerongorEvents::EventIncinrate:
@@ -481,7 +480,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                 me->CastSpell(l_Random, eTerongorSpells::SpellDoomBuff);
 
-            events.ScheduleEvent(eTerongorEvents::EventDoom, (8s, 12s));
+            events.ScheduleEvent(eTerongorEvents::EventDoom, 9s);
             break;
         }
         case eTerongorEvents::EventDemonicLeap:
@@ -489,7 +488,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                 me->CastSpell(l_Random, eTerongorSpells::SpellDemonicLeapDummy);
 
-            events.ScheduleEvent(eTerongorEvents::EventDemonicLeap, (18s, 30s));
+            events.ScheduleEvent(eTerongorEvents::EventDemonicLeap, 25s);
             break;
         }
         case eTerongorEvents::EventChaosWave:
@@ -497,7 +496,7 @@ void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType /*damageType*/
             if (Unit* l_Target = me->GetVictim())
                 me->CastSpell(l_Target, eTerongorSpells::SpellChaosWaveDummy);
 
-            events.ScheduleEvent(eTerongorEvents::EventChaosWave, (8s, 10s));
+            events.ScheduleEvent(eTerongorEvents::EventChaosWave, 8s);
             break;
         }
         case eTerongorEvents::EventTouchOfChaos:
@@ -601,7 +600,7 @@ public:
             //if (me->GetMap())//???
             //  me->GetMap()->SetObjectVisibility(1000.0f);
 
-            /// Cosmetic channel - 
+            /// Cosmetic channel -
             if (Creature* l_Teronogor = me->FindNearestCreature(NPC_TERONOGOR, 1000.0f, true))
             {
                 me->CastStop();
@@ -805,7 +804,7 @@ public:
         void EnterCombat(Unit* p_Attacker)
         {
             events.ScheduleEvent(eTerongorEvents::EventWrathcleave, 10s);
-            events.ScheduleEvent(eTerongorEvents::EventWrathstorm, (14s, 16s));
+            events.ScheduleEvent(eTerongorEvents::EventWrathstorm, 15s);
         }
 
         void UpdateAI(uint32 p_Diff) override
@@ -823,12 +822,12 @@ public:
             case eShaddumEvents::EventWrathstorm:
                 if (Unit* l_Target = me->GetVictim())
                     me->CastSpell(l_Target, eShaddumSpells::SpellWrathStorm);
-                events.ScheduleEvent(eShaddumEvents::EventWrathstorm, (8s, 10s));
+                events.ScheduleEvent(eShaddumEvents::EventWrathstorm, 8s);
                 break;
             case eShaddumEvents::EventWrathcleave:
                 if (Unit* l_Random = SelectTarget(SelectTargetMethod::Random, 0, 50.0f, true))
                     me->CastSpell(l_Random, eShaddumSpells::SpellWrathCleave);
-                events.ScheduleEvent(eShaddumEvents::EventWrathcleave, (10s, 14s));
+                events.ScheduleEvent(eShaddumEvents::EventWrathcleave, 12s);
                 break;
             default:
                 break;
@@ -902,7 +901,7 @@ public:
             me->CastStop();
             me->RemoveAllAuras();
             events.ScheduleEvent(eTerongorEvents::EventImmolate, 8s);
-            events.ScheduleEvent(eTerongorEvents::EventIncinrate, (10s, 12s));
+            events.ScheduleEvent(eTerongorEvents::EventIncinrate, 11s);
             events.ScheduleEvent(eTerongorEvents::EventRainOfFire, 18s);
             if (Creature* l_Zashoo = me->FindNearestCreature(eAuchindounCreatures::CreatureZashoo, 20.0f, true))
                 me->CastSpell(l_Zashoo, eGromkashSpells::SpellGrimoireOfSacrifice);
@@ -1062,7 +1061,7 @@ public:
                     me->AddAura(eTeronogorAbyssalSpells::SpellFixate, l_Player);
 
                 if (!me->isMoving())
-                    me->GetMotionMaster()->MoveFollow(l_Player, 0, 0, MovementSlot::MOTION_SLOT_ACTIVE);
+                    me->GetMotionMaster()->MoveFollow(l_Player, 0.0f, 0.0f);
             }
             // }
         }
@@ -1071,34 +1070,6 @@ public:
     CreatureAI* GetAI(Creature* p_Creature) const
     {
         return new auchindoun_teronogor_mob_abyssalAI(p_Creature);
-    }
-};
-
-class auchindoun_teronogor_mob_spirit : public CreatureScript
-{
-public:
-
-    auchindoun_teronogor_mob_spirit() : CreatureScript("auchindoun_teronogor_mob_spirit") { }
-
-    struct auchindoun_teronogor_mob_spiritAI : public ScriptedAI
-    {
-        auchindoun_teronogor_mob_spiritAI(Creature* p_Creature) : ScriptedAI(p_Creature)
-        {
-            m_Instance = me->GetInstanceScript();
-        }
-
-        InstanceScript* m_Instance;
-
-        void Reset()
-        {
-            me->SetReactState(ReactStates::REACT_PASSIVE);
-            me->SetUnitFlag(UnitFlags(UnitFlags::UNIT_FLAG_REMOVE_CLIENT_CONTROL));
-        }
-    };
-
-    CreatureAI* GetAI(Creature* p_Creature) const
-    {
-        return new auchindoun_teronogor_mob_spiritAI(p_Creature);
     }
 };
 
@@ -1111,8 +1082,6 @@ public:
 
     class auchindoun_teronogor_spell_chaos_wave_SpellScript : public SpellScript
     {
-        PrepareSpellScript(auchindoun_teronogor_spell_chaos_wave_SpellScript);
-
         enum eChaosWaveSpells
         {
             SpellChaosWaveDmg = 157002
@@ -1138,7 +1107,7 @@ public:
     }
 };
 
-/// Seed of Malevolence - 156921 
+/// Seed of Malevolence - 156921
 class auchindoun_teronogor_spell_seed_of_malevolence : public SpellScriptLoader
 {
 public:
@@ -1147,8 +1116,6 @@ public:
 
     class auchindoun_teronogor_spell_seed_of_malevolence_AuraScript : public AuraScript
     {
-        PrepareAuraScript(auchindoun_teronogor_spell_seed_of_malevolence_AuraScript);
-
         enum eSeedOfMalevolanceSpells
         {
             SpellSeedOfMalevolenceDmg = 156924
@@ -1183,8 +1150,6 @@ public:
 
     class auchindoun_teronogor_spell_demonic_leap_jump_SpellScript : public SpellScript
     {
-        PrepareSpellScript(auchindoun_teronogor_spell_demonic_leap_jump_SpellScript);
-
         void Land(SpellEffIndex /*p_EffIndex*/)
         {
             if (Unit* l_Caster = GetCaster())
@@ -1203,7 +1168,7 @@ public:
     }
 };
 
-/// Demonic Leap - 148969 
+/// Demonic Leap - 148969
 class auchindoun_teronogor_spell_demonic_leap : public SpellScriptLoader
 {
 public:
@@ -1212,8 +1177,6 @@ public:
 
     class auchindoun_teronogor_spell_demonic_leap_SpellScript : public SpellScript
     {
-        PrepareSpellScript(auchindoun_teronogor_spell_demonic_leap_SpellScript);
-
         enum eDemonicLeapSpells
         {
             SpellDemonicLeapJump = 157039
@@ -1360,42 +1323,6 @@ public:
     }
 };
 
-/// Chaos Wave - 157001 
-class auchindoun_teronogor_areatrigger_chaos_wave : public AreaTriggerEntityScript
-{
-public:
-
-    auchindoun_teronogor_areatrigger_chaos_wave() : AreaTriggerEntityScript("auchindoun_teronogor_areatrigger_chaos_wave") { }
-
-    uint32 l_DiffDot = 1;
-
-    void OnUpdate(AreaTrigger* p_AreaTrigger, uint32 p_Time)
-    {
-        if (p_AreaTrigger)
-        {
-            if (p_Time <= l_DiffDot)
-            {
-                std::list<Player*> l_ListPlayers;
-                p_AreaTrigger->GetPlayerListInGrid(l_ListPlayers, 2.0f);
-                if (!l_ListPlayers.empty())
-                {
-                    for (Player* l_Itr : l_ListPlayers)
-                    {
-                        if (!l_Itr)
-                            continue;
-
-                        l_Itr->CastSpell(l_Itr, eTerongorSpells::SpellChaosWaveDmg);
-                    }
-                }
-
-                l_DiffDot = 1;
-            }
-            else
-                l_DiffDot -= p_Time;
-        }
-    }
-};
-
 void AddSC_boss_teronogor()
 {
     RegisterCreatureAI(boss_teronogor);
@@ -1404,14 +1331,12 @@ void AddSC_boss_teronogor()
     new auchindoun_teronogor_mob_durag();                           ///< 77890
     new auchindoun_teronogor_mob_gulkosh();                         ///< 78437
     new auchindoun_teronogor_mob_shaadum();                         ///< 78728
-    new auchindoun_teronogor_mob_spirit();
     new auchindoun_teronogor_spell_chaos_wave();                    ///< 157001
     new auchindoun_teronogor_spell_demonic_leap();                  ///< 148969
     new auchindoun_teronogor_spell_seed_of_malevolence();           ///< 156921
     new auchindoun_teronogor_spell_demonic_leap_jump();             ///< 157039
-    new auchindoun_teronogor_areatrigger_chaos_wave();              ///< 157001
    // new auchindoun_teronogor_gameobject_soul_transporter_01();      ///< 231736
-   // new auchindoun_teronogor_gameobject_soul_transporter_02();      ///< 231739 
+   // new auchindoun_teronogor_gameobject_soul_transporter_02();      ///< 231739
    // new auchindoun_teronogor_gameobject_soul_transporter_03();      ///< 231740
    // new auchindoun_teronogor_gameobject_soul_transporter_04();      ///< 231741
 }

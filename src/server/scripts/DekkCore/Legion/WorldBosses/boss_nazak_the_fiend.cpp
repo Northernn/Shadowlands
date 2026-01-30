@@ -49,7 +49,7 @@ public:
         void Reset() override
         {
             events.Reset();
-           // me->RemoveAllAreaObjects();
+            me->RemoveAllAreaObjects();
             summons.DespawnAll();
         }
 
@@ -140,8 +140,6 @@ public:
 
     class spell_foundational_collapse_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_foundational_collapse_AuraScript);
-
             void OnPereodic(AuraEffect const* aurEff)
         {
             PreventDefaultAction();

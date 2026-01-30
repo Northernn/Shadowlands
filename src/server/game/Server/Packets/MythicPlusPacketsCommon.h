@@ -33,6 +33,9 @@ namespace WorldPackets
             int32 BestRunLevel = 0;
             int32 BestRunDurationMS = 0;
             bool FinishedSuccess = false;
+
+            bool operator==(DungeonScoreMapSummary const& right) const;
+            bool operator!=(DungeonScoreMapSummary const& r) const { return !(*this == r); }
         };
 
         struct DungeonScoreSummary
@@ -40,35 +43,38 @@ namespace WorldPackets
             float OverallScoreCurrentSeason = 0.0f;
             float LadderScoreCurrentSeason = 0.0f;
             std::vector<DungeonScoreMapSummary> Runs;
+
+            bool operator==(DungeonScoreSummary const& right) const;
+            bool operator!=(DungeonScoreSummary const& r) const { return !(*this == r); }
         };
 
         struct MythicPlusMember
         {
-            ObjectGuid BnetAccountGUID;
-            uint64 GuildClubMemberID = 0;
-            ObjectGuid GUID;
-            ObjectGuid GuildGUID;
-            uint32 NativeRealmAddress = 0;
-            uint32 VirtualRealmAddress = 0;
-            int32 ChrSpecializationID = 0;
-            int16 RaceID = 0;
-            int32 ItemLevel = 0;
-            int32 CovenantID = 0;
-            int32 SoulbindID = 0;
+            ObjectGuid BnetAccountGUID;//ok
+            uint64 GuildClubMemberID = 0;//ok
+            ObjectGuid GUID;//ok
+            ObjectGuid GuildGUID; //ok
+            uint32 NativeRealmAddress = 0;//ok
+            uint32 VirtualRealmAddress = 0;//ok
+            int32 ChrSpecializationID = 0;//ok
+            int16 RaceID = 0;//ok
+            int32 ItemLevel = 0;//ok
+            int32 CovenantID = 0;//ok
+            int32 SoulbindID = 0;//ok
         };
 
         struct MythicPlusRun
         {
-            int32 MapChallengeModeID = 0;
-            bool Completed = false;
-            uint32 Level = 0;
-            int32 DurationMs = 0;
-            Timestamp<> StartDate;
-            Timestamp<> CompletionDate;
-            int32 Season = 0;
-            std::vector<MythicPlusMember> Members;
-            float RunScore = 0.0f;
-            std::array<int32, 4> KeystoneAffixIDs;
+            int32  MapChallengeModeID = 0;//ok
+            bool   Completed = false; //ok
+            uint32 Level = 0;//ok
+            int32  DurationMs = 0;//ok
+            int32  Season = 0; //ok
+            float  RunScore = 0.0f; //ok
+            Timestamp<> StartDate;//ok
+            Timestamp<> CompletionDate;//ok
+            std::vector<MythicPlusMember> Members;//ok
+            std::array<int32, 4> KeystoneAffixIDs;//ok
         };
 
         struct DungeonScoreBestRunForAffix
@@ -93,170 +99,34 @@ namespace WorldPackets
             std::vector<DungeonScoreMapData> LadderMaps;
             float SeasonScore = 0.0f;
             float LadderScore = 0.0f;
+
+            bool operator==(DungeonScoreSeasonData const& right) const;
+            bool operator!=(DungeonScoreSeasonData const& r) const { return !(*this == r); }
         };
 
         struct DungeonScoreData
         {
             std::vector<DungeonScoreSeasonData> Seasons;
             int32 TotalRuns = 0;
+
+            bool operator==(DungeonScoreData const& right) const;
+            bool operator!=(DungeonScoreData const& r) const { return !(*this == r); }
         };
 
+        struct Reward
+        {
+            uint32 Field0;
+            uint32 Field4;
+            int64 Field8;
+            int64 Field10;
+            int64 Field20;
+            bool Field24;
+        };
+
+        ByteBuffer& operator<<(ByteBuffer& data, MythicPlusRun const& mythicPlusRun);
         ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreSummary const& dungeonScoreSummary);
         ByteBuffer& operator<<(ByteBuffer& data, DungeonScoreData const& dungeonScoreData);
-
-        class MythicPlusSeasonData final : public ClientPacket
-             {
-        public:
-                MythicPlusSeasonData(WorldPacket && packet) : ClientPacket(CMSG_REQUEST_MYTHIC_PLUS_SEASON_DATA, std::move(packet)) { }
-            
-                void Read() override;
-         };
-
-        class MythicPlusRequestMapStatsResult final : public ServerPacket
-        {
-        public:
-            MythicPlusRequestMapStatsResult() : ServerPacket(SMSG_MYTHIC_PLUS_ALL_MAP_STATS) { }
-
-            WorldPacket const* Write() override;
-
-            uint32 RunCount = 0;
-            uint32 RewardCount = 0;
-            uint32 Season = 7;
-            uint32 Subseason = 71;
-
-            std::vector<MythicPlusRun> mythicPlusRuns;
-            //std::vector<MythicPlusReward> mythicPlusRewards;
-        };
-
-        class MythicPlusCurrentAffixes final : public ClientPacket
-        {
-        public:
-            MythicPlusCurrentAffixes(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_MYTHIC_PLUS_AFFIXES, std::move(packet)) { }
-
-            void Read() override;
-        };
-
-        class MythicPlusSeasonDataResult final : public ServerPacket
-        {
-        public:
-            MythicPlusSeasonDataResult() : ServerPacket(SMSG_MYTHIC_PLUS_SEASON_DATA) { }
-
-            WorldPacket const* Write() override;
-
-            uint8 IsMythicPlusActive = 128;//Hack fix
-        };
-
-        class MythicPlusRequestMapStats final : public ClientPacket
-        {
-        public:
-            MythicPlusRequestMapStats(WorldPacket&& packet) : ClientPacket(CMSG_MYTHIC_PLUS_REQUEST_MAP_STATS, std::move(packet)) { }//15
-
-            void Read() override;
-
-            ObjectGuid BnetAccountGUID;
-            int32 MapChallengeModeID = 0;
-            int32 UNK = 0;
-        };
-
-        class MythicPlusRequestWeeklyRewards final : public ClientPacket
-        {
-        public:
-            MythicPlusRequestWeeklyRewards(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_WEEKLY_REWARDS, std::move(packet)) { }//0
-
-            void Read() override;
-        };
-
-        class MythicPlusCurrentAffixesResult final : public ServerPacket
-        {
-        public:
-            MythicPlusCurrentAffixesResult() : ServerPacket(SMSG_MYTHIC_PLUS_CURRENT_AFFIXES) { }
-
-            WorldPacket const* Write() override;
-
-            uint32 Count = 5;
-            std::array<int32, 5> Affixes;//Length: 44
-            std::array<int32, 5> RequiredSeason;
-        };
-
-        struct ItemReward
-        {
-            uint32 ItemID = 0;
-            uint32 ItemDisplayID = 0;
-            uint32 Quantity = 0;
-        };
-
-        struct CurrencyReward
-        {
-            CurrencyReward(uint32 ID, uint32 count) : CurrencyID(ID), Quantity(count) { }
-
-            uint32 CurrencyID = 0;
-            uint32 Quantity = 0;
-        };
-
-        struct MapChallengeModeReward
-        {
-            struct ChallengeModeReward
-            {
-                std::vector<ItemReward> ItemRewards;
-                uint32 Money = 0;
-                std::vector<CurrencyReward> CurrencyRewards;
-            };
-
-            uint32 MapId = 0;
-            std::vector<ChallengeModeReward> Rewards;
-        };
-
-        struct ModeAttempt
-        {
-            struct Member
-            {
-                ObjectGuid Guid;
-                uint32 VirtualRealmAddress = 0;
-                uint32 NativeRealmAddress = 0;
-                uint32 SpecializationID = 0;
-            };
-
-            uint32 InstanceRealmAddress = 0;
-            uint32 AttemptID = 0;
-            uint32 CompletionTime = 0;
-            time_t CompletionDate = time(nullptr);
-            uint32 MedalEarned = 0;
-            std::vector<Member> Members;
-        };
-
-        struct ChallengeModeMap
-        {
-            struct bMember
-            {
-                ObjectGuid PlayerGuid;
-                ObjectGuid GuildGuid;
-                uint32 VirtualRealmAddress = 0;
-                uint32 NativeRealmAddress = 0;
-                uint32 SpecializationID = 0;
-                uint32 Unk4 = 0;
-                uint32 EquipmentLevel = 0;
-            };
-
-            uint32 MapId = 0;
-            uint32 BestCompletionMilliseconds = 0;
-            uint32 LastCompletionMilliseconds = 0;
-            uint32 CompletedChallengeLevel = 0;
-            uint32 ChallengeID = 0;
-            time_t BestMedalDate = time(nullptr);
-            std::vector<uint16> BestSpecID;
-            std::array<uint32, 3> Affixes;
-        };
-
-        class Rewards final : public ServerPacket
-        {
-        public:
-            Rewards() : ServerPacket(SMSG_WEEKLY_REWARDS_PROGRESS_RESULT, 8) { }
-
-            WorldPacket const* Write() override;
-
-            std::vector<MapChallengeModeReward> MapChallengeModeRewards;
-            std::vector<ItemReward> ItemRewards;
-        };
+        ByteBuffer& operator<<(ByteBuffer& data, Reward const& reward);
     }
 }
 

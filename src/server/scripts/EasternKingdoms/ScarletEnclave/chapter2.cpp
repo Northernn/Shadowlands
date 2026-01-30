@@ -261,7 +261,7 @@ struct npc_koltira_deathweaver : public ScriptedAI
                     me->SetWalk(false);
                     me->SetImmuneToNPC(false);
                     DoCastSelf(SPELL_HERO_AGGRO);
-                    me->GetMotionMaster()->MovePath(NPC_KOLTIRA, false);
+                    me->GetMotionMaster()->MovePath(NPC_KOLTIRA << 3, false);
 
                     break;
                 case EVENT_CHECK_PLAYER:
@@ -614,8 +614,6 @@ public:
 // 53110 - Devour Humanoid
 class spell_death_knight_devour_humanoid : public SpellScript
 {
-    PrepareSpellScript(spell_death_knight_devour_humanoid);
-
     void HandleScriptEffect(SpellEffIndex /* effIndex */)
     {
         GetHitUnit()->CastSpell(GetCaster(), GetEffectValue(), true);

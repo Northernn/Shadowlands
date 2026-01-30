@@ -215,8 +215,6 @@ public:
 
     class spell_festerface_congealing_vomit_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_festerface_congealing_vomit_SpellScript);
-
         uint8 castCount;
 
         void HandleOnHit(SpellEffIndex /*effIndex*/)
@@ -267,8 +265,6 @@ public:
 
     class spell_festerface_recongealing_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_festerface_recongealing_AuraScript);
-
         void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (!GetCaster())
@@ -313,8 +309,6 @@ public:
 
     class spell_festerface_energy_tracker_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_festerface_energy_tracker_AuraScript);
-
         uint8 PowerCount = 0;
 
         void OnTick(AuraEffect const* aurEff)
@@ -343,24 +337,6 @@ public:
     }
 };
 
-class achievement_i_made_a_food : public AchievementCriteriaScript
-{
-public:
-    achievement_i_made_a_food() : AchievementCriteriaScript("achievement_i_made_a_food") { }
-
-    bool OnCheck(Player* /*player*/, Unit* target) override
-    {
-        if (!target)
-            return false;
-
-        if (Creature* fester = target->ToCreature())
-            if (fester->AI()->GetData(DATA_ACHIEVEMENT))
-                return true;
-
-        return false;
-    }
-};
-
 void AddSC_boss_festerface()
 {
     new boss_festerface();
@@ -368,5 +344,4 @@ void AddSC_boss_festerface()
     new spell_festerface_congealing_vomit();
     new spell_festerface_recongealing();
     new spell_festerface_energy_tracker();
-    new achievement_i_made_a_food();
 }

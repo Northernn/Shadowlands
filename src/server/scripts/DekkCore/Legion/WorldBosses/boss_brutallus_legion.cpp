@@ -145,8 +145,6 @@ public:
 
     class spell_brutallus_meteor_slash_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_brutallus_meteor_slash_SpellScript);
-
         uint8 targetCount = 0;
 
         void FilterTargets(std::list<WorldObject*>& targets)
@@ -187,8 +185,6 @@ public:
     class spell_brutallus_rupture_SpellScript : public SpellScript
     {
     public:
-        PrepareSpellScript(spell_brutallus_rupture_SpellScript);
-
         void HandleDummy(SpellEffIndex)
         {
             if (!GetCaster() || !GetHitUnit())

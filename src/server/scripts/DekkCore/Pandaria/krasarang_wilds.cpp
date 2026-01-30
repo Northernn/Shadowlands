@@ -478,8 +478,6 @@ class spell_chi_torpedo_periodic: public SpellScriptLoader
 
         class spell_chi_torpedo_periodic_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_chi_torpedo_periodic_AuraScript);
-
             void OnTick(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
@@ -551,7 +549,7 @@ class mob_anduin_wrynn_escort : public CreatureScript
                 {
                     if (l_Plr->GetQuestStatus(QuestInTheHouseOfTheRedCrane) == QUEST_STATUS_INCOMPLETE)
                     {
-                        me->GetMotionMaster()->MoveFollow(l_Plr, 2.0f, 2.0f, MOTION_SLOT_ACTIVE);
+                        me->GetMotionMaster()->MoveFollow(l_Plr, 2.0f, 2.0f);
                         m_playerGUID = l_Plr->GetGUID();
                         m_Events.ScheduleEvent(EVENT_CHECK_TARGET, 1s);
                     }

@@ -369,8 +369,6 @@ class spell_coen_fel_strike : public SpellScriptLoader
 
         class spell_coen_fel_strike_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_coen_fel_strike_SpellScript);
-
             void HandleOnHit()
             {
                 Unit* caster = GetCaster();
@@ -414,8 +412,6 @@ public:
 
     class spell_coen_shadow_wave_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_coen_shadow_wave_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
@@ -468,8 +464,6 @@ class spell_coen_blinding_glare : public SpellScriptLoader
 
         class spell_coen_blinding_glare_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_coen_blinding_glare_SpellScript);
-
             void CorrectTargets(std::list<WorldObject*>& targets)
             {
                 Unit* caster = GetCaster();
@@ -510,8 +504,6 @@ class spell_coen_summon_spider : public SpellScriptLoader
 
         class spell_admiral_ripsnarl_coalesce_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_admiral_ripsnarl_coalesce_SpellScript);
-
             void HandleAfterCast()
             {
                 Unit* caster = GetCaster();
@@ -560,8 +552,6 @@ public:
 
     class spell_coen_fel_blaze_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_coen_fel_blaze_SpellScript);
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if (Unit* caster = GetCaster())

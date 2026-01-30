@@ -93,7 +93,7 @@ struct boss_gorak_tul : public BossAI
 		}
 	}
 
-	void OnSuccessfulSpellCast(SpellInfo const* spellInfo) //override
+	void OnSuccessfulSpellCast(SpellInfo const* spellInfo) override
 	{
 		switch (spellInfo->Id)
 		{
@@ -137,7 +137,7 @@ struct npc_deathtouched_slaver : public ScriptedAI
             events.ScheduleEvent(EVENT_DEATH_LENS, 9s);
     }
 
-    void ExecuteEvent(uint32 eventId)// override
+    void ExecuteEvent(uint32 eventId) override
 	{
 		switch (eventId)
 		{

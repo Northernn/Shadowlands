@@ -293,7 +293,7 @@ struct boss_occularus : public ScriptedAI
             for (uint8 i = 0; i < 4; ++i)
             {
                 dist += 2.0f;
-             //   target->GetNearPosition(pos, dist, 0.0f);
+                target->GetNearPosition(dist, 0.0f);
                 //me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_PHANTASM_TRIGGER, true);
             }
         }
@@ -465,7 +465,7 @@ struct boss_sotanathor : public ScriptedAI
         switch (spell->Id)
         {
         case SPELL_CAVITATION:
-            if (target->IsPlayer()/* && target->IsInCombat()*/)
+            if (target->IsPlayer())
             {
                 Position pos;
                 float angle = 0.0f;
@@ -687,8 +687,6 @@ struct boss_matron_folnuna : public ScriptedAI
 //247549
 class spell_beguiling_charm : public SpellScript
 {
-    PrepareSpellScript(spell_beguiling_charm);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         Unit* caster = GetCaster();
@@ -730,8 +728,6 @@ class spell_beguiling_charm : public SpellScript
 //247590
 class spell_sadist : public AuraScript
 {
-    PrepareAuraScript(spell_sadist);
-
     void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
@@ -751,8 +747,6 @@ class spell_sadist : public AuraScript
 //247739
 class spell_drain : public AuraScript
 {
-    PrepareAuraScript(spell_drain);
-
     void OnTick(AuraEffect const* /*auraEffect*/)
     {
         Unit* target = GetTarget();
@@ -774,8 +768,6 @@ class spell_drain : public AuraScript
 //247332
 class spell_eye_sore : public SpellScript
 {
-    PrepareSpellScript(spell_eye_sore);
-
     void FilterTargets(std::list<WorldObject*>& targets)
     {
         uint32 count = 5;
@@ -793,8 +785,6 @@ class spell_eye_sore : public SpellScript
 //247410
 class spell_soul_cleave : public SpellScript
 {
-    PrepareSpellScript(spell_soul_cleave);
-
     uint8 targetsCount = 0;
 
     void FilterTargets(std::list<WorldObject*>& targets)
@@ -818,8 +808,6 @@ class spell_soul_cleave : public SpellScript
 //247437
 class spell_argus_seed_of_destruction : public AuraScript
 {
-    PrepareAuraScript(spell_argus_seed_of_destruction);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         if (!GetCaster() || !GetTarget() || !GetCaster()->IsInCombat() || GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
@@ -846,8 +834,6 @@ class spell_argus_seed_of_destruction : public AuraScript
 //247362
 class spell_infected_claws : public AuraScript
 {
-    PrepareAuraScript(spell_infected_claws);
-
     void OnProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
@@ -867,8 +853,6 @@ class spell_infected_claws : public AuraScript
 //247379
 class spell_slimbering_gasp : public AuraScript
 {
-    PrepareAuraScript(spell_slimbering_gasp);
-
     void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster()->ToCreature();
@@ -887,8 +871,6 @@ class spell_slimbering_gasp : public AuraScript
 //247441
 class spell_folnuna_nausea : public AuraScript
 {
-    PrepareAuraScript(spell_folnuna_nausea);
-
     uint8 power{};
     std::vector<uint32> energy = { 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 1 };
     uint32 i = 0;
@@ -1007,8 +989,6 @@ struct npc_slumbering_gasp : ScriptedAI
 //247069
 class spell_enter_rift : public SpellScript
 {
-    PrepareSpellScript(spell_enter_rift);
-
     SpellCastResult CheckCast()
     {
         if (Player* player = GetCaster()->ToPlayer())

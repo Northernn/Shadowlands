@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 
+ * Copyright 2021
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -250,6 +250,8 @@ struct boss_ataldazar_rezan : public BossAI
             {
                 if (me->HasAura(SPELL_RIDE_VEHICLE))
                     me->RemoveAura(SPELL_RIDE_VEHICLE);
+
+                break;
             }
             default:
                 break;
@@ -260,7 +262,7 @@ struct boss_ataldazar_rezan : public BossAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* killer) override
+    void JustDied(Unit* /*killer*/) override
     {
         _JustDied();
         instance->SetBossState(DATA_REZAN, DONE);

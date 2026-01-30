@@ -543,8 +543,6 @@ public:
 
     class spell_general_pavalak_blade_rush_target_selector_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_general_pavalak_blade_rush_target_selector_SpellScript);
-
         void FilterTargets(std::list<WorldObject*>& targets)
         {
             targets.remove_if(BladeRushTargetSelector());
@@ -570,8 +568,6 @@ public:
 
     class spell_general_pavalak_blade_rush_summon_effect_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_general_pavalak_blade_rush_summon_effect_SpellScript);
-
         void HandleSummon(SpellEffIndex /*effIndex*/)
         {
             WorldLocation const* loc = GetExplTargetDest();
@@ -600,8 +596,6 @@ public:
 
     class spell_general_pavalak_blade_rush_charge_effect_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_general_pavalak_blade_rush_charge_effect_SpellScript);
-
         void HandleCharge(SpellEffIndex effIndex)
         {
             PreventHitDefaultEffect(effIndex);
@@ -638,8 +632,6 @@ public:
 
     class spell_general_pavalak_siege_explosive_summon_effect_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_general_pavalak_siege_explosive_summon_effect_SpellScript);
-
         void HandleSummon(SpellEffIndex /*effIndex*/)
         {
             Position offset = { 0.0f, 0.0f, 30.0f, 0.0f };
@@ -666,8 +658,6 @@ public:
 
     class spell_general_pavalak_siege_explosive_trigger_effect_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_general_pavalak_siege_explosive_trigger_effect_SpellScript);
-
         void CheckTarget(SpellEffIndex effIndex)
         {
             if (Unit* caster = GetCaster())
@@ -694,8 +684,6 @@ public:
 
     class spell_general_pavalak_bulwark_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_general_pavalak_bulwark_AuraScript);
-
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* caster = GetCaster())

@@ -15,8 +15,47 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "GameObject.h"
+#include "GameObjectAI.h"
+#include "ScriptMgr.h"
 #include "deadmines.h"
+
+class go_defias_cannon : public GameObjectScript
+{
+public:
+    go_defias_cannon() : GameObjectScript("go_defias_cannon") { }
+
+    struct go_defias_cannonAI : public GameObjectAI
+    {
+        go_defias_cannonAI(GameObject* go) : GameObjectAI(go)
+        {
+        }
+
+    bool OnGossipHello(Player* pPlayer) override
+    {
+        InstanceScript* instance = me->GetInstanceScript();
+
+        if (!instance)
+            return false;
+
+        instance->SetData(DATA_CANNON_EVENT, CANNON_BLAST_INITIATED);
+        return false;
+
+        if (GameObject* ironCladDoor = me->FindNearestGameObject(GO_IRONCLAD_DOOR, 30.0f))
+        {
+            me->SetGoState(GO_STATE_ACTIVE);
+        }
+        return true;   
+    }
+};
+    GameObjectAI* GetAI(GameObject* go) const override
+    {
+        return new go_defias_cannonAI(go);
+    }
+
+};
 
 void AddSC_deadmines()
 {
+    new go_defias_cannon();
 }
