@@ -19,6 +19,7 @@
 #include "Containers.h"
 #include "IntermediateValues.h"
 #include "MapTree.h"
+#include "Memory.h"
 #include "MMapDefines.h"
 #include "ModelInstance.h"
 #include "PathCommon.h"
@@ -60,7 +61,6 @@ namespace MMAP
         bool debugOutput, bool bigBaseUnit, int mapid, char const* offMeshFilePath, unsigned int threads) :
         m_terrainBuilder     (nullptr),
         m_debugOutput        (debugOutput),
-        m_offMeshFilePath    (offMeshFilePath),
         m_threads            (threads),
         m_skipContinents     (skipContinents),
         m_skipJunkMaps       (skipJunkMaps),
@@ -83,6 +83,8 @@ namespace MMAP
         m_threads = std::max(1u, m_threads);
 
         discoverTiles();
+
+        ParseOffMeshConnectionsFile(offMeshFilePath);
     }
 
     /**************************************************************************/
@@ -146,7 +148,7 @@ namespace MMAP
             mapID = (*itr).m_mapId;
 
             files.clear();
-            getDirContents(files, "vmaps", Trinity::StringFormat("%04u_*.vmtile", mapID));
+            getDirContents(files, "vmaps", Trinity::StringFormat("{:04}_*.vmtile", mapID));
             for (uint32 i = 0; i < files.size(); ++i)
             {
                 tileX = uint32(atoi(files[i].substr(8, 2).c_str()));
@@ -158,7 +160,7 @@ namespace MMAP
             }
 
             files.clear();
-            getDirContents(files, "maps", Trinity::StringFormat("%04u*", mapID));
+            getDirContents(files, "maps", Trinity::StringFormat("{:04}*", mapID));
             for (uint32 i = 0; i < files.size(); ++i)
             {
                 tileY = uint32(atoi(files[i].substr(5, 2).c_str()));
@@ -190,6 +192,41 @@ namespace MMAP
         {
             if (!shouldSkipMap(it->m_mapId))
                 m_totalTiles += it->m_tiles->size();
+        }
+    }
+
+    /**************************************************************************/
+    void MapBuilder::ParseOffMeshConnectionsFile(char const* offMeshFilePath)
+    {
+        // no meshfile input given?
+        if (offMeshFilePath == nullptr)
+            return;
+
+        auto fp = Trinity::make_unique_ptr_with_deleter(fopen(offMeshFilePath, "rb"), &::fclose);
+        if (!fp)
+        {
+            printf(" loadOffMeshConnections:: input file %s not found!\n", offMeshFilePath);
+            return;
+        }
+
+        char buf[512] = { };
+        while (fgets(buf, 512, fp.get()))
+        {
+            OffMeshData offMesh;
+            int32 scanned = sscanf(buf, "%u %u,%u (%f %f %f) (%f %f %f) %f %hhu %hu", &offMesh.MapId, &offMesh.TileX, &offMesh.TileY,
+                &offMesh.From[0], &offMesh.From[1], &offMesh.From[2], &offMesh.To[0], &offMesh.To[1], &offMesh.To[2],
+                &offMesh.Radius, &offMesh.AreaId, &offMesh.Flags);
+            if (scanned < 10)
+                continue;
+
+            offMesh.Bidirectional = true;
+            if (scanned < 12)
+                offMesh.Flags = NAV_GROUND;
+
+            if (scanned < 11)
+                offMesh.AreaId = NAV_AREA_GROUND;
+
+            m_offMeshConnections.push_back(offMesh);
         }
     }
 
@@ -504,7 +541,7 @@ namespace MMAP
         float bmin[3], bmax[3];
         m_mapBuilder->getTileBounds(tileX, tileY, allVerts.getCArray(), allVerts.size() / 3, bmin, bmax);
 
-        m_terrainBuilder->loadOffMeshConnections(mapID, tileX, tileY, meshData, m_mapBuilder->m_offMeshFilePath);
+        m_terrainBuilder->loadOffMeshConnections(mapID, tileX, tileY, meshData, m_mapBuilder->m_offMeshConnections);
 
         // build navmesh tile
         buildMoveMapTile(mapID, tileX, tileY, meshData, bmin, bmax, navMesh);
@@ -603,7 +640,7 @@ namespace MMAP
         dtNavMesh* navMesh)
     {
         // console output
-        std::string tileString = Trinity::StringFormat("[Map %04u] [%02i,%02i]: ", mapID, tileX, tileY);
+        std::string tileString = Trinity::StringFormat("[Map {:04}] [{:02},{:02}]: ", mapID, tileX, tileY);
         printf("%s Building movemap tiles...\n", tileString.c_str());
 
         IntermediateValues iv;
