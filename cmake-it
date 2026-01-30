@@ -1,0 +1,3 @@
+#/home/WoW/3.3.5
+
+cmake ../ -DBOOST_DIR=/boost/boost-1.74.0 -DCMAKE_INSTALL_PREFIX=/home/WoW/SL/server -DCONF_DIR=/home/WoW/SL/server/etc -DTOOLS=1 -DWITH_WARNINGS=1
